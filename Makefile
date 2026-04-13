@@ -1,0 +1,36 @@
+.PHONY: build run test vet lint clean docs help
+
+APP_NAME := greeting
+BUILD_DIR := ./bin
+
+## build: Compile the application binary
+build:
+	./scripts/build.sh $(APP_NAME) $(BUILD_DIR)
+
+## run: Build and run the application
+run: build
+	./scripts/run.sh $(APP_NAME) $(BUILD_DIR)
+
+## test: Run all tests
+test:
+	./scripts/test.sh $(APP_NAME)
+
+## vet: Run go vet
+vet:
+	./scripts/vet.sh $(APP_NAME)
+
+## lint: Run static analysis (requires golangci-lint)
+lint:
+	./scripts/lint.sh $(APP_NAME)
+
+## clean: Remove build artifacts
+clean:
+	./scripts/clean.sh $(BUILD_DIR)
+
+## docs: Generate swagger documentation
+docs:
+	./scripts/docs.sh $(APP_NAME)
+
+## help: Display available targets
+help:
+	./scripts/help.sh
