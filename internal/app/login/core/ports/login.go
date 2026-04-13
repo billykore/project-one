@@ -1,0 +1,22 @@
+package ports
+
+import (
+	"context"
+
+	"github.com/billykore/project-one/internal/app/login/core/domain"
+)
+
+// UserRepository is a driven port for user persistence.
+type UserRepository interface {
+	GetUserByEmail(ctx context.Context, email string) (*domain.User, error)
+}
+
+// TokenService is a driven port for token management.
+type TokenService interface {
+	GenerateTokens(ctx context.Context, user *domain.User) (accessToken, refreshToken string, err error)
+}
+
+// LoginService is a driving port for login-related application logic.
+type LoginService interface {
+	Login(ctx context.Context, email, password string) (accessToken, refreshToken string, err error)
+}
