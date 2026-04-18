@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/billykore/project-one/internal/app/login/core/domain"
-	"github.com/billykore/project-one/internal/app/login/core/service/mocks"
+	"github.com/billykore/project-one/internal/app/user/core/domain"
+	"github.com/billykore/project-one/internal/app/user/core/service/mocks"
 	"go.uber.org/mock/gomock"
 )
 
@@ -22,13 +22,13 @@ func TestLoginService_Login_WithMocks(t *testing.T) {
 	svc := NewLoginService(mockRepo, mockTokens, mockHasher, mockLogger)
 
 	tests := []struct {
-		name         string
-		email        string
-		password     string
-		setup        func()
-		wantErr      error
-		wantAccess   string
-		wantRefresh  string
+		name        string
+		email       string
+		password    string
+		setup       func()
+		wantErr     error
+		wantAccess  string
+		wantRefresh string
 	}{
 		{
 			name:     "successful login",
@@ -94,7 +94,7 @@ func TestLoginService_Login_WithMocks(t *testing.T) {
 					// For tokens, it returns fmt.Errorf("generate tokens: %w", err)
 					if tt.name == "token generation error" {
 						// Special case for wrapped error
-						return 
+						return
 					}
 					t.Errorf("Login() error = %v, wantErr %v", err, tt.wantErr)
 				}

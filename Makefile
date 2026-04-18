@@ -1,6 +1,6 @@
-.PHONY: build run test vet lint clean docs help
+.PHONY: build run test vet lint clean docs help migrate-create migrate-up migrate-down
 
-APP_NAME := greeting
+APP_NAME := user
 BUILD_DIR := ./bin
 
 ## build: Compile the application binary
@@ -30,6 +30,18 @@ clean:
 ## docs: Generate swagger documentation
 docs:
 	./scripts/docs.sh $(APP_NAME)
+
+## migrate-create: Create a new migration file (e.g., make migrate-create name=create_users_table)
+migrate-create:
+	./scripts/migrate.sh create "" $(name)
+
+## migrate-up: Run migrations up (e.g., make migrate-up dsn="postgres://user:pass@host:port/db?sslmode=disable")
+migrate-up:
+	./scripts/migrate.sh up $(dsn) $(steps)
+
+## migrate-down: Run migrations down (e.g., make migrate-down dsn="postgres://user:pass@host:port/db?sslmode=disable")
+migrate-down:
+	./scripts/migrate.sh down $(dsn) $(steps)
 
 ## help: Display available targets
 help:

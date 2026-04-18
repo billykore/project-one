@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/billykore/project-one/internal/app/login/core/domain"
-	"github.com/billykore/project-one/internal/app/login/core/ports"
+	"github.com/billykore/project-one/internal/app/user/core/domain"
+	"github.com/billykore/project-one/internal/app/user/core/ports"
 )
 
 type loginService struct {

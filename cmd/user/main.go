@@ -5,12 +5,12 @@ import (
 	"log"
 	"os"
 
-	"github.com/billykore/project-one/internal/app/login/adapters/handler"
-	"github.com/billykore/project-one/internal/app/login/adapters/hasher"
-	"github.com/billykore/project-one/internal/app/login/adapters/logger"
-	"github.com/billykore/project-one/internal/app/login/adapters/repository"
-	"github.com/billykore/project-one/internal/app/login/adapters/token"
-	"github.com/billykore/project-one/internal/app/login/core/service"
+	"github.com/billykore/project-one/internal/app/user/adapters/handler"
+	"github.com/billykore/project-one/internal/app/user/adapters/hasher"
+	"github.com/billykore/project-one/internal/app/user/adapters/logger"
+	"github.com/billykore/project-one/internal/app/user/adapters/repository"
+	"github.com/billykore/project-one/internal/app/user/adapters/token"
+	"github.com/billykore/project-one/internal/app/user/core/service"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"gorm.io/driver/postgres"
@@ -33,20 +33,6 @@ func main() {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
-	}
-
-	// AutoMigrate the users table
-	// Since the model is internal to the repository, I'll need to reference it or redeclare it.
-	// For simplicity, I'll redeclare it for migration here or call a migrate method.
-	type userModel struct {
-		ID        int    `gorm:"primaryKey;autoIncrement"`
-		Email     string `gorm:"unique;notNull"`
-		Password  string `gorm:"notNull"`
-		CreatedAt int64  `gorm:"autoCreateTime"`
-		UpdatedAt int64  `gorm:"autoUpdateTime"`
-	}
-	if err := db.AutoMigrate(&userModel{}); err != nil {
-		log.Fatalf("failed to migrate database: %v", err)
 	}
 
 	// 2. Initialize Validator

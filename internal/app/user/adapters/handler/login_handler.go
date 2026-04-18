@@ -4,9 +4,9 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/billykore/project-one/internal/app/login/adapters/dto"
-	"github.com/billykore/project-one/internal/app/login/core/domain"
-	"github.com/billykore/project-one/internal/app/login/core/ports"
+	"github.com/billykore/project-one/internal/app/user/adapters/dto"
+	"github.com/billykore/project-one/internal/app/user/core/domain"
+	"github.com/billykore/project-one/internal/app/user/core/ports"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 )

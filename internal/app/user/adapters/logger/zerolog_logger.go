@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/billykore/project-one/internal/app/login/core/ports"
+	"github.com/billykore/project-one/internal/app/user/core/ports"
 	"github.com/rs/zerolog"
 )
 

@@ -4,15 +4,15 @@ import (
 	"context"
 	"time"
 
-	"github.com/billykore/project-one/internal/app/login/core/domain"
-	"github.com/billykore/project-one/internal/app/login/core/ports"
+	"github.com/billykore/project-one/internal/app/user/core/domain"
+	"github.com/billykore/project-one/internal/app/user/core/ports"
 	"gorm.io/gorm"
 )
 
 type userModel struct {
-	ID        int       `gorm:"primaryKey;autoIncrement"`
-	Email     string    `gorm:"unique;notNull"`
-	Password  string    `gorm:"notNull"`
+	ID        int    `gorm:"primaryKey;autoIncrement"`
+	Email     string `gorm:"unique;notNull"`
+	Password  string `gorm:"notNull"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }

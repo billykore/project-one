@@ -3,7 +3,7 @@ package ports
 import (
 	"context"
 
-	"github.com/billykore/project-one/internal/app/login/core/domain"
+	"github.com/billykore/project-one/internal/app/user/core/domain"
 )
 
 // UserRepository is a driven port for user persistence.
