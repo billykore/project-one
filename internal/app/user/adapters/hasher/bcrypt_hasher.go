@@ -3,7 +3,7 @@ package hasher
 import (
 	"context"
 
-	"github.com/billykore/project-one/internal/app/login/core/ports"
+	"github.com/billykore/project-one/internal/app/user/core/ports"
 	"golang.org/x/crypto/bcrypt"
 )
 

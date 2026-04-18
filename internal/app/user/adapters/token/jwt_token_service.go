@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/billykore/project-one/internal/app/login/core/domain"
-	"github.com/billykore/project-one/internal/app/login/core/ports"
+	"github.com/billykore/project-one/internal/app/user/core/domain"
+	"github.com/billykore/project-one/internal/app/user/core/ports"
 	"github.com/golang-jwt/jwt/v5"
 )
 
