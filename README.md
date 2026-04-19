@@ -1,35 +1,59 @@
-# Go DDD Backend Template (Dependency-Free)
+# Go DDD Backend Template
 
-A clean, ready-to-go Go backend template structured around **Domain-Driven Design (DDD)** and **Clean Architecture** principles. This template is designed to be **dependency-free**, utilizing only the Go standard library.
+A robust Go backend service structured around **Domain-Driven Design (DDD)** and **Clean Architecture** principles.
 
 ## Tech Stack
 * **Language**: Go 1.25+
-* **Routing & HTTP**: Standard `net/http` package
-* **Logging**: Standard `log/slog` package
-* **Testing**: Standard `testing` package
+* **Framework**: [Echo](https://echo.labstack.com/) (HTTP)
+* **ORM**: [GORM](https://gorm.io/) (PostgreSQL)
+* **Validation**: [Validator v10](https://github.com/go-playground/validator)
+* **Logging**: [Zerolog](https://github.com/rs/zerolog)
+* **Security**: [Bcrypt](https://pkg.go.dev/golang.org/x/crypto/bcrypt), [JWT](https://github.com/golang-jwt/jwt)
+* **Testing**: [GoMock](https://github.com/uber/mock), [Testify](https://github.com/stretchr/testify)
+* **Migrations**: [golang-migrate](https://github.com/golang-migrate/migrate)
 
 ## Architecture
-The repository adheres to strict dependency rules flowing inwards:
+The project adheres to strict dependency rules flowing inwards:
 
-* **Core/Domain (`/internal/app/greeting/core/domain`)**: Pure Go business entities and sentinel errors. Zero infrastructure imports.
-* **Core/Ports (`/internal/app/greeting/core/ports`)**: Dependency inversion interfaces.
-* **Core/Service (`/internal/app/greeting/core/service`)**: Use-cases orchestrating ports and domain logic.
-* **Adapters (`/internal/app/greeting/adapters`)**: Infrastructure implementations (HTTP Handlers using standard `net/http` with specific DTOs, and memory repositories).
-* **Shared Infrastructure (`/pkg`)**: Tooling like reusable Loggers using `slog`.
+* **Core/Domain**: Pure Go business entities and sentinel errors. Zero infrastructure imports.
+* **Core/Ports**: Dependency inversion interfaces.
+* **Core/Service**: Use-cases orchestrating ports and domain logic.
+* **Adapters**: Infrastructure implementations (Echo handlers, GORM repositories, JWT token service, etc.).
 
 ## Features
-* **Zero External Dependencies**: Fast builds and minimal maintenance.
-* **Clean Architecture**: Strict separation of concerns (DTO mapping isolated at Handler level).
+* **Clean Architecture**: Strict separation of concerns.
 * **Domain-Driven Design**: Business logic isolated in the core domain layer.
-* **Graceful Shutdown**: Built-in graceful server shutdown using standard library signals and context.
-* **Preconfigured Makefile**: Simple commands for building (`make build`), running (`make run`), and testing (`make test`).
+* **User Management**: Authentication with JWT and password hashing with Bcrypt.
+* **Database Migrations**: SQL-based migrations managed via scripts.
+* **Unit Testing**: Comprehensive unit tests for service and domain layers using GoMock.
 
 ## Getting Started
-1. Run `make test` to verify the project's integrity.
-2. Run `make run` to start the server on `:8080`.
-3. Send a GET request to `http://localhost:8080/greeting` to see the example feature in action:
+
+### Database Migrations
+1. Create a migration:
    ```bash
-   curl http://localhost:8080/greeting
+   make migrate-create name=create_users_table
+   ```
+2. Run migrations up:
+   ```bash
+   make migrate-up dsn="postgres://user:pass@host:port/db?sslmode=disable"
+   ```
+3. Run migrations down:
+   ```bash
+   make migrate-down dsn="postgres://user:pass@host:port/db?sslmode=disable"
+   ```
+
+### Running the Application
+1. Start the server:
+   ```bash
+   make run
+   ```
+2. The server will start on `:8080`.
+
+### Running Tests
+1. Run all unit tests:
+   ```bash
+   make test
    ```
 
 For explicit instructions on architectural guidelines and contributing new features, refer to [AI_CONTEXT.md](./AI_CONTEXT.md).
