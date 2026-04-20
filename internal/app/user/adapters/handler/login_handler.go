@@ -54,6 +54,9 @@ func (h *loginHandler) HandleLogin(c echo.Context) error {
 func (h *loginHandler) HandleLogout(c echo.Context) error {
 	authHeader := c.Request().Header.Get("Authorization")
 	parts := strings.Split(authHeader, " ")
+	if len(parts) != 2 {
+		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
+	}
 	token := parts[1]
 
 	if err := h.svc.Logout(c.Request().Context(), token); err != nil {
