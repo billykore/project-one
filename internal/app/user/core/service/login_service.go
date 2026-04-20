@@ -54,3 +54,10 @@ func (s *loginService) Login(ctx context.Context, email, password string) (strin
 	s.log.Info(ctx, "user logged in successfully", "userID", user.ID)
 	return accessToken, refreshToken, nil
 }
+
+func (s *loginService) Logout(ctx context.Context, _ string) error {
+	// For now, logout is just a placeholder as tokens are stateless.
+	// In the future, we could implement token blacklisting here.
+	s.log.Info(ctx, "user logged out successfully")
+	return nil
+}

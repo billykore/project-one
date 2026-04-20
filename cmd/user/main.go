@@ -53,6 +53,7 @@ func main() {
 	// 6. Set up Echo
 	e := echo.New()
 	e.POST("/login", hdl.HandleLogin)
+	e.POST("/logout", hdl.HandleLogout, handler.AuthMiddleware(tks))
 
 	// Seed a test user if needed
 	seedTestUser(db, hsh)

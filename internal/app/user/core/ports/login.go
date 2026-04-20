@@ -14,9 +14,11 @@ type UserRepository interface {
 // TokenService is a driven port for token management.
 type TokenService interface {
 	GenerateTokens(ctx context.Context, user *domain.User) (accessToken, refreshToken string, err error)
+	ValidateToken(ctx context.Context, token string) (userID int, err error)
 }
 
 // LoginService is a driving port for login-related application logic.
 type LoginService interface {
 	Login(ctx context.Context, email, password string) (accessToken, refreshToken string, err error)
+	Logout(ctx context.Context, token string) error
 }

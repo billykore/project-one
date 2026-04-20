@@ -47,3 +47,28 @@ func (s *jwtTokenService) GenerateTokens(_ context.Context, user *domain.User) (
 
 	return accessToken, refreshToken, nil
 }
+
+func (s *jwtTokenService) ValidateToken(_ context.Context, tokenString string) (int, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, domain.ErrUnauthorized
+		}
+		return s.secret, nil
+	})
+
+	if err != nil || !token.Valid {
+		return 0, domain.ErrUnauthorized
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return 0, domain.ErrUnauthorized
+	}
+
+	userID, ok := claims["userID"].(float64)
+	if !ok {
+		return 0, domain.ErrUnauthorized
+	}
+
+	return int(userID), nil
+}

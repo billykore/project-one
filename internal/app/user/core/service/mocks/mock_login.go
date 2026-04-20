@@ -96,6 +96,21 @@ func (mr *MockTokenServiceMockRecorder) GenerateTokens(ctx, user any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateTokens", reflect.TypeOf((*MockTokenService)(nil).GenerateTokens), ctx, user)
 }
 
+// ValidateToken mocks base method.
+func (m *MockTokenService) ValidateToken(ctx context.Context, token string) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ValidateToken", ctx, token)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ValidateToken indicates an expected call of ValidateToken.
+func (mr *MockTokenServiceMockRecorder) ValidateToken(ctx, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateToken", reflect.TypeOf((*MockTokenService)(nil).ValidateToken), ctx, token)
+}
+
 // MockLoginService is a mock of LoginService interface.
 type MockLoginService struct {
 	ctrl     *gomock.Controller
@@ -134,4 +149,18 @@ func (m *MockLoginService) Login(ctx context.Context, email, password string) (s
 func (mr *MockLoginServiceMockRecorder) Login(ctx, email, password any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Login", reflect.TypeOf((*MockLoginService)(nil).Login), ctx, email, password)
+}
+
+// Logout mocks base method.
+func (m *MockLoginService) Logout(ctx context.Context, token string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Logout", ctx, token)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Logout indicates an expected call of Logout.
+func (mr *MockLoginServiceMockRecorder) Logout(ctx, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logout", reflect.TypeOf((*MockLoginService)(nil).Logout), ctx, token)
 }
