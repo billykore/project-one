@@ -115,3 +115,25 @@ func TestLoginService_Login_WithMocks(t *testing.T) {
 		})
 	}
 }
+
+func TestLoginService_Logout(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mocks.NewMockUserRepository(ctrl)
+	mockTokens := mocks.NewMockTokenService(ctrl)
+	mockHasher := mocks.NewMockHasher(ctrl)
+	mockLogger := mocks.NewMockLogger(ctrl)
+
+	svc := NewLoginService(mockRepo, mockTokens, mockHasher, mockLogger)
+
+	t.Run("successful logout", func(t *testing.T) {
+		token := "some-token"
+		mockLogger.EXPECT().Info(gomock.Any(), "user logged out successfully")
+
+		err := svc.Logout(context.Background(), token)
+		if err != nil {
+			t.Errorf("Logout() unexpected error = %v", err)
+		}
+	})
+}
