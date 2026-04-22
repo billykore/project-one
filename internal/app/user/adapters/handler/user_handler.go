@@ -1,8 +1,9 @@
 package handler
 
 import (
-	"fmt"
+	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/billykore/project-one/internal/app/user/adapters/dto"
 	"github.com/billykore/project-one/internal/app/user/core/domain"
@@ -27,14 +28,14 @@ func (h *userHandler) Me(c echo.Context) error {
 
 	user, err := h.svc.GetCurrentUser(c.Request().Context(), userID)
 	if err != nil {
-		if err == domain.ErrUserNotFound {
+		if errors.Is(err, domain.ErrUserNotFound) {
 			return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 		}
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Internal Server Error"})
 	}
 
 	res := dto.UserResponse{
-		ID:    fmt.Sprintf("%d", user.ID),
+		ID:    strconv.Itoa(user.ID),
 		Email: user.Email,
 	}
 

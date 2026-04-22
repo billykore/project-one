@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/billykore/project-one/internal/app/user/core/domain"
@@ -43,7 +44,7 @@ func NewPostgresUserRepository(db *gorm.DB) ports.UserRepository {
 func (r *postgresUserRepository) GetUserByEmail(ctx context.Context, email string) (*domain.User, error) {
 	var m userModel
 	if err := r.db.WithContext(ctx).Where("email = ?", email).First(&m).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, domain.ErrUserNotFound
 		}
 		return nil, err
@@ -54,7 +55,7 @@ func (r *postgresUserRepository) GetUserByEmail(ctx context.Context, email strin
 func (r *postgresUserRepository) GetUserByID(ctx context.Context, id int) (*domain.User, error) {
 	var m userModel
 	if err := r.db.WithContext(ctx).First(&m, id).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, domain.ErrUserNotFound
 		}
 		return nil, err
