@@ -50,3 +50,14 @@ func (r *postgresUserRepository) GetUserByEmail(ctx context.Context, email strin
 	}
 	return m.toDomain(), nil
 }
+
+func (r *postgresUserRepository) GetUserByID(ctx context.Context, id int) (*domain.User, error) {
+	var m userModel
+	if err := r.db.WithContext(ctx).First(&m, id).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, domain.ErrUserNotFound
+		}
+		return nil, err
+	}
+	return m.toDomain(), nil
+}

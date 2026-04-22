@@ -9,6 +9,7 @@ import (
 // UserRepository is a driven port for user persistence.
 type UserRepository interface {
 	GetUserByEmail(ctx context.Context, email string) (*domain.User, error)
+	GetUserByID(ctx context.Context, id int) (*domain.User, error)
 }
 
 // TokenService is a driven port for token management.
