@@ -56,6 +56,21 @@ func (mr *MockUserRepositoryMockRecorder) GetUserByEmail(ctx, email any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByEmail", reflect.TypeOf((*MockUserRepository)(nil).GetUserByEmail), ctx, email)
 }
 
+// GetUserByID mocks base method.
+func (m *MockUserRepository) GetUserByID(ctx context.Context, id int) (*domain.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserByID", ctx, id)
+	ret0, _ := ret[0].(*domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserByID indicates an expected call of GetUserByID.
+func (mr *MockUserRepositoryMockRecorder) GetUserByID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByID", reflect.TypeOf((*MockUserRepository)(nil).GetUserByID), ctx, id)
+}
+
 // MockTokenService is a mock of TokenService interface.
 type MockTokenService struct {
 	ctrl     *gomock.Controller

@@ -1,0 +1,12 @@
+package ports
+
+import (
+	"context"
+
+	"github.com/billykore/project-one/internal/app/user/core/domain"
+)
+
+// UserService is a driving port for user-related application logic.
+type UserService interface {
+	GetCurrentUser(ctx context.Context, id int) (*domain.User, error)
+}

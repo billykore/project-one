@@ -46,14 +46,17 @@ func main() {
 
 	// 4. Initialize Service
 	svc := service.NewLoginService(repo, tks, hsh, lgr)
+	userSvc := service.NewUserService(repo)
 
 	// 5. Initialize Handler
 	hdl := handler.NewLoginHandler(svc, val)
+	userHdl := handler.NewUserHandler(userSvc)
 
 	// 6. Set up Echo
 	e := echo.New()
 	e.POST("/login", hdl.HandleLogin)
 	e.POST("/logout", hdl.HandleLogout, handler.AuthMiddleware(tks))
+	e.GET("/user/me", userHdl.Me, handler.AuthMiddleware(tks))
 
 	// Seed a test user if needed
 	seedTestUser(db, hsh)
