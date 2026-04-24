@@ -26,5 +26,6 @@
 # Build output binaries
 /main
 *.pid
+/user
 
 plan.md
