@@ -4,8 +4,12 @@ import "errors"
 
 // Sentinel domain errors used across the application.
 var (
-	ErrUserNotFound       = errors.New("user not found")
+	// ErrUserNotFound is returned when a user cannot be found in the system.
+	ErrUserNotFound = errors.New("user not found")
+	// ErrInvalidCredentials is returned when authentication fails due to wrong email or password.
 	ErrInvalidCredentials = errors.New("invalid email or password")
-	ErrUnauthorized       = errors.New("unauthorized")
-	ErrInternalServer     = errors.New("internal server error")
+	// ErrUnauthorized is returned when a request lacks valid authentication credentials.
+	ErrUnauthorized = errors.New("unauthorized")
+	// ErrInternalServer is returned for unexpected server-side errors.
+	ErrInternalServer = errors.New("internal server error")
 )

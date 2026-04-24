@@ -8,10 +8,15 @@ import (
 
 // User is the core domain entity representing a user in the system.
 type User struct {
-	ID        int
-	Email     string
-	Password  string
+	// ID is the unique identifier for the user.
+	ID int
+	// Email is the user's primary email address.
+	Email string
+	// Password is the hashed password of the user.
+	Password string
+	// CreatedAt is the timestamp when the user was created.
 	CreatedAt time.Time
+	// UpdatedAt is the timestamp when the user was last updated.
 	UpdatedAt time.Time
 }
 
