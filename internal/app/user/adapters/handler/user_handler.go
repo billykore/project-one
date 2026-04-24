@@ -14,15 +14,15 @@ import (
 )
 
 type userHandler struct {
-	svc       ports.UserService
+	userSvc   ports.UserService
 	loginSvc  ports.LoginService
 	validator *validator.Validate
 }
 
 // NewUserHandler creates a new instance of UserHandler.
-func NewUserHandler(svc ports.UserService, loginSvc ports.LoginService, validator *validator.Validate) *userHandler {
+func NewUserHandler(userSvc ports.UserService, loginSvc ports.LoginService, validator *validator.Validate) *userHandler {
 	return &userHandler{
-		svc:       svc,
+		userSvc:   userSvc,
 		loginSvc:  loginSvc,
 		validator: validator,
 	}
@@ -34,7 +34,7 @@ func (h *userHandler) Me(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 	}
 
-	user, err := h.svc.GetCurrentUser(c.Request().Context(), userID)
+	user, err := h.userSvc.GetCurrentUser(c.Request().Context(), userID)
 	if err != nil {
 		if errors.Is(err, domain.ErrUserNotFound) {
 			return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
@@ -79,7 +79,7 @@ func (h *userHandler) HandleLogin(c echo.Context) error {
 func (h *userHandler) HandleLogout(c echo.Context) error {
 	authHeader := c.Request().Header.Get("Authorization")
 	parts := strings.Split(authHeader, " ")
-	if len(parts) != 2 {
+	if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") {
 		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 	}
 	token := parts[1]

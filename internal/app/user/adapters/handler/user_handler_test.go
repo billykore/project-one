@@ -187,6 +187,17 @@ func TestUserHandler_HandleLogout(t *testing.T) {
 		}
 	})
 
+	t.Run("unauthorized_invalid_scheme", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodPost, "/user/logout", nil)
+		req.Header.Set(echo.HeaderAuthorization, "Basic valid-token")
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		if assert.NoError(t, h.HandleLogout(c)) {
+			assert.Equal(t, http.StatusUnauthorized, rec.Code)
+		}
+	})
+
 	t.Run("internal_server_error", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/user/logout", nil)
 		req.Header.Set(echo.HeaderAuthorization, "Bearer valid-token")
