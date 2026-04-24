@@ -8,3 +8,6 @@ database:
 jwt:
   secret_key: "supersecretjwtkey"
   expiration_time: 24h
+app:
+  port: 8080
+
