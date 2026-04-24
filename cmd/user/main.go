@@ -2,14 +2,14 @@ package main
 
 import (
 	"context"
-	"os"
+	"fmt"
 
 	"github.com/billykore/project-one/internal/app/user/adapters/handler"
 	"github.com/billykore/project-one/internal/app/user/adapters/hasher"
 	"github.com/billykore/project-one/internal/app/user/adapters/logger"
 	"github.com/billykore/project-one/internal/app/user/adapters/repository"
 	"github.com/billykore/project-one/internal/app/user/adapters/token"
-	"github.com/billykore/project-one/internal/app/user/core/ports"
+	"github.com/billykore/project-one/internal/app/user/config" // Import the new config package
 	"github.com/billykore/project-one/internal/app/user/core/service"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
@@ -21,16 +21,16 @@ func main() {
 	ctx := context.Background()
 	lgr := logger.NewZerologLogger()
 
-	// Configuration (using default values or env)
-	dsn := os.Getenv("DATABASE_URL")
-	if dsn == "" {
-		// Default local postgres for development
-		dsn = "host=localhost user=postgres password=password dbname=project-one port=5432 sslmode=disable"
+	// Load configuration
+	cfg, err := config.LoadConfig("./configs")
+	if err != nil {
+		lgr.Fatal(ctx, "failed to load config", "error", err)
 	}
-	jwtSecret := os.Getenv("JWT_SECRET")
-	if jwtSecret == "" {
-		jwtSecret = "my-super-secret-key"
-	}
+
+	// Construct DSN from config
+	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+		cfg.Database.Host, cfg.Database.Port, cfg.Database.User,
+		cfg.Database.Password, cfg.Database.DBName, cfg.Database.SSLMode)
 
 	// 1. Initialize DB
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
@@ -43,7 +43,7 @@ func main() {
 
 	// 3. Initialize Adapters
 	repo := repository.NewPostgresUserRepository(db)
-	tks := token.NewJWTTokenService(jwtSecret)
+	tks := token.NewJWTTokenService(cfg.JWT.SecretKey, cfg.JWT.ExpirationTime) // Pass JWT secret and expiration from config
 	hsh := hasher.NewBcryptHasher()
 
 	// 4. Initialize Service
@@ -59,27 +59,9 @@ func main() {
 	e.POST("/user/logout", userHdl.HandleLogout, handler.AuthMiddleware(tks))
 	e.GET("/user/me", userHdl.Me, handler.AuthMiddleware(tks))
 
-	// Seed a test user if needed
-	seedTestUser(ctx, db, hsh, lgr)
-
 	// Start server
-	lgr.Info(ctx, "starting server", "port", 8080)
-	if err := e.Start(":8080"); err != nil {
+	lgr.Info(ctx, "starting server", "port", cfg.App.Port)
+	if err := e.Start(fmt.Sprintf(":%d", cfg.App.Port)); err != nil {
 		lgr.Fatal(ctx, "failed to start server", "error", err)
-	}
-}
-
-func seedTestUser(ctx context.Context, db *gorm.DB, hsh interface {
-	Hash(ctx context.Context, password string) (string, error)
-}, log ports.Logger) {
-	var count int64
-	db.Table("users").Count(&count)
-	if count == 0 {
-		hashed, _ := hsh.Hash(ctx, "password123")
-		db.Table("users").Create(map[string]interface{}{
-			"email":    "user@example.com",
-			"password": hashed,
-		})
-		log.Info(ctx, "seeded test user", "email", "user@example.com", "password", "password123")
 	}
 }

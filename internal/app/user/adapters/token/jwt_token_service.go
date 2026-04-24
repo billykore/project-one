@@ -16,11 +16,11 @@ type jwtTokenService struct {
 }
 
 // NewJWTTokenService creates a new instance of TokenService.
-func NewJWTTokenService(secret string) ports.TokenService {
+func NewJWTTokenService(secret string, accessExpiration time.Duration) ports.TokenService {
 	return &jwtTokenService{
 		secret:            []byte(secret),
-		accessExpiration:  time.Hour * 1,
-		refreshExpiration: time.Hour * 24 * 7,
+		accessExpiration:  accessExpiration,
+		refreshExpiration: accessExpiration * 7,
 	}
 }
 
