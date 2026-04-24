@@ -23,7 +23,8 @@ The project adheres to strict dependency rules flowing inwards:
 ## Features
 * **Clean Architecture**: Strict separation of concerns.
 * **Domain-Driven Design**: Business logic isolated in the core domain layer.
-* **User Management**: Authentication with JWT and password hashing with Bcrypt.
+* **Unified Structured Logging**: Consistent use of Zerolog across all application layers, including the entrypoint, replacing the standard library logger.
+* **User Management**: Consolidated domain endpoints for user authentication (login/logout) and profile data, secured with JWT and Bcrypt.
 * **Database Migrations**: SQL-based migrations managed via scripts.
 * **Unit Testing**: Comprehensive unit tests for service and domain layers using GoMock.
 
@@ -56,4 +57,4 @@ The project adheres to strict dependency rules flowing inwards:
    make test
    ```
 
-For explicit instructions on architectural guidelines and contributing new features, refer to [AI_CONTEXT.md](./AI_CONTEXT.md).
+For explicit instructions on architectural guidelines and contributing new features, refer to [AGENT.md](./AGENT.md).

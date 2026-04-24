@@ -96,3 +96,5 @@ Adapters → Ports ← Services → Domain
 - **Idiomatic Go**: return early on errors, keep functions short.
 - **Context propagation**: always pass `context.Context` as the first argument.
 - **Dependency Injection**: Always inject dependencies via constructors.
+- **Logging**: Always use the injected `ports.Logger` interface for structured logging, backed by Zerolog. Do not use the standard `log` package.
+- **Handler Consolidation**: Group related endpoints (e.g., login, logout, profile) under a unified domain handler (like `userHandler`) instead of fragmenting them into multiple single-action handlers.

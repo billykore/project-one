@@ -75,6 +75,23 @@ func (mr *MockLoggerMockRecorder) Error(ctx, msg any, fields ...any) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Error", reflect.TypeOf((*MockLogger)(nil).Error), varargs...)
 }
 
+// Fatal mocks base method.
+func (m *MockLogger) Fatal(ctx context.Context, msg string, fields ...any) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, msg}
+	for _, a := range fields {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "Fatal", varargs...)
+}
+
+// Fatal indicates an expected call of Fatal.
+func (mr *MockLoggerMockRecorder) Fatal(ctx, msg any, fields ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, msg}, fields...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Fatal", reflect.TypeOf((*MockLogger)(nil).Fatal), varargs...)
+}
+
 // Info mocks base method.
 func (m *MockLogger) Info(ctx context.Context, msg string, fields ...any) {
 	m.ctrl.T.Helper()
