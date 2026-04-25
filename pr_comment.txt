@@ -1,0 +1,73 @@
+Here is a review of the pull request based on correctness, maintainability, error handling, and performance.
+
+### Summary of Changes
+This PR introduces application configuration management using `viper`. It defines a configuration structure (`Config`, `DatabaseConfig`, `JWTConfig`, `AppConfig`), loads these values from a YAML file (`configs/user_config.yaml`) and environment variables, and integrates the loaded configuration into the application's entry point (`cmd/user/main.go`). It also updates the JWT Token Service to use expiration times from the configuration and includes basic unit tests.
+
+---
+
+### Critical Issues
+
+1. **Missing Environment Key Replacer**
+   **Problem**: Viper's `AutomaticEnv()` matches environment variables to config keys. However, nested struct fields like `Database.Host` (mapped to `database.host`) require an environment variable named `DATABASE.HOST`, which is invalid in most shells. Without an `EnvKeyReplacer`, standard environment variables like `DATABASE_HOST` will not be picked up, breaking the ability to override nested configs via environment variables.
+   
+   **Snippet of Fix**:
+   In `internal/app/user/config/config.go`:
+   ```go
+   // Set EnvKeyReplacer to map env vars like DATABASE_HOST to database.host
+   replacer := strings.NewReplacer(".", "_")
+   v.SetEnvKeyReplacer(replacer)
+   v.AutomaticEnv() // read in environment variables that match
+   ```
+
+2. **Missing `App.Port` Configuration & Defaults**
+   **Problem**: In `cmd/user/main.go`, the server starts using `cfg.App.Port`. However, `app.port` is not defined in `configs/config.yaml.example`. If omitted, Go defaults the integer to `0`, causing the Echo server to start on a random available port instead of the intended port (e.g., `8080`).
+   
+   **Snippet of Fix**:
+   Add defaults in `LoadConfig` (`internal/app/user/config/config.go`):
+   ```go
+   v.SetDefault("app.port", 8080)
+   ```
+   And add the `app` section to `configs/config.yaml.example`:
+   ```yaml
+   app:
+     port: 8080
+   ```
+
+---
+
+### Suggestions for Improvement
+
+1. **Validate Database Configuration**
+   **Problem**: `LoadConfig` only validates `config.JWT.SecretKey`. If database properties (e.g., `Host`, `User`, `DBName`) are missing, it will silently construct an invalid DSN, and the error will only occur later when `gorm.Open` attempts a connection. Fleshing out early validation improves fail-fast behavior.
+   
+   **Snippet of Fix**:
+   In `internal/app/user/config/config.go`:
+   ```go
+   if cfg.Database.Host == "" || cfg.Database.User == "" {
+       return nil, fmt.Errorf("database host and user cannot be empty")
+   }
+   ```
+
+2. **Avoid Shadowing the Package Name**
+   **Problem**: The named return variable `config` in `func LoadConfig(path string) (config *Config, err error)` shadows the package name `config`. This can cause confusion or compilation errors if the package name is referenced within the function.
+   
+   **Snippet of Fix**:
+   Change the named return or remove it:
+   ```go
+   func LoadConfig(path string) (*Config, error) {
+       var cfg Config
+       // ... 
+       return &cfg, nil
+   }
+   ```
+
+---
+
+### Step-by-Step Plan for Improvements
+
+1. **Update `LoadConfig` signature:** Change the named return variable to prevent package name shadowing (e.g. use `cfg Config`).
+2. **Configure Viper Defaults:** Add `v.SetDefault("app.port", 8080)` to `LoadConfig` before reading the config to ensure the server always binds to a known port if unspecified.
+3. **Configure Environment Variable Replacer:** Add `v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))` to `LoadConfig` right before `v.AutomaticEnv()` to correctly map environment variables like `DATABASE_HOST` to nested YAML keys.
+4. **Enhance Configuration Validation:** Add a check after unmarshaling in `LoadConfig` to ensure `cfg.Database.Host` and `cfg.Database.User` are not empty, returning an error if they are.
+5. **Update Example Config:** Modify `configs/config.yaml.example` to include the `app:` block with `port: 8080`.
+6. **Update Tests:** Update `config_test.go` to handle the new `app.port` property and verify environment variables are loaded properly now that the replacer is added.

@@ -24,8 +24,10 @@
 .idea
 
 # Build output binaries
-/main
 *.pid
-/user
+bin
 
 plan.md
+
+# Config files with sensitive information
+/configs/*.yaml
