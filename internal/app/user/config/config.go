@@ -40,7 +40,7 @@ type JWTConfig struct {
 func LoadConfig(path string) (cfg *Config, err error) { // Changed named return to cfg
 	v := viper.New() // Use a new Viper instance for each call
 	v.AddConfigPath(path)
-	v.SetConfigName("config") // Changed from "user_config" to "config"
+	v.SetConfigName("user_config")
 	v.SetConfigType("yaml")
 
 	// Set EnvKeyReplacer to automatically map env vars like DATABASE_HOST to database.host

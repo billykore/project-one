@@ -14,6 +14,8 @@ type userModel struct {
 	ID        int    `gorm:"primaryKey;autoIncrement"`
 	Email     string `gorm:"unique;notNull"`
 	Password  string `gorm:"notNull"`
+	FirstName string
+	LastName  string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
@@ -27,6 +29,8 @@ func (m *userModel) toDomain() *domain.User {
 		ID:        m.ID,
 		Email:     m.Email,
 		Password:  m.Password,
+		FirstName: m.FirstName,
+		LastName:  m.LastName,
 		CreatedAt: m.CreatedAt,
 		UpdatedAt: m.UpdatedAt,
 	}

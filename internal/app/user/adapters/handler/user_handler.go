@@ -3,7 +3,6 @@ package handler
 import (
 	"errors"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/billykore/project-one/internal/app/user/adapters/dto"
@@ -43,8 +42,8 @@ func (h *userHandler) Me(c echo.Context) error {
 	}
 
 	res := dto.UserResponse{
-		ID:    strconv.Itoa(user.ID),
 		Email: user.Email,
+		Name:  user.FirstName + " " + user.LastName,
 	}
 
 	return c.JSON(http.StatusOK, res)

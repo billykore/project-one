@@ -33,7 +33,7 @@ func TestUserHandler_Me(t *testing.T) {
 		c := e.NewContext(req, rec)
 		c.Set("userID", 1)
 
-		user := &domain.User{ID: 1, Email: "test@example.com"}
+		user := &domain.User{FirstName: "John", LastName: "Doe", Email: "test@example.com"}
 		mockSvc.EXPECT().GetCurrentUser(gomock.Any(), 1).Return(user, nil)
 
 		if assert.NoError(t, h.Me(c)) {
@@ -41,7 +41,7 @@ func TestUserHandler_Me(t *testing.T) {
 			var res dto.UserResponse
 			err := json.Unmarshal(rec.Body.Bytes(), &res)
 			assert.NoError(t, err)
-			assert.Equal(t, "1", res.ID)
+			assert.Equal(t, "John Doe", res.Name)
 			assert.Equal(t, "test@example.com", res.Email)
 		}
 	})
