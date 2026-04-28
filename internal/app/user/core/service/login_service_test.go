@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/billykore/project-one/internal/app/user/core/domain"
 	"github.com/billykore/project-one/internal/app/user/core/service/mocks"
@@ -16,10 +17,11 @@ func TestLoginService_Login_WithMocks(t *testing.T) {
 
 	mockRepo := mocks.NewMockUserRepository(ctrl)
 	mockTokens := mocks.NewMockTokenService(ctrl)
+	mockUserTokens := mocks.NewMockUserTokenRepository(ctrl)
 	mockHasher := mocks.NewMockHasher(ctrl)
 	mockLogger := mocks.NewMockLogger(ctrl)
 
-	svc := NewLoginService(mockRepo, mockTokens, mockHasher, mockLogger)
+	svc := NewLoginService(mockRepo, mockTokens, mockUserTokens, mockHasher, mockLogger)
 
 	tests := []struct {
 		name        string
@@ -36,9 +38,16 @@ func TestLoginService_Login_WithMocks(t *testing.T) {
 			password: "password123",
 			setup: func() {
 				user := &domain.User{ID: 1, Email: "user@example.com", Password: "hashed_password"}
+				exp := time.Now().Add(time.Hour)
 				mockRepo.EXPECT().GetUserByEmail(gomock.Any(), "user@example.com").Return(user, nil)
 				mockHasher.EXPECT().Compare(gomock.Any(), "password123", "hashed_password").Return(nil)
 				mockTokens.EXPECT().GenerateTokens(gomock.Any(), user).Return("access", "refresh", nil)
+				mockTokens.EXPECT().GetTokenExpiry(gomock.Any(), "access").Return(exp, nil)
+				mockUserTokens.EXPECT().StoreToken(gomock.Any(), &domain.UserToken{
+					UserID:    1,
+					Token:     "access",
+					ExpiresAt: exp,
+				}).Return(nil)
 				mockLogger.EXPECT().Info(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 			},
 			wantAccess:  "access",
@@ -89,11 +98,7 @@ func TestLoginService_Login_WithMocks(t *testing.T) {
 
 			if tt.wantErr != nil {
 				if !errors.Is(err, tt.wantErr) && err.Error() != tt.wantErr.Error() {
-					// We use fmt.Errorf for some errors so wrap check might be tricky if not careful
-					// But our Login service returns domain.ErrInvalidCredentials directly for repo/hasher errors.
-					// For tokens, it returns fmt.Errorf("generate tokens: %w", err)
 					if tt.name == "token generation error" {
-						// Special case for wrapped error
 						return
 					}
 					t.Errorf("Login() error = %v, wantErr %v", err, tt.wantErr)
@@ -122,18 +127,31 @@ func TestLoginService_Logout(t *testing.T) {
 
 	mockRepo := mocks.NewMockUserRepository(ctrl)
 	mockTokens := mocks.NewMockTokenService(ctrl)
+	mockUserTokens := mocks.NewMockUserTokenRepository(ctrl)
 	mockHasher := mocks.NewMockHasher(ctrl)
 	mockLogger := mocks.NewMockLogger(ctrl)
 
-	svc := NewLoginService(mockRepo, mockTokens, mockHasher, mockLogger)
+	svc := NewLoginService(mockRepo, mockTokens, mockUserTokens, mockHasher, mockLogger)
 
 	t.Run("successful logout", func(t *testing.T) {
 		token := "some-token"
+		mockUserTokens.EXPECT().DeleteToken(gomock.Any(), token).Return(nil)
 		mockLogger.EXPECT().Info(gomock.Any(), "user logged out successfully")
 
 		err := svc.Logout(context.Background(), token)
 		if err != nil {
 			t.Errorf("Logout() unexpected error = %v", err)
+		}
+	})
+
+	t.Run("failed logout", func(t *testing.T) {
+		token := "some-token"
+		mockUserTokens.EXPECT().DeleteToken(gomock.Any(), token).Return(errors.New("db error"))
+		mockLogger.EXPECT().Error(gomock.Any(), gomock.Any(), gomock.Any())
+
+		err := svc.Logout(context.Background(), token)
+		if err == nil {
+			t.Error("Logout() expected error, got nil")
 		}
 	})
 }

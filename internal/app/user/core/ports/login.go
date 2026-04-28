@@ -2,6 +2,7 @@ package ports
 
 import (
 	"context"
+	"time"
 
 	"github.com/billykore/project-one/internal/app/user/core/domain"
 )
@@ -20,6 +21,8 @@ type TokenService interface {
 	GenerateTokens(ctx context.Context, user *domain.User) (accessToken, refreshToken string, err error)
 	// ValidateToken verifies the token and returns the user ID.
 	ValidateToken(ctx context.Context, token string) (userID int, err error)
+	// GetTokenExpiry retrieves the expiration time of the given token.
+	GetTokenExpiry(ctx context.Context, token string) (time.Time, error)
 }
 
 // LoginService is a driving port for login-related application logic.

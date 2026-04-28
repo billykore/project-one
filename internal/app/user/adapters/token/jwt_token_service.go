@@ -72,3 +72,28 @@ func (s *jwtTokenService) ValidateToken(_ context.Context, tokenString string) (
 
 	return int(userID), nil
 }
+
+func (s *jwtTokenService) GetTokenExpiry(_ context.Context, tokenString string) (time.Time, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, domain.ErrUnauthorized
+		}
+		return s.secret, nil
+	})
+
+	if err != nil || !token.Valid {
+		return time.Time{}, domain.ErrUnauthorized
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return time.Time{}, domain.ErrUnauthorized
+	}
+
+	exp, ok := claims["exp"].(float64)
+	if !ok {
+		return time.Time{}, domain.ErrUnauthorized
+	}
+
+	return time.Unix(int64(exp), 0), nil
+}
