@@ -55,16 +55,10 @@ func (s *loginService) Login(ctx context.Context, email, password string) (strin
 	}
 
 	// 4. Store access token
-	accessExp, err := s.tokens.GetTokenExpiry(ctx, accessToken)
-	if err != nil {
-		s.log.Error(ctx, "failed to get access token expiry", "userID", user.ID, "error", err)
-		return "", "", fmt.Errorf("get access token expiry: %w", err)
-	}
-
 	err = s.userTokens.StoreToken(ctx, &domain.UserToken{
 		UserID:    user.ID,
-		Token:     accessToken,
-		ExpiresAt: accessExp,
+		Token:     accessToken.Token,
+		ExpiresAt: accessToken.ExpiresAt,
 	})
 	if err != nil {
 		s.log.Error(ctx, "failed to store user token", "userID", user.ID, "error", err)
@@ -72,10 +66,14 @@ func (s *loginService) Login(ctx context.Context, email, password string) (strin
 	}
 
 	s.log.Info(ctx, "user logged in successfully", "userID", user.ID)
-	return accessToken, refreshToken, nil
+	return accessToken.Token, refreshToken.Token, nil
 }
 
 func (s *loginService) Logout(ctx context.Context, token string) error {
+	if token == "" {
+		return fmt.Errorf("token cannot be empty")
+	}
+
 	if err := s.userTokens.DeleteToken(ctx, token); err != nil {
 		s.log.Error(ctx, "failed to delete user token on logout", "error", err)
 		return fmt.Errorf("delete user token: %w", err)

@@ -12,7 +12,6 @@ package mocks
 import (
 	context "context"
 	reflect "reflect"
-	time "time"
 
 	domain "github.com/billykore/project-one/internal/app/user/core/domain"
 	gomock "go.uber.org/mock/gomock"
@@ -97,11 +96,11 @@ func (m *MockTokenService) EXPECT() *MockTokenServiceMockRecorder {
 }
 
 // GenerateTokens mocks base method.
-func (m *MockTokenService) GenerateTokens(ctx context.Context, user *domain.User) (string, string, error) {
+func (m *MockTokenService) GenerateTokens(ctx context.Context, user *domain.User) (*domain.TokenDetails, *domain.TokenDetails, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GenerateTokens", ctx, user)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(string)
+	ret0, _ := ret[0].(*domain.TokenDetails)
+	ret1, _ := ret[1].(*domain.TokenDetails)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
 }
@@ -110,21 +109,6 @@ func (m *MockTokenService) GenerateTokens(ctx context.Context, user *domain.User
 func (mr *MockTokenServiceMockRecorder) GenerateTokens(ctx, user any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateTokens", reflect.TypeOf((*MockTokenService)(nil).GenerateTokens), ctx, user)
-}
-
-// GetTokenExpiry mocks base method.
-func (m *MockTokenService) GetTokenExpiry(ctx context.Context, token string) (time.Time, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTokenExpiry", ctx, token)
-	ret0, _ := ret[0].(time.Time)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetTokenExpiry indicates an expected call of GetTokenExpiry.
-func (mr *MockTokenServiceMockRecorder) GetTokenExpiry(ctx, token any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTokenExpiry", reflect.TypeOf((*MockTokenService)(nil).GetTokenExpiry), ctx, token)
 }
 
 // ValidateToken mocks base method.

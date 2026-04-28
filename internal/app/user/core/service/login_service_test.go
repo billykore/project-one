@@ -39,10 +39,12 @@ func TestLoginService_Login_WithMocks(t *testing.T) {
 			setup: func() {
 				user := &domain.User{ID: 1, Email: "user@example.com", Password: "hashed_password"}
 				exp := time.Now().Add(time.Hour)
+				accessToken := &domain.TokenDetails{Token: "access", ExpiresAt: exp}
+				refreshToken := &domain.TokenDetails{Token: "refresh", ExpiresAt: exp.Add(time.Hour)}
+
 				mockRepo.EXPECT().GetUserByEmail(gomock.Any(), "user@example.com").Return(user, nil)
 				mockHasher.EXPECT().Compare(gomock.Any(), "password123", "hashed_password").Return(nil)
-				mockTokens.EXPECT().GenerateTokens(gomock.Any(), user).Return("access", "refresh", nil)
-				mockTokens.EXPECT().GetTokenExpiry(gomock.Any(), "access").Return(exp, nil)
+				mockTokens.EXPECT().GenerateTokens(gomock.Any(), user).Return(accessToken, refreshToken, nil)
 				mockUserTokens.EXPECT().StoreToken(gomock.Any(), &domain.UserToken{
 					UserID:    1,
 					Token:     "access",
@@ -84,7 +86,7 @@ func TestLoginService_Login_WithMocks(t *testing.T) {
 				user := &domain.User{ID: 1, Email: "user@example.com", Password: "hashed_password"}
 				mockRepo.EXPECT().GetUserByEmail(gomock.Any(), "user@example.com").Return(user, nil)
 				mockHasher.EXPECT().Compare(gomock.Any(), "password123", "hashed_password").Return(nil)
-				mockTokens.EXPECT().GenerateTokens(gomock.Any(), user).Return("", "", errors.New("token error"))
+				mockTokens.EXPECT().GenerateTokens(gomock.Any(), user).Return(nil, nil, errors.New("token error"))
 				mockLogger.EXPECT().Error(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 			},
 			wantErr: domain.ErrInternalServer,
@@ -141,6 +143,13 @@ func TestLoginService_Logout(t *testing.T) {
 		err := svc.Logout(context.Background(), token)
 		if err != nil {
 			t.Errorf("Logout() unexpected error = %v", err)
+		}
+	})
+
+	t.Run("empty token logout", func(t *testing.T) {
+		err := svc.Logout(context.Background(), "")
+		if err == nil {
+			t.Error("Logout() expected error for empty token, got nil")
 		}
 	})
 
