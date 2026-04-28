@@ -211,3 +211,101 @@ func TestUserHandler_HandleLogout(t *testing.T) {
 		}
 	})
 }
+
+func TestUserHandler_HandleRegister(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSvc := mocks.NewMockUserService(ctrl)
+	mockLoginSvc := mocks.NewMockLoginService(ctrl)
+	v := validator.New()
+	h := NewUserHandler(mockSvc, mockLoginSvc, v)
+	e := echo.New()
+
+	t.Run("success", func(t *testing.T) {
+		reqBody := dto.RegisterRequest{
+			FirstName: "John",
+			LastName:  "Doe",
+			Email:     "john@example.com",
+			Password:  "password123",
+		}
+		body, _ := json.Marshal(reqBody)
+		req := httptest.NewRequest(http.MethodPost, "/user/register", bytes.NewBuffer(body))
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		mockSvc.EXPECT().Register(gomock.Any(), gomock.Any()).Return(nil)
+
+		if assert.NoError(t, h.HandleRegister(c)) {
+			assert.Equal(t, http.StatusCreated, rec.Code)
+			var res dto.RegisterResponse
+			err := json.Unmarshal(rec.Body.Bytes(), &res)
+			assert.NoError(t, err)
+			assert.Equal(t, "user registered successfully", res.Message)
+		}
+	})
+
+	t.Run("duplicate_email", func(t *testing.T) {
+		reqBody := dto.RegisterRequest{
+			FirstName: "John",
+			LastName:  "Doe",
+			Email:     "exists@example.com",
+			Password:  "password123",
+		}
+		body, _ := json.Marshal(reqBody)
+		req := httptest.NewRequest(http.MethodPost, "/user/register", bytes.NewBuffer(body))
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		mockSvc.EXPECT().Register(gomock.Any(), gomock.Any()).Return(domain.ErrEmailAlreadyRegistered)
+
+		if assert.NoError(t, h.HandleRegister(c)) {
+			assert.Equal(t, http.StatusBadRequest, rec.Code)
+			var res dto.ErrorResponse
+			err := json.Unmarshal(rec.Body.Bytes(), &res)
+			assert.NoError(t, err)
+			assert.Equal(t, "email is already registered", res.Error)
+		}
+	})
+
+	t.Run("validation_error", func(t *testing.T) {
+		reqBody := dto.RegisterRequest{
+			FirstName: "Jo", // too short
+		}
+		body, _ := json.Marshal(reqBody)
+		req := httptest.NewRequest(http.MethodPost, "/user/register", bytes.NewBuffer(body))
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		if assert.NoError(t, h.HandleRegister(c)) {
+			assert.Equal(t, http.StatusBadRequest, rec.Code)
+		}
+	})
+
+	t.Run("internal_error", func(t *testing.T) {
+		reqBody := dto.RegisterRequest{
+			FirstName: "John",
+			LastName:  "Doe",
+			Email:     "john@example.com",
+			Password:  "password123",
+		}
+		body, _ := json.Marshal(reqBody)
+		req := httptest.NewRequest(http.MethodPost, "/user/register", bytes.NewBuffer(body))
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		mockSvc.EXPECT().Register(gomock.Any(), gomock.Any()).Return(errors.New("db error"))
+
+		if assert.NoError(t, h.HandleRegister(c)) {
+			assert.Equal(t, http.StatusInternalServerError, rec.Code)
+			var res dto.ErrorResponse
+			err := json.Unmarshal(rec.Body.Bytes(), &res)
+			assert.NoError(t, err)
+			assert.Equal(t, "something went wrong", res.Error)
+		}
+	})
+}

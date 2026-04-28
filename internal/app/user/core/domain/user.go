@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"errors"
+	"fmt"
 	"net/mail"
 	"time"
 )
@@ -26,14 +26,26 @@ type User struct {
 
 // Validate performs domain-level validation on the User entity.
 func (u *User) Validate() error {
+	if u.FirstName == "" {
+		return fmt.Errorf("%w: first name is required", ErrValidationFailed)
+	}
+	if len(u.FirstName) < 3 {
+		return fmt.Errorf("%w: first name must be at least 3 characters", ErrValidationFailed)
+	}
+	if u.LastName == "" {
+		return fmt.Errorf("%w: last name is required", ErrValidationFailed)
+	}
+	if len(u.LastName) < 3 {
+		return fmt.Errorf("%w: last name must be at least 3 characters", ErrValidationFailed)
+	}
 	if u.Email == "" {
-		return errors.New("email is required")
+		return fmt.Errorf("%w: email is required", ErrValidationFailed)
 	}
 	if _, err := mail.ParseAddress(u.Email); err != nil {
-		return errors.New("invalid email format")
+		return fmt.Errorf("%w: invalid email format", ErrValidationFailed)
 	}
 	if len(u.Password) < 8 {
-		return errors.New("password must be at least 8 characters")
+		return fmt.Errorf("%w: password must be at least 8 characters", ErrValidationFailed)
 	}
 	return nil
 }

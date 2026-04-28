@@ -15,7 +15,8 @@ func TestUserService_GetCurrentUser(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockUserRepository(ctrl)
-	svc := NewUserService(mockRepo)
+	mockHasher := mocks.NewMockHasher(ctrl)
+	svc := NewUserService(mockRepo, mockHasher)
 
 	ctx := context.Background()
 
@@ -47,6 +48,76 @@ func TestUserService_GetCurrentUser(t *testing.T) {
 		}
 		if user != nil {
 			t.Errorf("GetCurrentUser() user = %v, want nil", user)
+		}
+	})
+}
+
+func TestUserService_Register(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mocks.NewMockUserRepository(ctrl)
+	mockHasher := mocks.NewMockHasher(ctrl)
+	svc := NewUserService(mockRepo, mockHasher)
+
+	ctx := context.Background()
+
+	t.Run("success", func(t *testing.T) {
+		user := &domain.User{
+			FirstName: "John",
+			LastName:  "Doe",
+			Email:     "john@example.com",
+			Password:  "password123",
+		}
+
+		mockRepo.EXPECT().GetUserByEmail(ctx, user.Email).Return(nil, domain.ErrUserNotFound)
+		mockHasher.EXPECT().Hash(ctx, user.Password).Return("hashed_password", nil)
+		mockRepo.EXPECT().CreateUser(ctx, gomock.Any()).DoAndReturn(func(ctx context.Context, u *domain.User) error {
+			if u.Password != "hashed_password" {
+				t.Errorf("expected hashed password, got %s", u.Password)
+			}
+			u.ID = 1
+			return nil
+		})
+
+		err := svc.Register(ctx, user)
+
+		if err != nil {
+			t.Errorf("Register() unexpected error = %v", err)
+		}
+		if user.ID != 1 {
+			t.Errorf("expected user ID 1, got %d", user.ID)
+		}
+	})
+
+	t.Run("email already registered", func(t *testing.T) {
+		user := &domain.User{
+			Email: "exists@example.com",
+		}
+
+		mockRepo.EXPECT().GetUserByEmail(ctx, user.Email).Return(&domain.User{ID: 1}, nil)
+
+		err := svc.Register(ctx, user)
+
+		if !errors.Is(err, domain.ErrEmailAlreadyRegistered) {
+			t.Errorf("Register() error = %v, want %v", err, domain.ErrEmailAlreadyRegistered)
+		}
+	})
+
+	t.Run("validation failure", func(t *testing.T) {
+		user := &domain.User{
+			FirstName: "Jo", // too short
+			LastName:  "Doe",
+			Email:     "john@example.com",
+			Password:  "password123",
+		}
+
+		mockRepo.EXPECT().GetUserByEmail(ctx, user.Email).Return(nil, domain.ErrUserNotFound)
+
+		err := svc.Register(ctx, user)
+
+		if !errors.Is(err, domain.ErrValidationFailed) {
+			t.Errorf("Register() error = %v, want %v", err, domain.ErrValidationFailed)
 		}
 	})
 }
