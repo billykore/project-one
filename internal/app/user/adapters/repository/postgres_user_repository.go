@@ -81,7 +81,5 @@ func (r *postgresUserRepository) CreateUser(ctx context.Context, user *domain.Us
 		return err
 	}
 	user.ID = m.ID
-	user.CreatedAt = m.CreatedAt
-	user.UpdatedAt = m.UpdatedAt
 	return nil
 }
