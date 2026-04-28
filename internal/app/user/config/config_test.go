@@ -34,7 +34,7 @@ func TestLoadConfig_SuccessFromFile(t *testing.T) {
 	tempDir, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	// Create a mock config.yaml file
+	// Create a mock user_config.yaml file
 	yamlContent := []byte(`
 database:
   host: "test_db_host"
@@ -49,7 +49,7 @@ jwt:
 app:
   port: 8080
 `)
-	err := os.WriteFile(filepath.Join(tempDir, "config.yaml"), yamlContent, 0644)
+	err := os.WriteFile(filepath.Join(tempDir, "user_config.yaml"), yamlContent, 0644)
 	assert.NoError(t, err)
 
 	cfg, err := config.LoadConfig(tempDir)
@@ -85,7 +85,7 @@ func TestLoadConfig_SuccessFromEnv(t *testing.T) {
 	// Debugging: Print environment variable to verify t.Setenv
 	fmt.Printf("DEBUG: JWT_SECRET_KEY from env: %s\n", os.Getenv("JWT_SECRET_KEY"))
 
-	cfg, err := config.LoadConfig(tempDir) // No config.yaml file, should rely on env
+	cfg, err := config.LoadConfig(tempDir) // No user_config.yaml file, should rely on env
 	assert.NoError(t, err)
 	assert.NotNil(t, cfg)
 
@@ -104,7 +104,7 @@ func TestLoadConfig_EnvOverridesFile(t *testing.T) {
 	tempDir, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	// Create a mock config.yaml file
+	// Create a mock user_config.yaml file
 	yamlContent := []byte(`
 database:
   host: "file_db_host"
@@ -119,7 +119,7 @@ jwt:
 app:
   port: 8080
 `)
-	err := os.WriteFile(filepath.Join(tempDir, "config.yaml"), yamlContent, 0644)
+	err := os.WriteFile(filepath.Join(tempDir, "user_config.yaml"), yamlContent, 0644)
 	assert.NoError(t, err)
 
 	// Set environment variables that should override file values
@@ -142,7 +142,7 @@ func TestLoadConfig_MissingJWTSecretKey(t *testing.T) {
 	tempDir, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	// Create a mock config.yaml file with missing secret_key
+	// Create a mock user_config.yaml file with missing secret_key
 	yamlContent := []byte(`
 database:
   host: "test_db_host"
@@ -152,7 +152,7 @@ jwt:
   # secret_key is missing
   expiration_time: 1h
 `)
-	err := os.WriteFile(filepath.Join(tempDir, "config.yaml"), yamlContent, 0644)
+	err := os.WriteFile(filepath.Join(tempDir, "user_config.yaml"), yamlContent, 0644)
 	assert.NoError(t, err)
 
 	cfg, err := config.LoadConfig(tempDir)
@@ -165,7 +165,7 @@ func TestLoadConfig_MissingDatabaseConfig(t *testing.T) {
 	tempDir, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	// Create a mock config.yaml file with missing database host
+	// Create a mock user_config.yaml file with missing database host
 	yamlContent := []byte(`
 database:
   # host is missing
@@ -175,7 +175,7 @@ jwt:
   secret_key: "test_secret_key"
   expiration_time: 1h
 `)
-	err := os.WriteFile(filepath.Join(tempDir, "config.yaml"), yamlContent, 0644)
+	err := os.WriteFile(filepath.Join(tempDir, "user_config.yaml"), yamlContent, 0644)
 	assert.NoError(t, err)
 
 	cfg, err := config.LoadConfig(tempDir)
@@ -188,7 +188,7 @@ func TestLoadConfig_InvalidYaml(t *testing.T) {
 	tempDir, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	// Create an invalid config.yaml file
+	// Create an invalid user_config.yaml file
 	yamlContent := []byte(`
 database:
   host: "test_db_host"
@@ -196,7 +196,7 @@ database:
 jwt:
   secret_key: "test_secret_key"
 `)
-	err := os.WriteFile(filepath.Join(tempDir, "config.yaml"), yamlContent, 0644)
+	err := os.WriteFile(filepath.Join(tempDir, "user_config.yaml"), yamlContent, 0644)
 	assert.NoError(t, err)
 
 	cfg, err := config.LoadConfig(tempDir)
@@ -209,7 +209,7 @@ func TestLoadConfig_ConfigFileNotFoundAndNoEnvFallback(t *testing.T) {
 	tempDir, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
-	// No config.yaml file and no relevant env vars
+	// No user_config.yaml file and no relevant env vars
 	cfg, err := config.LoadConfig(tempDir)
 	assert.Error(t, err)
 	assert.Nil(t, cfg)

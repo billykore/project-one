@@ -96,11 +96,11 @@ func (m *MockTokenService) EXPECT() *MockTokenServiceMockRecorder {
 }
 
 // GenerateTokens mocks base method.
-func (m *MockTokenService) GenerateTokens(ctx context.Context, user *domain.User) (string, string, error) {
+func (m *MockTokenService) GenerateTokens(ctx context.Context, user *domain.User) (*domain.TokenDetails, *domain.TokenDetails, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GenerateTokens", ctx, user)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(string)
+	ret0, _ := ret[0].(*domain.TokenDetails)
+	ret1, _ := ret[1].(*domain.TokenDetails)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
 }

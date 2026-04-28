@@ -43,11 +43,12 @@ func main() {
 
 	// 3. Initialize Adapters
 	repo := repository.NewPostgresUserRepository(db)
+	userTokenRepo := repository.NewPostgresUserTokenRepository(db)
 	tks := token.NewJWTTokenService(cfg.JWT.SecretKey, cfg.JWT.ExpirationTime) // Pass JWT secret and expiration from config
 	hsh := hasher.NewBcryptHasher()
 
 	// 4. Initialize Service
-	svc := service.NewLoginService(repo, tks, hsh, lgr)
+	svc := service.NewLoginService(repo, tks, userTokenRepo, hsh, lgr)
 	userSvc := service.NewUserService(repo)
 
 	// 5. Initialize Handler

@@ -24,28 +24,31 @@ func NewJWTTokenService(secret string, accessExpiration time.Duration) ports.Tok
 	}
 }
 
-func (s *jwtTokenService) GenerateTokens(_ context.Context, user *domain.User) (string, string, error) {
+func (s *jwtTokenService) GenerateTokens(_ context.Context, user *domain.User) (*domain.TokenDetails, *domain.TokenDetails, error) {
 	// Access token
+	accessExp := time.Now().Add(s.accessExpiration)
 	accessClaims := jwt.MapClaims{
 		"userID": user.ID,
-		"exp":    time.Now().Add(s.accessExpiration).Unix(),
+		"exp":    accessExp.Unix(),
 	}
 	accessToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims).SignedString(s.secret)
 	if err != nil {
-		return "", "", err
+		return nil, nil, err
 	}
 
 	// Refresh token
+	refreshExp := time.Now().Add(s.refreshExpiration)
 	refreshClaims := jwt.MapClaims{
 		"userID": user.ID,
-		"exp":    time.Now().Add(s.refreshExpiration).Unix(),
+		"exp":    refreshExp.Unix(),
 	}
 	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims).SignedString(s.secret)
 	if err != nil {
-		return "", "", err
+		return nil, nil, err
 	}
 
-	return accessToken, refreshToken, nil
+	return &domain.TokenDetails{Token: accessToken, ExpiresAt: accessExp},
+		&domain.TokenDetails{Token: refreshToken, ExpiresAt: refreshExp}, nil
 }
 
 func (s *jwtTokenService) ValidateToken(_ context.Context, tokenString string) (int, error) {
