@@ -91,3 +91,38 @@ func (h *userHandler) HandleLogout(c echo.Context) error {
 		Message: "Logged out successfully",
 	})
 }
+
+// HandleRegister handles the POST /user/register endpoint.
+func (h *userHandler) HandleRegister(c echo.Context) error {
+	var req dto.RegisterRequest
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "invalid request body"})
+	}
+
+	if err := h.validator.Struct(req); err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+	}
+
+	user := &domain.User{
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+		Email:     req.Email,
+		Password:  req.Password,
+	}
+
+	if err := h.userSvc.Register(c.Request().Context(), user); err != nil {
+		if errors.Is(err, domain.ErrEmailAlreadyRegistered) {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "email is already registered"})
+		}
+		// Map domain validation errors to 400
+		errMsg := err.Error()
+		if strings.Contains(errMsg, "required") || strings.Contains(errMsg, "characters") || strings.Contains(errMsg, "format") {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: errMsg})
+		}
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "something went wrong"})
+	}
+
+	return c.JSON(http.StatusCreated, dto.RegisterResponse{
+		Message: "user registered successfully",
+	})
+}

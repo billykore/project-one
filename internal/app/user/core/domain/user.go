@@ -26,6 +26,18 @@ type User struct {
 
 // Validate performs domain-level validation on the User entity.
 func (u *User) Validate() error {
+	if u.FirstName == "" {
+		return errors.New("first name is required")
+	}
+	if len(u.FirstName) < 3 {
+		return errors.New("first name must be at least 3 characters")
+	}
+	if u.LastName == "" {
+		return errors.New("last name is required")
+	}
+	if len(u.LastName) < 3 {
+		return errors.New("last name must be at least 3 characters")
+	}
 	if u.Email == "" {
 		return errors.New("email is required")
 	}

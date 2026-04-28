@@ -49,13 +49,14 @@ func main() {
 
 	// 4. Initialize Service
 	svc := service.NewLoginService(repo, tks, userTokenRepo, hsh, lgr)
-	userSvc := service.NewUserService(repo)
+	userSvc := service.NewUserService(repo, hsh)
 
 	// 5. Initialize Handler
 	userHdl := handler.NewUserHandler(userSvc, svc, val)
 
 	// 6. Set up Echo
 	e := echo.New()
+	e.POST("/user/register", userHdl.HandleRegister)
 	e.POST("/user/login", userHdl.HandleLogin)
 	e.POST("/user/logout", userHdl.HandleLogout, handler.AuthMiddleware(tks))
 	e.GET("/user/me", userHdl.Me, handler.AuthMiddleware(tks))

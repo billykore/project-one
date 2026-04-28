@@ -66,3 +66,19 @@ func (r *postgresUserRepository) GetUserByID(ctx context.Context, id int) (*doma
 	}
 	return m.toDomain(), nil
 }
+
+func (r *postgresUserRepository) CreateUser(ctx context.Context, user *domain.User) error {
+	m := userModel{
+		Email:     user.Email,
+		Password:  user.Password,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+	}
+	if err := r.db.WithContext(ctx).Create(&m).Error; err != nil {
+		return err
+	}
+	user.ID = m.ID
+	user.CreatedAt = m.CreatedAt
+	user.UpdatedAt = m.UpdatedAt
+	return nil
+}

@@ -12,6 +12,8 @@ type UserRepository interface {
 	GetUserByEmail(ctx context.Context, email string) (*domain.User, error)
 	// GetUserByID retrieves a user by their ID.
 	GetUserByID(ctx context.Context, id int) (*domain.User, error)
+	// CreateUser saves a new user to the repository.
+	CreateUser(ctx context.Context, user *domain.User) error
 }
 
 // TokenService is a driven port for token management.

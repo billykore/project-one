@@ -12,4 +12,6 @@ var (
 	ErrUnauthorized = errors.New("unauthorized")
 	// ErrInternalServer is returned for unexpected server-side errors.
 	ErrInternalServer = errors.New("internal server error")
+	// ErrEmailAlreadyRegistered is returned when attempting to register an email that is already in use.
+	ErrEmailAlreadyRegistered = errors.New("email is already registered")
 )
