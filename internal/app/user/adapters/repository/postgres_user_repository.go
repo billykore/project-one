@@ -75,6 +75,9 @@ func (r *postgresUserRepository) CreateUser(ctx context.Context, user *domain.Us
 		LastName:  user.LastName,
 	}
 	if err := r.db.WithContext(ctx).Create(&m).Error; err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return domain.ErrEmailAlreadyRegistered
+		}
 		return err
 	}
 	user.ID = m.ID

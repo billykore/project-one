@@ -116,8 +116,8 @@ func TestUserService_Register(t *testing.T) {
 
 		err := svc.Register(ctx, user)
 
-		if err == nil {
-			t.Error("Register() expected validation error, got nil")
+		if !errors.Is(err, domain.ErrValidationFailed) {
+			t.Errorf("Register() error = %v, want %v", err, domain.ErrValidationFailed)
 		}
 	})
 }

@@ -104,9 +104,9 @@ func (h *userHandler) HandleRegister(c echo.Context) error {
 	}
 
 	user := &domain.User{
-		FirstName: req.FirstName,
-		LastName:  req.LastName,
-		Email:     req.Email,
+		FirstName: strings.TrimSpace(req.FirstName),
+		LastName:  strings.TrimSpace(req.LastName),
+		Email:     strings.ToLower(strings.TrimSpace(req.Email)),
 		Password:  req.Password,
 	}
 
@@ -114,10 +114,8 @@ func (h *userHandler) HandleRegister(c echo.Context) error {
 		if errors.Is(err, domain.ErrEmailAlreadyRegistered) {
 			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "email is already registered"})
 		}
-		// Map domain validation errors to 400
-		errMsg := err.Error()
-		if strings.Contains(errMsg, "required") || strings.Contains(errMsg, "characters") || strings.Contains(errMsg, "format") {
-			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: errMsg})
+		if errors.Is(err, domain.ErrValidationFailed) {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
 		}
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "something went wrong"})
 	}
