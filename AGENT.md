@@ -46,7 +46,7 @@ Adapters → Ports ← Services → Domain
 ## Ports Layer (`core/ports`)
 
 - **Driving ports** (e.g., `LoginService`) define what the application *can do* — implemented by services.
-- **Driven ports** (e.g., `UserRepository`, `Hasher`, `TokenService`) define what the application *needs* — implemented by adapters/infrastructure.
+- **Driven ports** (e.g., `UserRepository`, `UserTokenRepository`, `Hasher`, `TokenService`) define what the application *needs* — implemented by adapters/infrastructure.
 
 ## Service Layer (`core/service`)
 

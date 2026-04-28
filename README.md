@@ -25,6 +25,7 @@ The project adheres to strict dependency rules flowing inwards:
 * **Domain-Driven Design**: Business logic isolated in the core domain layer.
 * **Unified Structured Logging**: Consistent use of Zerolog across all application layers, including the entrypoint, replacing the standard library logger.
 * **User Management**: Consolidated domain endpoints for user authentication (login/logout) and profile data, secured with JWT and Bcrypt.
+* **Token Revocation**: Statefully track active session tokens in PostgreSQL to allow instant revocation upon logout.
 * **Database Migrations**: SQL-based migrations managed via scripts.
 * **Unit Testing**: Comprehensive unit tests for service and domain layers using GoMock.
 
