@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useLogin } from "./controller";
-import { InputField } from "./components/InputField";
+import { InputField } from "@/components/ui/input";
 
 export default function LoginPage() {
   const { formData, errors, isSubmitting, handleChange, handleSubmit } = useLogin();
@@ -17,7 +17,7 @@ export default function LoginPage() {
           </h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit} noValidate>
-          <div className="rounded-md shadow-sm space-y-4">
+          <div className="rounded-md space-y-4">
             <InputField
               label="Email address"
               id="email"
