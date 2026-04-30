@@ -17,7 +17,8 @@ export interface LoginErrors {
 }
 
 export interface LoginResponse {
-  message: string;
+  accessToken: string;
+  refreshToken: string;
 }
 
 export interface ApiErrorResponse {

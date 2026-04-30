@@ -97,33 +97,11 @@ func TestUserHandler_HandleLogin(t *testing.T) {
 		if assert.NoError(t, h.HandleLogin(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
 
-			// Assert cookies
-			cookies := rec.Result().Cookies()
-			assert.Len(t, cookies, 2)
-
-			var accessTokenCookie *http.Cookie
-			var refreshTokenCookie *http.Cookie
-			for _, cookie := range cookies {
-				switch cookie.Name {
-				case "access_token":
-					accessTokenCookie = cookie
-				case "refresh_token":
-					refreshTokenCookie = cookie
-				}
-			}
-
-			assert.NotNil(t, accessTokenCookie)
-			assert.Equal(t, "access", accessTokenCookie.Value)
-			assert.True(t, accessTokenCookie.HttpOnly)
-
-			assert.NotNil(t, refreshTokenCookie)
-			assert.Equal(t, "refresh", refreshTokenCookie.Value)
-			assert.True(t, refreshTokenCookie.HttpOnly)
-
 			var res dto.LoginResponse
 			err := json.Unmarshal(rec.Body.Bytes(), &res)
 			assert.NoError(t, err)
-			assert.Equal(t, "login successful", res.Message)
+			assert.Equal(t, "access", res.AccessToken)
+			assert.Equal(t, "refresh", res.RefreshToken)
 		}
 	})
 
