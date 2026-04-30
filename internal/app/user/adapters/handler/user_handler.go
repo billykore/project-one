@@ -67,7 +67,7 @@ func (h *userHandler) Me(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Param        request body dto.LoginRequest true "Login credentials"
-// @Success      200  {object}  map[string]string
+// @Success      200  {object}  dto.LoginResponse
 // @Failure      400  {object}  dto.ErrorResponse
 // @Failure      401  {object}  dto.ErrorResponse
 // @Failure      500  {object}  dto.ErrorResponse
