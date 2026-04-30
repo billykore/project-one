@@ -62,7 +62,7 @@ func (h *userHandler) Me(c echo.Context) error {
 
 // HandleLogin handles the POST /user/login endpoint.
 // @Summary      Login
-// @Description  Authenticate a user and return access and refresh tokens.
+// @Description  Authenticate a user and return access and refresh tokens via HttpOnly cookies.
 // @Tags         users
 // @Accept       json
 // @Produce      json
@@ -90,10 +90,27 @@ func (h *userHandler) HandleLogin(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "internal server error"})
 	}
 
-	return c.JSON(http.StatusOK, dto.LoginResponse{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
+	// Set access token cookie
+	c.SetCookie(&http.Cookie{
+		Name:     "access_token",
+		Value:    accessToken,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   false, // Set to true in production
+		SameSite: http.SameSiteLaxMode,
 	})
+
+	// Set refresh token cookie
+	c.SetCookie(&http.Cookie{
+		Name:     "refresh_token",
+		Value:    refreshToken,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   false, // Set to true in production
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	return c.JSON(http.StatusOK, dto.LoginResponse{Message: "login successful"})
 }
 
 // HandleLogout handles the POST /user/logout endpoint.
