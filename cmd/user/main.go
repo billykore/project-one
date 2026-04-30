@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	_ "github.com/billykore/project-one/api"
+	"github.com/billykore/project-one/api/user"
 	"github.com/billykore/project-one/internal/app/user/adapters/handler"
 	"github.com/billykore/project-one/internal/app/user/adapters/hasher"
 	"github.com/billykore/project-one/internal/app/user/adapters/logger"
@@ -37,6 +37,9 @@ func main() {
 		lgr.Fatal(ctx, "failed to load config", "error", err)
 	}
 
+	// Set dynamic Swagger host
+	user.SwaggerInfo.Host = fmt.Sprintf("localhost:%d", cfg.App.Port)
+
 	// Construct DSN from config
 	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
 		cfg.Database.Host, cfg.Database.Port, cfg.Database.User,
@@ -66,7 +69,12 @@ func main() {
 
 	// 6. Set up Echo
 	e := echo.New()
-	e.GET("/swagger/*", echoSwagger.WrapHandler)
+
+	// Only expose Swagger UI in non-production environments
+	if cfg.App.Env != "production" {
+		e.GET("/swagger/*", echoSwagger.WrapHandler)
+	}
+
 	e.POST("/user/register", userHdl.HandleRegister)
 	e.POST("/user/login", userHdl.HandleLogin)
 	e.POST("/user/logout", userHdl.HandleLogout, handler.AuthMiddleware(tks))

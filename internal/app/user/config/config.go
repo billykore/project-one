@@ -17,7 +17,8 @@ type Config struct {
 
 // AppConfig holds application-level settings.
 type AppConfig struct {
-	Port int `mapstructure:"port"`
+	Port int    `mapstructure:"port"`
+	Env  string `mapstructure:"env"`
 }
 
 // DatabaseConfig holds database connection settings.
@@ -50,6 +51,7 @@ func LoadConfig(path string) (cfg *Config, err error) { // Changed named return 
 
 	// Explicitly bind environment variables for all fields to ensure they are picked up reliably
 	_ = v.BindEnv("app.port", "APP_PORT")
+	_ = v.BindEnv("app.env", "APP_ENV")
 	_ = v.BindEnv("database.host", "DATABASE_HOST")
 	_ = v.BindEnv("database.port", "DATABASE_PORT")
 	_ = v.BindEnv("database.user", "DATABASE_USER")
