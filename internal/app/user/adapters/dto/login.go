@@ -8,8 +8,7 @@ type LoginRequest struct {
 
 // LoginResponse is the response body for a successful login.
 type LoginResponse struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
+	Message string `json:"message"`
 }
 
 // ErrorResponse is the response body for a failed login.
