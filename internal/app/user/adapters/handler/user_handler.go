@@ -27,6 +27,17 @@ func NewUserHandler(userSvc ports.UserService, loginSvc ports.LoginService, vali
 	}
 }
 
+// Me handles the GET /user/me endpoint.
+// @Summary      Get current user
+// @Description  Get the profile of the currently authenticated user.
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  dto.UserResponse
+// @Failure      401  {object}  dto.ErrorResponse
+// @Failure      500  {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /user/me [get]
 func (h *userHandler) Me(c echo.Context) error {
 	userID, ok := c.Get("userID").(int)
 	if !ok {
@@ -50,6 +61,17 @@ func (h *userHandler) Me(c echo.Context) error {
 }
 
 // HandleLogin handles the POST /user/login endpoint.
+// @Summary      Login
+// @Description  Authenticate a user and return access and refresh tokens.
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        request body dto.LoginRequest true "Login credentials"
+// @Success      200  {object}  dto.LoginResponse
+// @Failure      400  {object}  dto.ErrorResponse
+// @Failure      401  {object}  dto.ErrorResponse
+// @Failure      500  {object}  dto.ErrorResponse
+// @Router       /user/login [post]
 func (h *userHandler) HandleLogin(c echo.Context) error {
 	var req dto.LoginRequest
 	if err := c.Bind(&req); err != nil {
@@ -75,6 +97,16 @@ func (h *userHandler) HandleLogin(c echo.Context) error {
 }
 
 // HandleLogout handles the POST /user/logout endpoint.
+// @Summary      Logout
+// @Description  Invalidate the current user's session.
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  dto.LogoutResponse
+// @Failure      401  {object}  dto.ErrorResponse
+// @Failure      500  {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /user/logout [post]
 func (h *userHandler) HandleLogout(c echo.Context) error {
 	authHeader := c.Request().Header.Get("Authorization")
 	parts := strings.Split(authHeader, " ")
@@ -93,6 +125,16 @@ func (h *userHandler) HandleLogout(c echo.Context) error {
 }
 
 // HandleRegister handles the POST /user/register endpoint.
+// @Summary      Register
+// @Description  Create a new user account.
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        request body dto.RegisterRequest true "User registration details"
+// @Success      201  {object}  dto.RegisterResponse
+// @Failure      400  {object}  dto.ErrorResponse
+// @Failure      500  {object}  dto.ErrorResponse
+// @Router       /user/register [post]
 func (h *userHandler) HandleRegister(c echo.Context) error {
 	var req dto.RegisterRequest
 	if err := c.Bind(&req); err != nil {

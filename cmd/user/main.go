@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	_ "github.com/billykore/project-one/api"
 	"github.com/billykore/project-one/internal/app/user/adapters/handler"
 	"github.com/billykore/project-one/internal/app/user/adapters/hasher"
 	"github.com/billykore/project-one/internal/app/user/adapters/logger"
@@ -13,10 +14,19 @@ import (
 	"github.com/billykore/project-one/internal/app/user/core/service"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
+	echoSwagger "github.com/swaggo/echo-swagger"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
+// @title           User Service API
+// @version         1.0
+// @description     This is the API server for the User Service.
+// @host            localhost:8080
+// @BasePath        /
+// @securityDefinitions.apikey BearerAuth
+// @in              header
+// @name            Authorization
 func main() {
 	ctx := context.Background()
 	lgr := logger.NewZerologLogger()
@@ -56,6 +66,7 @@ func main() {
 
 	// 6. Set up Echo
 	e := echo.New()
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
 	e.POST("/user/register", userHdl.HandleRegister)
 	e.POST("/user/login", userHdl.HandleLogin)
 	e.POST("/user/logout", userHdl.HandleLogout, handler.AuthMiddleware(tks))
