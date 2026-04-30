@@ -11,8 +11,17 @@ export const api = {
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      let errorMessage = `HTTP error! status: ${response.status}`;
+      const contentType = response.headers.get("content-type");
+      
+      if (contentType && contentType.includes("application/json")) {
+        const errorData = await response.json().catch(() => ({}));
+        if (errorData.error) {
+          errorMessage = errorData.error;
+        }
+      }
+      
+      throw new Error(errorMessage);
     }
 
     return response.json();

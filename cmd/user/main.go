@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/billykore/project-one/api/user"
 	"github.com/billykore/project-one/internal/app/user/adapters/handler"
@@ -15,7 +14,6 @@ import (
 	"github.com/billykore/project-one/internal/app/user/core/service"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -71,13 +69,6 @@ func main() {
 
 	// 6. Set up Echo
 	e := echo.New()
-
-	// CORS middleware
-	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"*"}, // Adjust this to your frontend URL in production
-		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
-		AllowMethods: []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
-	}))
 
 	// Only expose Swagger UI in non-production environments
 	if cfg.App.Env != "production" {

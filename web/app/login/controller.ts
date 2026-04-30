@@ -4,17 +4,6 @@ import { ZodError } from "zod";
 import { api } from "@/lib/api";
 import { useRouter } from "next/navigation";
 
-interface RawLoginResponse {
-  access_token: string;
-  refresh_token: string;
-}
-
-const setCookie = (name: string, value: string, days: number) => {
-  const expires = new Date();
-  expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
-  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Lax;Secure`;
-};
-
 export const useLogin = () => {
   const router = useRouter();
   const [formData, setFormData] = useState<LoginFormData>({
@@ -43,9 +32,13 @@ export const useLogin = () => {
       if (err instanceof ZodError) {
         const fieldErrors: LoginErrors = {};
         err.issues.forEach((e) => {
-          const path = e.path[0] as keyof LoginFormData;
-          if (!fieldErrors[path]) {
-            fieldErrors[path] = e.message;
+          if (e.path.length > 0) {
+            const path = e.path[0] as keyof LoginFormData;
+            if (!fieldErrors[path]) {
+              fieldErrors[path] = e.message;
+            }
+          } else {
+            fieldErrors.general = e.message;
           }
         });
         setErrors(fieldErrors);
@@ -63,22 +56,12 @@ export const useLogin = () => {
     setErrors({});
 
     try {
-      // The backend returns snake_case, so we use RawLoginResponse
-      const response = await api.post<RawLoginResponse>("/user/login", {
+      await api.post<LoginResponse>("/user/login", {
         email: formData.email.trim(),
         password: formData.password,
       });
 
-      const loginData: LoginResponse = {
-        accessToken: response.access_token,
-        refreshToken: response.refresh_token,
-      };
-
-      // Store tokens in cookies
-      setCookie("access_token", loginData.accessToken, 1); // 1 day
-      setCookie("refresh_token", loginData.refreshToken, 7); // 7 days
-
-      // Redirect to home page
+      // Redirect to home page (cookies are set by backend)
       router.push("/");
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "An error occurred. Please try again later.";
