@@ -96,6 +96,7 @@ func TestUserHandler_HandleLogin(t *testing.T) {
 
 		if assert.NoError(t, h.HandleLogin(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
+
 			var res dto.LoginResponse
 			err := json.Unmarshal(rec.Body.Bytes(), &res)
 			assert.NoError(t, err)
