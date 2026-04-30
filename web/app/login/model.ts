@@ -15,3 +15,12 @@ export interface LoginErrors {
   password?: string;
   general?: string;
 }
+
+export interface LoginResponse {
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface ApiErrorResponse {
+  error: string;
+}

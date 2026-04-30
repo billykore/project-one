@@ -1,8 +1,22 @@
 import { useState } from "react";
-import { loginSchema, LoginFormData, LoginErrors } from "./model";
+import { loginSchema, LoginFormData, LoginErrors, LoginResponse } from "./model";
 import { ZodError } from "zod";
+import { api } from "@/lib/api";
+import { useRouter } from "next/navigation";
+
+interface RawLoginResponse {
+  access_token: string;
+  refresh_token: string;
+}
+
+const setCookie = (name: string, value: string, days: number) => {
+  const expires = new Date();
+  expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Lax;Secure`;
+};
 
 export const useLogin = () => {
+  const router = useRouter();
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
     password: "",
@@ -28,7 +42,7 @@ export const useLogin = () => {
     } catch (err) {
       if (err instanceof ZodError) {
         const fieldErrors: LoginErrors = {};
-        err.errors.forEach((e) => {
+        err.issues.forEach((e) => {
           const path = e.path[0] as keyof LoginFormData;
           if (!fieldErrors[path]) {
             fieldErrors[path] = e.message;
@@ -46,14 +60,26 @@ export const useLogin = () => {
     if (!validate()) return;
 
     setIsSubmitting(true);
+    setErrors({});
 
     try {
-      // Mock API call
-      console.log("Logging in with:", { email: formData.email.trim(), password: formData.password });
-      
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      
-      alert("Login attempt submitted successfully (Mock)");
+      // The backend returns snake_case, so we use RawLoginResponse
+      const response = await api.post<RawLoginResponse>("/user/login", {
+        email: formData.email.trim(),
+        password: formData.password,
+      });
+
+      const loginData: LoginResponse = {
+        accessToken: response.access_token,
+        refreshToken: response.refresh_token,
+      };
+
+      // Store tokens in cookies
+      setCookie("access_token", loginData.accessToken, 1); // 1 day
+      setCookie("refresh_token", loginData.refreshToken, 7); // 7 days
+
+      // Redirect to home page
+      router.push("/");
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "An error occurred. Please try again later.";
       setErrors({ general: errorMessage });
