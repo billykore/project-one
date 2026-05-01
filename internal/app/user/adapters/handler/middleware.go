@@ -13,17 +13,26 @@ import (
 func AuthMiddleware(tks ports.TokenService) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			authHeader := c.Request().Header.Get("Authorization")
-			if authHeader == "" {
+			var token string
+
+			// Check for access_token cookie first
+			cookie, err := c.Cookie("access_token")
+			if err == nil {
+				token = cookie.Value
+			}
+
+			// If no cookie, check Authorization header
+			if token == "" {
+				authHeader := c.Request().Header.Get("Authorization")
+				if strings.HasPrefix(authHeader, "Bearer ") {
+					token = strings.TrimPrefix(authHeader, "Bearer ")
+				}
+			}
+
+			if token == "" {
 				return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 			}
 
-			parts := strings.Split(authHeader, " ")
-			if len(parts) != 2 || parts[0] != "Bearer" {
-				return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
-			}
-
-			token := parts[1]
 			userID, err := tks.ValidateToken(c.Request().Context(), token)
 			if err != nil {
 				return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})

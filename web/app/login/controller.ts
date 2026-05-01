@@ -62,7 +62,7 @@ export const useLogin = () => {
       });
 
       // Redirect to home page (cookies are set by backend)
-      router.push("/");
+      router.push("/home");
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "An error occurred. Please try again later.";
       setErrors({ general: errorMessage });
