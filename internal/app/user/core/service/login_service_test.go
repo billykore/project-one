@@ -136,29 +136,29 @@ func TestLoginService_Logout(t *testing.T) {
 	svc := NewLoginService(mockRepo, mockTokens, mockUserTokens, mockHasher, mockLogger)
 
 	t.Run("successful logout", func(t *testing.T) {
-		token := "some-token"
-		mockUserTokens.EXPECT().DeleteToken(gomock.Any(), token).Return(nil)
+		userID := 1
+		mockUserTokens.EXPECT().DeleteTokenByUserID(gomock.Any(), userID).Return(nil)
 		mockLogger.EXPECT().Info(gomock.Any(), "user logged out successfully")
 
-		err := svc.Logout(context.Background(), token)
+		err := svc.Logout(context.Background(), userID)
 		if err != nil {
 			t.Errorf("Logout() unexpected error = %v", err)
 		}
 	})
 
 	t.Run("empty token logout", func(t *testing.T) {
-		err := svc.Logout(context.Background(), "")
+		err := svc.Logout(context.Background(), 0)
 		if err == nil {
 			t.Error("Logout() expected error for empty token, got nil")
 		}
 	})
 
 	t.Run("failed logout", func(t *testing.T) {
-		token := "some-token"
-		mockUserTokens.EXPECT().DeleteToken(gomock.Any(), token).Return(errors.New("db error"))
+		userID := 1
+		mockUserTokens.EXPECT().DeleteTokenByUserID(gomock.Any(), userID).Return(errors.New("db error"))
 		mockLogger.EXPECT().Error(gomock.Any(), gomock.Any(), gomock.Any())
 
-		err := svc.Logout(context.Background(), token)
+		err := svc.Logout(context.Background(), userID)
 		if err == nil {
 			t.Error("Logout() expected error, got nil")
 		}

@@ -41,6 +41,7 @@ type JWTConfig struct {
 func LoadConfig(path string) (cfg *Config, err error) { // Changed named return to cfg
 	v := viper.New() // Use a new Viper instance for each call
 	v.AddConfigPath(path)
+	v.AddConfigPath(fmt.Sprintf("../../%s", path))
 	v.SetConfigName("user_config")
 	v.SetConfigType("yaml")
 

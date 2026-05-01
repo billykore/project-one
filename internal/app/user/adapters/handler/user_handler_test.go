@@ -185,11 +185,11 @@ func TestUserHandler_HandleLogout(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/user/logout", nil)
-		req.Header.Set(echo.HeaderAuthorization, "Bearer valid-token")
 		rec := httptest.NewRecorder()
 		c := e.NewContext(req, rec)
+		c.Set("userID", 1)
 
-		mockLoginSvc.EXPECT().Logout(gomock.Any(), "valid-token").Return(nil)
+		mockLoginSvc.EXPECT().Logout(gomock.Any(), 1).Return(nil)
 
 		if assert.NoError(t, h.HandleLogout(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
@@ -200,19 +200,8 @@ func TestUserHandler_HandleLogout(t *testing.T) {
 		}
 	})
 
-	t.Run("unauthorized_missing_header", func(t *testing.T) {
+	t.Run("unauthorized_no_userID", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/user/logout", nil)
-		rec := httptest.NewRecorder()
-		c := e.NewContext(req, rec)
-
-		if assert.NoError(t, h.HandleLogout(c)) {
-			assert.Equal(t, http.StatusUnauthorized, rec.Code)
-		}
-	})
-
-	t.Run("unauthorized_invalid_scheme", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodPost, "/user/logout", nil)
-		req.Header.Set(echo.HeaderAuthorization, "Basic valid-token")
 		rec := httptest.NewRecorder()
 		c := e.NewContext(req, rec)
 
@@ -223,11 +212,11 @@ func TestUserHandler_HandleLogout(t *testing.T) {
 
 	t.Run("internal_server_error", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/user/logout", nil)
-		req.Header.Set(echo.HeaderAuthorization, "Bearer valid-token")
 		rec := httptest.NewRecorder()
 		c := e.NewContext(req, rec)
+		c.Set("userID", 1)
 
-		mockLoginSvc.EXPECT().Logout(gomock.Any(), "valid-token").Return(errors.New("logout error"))
+		mockLoginSvc.EXPECT().Logout(gomock.Any(), 1).Return(errors.New("logout error"))
 
 		if assert.NoError(t, h.HandleLogout(c)) {
 			assert.Equal(t, http.StatusInternalServerError, rec.Code)

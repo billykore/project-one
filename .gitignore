@@ -20,12 +20,13 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
-# Goland IDE
+# IDEs
 .idea
+.vscode
 
 # Build output binaries
 *.pid
-/bin
+/bin/*
 
 plan.md
 

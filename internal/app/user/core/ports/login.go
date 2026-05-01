@@ -29,5 +29,5 @@ type LoginService interface {
 	// Login authenticates a user and returns tokens.
 	Login(ctx context.Context, email, password string) (accessToken, refreshToken string, err error)
 	// Logout invalidates the given token.
-	Logout(ctx context.Context, token string) error
+	Logout(ctx context.Context, userID int) error
 }

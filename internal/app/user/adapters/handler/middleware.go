@@ -24,8 +24,8 @@ func AuthMiddleware(tks ports.TokenService) echo.MiddlewareFunc {
 			// If no cookie, check Authorization header
 			if token == "" {
 				authHeader := c.Request().Header.Get("Authorization")
-				if strings.HasPrefix(authHeader, "Bearer ") {
-					token = strings.TrimPrefix(authHeader, "Bearer ")
+				if after, ok := strings.CutPrefix(authHeader, "Bearer "); ok {
+					token = after
 				}
 			}
 

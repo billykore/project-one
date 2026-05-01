@@ -69,13 +69,13 @@ func (s *loginService) Login(ctx context.Context, email, password string) (strin
 	return accessToken.Token, refreshToken.Token, nil
 }
 
-func (s *loginService) Logout(ctx context.Context, token string) error {
-	if token == "" {
-		return fmt.Errorf("token cannot be empty")
+func (s *loginService) Logout(ctx context.Context, userID int) error {
+	if userID == 0 {
+		return fmt.Errorf("userID cannot be zero")
 	}
 
-	if err := s.userTokens.DeleteToken(ctx, token); err != nil {
-		s.log.Error(ctx, "failed to delete user token on logout", "error", err)
+	if err := s.userTokens.DeleteTokenByUserID(ctx, userID); err != nil {
+		s.log.Error(ctx, "failed to delete user token on logout", "userID", userID, "error", err)
 		return fmt.Errorf("delete user token: %w", err)
 	}
 

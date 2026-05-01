@@ -10,6 +10,8 @@ import (
 type UserTokenRepository interface {
 	// StoreToken saves a new user token.
 	StoreToken(ctx context.Context, token *domain.UserToken) error
+	// GetTokenByUserID retrieves a user token by the associated user ID.
+	GetTokenByUserID(ctx context.Context, userID int) (*domain.UserToken, error)
 	// DeleteToken removes a user token by its string value.
-	DeleteToken(ctx context.Context, token string) error
+	DeleteTokenByUserID(ctx context.Context, userID int) error
 }

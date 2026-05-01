@@ -9,24 +9,33 @@ import (
 )
 
 type userService struct {
-	repo   ports.UserRepository
-	hasher ports.Hasher
+	userRepo  ports.UserRepository
+	tokenRepo ports.UserTokenRepository
+	hasher    ports.Hasher
 }
 
 // NewUserService creates a new instance of UserService.
-func NewUserService(repo ports.UserRepository, hasher ports.Hasher) ports.UserService {
+func NewUserService(userRepo ports.UserRepository, tokenRepo ports.UserTokenRepository, hasher ports.Hasher) ports.UserService {
 	return &userService{
-		repo:   repo,
-		hasher: hasher,
+		userRepo:  userRepo,
+		tokenRepo: tokenRepo,
+		hasher:    hasher,
 	}
 }
 
 func (s *userService) GetCurrentUser(ctx context.Context, id int) (*domain.User, error) {
-	return s.repo.GetUserByID(ctx, id)
+	token, err := s.tokenRepo.GetTokenByUserID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if token == nil {
+		return nil, domain.ErrUnauthorized
+	}
+	return s.userRepo.GetUserByID(ctx, id)
 }
 
 func (s *userService) Register(ctx context.Context, user *domain.User) error {
-	existingUser, err := s.repo.GetUserByEmail(ctx, user.Email)
+	existingUser, err := s.userRepo.GetUserByEmail(ctx, user.Email)
 	if err == nil && existingUser != nil {
 		return domain.ErrEmailAlreadyRegistered
 	}
@@ -44,5 +53,5 @@ func (s *userService) Register(ctx context.Context, user *domain.User) error {
 	}
 	user.Password = hashedPassword
 
-	return s.repo.CreateUser(ctx, user)
+	return s.userRepo.CreateUser(ctx, user)
 }

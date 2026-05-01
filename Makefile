@@ -1,4 +1,4 @@
-.PHONY: build run test vet lint clean docs help migrate-create migrate-up migrate-down
+.PHONY: build run test mock vet lint clean docs help migrate-create migrate-up migrate-down
 
 APP_NAME := user
 BUILD_DIR := ./bin
@@ -14,6 +14,10 @@ run: build
 ## test: Run all tests
 test:
 	./scripts/test.sh $(APP_NAME)
+
+## mock: Generate test mocks
+mock:
+	./scripts/mock.sh
 
 ## vet: Run go vet
 vet:

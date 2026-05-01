@@ -18,9 +18,7 @@ definitions:
     type: object
   github_com_billykore_project-one_internal_app_user_adapters_dto.LoginResponse:
     properties:
-      access_token:
-        type: string
-      refresh_token:
+      message:
         type: string
     type: object
   github_com_billykore_project-one_internal_app_user_adapters_dto.LogoutResponse:
@@ -70,7 +68,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: Authenticate a user and return access and refresh tokens.
+      description: Authenticate a user and return access and refresh tokens via HttpOnly
+        cookies.
       parameters:
       - description: Login credentials
         in: body

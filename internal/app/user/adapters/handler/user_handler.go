@@ -46,7 +46,7 @@ func (h *userHandler) Me(c echo.Context) error {
 
 	user, err := h.userSvc.GetCurrentUser(c.Request().Context(), userID)
 	if err != nil {
-		if errors.Is(err, domain.ErrUserNotFound) {
+		if errors.Is(err, domain.ErrUserNotFound) || errors.Is(err, domain.ErrUnauthorized) {
 			return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 		}
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Internal Server Error"})
@@ -125,14 +125,12 @@ func (h *userHandler) HandleLogin(c echo.Context) error {
 // @Security     BearerAuth
 // @Router       /user/logout [post]
 func (h *userHandler) HandleLogout(c echo.Context) error {
-	authHeader := c.Request().Header.Get("Authorization")
-	parts := strings.Split(authHeader, " ")
-	if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") {
+	userID, ok := c.Get("userID").(int)
+	if !ok {
 		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 	}
-	token := parts[1]
 
-	if err := h.loginSvc.Logout(c.Request().Context(), token); err != nil {
+	if err := h.loginSvc.Logout(c.Request().Context(), userID); err != nil {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "internal server error"})
 	}
 

@@ -44,6 +44,23 @@ func (r *postgresUserTokenRepository) StoreToken(ctx context.Context, token *dom
 	return r.db.WithContext(ctx).Create(m).Error
 }
 
-func (r *postgresUserTokenRepository) DeleteToken(ctx context.Context, token string) error {
-	return r.db.WithContext(ctx).Where("token = ?", token).Delete(&userTokenModel{}).Error
+func (r *postgresUserTokenRepository) GetTokenByUserID(ctx context.Context, userID int) (*domain.UserToken, error) {
+	var m userTokenModel
+	err := r.db.WithContext(ctx).Where("user_id = ?", userID).First(&m).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil // No token found for this user
+		}
+		return nil, err
+	}
+	return &domain.UserToken{
+		ID:        m.ID,
+		UserID:    m.UserID,
+		Token:     m.Token,
+		ExpiresAt: m.ExpiresAt,
+	}, nil
+}
+
+func (r *postgresUserTokenRepository) DeleteTokenByUserID(ctx context.Context, userID int) error {
+	return r.db.WithContext(ctx).Where("user_id = ?", userID).Delete(&userTokenModel{}).Error
 }

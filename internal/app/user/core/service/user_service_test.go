@@ -15,8 +15,9 @@ func TestUserService_GetCurrentUser(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockUserRepository(ctrl)
+	mockTokenRepo := mocks.NewMockUserTokenRepository(ctrl)
 	mockHasher := mocks.NewMockHasher(ctrl)
-	svc := NewUserService(mockRepo, mockHasher)
+	svc := NewUserService(mockRepo, mockTokenRepo, mockHasher)
 
 	ctx := context.Background()
 
@@ -24,8 +25,8 @@ func TestUserService_GetCurrentUser(t *testing.T) {
 		userID := 1
 		expectedUser := &domain.User{ID: userID, Email: "test@example.com"}
 
+		mockTokenRepo.EXPECT().GetTokenByUserID(ctx, userID).Return(&domain.UserToken{UserID: userID}, nil)
 		mockRepo.EXPECT().GetUserByID(ctx, userID).Return(expectedUser, nil)
-
 		user, err := svc.GetCurrentUser(ctx, userID)
 
 		if err != nil {
@@ -39,12 +40,28 @@ func TestUserService_GetCurrentUser(t *testing.T) {
 	t.Run("user not found", func(t *testing.T) {
 		userID := 2
 
+		mockTokenRepo.EXPECT().GetTokenByUserID(ctx, userID).Return(&domain.UserToken{UserID: userID}, nil)
 		mockRepo.EXPECT().GetUserByID(ctx, userID).Return(nil, domain.ErrUserNotFound)
 
 		user, err := svc.GetCurrentUser(ctx, userID)
 
 		if !errors.Is(err, domain.ErrUserNotFound) {
 			t.Errorf("GetCurrentUser() error = %v, want %v", err, domain.ErrUserNotFound)
+		}
+		if user != nil {
+			t.Errorf("GetCurrentUser() user = %v, want nil", user)
+		}
+	})
+
+	t.Run("unauthorized", func(t *testing.T) {
+		userID := 3
+
+		mockTokenRepo.EXPECT().GetTokenByUserID(ctx, userID).Return(nil, nil)
+
+		user, err := svc.GetCurrentUser(ctx, userID)
+
+		if !errors.Is(err, domain.ErrUnauthorized) {
+			t.Errorf("GetCurrentUser() error = %v, want %v", err, domain.ErrUnauthorized)
 		}
 		if user != nil {
 			t.Errorf("GetCurrentUser() user = %v, want nil", user)
@@ -57,8 +74,9 @@ func TestUserService_Register(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockUserRepository(ctrl)
+	mockTokenRepo := mocks.NewMockUserTokenRepository(ctrl)
 	mockHasher := mocks.NewMockHasher(ctrl)
-	svc := NewUserService(mockRepo, mockHasher)
+	svc := NewUserService(mockRepo, mockTokenRepo, mockHasher)
 
 	ctx := context.Background()
 

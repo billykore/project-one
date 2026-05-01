@@ -17,7 +17,7 @@ const docTemplate = `{
     "paths": {
         "/user/login": {
             "post": {
-                "description": "Authenticate a user and return access and refresh tokens.",
+                "description": "Authenticate a user and return access and refresh tokens via HttpOnly cookies.",
                 "consumes": [
                     "application/json"
                 ],
@@ -222,10 +222,7 @@ const docTemplate = `{
         "github_com_billykore_project-one_internal_app_user_adapters_dto.LoginResponse": {
             "type": "object",
             "properties": {
-                "access_token": {
-                    "type": "string"
-                },
-                "refresh_token": {
+                "message": {
                     "type": "string"
                 }
             }
