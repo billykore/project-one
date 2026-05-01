@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { api } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 import { UserResponse, HomeState } from "./model";
 
 export const useHome = () => {
@@ -22,7 +22,7 @@ export const useHome = () => {
         });
       } catch (err) {
         // If 401 Unauthorized, redirect to login
-        if (err instanceof Error && err.message.includes("401")) {
+        if (err instanceof ApiError && err.status === 401) {
           router.push("/login");
           return;
         }
