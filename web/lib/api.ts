@@ -11,7 +11,7 @@ export class ApiError extends Error {
 
 const handleResponse = async <T>(response: Response): Promise<T> => {
   if (!response.ok) {
-    let errorMessage = `HTTP error! status: ${response.status}`;
+    let errorMessage = `Something went wrong! (${response.status})`;
     const contentType = response.headers.get("content-type");
     
     if (contentType && contentType.includes("application/json")) {

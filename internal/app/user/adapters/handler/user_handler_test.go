@@ -92,23 +92,20 @@ func TestUserHandler_HandleLogin(t *testing.T) {
 		c := e.NewContext(req, rec)
 
 		mockLoginSvc.EXPECT().Login(gomock.Any(), reqBody.Email, reqBody.Password).
-			Return("access", "refresh", nil)
+			Return("access", nil)
 
 		if assert.NoError(t, h.HandleLogin(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
 
 			// Assert cookies
 			cookies := rec.Result().Cookies()
-			assert.Len(t, cookies, 2)
+			assert.Len(t, cookies, 1)
 
 			var accessTokenCookie *http.Cookie
-			var refreshTokenCookie *http.Cookie
 			for _, cookie := range cookies {
 				switch cookie.Name {
 				case "access_token":
 					accessTokenCookie = cookie
-				case "refresh_token":
-					refreshTokenCookie = cookie
 				}
 			}
 
@@ -116,14 +113,10 @@ func TestUserHandler_HandleLogin(t *testing.T) {
 			assert.Equal(t, "access", accessTokenCookie.Value)
 			assert.True(t, accessTokenCookie.HttpOnly)
 
-			assert.NotNil(t, refreshTokenCookie)
-			assert.Equal(t, "refresh", refreshTokenCookie.Value)
-			assert.True(t, refreshTokenCookie.HttpOnly)
-
 			var res dto.LoginResponse
 			err := json.Unmarshal(rec.Body.Bytes(), &res)
 			assert.NoError(t, err)
-			assert.Equal(t, "login successful", res.Message)
+			assert.Equal(t, "Login successful", res.Message)
 		}
 	})
 
@@ -165,7 +158,7 @@ func TestUserHandler_HandleLogin(t *testing.T) {
 		c := e.NewContext(req, rec)
 
 		mockLoginSvc.EXPECT().Login(gomock.Any(), reqBody.Email, reqBody.Password).
-			Return("", "", domain.ErrInvalidCredentials)
+			Return("", domain.ErrInvalidCredentials)
 
 		if assert.NoError(t, h.HandleLogin(c)) {
 			assert.Equal(t, http.StatusUnauthorized, rec.Code)

@@ -75,7 +75,7 @@ func (h *userHandler) Me(c echo.Context) error {
 func (h *userHandler) HandleLogin(c echo.Context) error {
 	var req dto.LoginRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "invalid request body"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid request body"})
 	}
 
 	if err := h.validator.Struct(req); err != nil {
@@ -85,9 +85,9 @@ func (h *userHandler) HandleLogin(c echo.Context) error {
 	accessToken, err := h.loginSvc.Login(c.Request().Context(), req.Email, req.Password)
 	if err != nil {
 		if errors.Is(err, domain.ErrInvalidCredentials) {
-			return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "invalid email or password"})
+			return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Invalid email or password"})
 		}
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "internal server error"})
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Internal server error"})
 	}
 
 	// Set access token cookie
@@ -100,7 +100,7 @@ func (h *userHandler) HandleLogin(c echo.Context) error {
 		SameSite: http.SameSiteLaxMode,
 	})
 
-	return c.JSON(http.StatusOK, dto.LoginResponse{Message: "login successful"})
+	return c.JSON(http.StatusOK, dto.LoginResponse{Message: "Login successful"})
 }
 
 // HandleLogout handles the POST /user/logout endpoint.
@@ -121,7 +121,7 @@ func (h *userHandler) HandleLogout(c echo.Context) error {
 	}
 
 	if err := h.loginSvc.Logout(c.Request().Context(), userID); err != nil {
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "internal server error"})
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Internal server error"})
 	}
 
 	return c.JSON(http.StatusOK, dto.LogoutResponse{
