@@ -82,7 +82,7 @@ func (h *userHandler) HandleLogin(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
 	}
 
-	accessToken, refreshToken, err := h.loginSvc.Login(c.Request().Context(), req.Email, req.Password)
+	accessToken, err := h.loginSvc.Login(c.Request().Context(), req.Email, req.Password)
 	if err != nil {
 		if errors.Is(err, domain.ErrInvalidCredentials) {
 			return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "invalid email or password"})
@@ -94,16 +94,6 @@ func (h *userHandler) HandleLogin(c echo.Context) error {
 	c.SetCookie(&http.Cookie{
 		Name:     "access_token",
 		Value:    accessToken,
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   false, // Set to true in production
-		SameSite: http.SameSiteLaxMode,
-	})
-
-	// Set refresh token cookie
-	c.SetCookie(&http.Cookie{
-		Name:     "refresh_token",
-		Value:    refreshToken,
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   false, // Set to true in production

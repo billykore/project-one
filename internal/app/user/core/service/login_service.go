@@ -33,25 +33,25 @@ func NewLoginService(
 	}
 }
 
-func (s *loginService) Login(ctx context.Context, email, password string) (string, string, error) {
+func (s *loginService) Login(ctx context.Context, email, password string) (string, error) {
 	// 1. Get user by email
 	user, err := s.repo.GetUserByEmail(ctx, email)
 	if err != nil {
 		s.log.Error(ctx, "failed to get user by email", "email", email, "error", err)
-		return "", "", domain.ErrInvalidCredentials
+		return "", domain.ErrInvalidCredentials
 	}
 
 	// 2. Compare passwords
 	if err := s.hasher.Compare(ctx, password, user.Password); err != nil {
 		s.log.Error(ctx, "password mismatch", "email", email, "error", err)
-		return "", "", domain.ErrInvalidCredentials
+		return "", domain.ErrInvalidCredentials
 	}
 
 	// 3. Generate tokens
-	accessToken, refreshToken, err := s.tokens.GenerateTokens(ctx, user)
+	accessToken, err := s.tokens.GenerateTokens(ctx, user)
 	if err != nil {
 		s.log.Error(ctx, "failed to generate tokens", "userID", user.ID, "error", err)
-		return "", "", fmt.Errorf("generate tokens: %w", err)
+		return "", fmt.Errorf("generate tokens: %w", err)
 	}
 
 	// 4. Store access token
@@ -62,11 +62,11 @@ func (s *loginService) Login(ctx context.Context, email, password string) (strin
 	})
 	if err != nil {
 		s.log.Error(ctx, "failed to store user token", "userID", user.ID, "error", err)
-		return "", "", fmt.Errorf("store user token: %w", err)
+		return "", fmt.Errorf("store user token: %w", err)
 	}
 
 	s.log.Info(ctx, "user logged in successfully", "userID", user.ID)
-	return accessToken.Token, refreshToken.Token, nil
+	return accessToken.Token, nil
 }
 
 func (s *loginService) Logout(ctx context.Context, userID int) error {

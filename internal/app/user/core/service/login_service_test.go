@@ -24,13 +24,12 @@ func TestLoginService_Login_WithMocks(t *testing.T) {
 	svc := NewLoginService(mockRepo, mockTokens, mockUserTokens, mockHasher, mockLogger)
 
 	tests := []struct {
-		name        string
-		email       string
-		password    string
-		setup       func()
-		wantErr     error
-		wantAccess  string
-		wantRefresh string
+		name       string
+		email      string
+		password   string
+		setup      func()
+		wantErr    error
+		wantAccess string
 	}{
 		{
 			name:     "successful login",
@@ -40,11 +39,10 @@ func TestLoginService_Login_WithMocks(t *testing.T) {
 				user := &domain.User{ID: 1, Email: "user@example.com", Password: "hashed_password"}
 				exp := time.Now().Add(time.Hour)
 				accessToken := &domain.TokenDetails{Token: "access", ExpiresAt: exp}
-				refreshToken := &domain.TokenDetails{Token: "refresh", ExpiresAt: exp.Add(time.Hour)}
 
 				mockRepo.EXPECT().GetUserByEmail(gomock.Any(), "user@example.com").Return(user, nil)
 				mockHasher.EXPECT().Compare(gomock.Any(), "password123", "hashed_password").Return(nil)
-				mockTokens.EXPECT().GenerateTokens(gomock.Any(), user).Return(accessToken, refreshToken, nil)
+				mockTokens.EXPECT().GenerateTokens(gomock.Any(), user).Return(accessToken, nil)
 				mockUserTokens.EXPECT().StoreToken(gomock.Any(), &domain.UserToken{
 					UserID:    1,
 					Token:     "access",
@@ -52,9 +50,8 @@ func TestLoginService_Login_WithMocks(t *testing.T) {
 				}).Return(nil)
 				mockLogger.EXPECT().Info(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 			},
-			wantAccess:  "access",
-			wantRefresh: "refresh",
-			wantErr:     nil,
+			wantAccess: "access",
+			wantErr:    nil,
 		},
 		{
 			name:     "user not found",
@@ -86,7 +83,7 @@ func TestLoginService_Login_WithMocks(t *testing.T) {
 				user := &domain.User{ID: 1, Email: "user@example.com", Password: "hashed_password"}
 				mockRepo.EXPECT().GetUserByEmail(gomock.Any(), "user@example.com").Return(user, nil)
 				mockHasher.EXPECT().Compare(gomock.Any(), "password123", "hashed_password").Return(nil)
-				mockTokens.EXPECT().GenerateTokens(gomock.Any(), user).Return(nil, nil, errors.New("token error"))
+				mockTokens.EXPECT().GenerateTokens(gomock.Any(), user).Return(nil, errors.New("token error"))
 				mockLogger.EXPECT().Error(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 			},
 			wantErr: domain.ErrInternalServer,
@@ -96,7 +93,7 @@ func TestLoginService_Login_WithMocks(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			access, refresh, err := svc.Login(context.Background(), tt.email, tt.password)
+			access, err := svc.Login(context.Background(), tt.email, tt.password)
 
 			if tt.wantErr != nil {
 				if !errors.Is(err, tt.wantErr) && err.Error() != tt.wantErr.Error() {
@@ -115,9 +112,6 @@ func TestLoginService_Login_WithMocks(t *testing.T) {
 
 			if access != tt.wantAccess {
 				t.Errorf("Login() access = %v, want %v", access, tt.wantAccess)
-			}
-			if refresh != tt.wantRefresh {
-				t.Errorf("Login() refresh = %v, want %v", refresh, tt.wantRefresh)
 			}
 		})
 	}

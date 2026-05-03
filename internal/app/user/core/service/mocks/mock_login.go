@@ -110,13 +110,12 @@ func (m *MockTokenService) EXPECT() *MockTokenServiceMockRecorder {
 }
 
 // GenerateTokens mocks base method.
-func (m *MockTokenService) GenerateTokens(ctx context.Context, user *domain.User) (*domain.TokenDetails, *domain.TokenDetails, error) {
+func (m *MockTokenService) GenerateTokens(ctx context.Context, user *domain.User) (*domain.TokenDetails, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GenerateTokens", ctx, user)
 	ret0, _ := ret[0].(*domain.TokenDetails)
-	ret1, _ := ret[1].(*domain.TokenDetails)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // GenerateTokens indicates an expected call of GenerateTokens.
@@ -165,13 +164,12 @@ func (m *MockLoginService) EXPECT() *MockLoginServiceMockRecorder {
 }
 
 // Login mocks base method.
-func (m *MockLoginService) Login(ctx context.Context, email, password string) (string, string, error) {
+func (m *MockLoginService) Login(ctx context.Context, email, password string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Login", ctx, email, password)
 	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(string)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Login indicates an expected call of Login.
