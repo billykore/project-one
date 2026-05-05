@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/billykore/project-one/internal/app/user/adapters/dto"
 	"github.com/billykore/project-one/internal/app/user/core/ports"
 	"github.com/labstack/echo/v4"
 )
@@ -30,12 +29,12 @@ func AuthMiddleware(tks ports.TokenService) echo.MiddlewareFunc {
 			}
 
 			if token == "" {
-				return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
+				return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
 			}
 
 			userID, err := tks.ValidateToken(c.Request().Context(), token)
 			if err != nil {
-				return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
+				return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
 			}
 
 			// Store userID for downstream handlers

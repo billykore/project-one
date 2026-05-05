@@ -1,6 +1,5 @@
 .PHONY: build run test mock vet lint clean docs help migrate-create migrate-up migrate-down
 
-APP_NAME := user
 BUILD_DIR := ./bin
 
 ## build: Compile the application binary
@@ -33,7 +32,7 @@ clean:
 
 ## docs: Generate swagger documentation
 docs:
-	./scripts/docs.sh $(APP_NAME)
+	./scripts/docs.sh
 
 ## migrate-create: Create a new migration file (e.g., make migrate-create name=create_users_table)
 migrate-create:

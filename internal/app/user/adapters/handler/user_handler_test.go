@@ -8,7 +8,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/billykore/project-one/internal/app/user/adapters/dto"
 	"github.com/billykore/project-one/internal/app/user/core/domain"
 	"github.com/billykore/project-one/internal/app/user/core/service/mocks"
 	"github.com/go-playground/validator/v10"
@@ -38,7 +37,7 @@ func TestUserHandler_Me(t *testing.T) {
 
 		if assert.NoError(t, h.Me(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
-			var res dto.UserResponse
+			var res UserResponse
 			err := json.Unmarshal(rec.Body.Bytes(), &res)
 			assert.NoError(t, err)
 			assert.Equal(t, "John Doe", res.Name)
@@ -81,7 +80,7 @@ func TestUserHandler_HandleLogin(t *testing.T) {
 	e := echo.New()
 
 	t.Run("success", func(t *testing.T) {
-		reqBody := dto.LoginRequest{
+		reqBody := LoginRequest{
 			Email:    "test@example.com",
 			Password: "password123",
 		}
@@ -113,7 +112,7 @@ func TestUserHandler_HandleLogin(t *testing.T) {
 			assert.Equal(t, "access", accessTokenCookie.Value)
 			assert.True(t, accessTokenCookie.HttpOnly)
 
-			var res dto.LoginResponse
+			var res LoginResponse
 			err := json.Unmarshal(rec.Body.Bytes(), &res)
 			assert.NoError(t, err)
 			assert.Equal(t, "Login successful", res.Message)
@@ -132,7 +131,7 @@ func TestUserHandler_HandleLogin(t *testing.T) {
 	})
 
 	t.Run("validation_error", func(t *testing.T) {
-		reqBody := dto.LoginRequest{
+		reqBody := LoginRequest{
 			Email: "invalid-email",
 		}
 		body, _ := json.Marshal(reqBody)
@@ -147,7 +146,7 @@ func TestUserHandler_HandleLogin(t *testing.T) {
 	})
 
 	t.Run("invalid_credentials", func(t *testing.T) {
-		reqBody := dto.LoginRequest{
+		reqBody := LoginRequest{
 			Email:    "test@example.com",
 			Password: "wrongpassword",
 		}
@@ -186,7 +185,7 @@ func TestUserHandler_HandleLogout(t *testing.T) {
 
 		if assert.NoError(t, h.HandleLogout(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
-			var res dto.LogoutResponse
+			var res LogoutResponse
 			err := json.Unmarshal(rec.Body.Bytes(), &res)
 			assert.NoError(t, err)
 			assert.Equal(t, "Logged out successfully", res.Message)
@@ -228,7 +227,7 @@ func TestUserHandler_HandleRegister(t *testing.T) {
 	e := echo.New()
 
 	t.Run("success", func(t *testing.T) {
-		reqBody := dto.RegisterRequest{
+		reqBody := RegisterRequest{
 			FirstName: "John",
 			LastName:  "Doe",
 			Email:     "john@example.com",
@@ -244,15 +243,15 @@ func TestUserHandler_HandleRegister(t *testing.T) {
 
 		if assert.NoError(t, h.HandleRegister(c)) {
 			assert.Equal(t, http.StatusCreated, rec.Code)
-			var res dto.RegisterResponse
+			var res RegisterResponse
 			err := json.Unmarshal(rec.Body.Bytes(), &res)
 			assert.NoError(t, err)
-			assert.Equal(t, "user registered successfully", res.Message)
+			assert.Equal(t, "User registered successfully", res.Message)
 		}
 	})
 
 	t.Run("duplicate_email", func(t *testing.T) {
-		reqBody := dto.RegisterRequest{
+		reqBody := RegisterRequest{
 			FirstName: "John",
 			LastName:  "Doe",
 			Email:     "exists@example.com",
@@ -268,15 +267,15 @@ func TestUserHandler_HandleRegister(t *testing.T) {
 
 		if assert.NoError(t, h.HandleRegister(c)) {
 			assert.Equal(t, http.StatusBadRequest, rec.Code)
-			var res dto.ErrorResponse
+			var res ErrorResponse
 			err := json.Unmarshal(rec.Body.Bytes(), &res)
 			assert.NoError(t, err)
-			assert.Equal(t, "email is already registered", res.Error)
+			assert.Equal(t, "Email is already registered", res.Error)
 		}
 	})
 
 	t.Run("validation_error", func(t *testing.T) {
-		reqBody := dto.RegisterRequest{
+		reqBody := RegisterRequest{
 			FirstName: "Jo", // too short
 		}
 		body, _ := json.Marshal(reqBody)
@@ -291,7 +290,7 @@ func TestUserHandler_HandleRegister(t *testing.T) {
 	})
 
 	t.Run("internal_error", func(t *testing.T) {
-		reqBody := dto.RegisterRequest{
+		reqBody := RegisterRequest{
 			FirstName: "John",
 			LastName:  "Doe",
 			Email:     "john@example.com",
@@ -307,10 +306,10 @@ func TestUserHandler_HandleRegister(t *testing.T) {
 
 		if assert.NoError(t, h.HandleRegister(c)) {
 			assert.Equal(t, http.StatusInternalServerError, rec.Code)
-			var res dto.ErrorResponse
+			var res ErrorResponse
 			err := json.Unmarshal(rec.Body.Bytes(), &res)
 			assert.NoError(t, err)
-			assert.Equal(t, "something went wrong", res.Error)
+			assert.Equal(t, "Something went wrong", res.Error)
 		}
 	})
 }
