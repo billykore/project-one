@@ -1,5 +1,5 @@
 #!/bin/bash
-# Usage: ./scripts/build.sh [APP_NAME] [BUILD_DIR]
-APP_NAME="${1:-greeting}"
-BUILD_DIR="${2:-./bin}"
-go build -mod=mod -o "${BUILD_DIR}/${APP_NAME}" "./cmd/${APP_NAME}"
+# Usage: ./scripts/build.sh [BUILD_DIR]
+BUILD_DIR="${1:-./bin}"
+go build -mod=mod -o "${BUILD_DIR}/main" "./cmd/main.go"
+echo "Build completed. Binary is located at ${BUILD_DIR}/main"
