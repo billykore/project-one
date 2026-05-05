@@ -5,18 +5,16 @@ import (
 	"fmt"
 
 	user "github.com/billykore/project-one/api/swagger"
-	postHandler "github.com/billykore/project-one/internal/app/post/adapters/handler"
-	postRepo "github.com/billykore/project-one/internal/app/post/adapters/repository"
-	postService "github.com/billykore/project-one/internal/app/post/core/service"
-	"github.com/billykore/project-one/internal/app/user/adapters/handler"
-	"github.com/billykore/project-one/internal/app/user/adapters/hasher"
-	"github.com/billykore/project-one/internal/app/user/adapters/repository"
-	"github.com/billykore/project-one/internal/app/user/adapters/token"
-	"github.com/billykore/project-one/internal/app/user/core/service"
-	"github.com/billykore/project-one/internal/config" // Import the new config package
-	"github.com/billykore/project-one/internal/pkg/logger"
-	"github.com/go-playground/validator/v10"
+	"github.com/billykore/project-one/internal/adapters/handler"
+	"github.com/billykore/project-one/internal/adapters/hasher"
+	"github.com/billykore/project-one/internal/adapters/logger"
+	"github.com/billykore/project-one/internal/adapters/repository"
+	"github.com/billykore/project-one/internal/adapters/token"
+	"github.com/billykore/project-one/internal/adapters/validator"
+	"github.com/billykore/project-one/internal/config"
+	"github.com/billykore/project-one/internal/core/service"
 	"github.com/labstack/echo/v4"
+
 	echoSwagger "github.com/swaggo/echo-swagger"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -58,22 +56,20 @@ func main() {
 	val := validator.New()
 
 	// 3. Initialize Adapters
-	userRepo := repository.NewPostgresUserRepository(db)
-	userTokenRepo := repository.NewPostgresUserTokenRepository(db)
-	tks := token.NewJWTTokenService(cfg.JWT.SecretKey, cfg.JWT.ExpirationTime) // Pass JWT secret and expiration from config
-	hsh := hasher.NewBcryptHasher()
-
-	pRepo := postRepo.NewPostgresPostRepository(db)
+	userRepo := repository.NewUserRepository(db)
+	userTokenRepo := repository.NewUserTokenRepository(db)
+	postRepo := repository.NewPostRepository(db)
+	tokenSvc := token.NewJWTTokenService(cfg.JWT.SecretKey, cfg.JWT.ExpirationTime)
+	hasher := hasher.NewBcryptHasher()
 
 	// 4. Initialize Service
-	svc := service.NewLoginService(userRepo, tks, userTokenRepo, hsh, lgr)
-	userSvc := service.NewUserService(userRepo, userTokenRepo, hsh)
-
-	pSvc := postService.NewPostService(pRepo, lgr)
+	loginSvc := service.NewLoginService(userRepo, tokenSvc, userTokenRepo, hasher, lgr)
+	userSvc := service.NewUserService(userRepo, userTokenRepo, hasher)
+	postSvc := service.NewPostService(postRepo, lgr)
 
 	// 5. Initialize Handler
-	userHdl := handler.NewUserHandler(userSvc, svc, val)
-	pHdl := postHandler.NewPostHandler(pSvc, val)
+	userHdl := handler.NewUserHandler(userSvc, loginSvc, val)
+	postHdl := handler.NewPostHandler(postSvc, val)
 
 	// 6. Set up Echo
 	e := echo.New()
@@ -85,10 +81,9 @@ func main() {
 
 	e.POST("/users/register", userHdl.HandleRegister)
 	e.POST("/users/login", userHdl.HandleLogin)
-	e.POST("/users/logout", userHdl.HandleLogout, handler.AuthMiddleware(tks))
-	e.GET("/users/me", userHdl.Me, handler.AuthMiddleware(tks))
-
-	e.POST("/posts", pHdl.CreatePost, handler.AuthMiddleware(tks))
+	e.POST("/users/logout", userHdl.HandleLogout, handler.AuthMiddleware(tokenSvc))
+	e.GET("/users/me", userHdl.Me, handler.AuthMiddleware(tokenSvc))
+	e.POST("/posts", postHdl.CreatePost, handler.AuthMiddleware(tokenSvc))
 
 	// Start server
 	lgr.Info(ctx, "starting server", "port", cfg.App.Port)

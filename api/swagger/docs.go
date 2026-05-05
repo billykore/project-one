@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/post": {
+        "/posts": {
             "post": {
                 "security": [
                     {
@@ -40,7 +40,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_billykore_project-one_internal_app_post_adapters_dto.CreatePostRequest"
+                            "$ref": "#/definitions/internal_adapters_handler.CreatePostRequest"
                         }
                     }
                 ],
@@ -48,31 +48,31 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_billykore_project-one_internal_app_post_adapters_dto.CreatePostResponse"
+                            "$ref": "#/definitions/internal_adapters_handler.CreatePostResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_billykore_project-one_internal_app_post_adapters_dto.ErrorResponse"
+                            "$ref": "#/definitions/internal_adapters_handler.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_billykore_project-one_internal_app_post_adapters_dto.ErrorResponse"
+                            "$ref": "#/definitions/internal_adapters_handler.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_billykore_project-one_internal_app_post_adapters_dto.ErrorResponse"
+                            "$ref": "#/definitions/internal_adapters_handler.ErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/user/login": {
+        "/users/login": {
             "post": {
                 "description": "Authenticate a user and return access and refresh tokens via HttpOnly cookies.",
                 "consumes": [
@@ -92,7 +92,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_billykore_project-one_internal_app_user_adapters_dto.LoginRequest"
+                            "$ref": "#/definitions/internal_adapters_handler.LoginRequest"
                         }
                     }
                 ],
@@ -100,31 +100,31 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_billykore_project-one_internal_app_user_adapters_dto.LoginResponse"
+                            "$ref": "#/definitions/internal_adapters_handler.LoginResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_billykore_project-one_internal_app_user_adapters_dto.ErrorResponse"
+                            "$ref": "#/definitions/internal_adapters_handler.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_billykore_project-one_internal_app_user_adapters_dto.ErrorResponse"
+                            "$ref": "#/definitions/internal_adapters_handler.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_billykore_project-one_internal_app_user_adapters_dto.ErrorResponse"
+                            "$ref": "#/definitions/internal_adapters_handler.ErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/user/logout": {
+        "/users/logout": {
             "post": {
                 "security": [
                     {
@@ -146,25 +146,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_billykore_project-one_internal_app_user_adapters_dto.LogoutResponse"
+                            "$ref": "#/definitions/internal_adapters_handler.LogoutResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_billykore_project-one_internal_app_user_adapters_dto.ErrorResponse"
+                            "$ref": "#/definitions/internal_adapters_handler.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_billykore_project-one_internal_app_user_adapters_dto.ErrorResponse"
+                            "$ref": "#/definitions/internal_adapters_handler.ErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/user/me": {
+        "/users/me": {
             "get": {
                 "security": [
                     {
@@ -186,25 +186,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_billykore_project-one_internal_app_user_adapters_dto.UserResponse"
+                            "$ref": "#/definitions/internal_adapters_handler.UserResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_billykore_project-one_internal_app_user_adapters_dto.ErrorResponse"
+                            "$ref": "#/definitions/internal_adapters_handler.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_billykore_project-one_internal_app_user_adapters_dto.ErrorResponse"
+                            "$ref": "#/definitions/internal_adapters_handler.ErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/user/register": {
+        "/users/register": {
             "post": {
                 "description": "Create a new user account.",
                 "consumes": [
@@ -224,7 +224,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_billykore_project-one_internal_app_user_adapters_dto.RegisterRequest"
+                            "$ref": "#/definitions/internal_adapters_handler.RegisterRequest"
                         }
                     }
                 ],
@@ -232,19 +232,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_billykore_project-one_internal_app_user_adapters_dto.RegisterResponse"
+                            "$ref": "#/definitions/internal_adapters_handler.RegisterResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_billykore_project-one_internal_app_user_adapters_dto.ErrorResponse"
+                            "$ref": "#/definitions/internal_adapters_handler.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_billykore_project-one_internal_app_user_adapters_dto.ErrorResponse"
+                            "$ref": "#/definitions/internal_adapters_handler.ErrorResponse"
                         }
                     }
                 }
@@ -252,7 +252,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "github_com_billykore_project-one_internal_app_post_adapters_dto.CreatePostRequest": {
+        "internal_adapters_handler.CreatePostRequest": {
             "type": "object",
             "required": [
                 "content",
@@ -274,7 +274,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_billykore_project-one_internal_app_post_adapters_dto.CreatePostResponse": {
+        "internal_adapters_handler.CreatePostResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -285,7 +285,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_billykore_project-one_internal_app_post_adapters_dto.ErrorResponse": {
+        "internal_adapters_handler.ErrorResponse": {
             "type": "object",
             "properties": {
                 "error": {
@@ -293,15 +293,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_billykore_project-one_internal_app_user_adapters_dto.ErrorResponse": {
-            "type": "object",
-            "properties": {
-                "error": {
-                    "type": "string"
-                }
-            }
-        },
-        "github_com_billykore_project-one_internal_app_user_adapters_dto.LoginRequest": {
+        "internal_adapters_handler.LoginRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -317,7 +309,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_billykore_project-one_internal_app_user_adapters_dto.LoginResponse": {
+        "internal_adapters_handler.LoginResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -325,7 +317,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_billykore_project-one_internal_app_user_adapters_dto.LogoutResponse": {
+        "internal_adapters_handler.LogoutResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -333,7 +325,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_billykore_project-one_internal_app_user_adapters_dto.RegisterRequest": {
+        "internal_adapters_handler.RegisterRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -359,7 +351,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_billykore_project-one_internal_app_user_adapters_dto.RegisterResponse": {
+        "internal_adapters_handler.RegisterResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -367,7 +359,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_billykore_project-one_internal_app_user_adapters_dto.UserResponse": {
+        "internal_adapters_handler.UserResponse": {
             "type": "object",
             "properties": {
                 "email": {

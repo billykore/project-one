@@ -4,15 +4,15 @@ BUILD_DIR := ./bin
 
 ## build: Compile the application binary
 build:
-	./scripts/build.sh $(APP_NAME) $(BUILD_DIR)
+	./scripts/build.sh $(BUILD_DIR)
 
 ## run: Build and run the application
 run: build
-	./scripts/run.sh $(APP_NAME) $(BUILD_DIR)
+	./scripts/run.sh $(BUILD_DIR)
 
 ## test: Run all tests
 test:
-	./scripts/test.sh $(APP_NAME)
+	./scripts/test.sh
 
 ## mock: Generate test mocks
 mock:
@@ -20,11 +20,11 @@ mock:
 
 ## vet: Run go vet
 vet:
-	./scripts/vet.sh $(APP_NAME)
+	./scripts/vet.sh
 
 ## lint: Run static analysis (requires golangci-lint)
 lint:
-	./scripts/lint.sh $(APP_NAME)
+	./scripts/lint.sh
 
 ## clean: Remove build artifacts
 clean:
