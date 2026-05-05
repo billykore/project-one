@@ -4,15 +4,16 @@ import (
 	"context"
 	"github.com/billykore/project-one/internal/app/post/core/domain"
 	"github.com/billykore/project-one/internal/app/post/core/ports"
+	"github.com/lib/pq"
 	"gorm.io/gorm"
 )
 
 type postModel struct {
 	gorm.Model
-	UserID  uint     `gorm:"notNull"`
-	Title   string   `gorm:"size:255;notNull"`
-	Content string   `gorm:"type:text;notNull"`
-	Tags    []string `gorm:"type:text[]"`
+	UserID  uint           `gorm:"notNull"`
+	Title   string         `gorm:"size:255;notNull"`
+	Content string         `gorm:"type:text;notNull"`
+	Tags    pq.StringArray `gorm:"type:text[]"`
 }
 
 func (m *postModel) TableName() string {
@@ -23,7 +24,7 @@ func (m *postModel) fromDomain(p *domain.Post) {
 	m.UserID = uint(p.UserID)
 	m.Title = p.Title
 	m.Content = p.Content
-	m.Tags = p.Tags
+	m.Tags = pq.StringArray(p.Tags)
 }
 
 type postgresPostRepository struct {
@@ -41,5 +42,7 @@ func (r *postgresPostRepository) Create(ctx context.Context, post *domain.Post) 
 		return err
 	}
 	post.ID = int(m.ID)
+	post.CreatedAt = m.CreatedAt
+	post.UpdatedAt = m.UpdatedAt
 	return nil
 }

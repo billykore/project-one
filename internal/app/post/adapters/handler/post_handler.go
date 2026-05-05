@@ -46,7 +46,12 @@ func (h *postHandler) CreatePost(c echo.Context) error {
 	}
 
 	if err := h.validator.Struct(req); err != nil {
-		for _, err := range err.(validator.ValidationErrors) {
+		validationErrs, ok := err.(validator.ValidationErrors)
+		if !ok {
+			return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
+		}
+
+		for _, err := range validationErrs {
 			if err.Field() == "Title" && err.Tag() == "required" {
 				return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Title is required"})
 			}
@@ -54,7 +59,7 @@ func (h *postHandler) CreatePost(c echo.Context) error {
 				return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Content must be 10 characters minimum"})
 			}
 		}
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Validation failed"})
 	}
 
 	post, err := h.postSvc.CreatePost(c.Request().Context(), userID, req.Title, req.Content, req.Tags)
