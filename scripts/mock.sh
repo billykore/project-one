@@ -1,8 +1,7 @@
 #!/bin/bash
 
-# Define the ports directory and mocks destination
-PORTS_DIR="internal/app/user/core/ports"
-MOCKS_DEST="internal/app/user/core/service/mocks"
+# Define apps to generate mocks for
+APPS=("user" "post")
 
 # Check if mockgen is installed
 if ! command -v mockgen &> /dev/null; then
@@ -12,14 +11,21 @@ fi
 
 echo "Generating mocks..."
 
-# Generate mocks for each file in ports directory
-for file in $PORTS_DIR/*.go; do
-    filename=$(basename "$file")
-    mockname="mock_${filename}"
-    
-    echo "Processing $file -> $MOCKS_DEST/$mockname"
-    
-    mockgen -source="$file" -destination="$MOCKS_DEST/$mockname" -package=mocks
+for app in "${APPS[@]}"; do
+    PORTS_DIR="internal/app/$app/core/ports"
+    MOCKS_DEST="internal/app/$app/core/service/mocks"
+
+    if [ -d "$PORTS_DIR" ]; then
+        mkdir -p "$MOCKS_DEST"
+        for file in $PORTS_DIR/*.go; do
+            filename=$(basename "$file")
+            mockname="mock_${filename}"
+            
+            echo "Processing $file -> $MOCKS_DEST/$mockname"
+            
+            mockgen -source="$file" -destination="$MOCKS_DEST/$mockname" -package=mocks
+        done
+    fi
 done
 
 echo "Mocks generation completed."

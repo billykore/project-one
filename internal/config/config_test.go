@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/billykore/project-one/internal/app/user/config" // Alias the package to avoid name collision with the test package
+	"github.com/billykore/project-one/internal/config" // Alias the package to avoid name collision with the test package
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )

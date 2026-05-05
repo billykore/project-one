@@ -4,14 +4,17 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/billykore/project-one/api/user"
+	user "github.com/billykore/project-one/api/swagger"
+	postHandler "github.com/billykore/project-one/internal/app/post/adapters/handler"
+	postRepo "github.com/billykore/project-one/internal/app/post/adapters/repository"
+	postService "github.com/billykore/project-one/internal/app/post/core/service"
 	"github.com/billykore/project-one/internal/app/user/adapters/handler"
 	"github.com/billykore/project-one/internal/app/user/adapters/hasher"
-	"github.com/billykore/project-one/internal/app/user/adapters/logger"
 	"github.com/billykore/project-one/internal/app/user/adapters/repository"
 	"github.com/billykore/project-one/internal/app/user/adapters/token"
-	"github.com/billykore/project-one/internal/app/user/config" // Import the new config package
 	"github.com/billykore/project-one/internal/app/user/core/service"
+	"github.com/billykore/project-one/internal/config" // Import the new config package
+	"github.com/billykore/project-one/internal/pkg/logger"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	echoSwagger "github.com/swaggo/echo-swagger"
@@ -29,7 +32,7 @@ import (
 // @name            Authorization
 func main() {
 	ctx := context.Background()
-	lgr := logger.NewZerologLogger()
+	lgr := logger.New()
 
 	// Load configuration
 	cfg, err := config.LoadConfig("./configs")
@@ -60,12 +63,17 @@ func main() {
 	tks := token.NewJWTTokenService(cfg.JWT.SecretKey, cfg.JWT.ExpirationTime) // Pass JWT secret and expiration from config
 	hsh := hasher.NewBcryptHasher()
 
+	pRepo := postRepo.NewPostgresPostRepository(db)
+
 	// 4. Initialize Service
 	svc := service.NewLoginService(userRepo, tks, userTokenRepo, hsh, lgr)
 	userSvc := service.NewUserService(userRepo, userTokenRepo, hsh)
 
+	pSvc := postService.NewPostService(pRepo, lgr)
+
 	// 5. Initialize Handler
 	userHdl := handler.NewUserHandler(userSvc, svc, val)
+	pHdl := postHandler.NewPostHandler(pSvc, val)
 
 	// 6. Set up Echo
 	e := echo.New()
@@ -75,10 +83,12 @@ func main() {
 		e.GET("/swagger/*", echoSwagger.WrapHandler)
 	}
 
-	e.POST("/user/register", userHdl.HandleRegister)
-	e.POST("/user/login", userHdl.HandleLogin)
-	e.POST("/user/logout", userHdl.HandleLogout, handler.AuthMiddleware(tks))
-	e.GET("/user/me", userHdl.Me, handler.AuthMiddleware(tks))
+	e.POST("/users/register", userHdl.HandleRegister)
+	e.POST("/users/login", userHdl.HandleLogin)
+	e.POST("/users/logout", userHdl.HandleLogout, handler.AuthMiddleware(tks))
+	e.GET("/users/me", userHdl.Me, handler.AuthMiddleware(tks))
+
+	e.POST("/posts", pHdl.CreatePost, handler.AuthMiddleware(tks))
 
 	// Start server
 	lgr.Info(ctx, "starting server", "port", cfg.App.Port)

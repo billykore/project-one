@@ -1,5 +1,32 @@
 basePath: /
 definitions:
+  github_com_billykore_project-one_internal_app_post_adapters_dto.CreatePostRequest:
+    properties:
+      content:
+        minLength: 10
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+    required:
+    - content
+    - title
+    type: object
+  github_com_billykore_project-one_internal_app_post_adapters_dto.CreatePostResponse:
+    properties:
+      message:
+        type: string
+      redirect_url:
+        type: string
+    type: object
+  github_com_billykore_project-one_internal_app_post_adapters_dto.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
   github_com_billykore_project-one_internal_app_user_adapters_dto.ErrorResponse:
     properties:
       error:
@@ -64,6 +91,42 @@ info:
   title: User Service API
   version: "1.0"
 paths:
+  /post:
+    post:
+      consumes:
+      - application/json
+      description: Create a new post for the authenticated user.
+      parameters:
+      - description: Post details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_billykore_project-one_internal_app_post_adapters_dto.CreatePostRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_app_post_adapters_dto.CreatePostResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_app_post_adapters_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_app_post_adapters_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_app_post_adapters_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create post
+      tags:
+      - posts
   /user/login:
     post:
       consumes:
