@@ -10,6 +10,7 @@ export const useHome = () => {
     isLoading: true,
     error: null,
   });
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -38,6 +39,9 @@ export const useHome = () => {
     fetchUser();
   }, [router]);
 
+  const openLogoutModal = () => setIsLogoutModalOpen(true);
+  const closeLogoutModal = () => setIsLogoutModalOpen(false);
+
   const handleLogout = async () => {
     try {
       await api.post("/users/logout", {});
@@ -49,8 +53,21 @@ export const useHome = () => {
     }
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isLogoutModalOpen) {
+        closeLogoutModal();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isLogoutModalOpen]);
+
   return {
     ...state,
+    isLogoutModalOpen,
+    openLogoutModal,
+    closeLogoutModal,
     handleLogout,
   };
 };
