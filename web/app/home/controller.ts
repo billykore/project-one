@@ -14,7 +14,7 @@ export const useHome = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const userData = await api.get<UserResponse>("/user/me");
+        const userData = await api.get<UserResponse>("/users/me");
         setState({
           user: userData,
           isLoading: false,
@@ -40,7 +40,7 @@ export const useHome = () => {
 
   const handleLogout = async () => {
     try {
-      await api.post("/user/logout", {});
+      await api.post("/users/logout", {});
       router.push("/login");
     } catch (err) {
       console.error("Logout failed:", err);

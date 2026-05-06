@@ -65,7 +65,7 @@ export default function HomePage() {
       </main>
 
       <footer className="bg-white py-6 text-center text-sm text-gray-500 dark:bg-zinc-900 dark:text-zinc-400">
-        &copy; {new Date().getFullYear()} User Service API. All rights reserved.
+        &copy; {new Date().getFullYear()} Project One. All rights reserved.
       </footer>
     </div>
   );
