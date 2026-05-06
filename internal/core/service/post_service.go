@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
@@ -33,5 +34,22 @@ func (s *postService) CreatePost(ctx context.Context, userID int, title, content
 	}
 
 	s.log.Info(ctx, "post created successfully", "postID", post.ID, "userID", userID)
+	return post, nil
+}
+
+func (s *postService) GetPostByID(ctx context.Context, id int) (*domain.Post, error) {
+	if id <= 0 {
+		return nil, domain.ErrInvalidPost
+	}
+
+	post, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, domain.ErrPostNotFound) {
+			return nil, err
+		}
+		s.log.Error(ctx, "failed to get post by id", "postID", id, "error", err)
+		return nil, domain.ErrInternalServer
+	}
+
 	return post, nil
 }

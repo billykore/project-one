@@ -55,3 +55,54 @@ func TestPostService_CreatePost(t *testing.T) {
 		assert.True(t, errors.Is(err, domain.ErrInternalServer))
 	})
 }
+
+func TestPostService_GetPostByID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mocks.NewMockPostRepository(ctrl)
+	mockLog := mocks.NewMockLogger(ctrl)
+	svc := NewPostService(mockRepo, mockLog)
+
+	ctx := context.Background()
+	postID := 1
+
+	t.Run("success", func(t *testing.T) {
+		expectedPost := &domain.Post{ID: postID, Title: "Test Title"}
+		mockRepo.EXPECT().GetByID(ctx, postID).Return(expectedPost, nil)
+
+		post, err := svc.GetPostByID(ctx, postID)
+
+		assert.NoError(t, err)
+		assert.Equal(t, expectedPost, post)
+	})
+
+	t.Run("not found", func(t *testing.T) {
+		mockRepo.EXPECT().GetByID(ctx, postID).Return(nil, domain.ErrPostNotFound)
+
+		post, err := svc.GetPostByID(ctx, postID)
+
+		assert.Error(t, err)
+		assert.Nil(t, post)
+		assert.True(t, errors.Is(err, domain.ErrPostNotFound))
+	})
+
+	t.Run("repository error", func(t *testing.T) {
+		mockRepo.EXPECT().GetByID(ctx, postID).Return(nil, errors.New("db error"))
+		mockLog.EXPECT().Error(ctx, "failed to get post by id", "postID", postID, "error", gomock.Any())
+
+		post, err := svc.GetPostByID(ctx, postID)
+
+		assert.Error(t, err)
+		assert.Nil(t, post)
+		assert.True(t, errors.Is(err, domain.ErrInternalServer))
+	})
+
+	t.Run("invalid id", func(t *testing.T) {
+		post, err := svc.GetPostByID(ctx, 0)
+
+		assert.Error(t, err)
+		assert.Nil(t, post)
+		assert.True(t, errors.Is(err, domain.ErrInvalidPost))
+	})
+}

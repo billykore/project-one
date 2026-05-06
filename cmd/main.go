@@ -84,6 +84,7 @@ func main() {
 	e.POST("/users/logout", userHdl.HandleLogout, handler.AuthMiddleware(tokenSvc))
 	e.GET("/users/me", userHdl.Me, handler.AuthMiddleware(tokenSvc))
 	e.POST("/posts", postHdl.CreatePost, handler.AuthMiddleware(tokenSvc))
+	e.GET("/posts/:id", postHdl.GetPostByID, handler.AuthMiddleware(tokenSvc))
 
 	// Start server
 	lgr.Info(ctx, "starting server", "port", cfg.App.Port)
