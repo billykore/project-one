@@ -2,13 +2,13 @@ You are a senior engineer helping me with a new development. Create plan for fol
 
 Pre-requisite:
 
-- Work in /web directory.
+- Work /internal directory.
 - Read @README.md to understand the project scope, architecture, and constraints.
 - Read @AGENTS.md to learn the coding style, rules, and constraints for this codebase.
 
 Development focus:
 
-- Enhance web logout flow.
+- Create API for get post by ID.
 
 Plan:
 
@@ -17,8 +17,42 @@ Plan:
 - Call out important decisions or tradeoffs.
 - Mention edge cases we should keep in mind.
 
-Requirements:
 
-- Toggle a modal box to confirm if user are sure to logout.
+API Specification:
+
+- Method: GET 
+- Endpoint: /posts/:id
+- 200 Success response:
+```json
+{
+    "id": 1,
+    "message": "My first post",
+    "content": "The content is goes here."
+}
+```
+- 404 Bad Request response:
+```json
+{
+    "error": "Post not found"
+}
+```
+- 500 Internal Server Error response:
+```json
+{
+    "error": "Something went wrong"
+}
+```
+
+Dependencies:
+
+- Echo for routing.
+- JWT for authentication.
+- GORM for ORM.
+- PostgreSQL for database.
+- Validator for input validation.
+
+Rules:
+
+- Post ID must be integer and not 0
 
 Explain the steps clearly so that a junior programmer or an AI model can easily understand.

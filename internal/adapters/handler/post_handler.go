@@ -1,9 +1,11 @@
 package handler
 
 import (
-	"fmt"
+	"errors"
 	"net/http"
+	"strconv"
 
+	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
@@ -68,7 +70,46 @@ func (h *postHandler) CreatePost(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusCreated, CreatePostResponse{
-		Message:     "Post created successfully",
-		RedirectURL: fmt.Sprintf("/posts/%d", post.ID),
+		ID:      post.ID,
+		Message: "Post created successfully",
+	})
+}
+
+// GetPostByID handles the GET /posts/:id endpoint.
+// @Summary      Get post by ID
+// @Description  Retrieve a specific post by its ID.
+// @Tags         posts
+// @Produce      json
+// @Param        id   path      int  true  "Post ID"
+// @Success      200  {object}  PostResponse
+// @Failure      400  {object}  ErrorResponse
+// @Failure      404  {object}  ErrorResponse
+// @Failure      500  {object}  ErrorResponse
+// @Router       /posts/{id} [get]
+func (h *postHandler) GetPostByID(c echo.Context) error {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Post ID must be a number"})
+	}
+
+	post, err := h.postSvc.GetPostByID(c.Request().Context(), id)
+	if err != nil {
+		if errors.Is(err, domain.ErrPostNotFound) {
+			return c.JSON(http.StatusNotFound, ErrorResponse{Error: "Post not found"})
+		}
+		if errors.Is(err, domain.ErrInvalidPost) {
+			return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Post ID must be integer and not 0"})
+		}
+		return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Something went wrong"})
+	}
+
+	return c.JSON(http.StatusOK, PostResponse{
+		ID:        post.ID,
+		Message:   post.Title,
+		Content:   post.Content,
+		Tags:      post.Tags,
+		CreatedAt: post.CreatedAt,
+		UpdatedAt: post.UpdatedAt,
 	})
 }
