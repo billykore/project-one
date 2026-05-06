@@ -83,23 +83,33 @@ func (h *postHandler) CreatePost(c echo.Context) error {
 // @Param        id   path      int  true  "Post ID"
 // @Success      200  {object}  PostResponse
 // @Failure      400  {object}  ErrorResponse
+// @Failure      401  {object}  ErrorResponse
+// @Failure      403  {object}  ErrorResponse
 // @Failure      404  {object}  ErrorResponse
 // @Failure      500  {object}  ErrorResponse
 // @Router       /posts/{id} [get]
 func (h *postHandler) GetPostByID(c echo.Context) error {
+	userID, ok := c.Get("userID").(int)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
+	}
+
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Post ID must be a number"})
 	}
 
-	post, err := h.postSvc.GetPostByID(c.Request().Context(), id)
+	post, err := h.postSvc.GetPostByID(c.Request().Context(), userID, id)
 	if err != nil {
 		if errors.Is(err, domain.ErrPostNotFound) {
 			return c.JSON(http.StatusNotFound, ErrorResponse{Error: "Post not found"})
 		}
 		if errors.Is(err, domain.ErrInvalidPost) {
 			return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Post ID must be integer and not 0"})
+		}
+		if errors.Is(err, domain.ErrUnauthorized) {
+			return c.JSON(http.StatusForbidden, ErrorResponse{Error: "You do not have permission to access this post"})
 		}
 		return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Something went wrong"})
 	}

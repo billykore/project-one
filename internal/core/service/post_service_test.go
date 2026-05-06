@@ -65,13 +65,14 @@ func TestPostService_GetPostByID(t *testing.T) {
 	svc := NewPostService(mockRepo, mockLog)
 
 	ctx := context.Background()
+	userID := 1
 	postID := 1
 
 	t.Run("success", func(t *testing.T) {
-		expectedPost := &domain.Post{ID: postID, Title: "Test Title"}
+		expectedPost := &domain.Post{ID: postID, UserID: userID, Title: "Test Title"}
 		mockRepo.EXPECT().GetByID(ctx, postID).Return(expectedPost, nil)
 
-		post, err := svc.GetPostByID(ctx, postID)
+		post, err := svc.GetPostByID(ctx, userID, postID)
 
 		assert.NoError(t, err)
 		assert.Equal(t, expectedPost, post)
@@ -80,7 +81,7 @@ func TestPostService_GetPostByID(t *testing.T) {
 	t.Run("not found", func(t *testing.T) {
 		mockRepo.EXPECT().GetByID(ctx, postID).Return(nil, domain.ErrPostNotFound)
 
-		post, err := svc.GetPostByID(ctx, postID)
+		post, err := svc.GetPostByID(ctx, userID, postID)
 
 		assert.Error(t, err)
 		assert.Nil(t, post)
@@ -91,7 +92,7 @@ func TestPostService_GetPostByID(t *testing.T) {
 		mockRepo.EXPECT().GetByID(ctx, postID).Return(nil, errors.New("db error"))
 		mockLog.EXPECT().Error(ctx, "failed to get post by id", "postID", postID, "error", gomock.Any())
 
-		post, err := svc.GetPostByID(ctx, postID)
+		post, err := svc.GetPostByID(ctx, userID, postID)
 
 		assert.Error(t, err)
 		assert.Nil(t, post)
@@ -99,10 +100,22 @@ func TestPostService_GetPostByID(t *testing.T) {
 	})
 
 	t.Run("invalid id", func(t *testing.T) {
-		post, err := svc.GetPostByID(ctx, 0)
+		post, err := svc.GetPostByID(ctx, userID, 0)
 
 		assert.Error(t, err)
 		assert.Nil(t, post)
 		assert.True(t, errors.Is(err, domain.ErrInvalidPost))
+	})
+
+	t.Run("unauthorized access", func(t *testing.T) {
+		expectedPost := &domain.Post{ID: postID, UserID: 2, Title: "Test Title"} // Belongs to a different user
+		mockRepo.EXPECT().GetByID(ctx, postID).Return(expectedPost, nil)
+		mockLog.EXPECT().Error(ctx, "unauthorized access to post", "postID", postID, "userID", userID)
+
+		post, err := svc.GetPostByID(ctx, userID, postID)
+
+		assert.Error(t, err)
+		assert.Nil(t, post)
+		assert.True(t, errors.Is(err, domain.ErrUnauthorized))
 	})
 }

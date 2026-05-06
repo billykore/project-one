@@ -18,6 +18,6 @@ type PostRepository interface {
 type PostService interface {
 	// CreatePost creates a new post with the given details.
 	CreatePost(ctx context.Context, userID int, title, content string, tags []string) (*domain.Post, error)
-	// GetPostByID retrieves a post by its ID.
-	GetPostByID(ctx context.Context, id int) (*domain.Post, error)
+	// GetPostByID retrieves a post by its ID for a specific user.
+	GetPostByID(ctx context.Context, userID, postID int) (*domain.Post, error)
 }

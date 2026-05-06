@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	user "github.com/billykore/project-one/api/swagger"
+	"github.com/billykore/project-one/api/swagger"
 	"github.com/billykore/project-one/internal/adapters/handler"
 	"github.com/billykore/project-one/internal/adapters/hasher"
 	"github.com/billykore/project-one/internal/adapters/logger"
@@ -39,7 +39,7 @@ func main() {
 	}
 
 	// Set dynamic Swagger host
-	user.SwaggerInfo.Host = fmt.Sprintf("localhost:%d", cfg.App.Port)
+	swagger.SwaggerInfo.Host = fmt.Sprintf("localhost:%d", cfg.App.Port)
 
 	// Construct DSN from config
 	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",

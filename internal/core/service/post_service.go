@@ -37,7 +37,7 @@ func (s *postService) CreatePost(ctx context.Context, userID int, title, content
 	return post, nil
 }
 
-func (s *postService) GetPostByID(ctx context.Context, id int) (*domain.Post, error) {
+func (s *postService) GetPostByID(ctx context.Context, userID, id int) (*domain.Post, error) {
 	if id <= 0 {
 		return nil, domain.ErrInvalidPost
 	}
@@ -49,6 +49,11 @@ func (s *postService) GetPostByID(ctx context.Context, id int) (*domain.Post, er
 		}
 		s.log.Error(ctx, "failed to get post by id", "postID", id, "error", err)
 		return nil, domain.ErrInternalServer
+	}
+
+	if post.UserID != userID {
+		s.log.Error(ctx, "unauthorized access to post", "postID", id, "userID", userID)
+		return nil, domain.ErrUnauthorized
 	}
 
 	return post, nil
