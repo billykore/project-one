@@ -28,7 +28,7 @@
 *.pid
 /bin/*
 
-plan.md
-
 # Config files with sensitive information
 /configs/*.yaml
+
+ai_plan.md

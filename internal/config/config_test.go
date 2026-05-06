@@ -49,7 +49,7 @@ jwt:
 app:
   port: 8080
 `)
-	err := os.WriteFile(filepath.Join(tempDir, "user_config.yaml"), yamlContent, 0644)
+	err := os.WriteFile(filepath.Join(tempDir, "config.yaml"), yamlContent, 0644)
 	assert.NoError(t, err)
 
 	cfg, err := config.LoadConfig(tempDir)
@@ -119,7 +119,7 @@ jwt:
 app:
   port: 8080
 `)
-	err := os.WriteFile(filepath.Join(tempDir, "user_config.yaml"), yamlContent, 0644)
+	err := os.WriteFile(filepath.Join(tempDir, "config.yaml"), yamlContent, 0644)
 	assert.NoError(t, err)
 
 	// Set environment variables that should override file values
@@ -152,7 +152,7 @@ jwt:
   # secret_key is missing
   expiration_time: 1h
 `)
-	err := os.WriteFile(filepath.Join(tempDir, "user_config.yaml"), yamlContent, 0644)
+	err := os.WriteFile(filepath.Join(tempDir, "config.yaml"), yamlContent, 0644)
 	assert.NoError(t, err)
 
 	cfg, err := config.LoadConfig(tempDir)
@@ -175,7 +175,7 @@ jwt:
   secret_key: "test_secret_key"
   expiration_time: 1h
 `)
-	err := os.WriteFile(filepath.Join(tempDir, "user_config.yaml"), yamlContent, 0644)
+	err := os.WriteFile(filepath.Join(tempDir, "config.yaml"), yamlContent, 0644)
 	assert.NoError(t, err)
 
 	cfg, err := config.LoadConfig(tempDir)
@@ -196,7 +196,7 @@ database:
 jwt:
   secret_key: "test_secret_key"
 `)
-	err := os.WriteFile(filepath.Join(tempDir, "user_config.yaml"), yamlContent, 0644)
+	err := os.WriteFile(filepath.Join(tempDir, "config.yaml"), yamlContent, 0644)
 	assert.NoError(t, err)
 
 	cfg, err := config.LoadConfig(tempDir)

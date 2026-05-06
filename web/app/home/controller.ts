@@ -10,6 +10,8 @@ export const useHome = () => {
     isLoading: true,
     error: null,
   });
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -38,7 +40,11 @@ export const useHome = () => {
     fetchUser();
   }, [router]);
 
+  const openLogoutModal = () => setIsLogoutModalOpen(true);
+  const closeLogoutModal = () => setIsLogoutModalOpen(false);
+
   const handleLogout = async () => {
+    setIsLoggingOut(true);
     try {
       await api.post("/users/logout", {});
       router.push("/login");
@@ -46,11 +52,18 @@ export const useHome = () => {
       console.error("Logout failed:", err);
       // Even if logout fails on server, we might want to redirect
       router.push("/login");
+    } finally {
+      setIsLoggingOut(false);
+      closeLogoutModal();
     }
   };
 
   return {
     ...state,
+    isLogoutModalOpen,
+    isLoggingOut,
+    openLogoutModal,
+    closeLogoutModal,
     handleLogout,
   };
 };
