@@ -11,6 +11,7 @@ export const useHome = () => {
     error: null,
   });
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -43,6 +44,7 @@ export const useHome = () => {
   const closeLogoutModal = () => setIsLogoutModalOpen(false);
 
   const handleLogout = async () => {
+    setIsLoggingOut(true);
     try {
       await api.post("/users/logout", {});
       router.push("/login");
@@ -50,22 +52,16 @@ export const useHome = () => {
       console.error("Logout failed:", err);
       // Even if logout fails on server, we might want to redirect
       router.push("/login");
+    } finally {
+      setIsLoggingOut(false);
+      closeLogoutModal();
     }
   };
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isLogoutModalOpen) {
-        closeLogoutModal();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isLogoutModalOpen]);
 
   return {
     ...state,
     isLogoutModalOpen,
+    isLoggingOut,
     openLogoutModal,
     closeLogoutModal,
     handleLogout,
