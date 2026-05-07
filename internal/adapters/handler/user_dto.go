@@ -11,11 +11,6 @@ type LoginResponse struct {
 	Message string `json:"message"`
 }
 
-// ErrorResponse is the response body for a failed login.
-type ErrorResponse struct {
-	Error string `json:"error"`
-}
-
 // LogoutResponse is the response body for a successful logout.
 type LogoutResponse struct {
 	Message string `json:"message"`
