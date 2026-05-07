@@ -8,7 +8,7 @@ import (
 	"github.com/billykore/project-one/internal/core/ports"
 )
 
-type loginService struct {
+type LoginService struct {
 	repo      ports.UserRepository
 	tokens    ports.TokenService
 	tokenRepo ports.TokenRepository
@@ -23,8 +23,23 @@ func NewLoginService(
 	tokenRepo ports.TokenRepository,
 	hasher ports.Hasher,
 	log ports.Logger,
-) ports.LoginService {
-	return &loginService{
+) *LoginService {
+	if repo == nil {
+		panic("NewLoginService: repo is required")
+	}
+	if tokens == nil {
+		panic("NewLoginService: tokens is required")
+	}
+	if tokenRepo == nil {
+		panic("NewLoginService: tokenRepo is required")
+	}
+	if hasher == nil {
+		panic("NewLoginService: hasher is required")
+	}
+	if log == nil {
+		panic("NewLoginService: log is required")
+	}
+	return &LoginService{
 		repo:      repo,
 		tokens:    tokens,
 		tokenRepo: tokenRepo,
@@ -33,7 +48,7 @@ func NewLoginService(
 	}
 }
 
-func (s *loginService) Login(ctx context.Context, email, password string) (string, error) {
+func (s *LoginService) Login(ctx context.Context, email, password string) (string, error) {
 	// 1. Get user by email
 	user, err := s.repo.GetUserByEmail(ctx, email)
 	if err != nil {
@@ -69,7 +84,7 @@ func (s *loginService) Login(ctx context.Context, email, password string) (strin
 	return accessToken.Token, nil
 }
 
-func (s *loginService) Logout(ctx context.Context, userID int) error {
+func (s *LoginService) Logout(ctx context.Context, userID int) error {
 	if userID == 0 {
 		return fmt.Errorf("%w: userID cannot be zero", domain.ErrValidationFailed)
 	}

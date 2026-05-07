@@ -11,13 +11,19 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type postHandler struct {
+type PostHandler struct {
 	postSvc   ports.PostService
 	validator ports.Validator
 }
 
-func NewPostHandler(postSvc ports.PostService, validator ports.Validator) *postHandler {
-	return &postHandler{
+func NewPostHandler(postSvc ports.PostService, validator ports.Validator) *PostHandler {
+	if postSvc == nil {
+		panic("postSvc is required")
+	}
+	if validator == nil {
+		panic("validator is required")
+	}
+	return &PostHandler{
 		postSvc:   postSvc,
 		validator: validator,
 	}
@@ -36,7 +42,7 @@ func NewPostHandler(postSvc ports.PostService, validator ports.Validator) *postH
 // @Failure      500  {object}  ErrorResponse
 // @Security     BearerAuth
 // @Router       /posts [post]
-func (h *postHandler) CreatePost(c echo.Context) error {
+func (h *PostHandler) CreatePost(c echo.Context) error {
 	userID, ok := c.Get("userID").(int)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
@@ -88,7 +94,7 @@ func (h *postHandler) CreatePost(c echo.Context) error {
 // @Failure      404  {object}  ErrorResponse
 // @Failure      500  {object}  ErrorResponse
 // @Router       /posts/{id} [get]
-func (h *postHandler) GetPostByID(c echo.Context) error {
+func (h *PostHandler) GetPostByID(c echo.Context) error {
 	userID, ok := c.Get("userID").(int)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})

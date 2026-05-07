@@ -8,19 +8,25 @@ import (
 	"github.com/billykore/project-one/internal/core/ports"
 )
 
-type postService struct {
+type PostService struct {
 	repo ports.PostRepository
 	log  ports.Logger
 }
 
-func NewPostService(repo ports.PostRepository, log ports.Logger) ports.PostService {
-	return &postService{
+func NewPostService(repo ports.PostRepository, log ports.Logger) *PostService {
+	if repo == nil {
+		panic("NewPostService: repo is required")
+	}
+	if log == nil {
+		panic("NewPostService: log is required")
+	}
+	return &PostService{
 		repo: repo,
 		log:  log,
 	}
 }
 
-func (s *postService) CreatePost(ctx context.Context, userID int, title, content string, tags []string) (*domain.Post, error) {
+func (s *PostService) CreatePost(ctx context.Context, userID int, title, content string, tags []string) (*domain.Post, error) {
 	post := &domain.Post{
 		UserID:  userID,
 		Title:   title,
@@ -37,7 +43,7 @@ func (s *postService) CreatePost(ctx context.Context, userID int, title, content
 	return post, nil
 }
 
-func (s *postService) GetPostByID(ctx context.Context, userID, id int) (*domain.Post, error) {
+func (s *PostService) GetPostByID(ctx context.Context, userID, id int) (*domain.Post, error) {
 	if id <= 0 {
 		return nil, domain.ErrInvalidPost
 	}

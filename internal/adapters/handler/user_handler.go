@@ -10,15 +10,18 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type userHandler struct {
+type UserHandler struct {
 	userSvc   ports.UserService
 	loginSvc  ports.LoginService
 	validator ports.Validator
 }
 
 // NewUserHandler creates a new instance of UserHandler.
-func NewUserHandler(userSvc ports.UserService, loginSvc ports.LoginService, validator ports.Validator) *userHandler {
-	return &userHandler{
+func NewUserHandler(userSvc ports.UserService, loginSvc ports.LoginService, validator ports.Validator) *UserHandler {
+	if userSvc == nil || loginSvc == nil || validator == nil {
+		panic("NewUserHandler: dependencies must not be nil")
+	}
+	return &UserHandler{
 		userSvc:   userSvc,
 		loginSvc:  loginSvc,
 		validator: validator,
@@ -36,7 +39,7 @@ func NewUserHandler(userSvc ports.UserService, loginSvc ports.LoginService, vali
 // @Failure      500  {object}  ErrorResponse
 // @Security     BearerAuth
 // @Router       /users/me [get]
-func (h *userHandler) Me(c echo.Context) error {
+func (h *UserHandler) Me(c echo.Context) error {
 	userID, ok := c.Get("userID").(int)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
@@ -70,7 +73,7 @@ func (h *userHandler) Me(c echo.Context) error {
 // @Failure      401  {object}  ErrorResponse
 // @Failure      500  {object}  ErrorResponse
 // @Router       /users/login [post]
-func (h *userHandler) HandleLogin(c echo.Context) error {
+func (h *UserHandler) HandleLogin(c echo.Context) error {
 	var req LoginRequest
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
@@ -112,7 +115,7 @@ func (h *userHandler) HandleLogin(c echo.Context) error {
 // @Failure      500  {object}  ErrorResponse
 // @Security     BearerAuth
 // @Router       /users/logout [post]
-func (h *userHandler) HandleLogout(c echo.Context) error {
+func (h *UserHandler) HandleLogout(c echo.Context) error {
 	userID, ok := c.Get("userID").(int)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
@@ -138,7 +141,7 @@ func (h *userHandler) HandleLogout(c echo.Context) error {
 // @Failure      400  {object}  ErrorResponse
 // @Failure      500  {object}  ErrorResponse
 // @Router       /users/register [post]
-func (h *userHandler) HandleRegister(c echo.Context) error {
+func (h *UserHandler) HandleRegister(c echo.Context) error {
 	var req RegisterRequest
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
