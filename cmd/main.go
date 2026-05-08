@@ -6,6 +6,7 @@ import (
 
 	"github.com/billykore/project-one/api/swagger"
 	"github.com/billykore/project-one/internal/api/handler"
+	"github.com/billykore/project-one/internal/api/middleware"
 	"github.com/billykore/project-one/internal/config"
 	"github.com/billykore/project-one/internal/core/usecase"
 	"github.com/billykore/project-one/internal/infrastructure/hasher"
@@ -81,13 +82,13 @@ func main() {
 
 	e.POST("/users/register", userHdl.HandleRegister)
 	e.POST("/users/login", userHdl.HandleLogin)
-	e.POST("/users/logout", userHdl.HandleLogout, handler.AuthMiddleware(tokenSvc))
-	e.GET("/users/me", userHdl.Me, handler.AuthMiddleware(tokenSvc))
-	e.POST("/posts", postHdl.CreatePost, handler.AuthMiddleware(tokenSvc))
-	e.GET("/posts", postHdl.GetPosts, handler.AuthMiddleware(tokenSvc))
-	e.GET("/posts/:id", postHdl.GetPostByID, handler.AuthMiddleware(tokenSvc))
-	e.PUT("/posts/:id", postHdl.UpdatePost, handler.AuthMiddleware(tokenSvc))
-	e.DELETE("/posts/:id", postHdl.DeletePost, handler.AuthMiddleware(tokenSvc))
+	e.POST("/users/logout", userHdl.HandleLogout, middleware.Authorize(tokenSvc))
+	e.GET("/users/me", userHdl.Me, middleware.Authorize(tokenSvc))
+	e.POST("/posts", postHdl.CreatePost, middleware.Authorize(tokenSvc))
+	e.GET("/posts", postHdl.GetPosts, middleware.Authorize(tokenSvc))
+	e.GET("/posts/:id", postHdl.GetPostByID, middleware.Authorize(tokenSvc))
+	e.PUT("/posts/:id", postHdl.UpdatePost, middleware.Authorize(tokenSvc))
+	e.DELETE("/posts/:id", postHdl.DeletePost, middleware.Authorize(tokenSvc))
 
 	// Start server
 	lgr.Info(ctx, "starting server", "port", cfg.App.Port)

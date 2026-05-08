@@ -1,4 +1,4 @@
-package handler
+package dto
 
 // ErrorResponse is the response body for a failed login.
 type ErrorResponse struct {

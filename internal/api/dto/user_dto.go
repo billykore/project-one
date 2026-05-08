@@ -1,4 +1,4 @@
-package handler
+package dto
 
 // LoginRequest is the request body for login.
 type LoginRequest struct {

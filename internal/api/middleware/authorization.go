@@ -1,15 +1,16 @@
-package handler
+package middleware
 
 import (
 	"net/http"
 	"strings"
 
+	"github.com/billykore/project-one/internal/api/dto"
 	"github.com/billykore/project-one/internal/core/ports"
 	"github.com/labstack/echo/v4"
 )
 
-// AuthMiddleware is an Echo middleware for JWT authentication.
-func AuthMiddleware(tks ports.TokenService) echo.MiddlewareFunc {
+// Authorize is an middleware to authorize requests.
+func Authorize(tks ports.TokenService) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			var token string
@@ -29,12 +30,12 @@ func AuthMiddleware(tks ports.TokenService) echo.MiddlewareFunc {
 			}
 
 			if token == "" {
-				return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
+				return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 			}
 
 			userID, err := tks.ValidateToken(c.Request().Context(), token)
 			if err != nil {
-				return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
+				return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 			}
 
 			// Store userID for downstream handlers

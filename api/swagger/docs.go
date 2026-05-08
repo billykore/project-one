@@ -50,20 +50,20 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/internal_api_handler.PostResponse"
+                                "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.PostResponse"
                             }
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
                         }
                     }
                 }
@@ -92,7 +92,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.CreatePostRequest"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.CreatePostRequest"
                         }
                     }
                 ],
@@ -100,25 +100,25 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.CreatePostResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.CreatePostResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
                         }
                     }
                 }
@@ -147,37 +147,37 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.PostResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.PostResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
                         }
                     }
                 }
@@ -213,7 +213,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.UpdatePostRequest"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.UpdatePostRequest"
                         }
                     }
                 ],
@@ -221,37 +221,37 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.PostResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.PostResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
                         }
                     }
                 }
@@ -287,25 +287,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
                         }
                     }
                 }
@@ -331,7 +331,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.LoginRequest"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.LoginRequest"
                         }
                     }
                 ],
@@ -339,25 +339,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.LoginResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.LoginResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
                         }
                     }
                 }
@@ -385,19 +385,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.LogoutResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.LogoutResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
                         }
                     }
                 }
@@ -425,19 +425,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.UserResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.UserResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
                         }
                     }
                 }
@@ -463,7 +463,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.RegisterRequest"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.RegisterRequest"
                         }
                     }
                 ],
@@ -471,19 +471,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.RegisterResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.RegisterResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
                         }
                     }
                 }
@@ -491,7 +491,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "internal_api_handler.CreatePostRequest": {
+        "github_com_billykore_project-one_internal_api_dto.CreatePostRequest": {
             "type": "object",
             "required": [
                 "content",
@@ -513,7 +513,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_api_handler.CreatePostResponse": {
+        "github_com_billykore_project-one_internal_api_dto.CreatePostResponse": {
             "type": "object",
             "properties": {
                 "id": {
@@ -524,7 +524,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_api_handler.ErrorResponse": {
+        "github_com_billykore_project-one_internal_api_dto.ErrorResponse": {
             "type": "object",
             "properties": {
                 "error": {
@@ -532,7 +532,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_api_handler.LoginRequest": {
+        "github_com_billykore_project-one_internal_api_dto.LoginRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -548,7 +548,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_api_handler.LoginResponse": {
+        "github_com_billykore_project-one_internal_api_dto.LoginResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -556,7 +556,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_api_handler.LogoutResponse": {
+        "github_com_billykore_project-one_internal_api_dto.LogoutResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -564,7 +564,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_api_handler.PostResponse": {
+        "github_com_billykore_project-one_internal_api_dto.PostResponse": {
             "type": "object",
             "properties": {
                 "content": {
@@ -593,7 +593,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_api_handler.RegisterRequest": {
+        "github_com_billykore_project-one_internal_api_dto.RegisterRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -619,7 +619,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_api_handler.RegisterResponse": {
+        "github_com_billykore_project-one_internal_api_dto.RegisterResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -627,7 +627,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_api_handler.UpdatePostRequest": {
+        "github_com_billykore_project-one_internal_api_dto.UpdatePostRequest": {
             "type": "object",
             "properties": {
                 "content": {
@@ -638,7 +638,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_api_handler.UserResponse": {
+        "github_com_billykore_project-one_internal_api_dto.UserResponse": {
             "type": "object",
             "properties": {
                 "email": {

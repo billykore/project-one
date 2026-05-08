@@ -1,6 +1,6 @@
 basePath: /
 definitions:
-  internal_api_handler.CreatePostRequest:
+  github_com_billykore_project-one_internal_api_dto.CreatePostRequest:
     properties:
       content:
         minLength: 10
@@ -15,19 +15,19 @@ definitions:
     - content
     - title
     type: object
-  internal_api_handler.CreatePostResponse:
+  github_com_billykore_project-one_internal_api_dto.CreatePostResponse:
     properties:
       id:
         type: integer
       message:
         type: string
     type: object
-  internal_api_handler.ErrorResponse:
+  github_com_billykore_project-one_internal_api_dto.ErrorResponse:
     properties:
       error:
         type: string
     type: object
-  internal_api_handler.LoginRequest:
+  github_com_billykore_project-one_internal_api_dto.LoginRequest:
     properties:
       email:
         type: string
@@ -38,17 +38,17 @@ definitions:
     - email
     - password
     type: object
-  internal_api_handler.LoginResponse:
+  github_com_billykore_project-one_internal_api_dto.LoginResponse:
     properties:
       message:
         type: string
     type: object
-  internal_api_handler.LogoutResponse:
+  github_com_billykore_project-one_internal_api_dto.LogoutResponse:
     properties:
       message:
         type: string
     type: object
-  internal_api_handler.PostResponse:
+  github_com_billykore_project-one_internal_api_dto.PostResponse:
     properties:
       content:
         type: string
@@ -67,7 +67,7 @@ definitions:
       updated_at:
         type: string
     type: object
-  internal_api_handler.RegisterRequest:
+  github_com_billykore_project-one_internal_api_dto.RegisterRequest:
     properties:
       email:
         type: string
@@ -86,19 +86,19 @@ definitions:
     - last_name
     - password
     type: object
-  internal_api_handler.RegisterResponse:
+  github_com_billykore_project-one_internal_api_dto.RegisterResponse:
     properties:
       message:
         type: string
     type: object
-  internal_api_handler.UpdatePostRequest:
+  github_com_billykore_project-one_internal_api_dto.UpdatePostRequest:
     properties:
       content:
         type: string
       title:
         type: string
     type: object
-  internal_api_handler.UserResponse:
+  github_com_billykore_project-one_internal_api_dto.UserResponse:
     properties:
       email:
         type: string
@@ -131,16 +131,16 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/internal_api_handler.PostResponse'
+              $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.PostResponse'
             type: array
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Get user posts
@@ -156,26 +156,26 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/internal_api_handler.CreatePostRequest'
+          $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.CreatePostRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/internal_api_handler.CreatePostResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.CreatePostResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Create post
@@ -199,19 +199,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Delete post
@@ -231,27 +231,27 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_api_handler.PostResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.PostResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
       summary: Get post by ID
       tags:
       - posts
@@ -270,34 +270,34 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/internal_api_handler.UpdatePostRequest'
+          $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.UpdatePostRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_api_handler.PostResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.PostResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Update post
@@ -315,26 +315,26 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/internal_api_handler.LoginRequest'
+          $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.LoginRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_api_handler.LoginResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.LoginResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
       summary: Login
       tags:
       - users
@@ -349,15 +349,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_api_handler.LogoutResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.LogoutResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Logout
@@ -374,15 +374,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_api_handler.UserResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.UserResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Get current user
@@ -399,22 +399,22 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/internal_api_handler.RegisterRequest'
+          $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.RegisterRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/internal_api_handler.RegisterResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.RegisterResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
       summary: Register
       tags:
       - users

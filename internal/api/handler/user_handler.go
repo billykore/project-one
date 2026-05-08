@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/billykore/project-one/internal/api/dto"
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
 	"github.com/labstack/echo/v4"
@@ -34,26 +35,26 @@ func NewUserHandler(userUseCase ports.UserUseCase, loginUseCase ports.LoginUseCa
 // @Tags         users
 // @Accept       json
 // @Produce      json
-// @Success      200  {object}  UserResponse
-// @Failure      401  {object}  ErrorResponse
-// @Failure      500  {object}  ErrorResponse
+// @Success      200  {object}  dto.UserResponse
+// @Failure      401  {object}  dto.ErrorResponse
+// @Failure      500  {object}  dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /users/me [get]
 func (h *UserHandler) Me(c echo.Context) error {
 	userID, ok := c.Get("userID").(int)
 	if !ok {
-		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
+		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 	}
 
 	user, err := h.userUseCase.GetCurrentUser(c.Request().Context(), userID)
 	if err != nil {
 		if errors.Is(err, domain.ErrUserNotFound) || errors.Is(err, domain.ErrUnauthorized) {
-			return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
+			return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 		}
-		return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Internal Server Error"})
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Internal Server Error"})
 	}
 
-	res := UserResponse{
+	res := dto.UserResponse{
 		Email: user.Email,
 		Name:  user.FirstName + " " + user.LastName,
 	}
@@ -67,28 +68,28 @@ func (h *UserHandler) Me(c echo.Context) error {
 // @Tags         users
 // @Accept       json
 // @Produce      json
-// @Param        request body LoginRequest true "Login credentials"
-// @Success      200  {object}  LoginResponse
-// @Failure      400  {object}  ErrorResponse
-// @Failure      401  {object}  ErrorResponse
-// @Failure      500  {object}  ErrorResponse
+// @Param        request body dto.LoginRequest true "Login credentials"
+// @Success      200  {object}  dto.LoginResponse
+// @Failure      400  {object}  dto.ErrorResponse
+// @Failure      401  {object}  dto.ErrorResponse
+// @Failure      500  {object}  dto.ErrorResponse
 // @Router       /users/login [post]
 func (h *UserHandler) HandleLogin(c echo.Context) error {
-	var req LoginRequest
+	var req dto.LoginRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid request body"})
 	}
 
 	if err := h.validator.Validate(req); err != nil {
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
 	}
 
 	accessToken, err := h.loginUseCase.Login(c.Request().Context(), req.Email, req.Password)
 	if err != nil {
 		if errors.Is(err, domain.ErrInvalidCredentials) {
-			return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Invalid email or password"})
+			return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Invalid email or password"})
 		}
-		return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Internal server error"})
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Internal server error"})
 	}
 
 	// Set access token cookie
@@ -101,7 +102,7 @@ func (h *UserHandler) HandleLogin(c echo.Context) error {
 		SameSite: http.SameSiteLaxMode,
 	})
 
-	return c.JSON(http.StatusOK, LoginResponse{Message: "Login successful"})
+	return c.JSON(http.StatusOK, dto.LoginResponse{Message: "Login successful"})
 }
 
 // HandleLogout handles the POST /users/logout endpoint.
@@ -110,22 +111,22 @@ func (h *UserHandler) HandleLogin(c echo.Context) error {
 // @Tags         users
 // @Accept       json
 // @Produce      json
-// @Success      200  {object}  LogoutResponse
-// @Failure      401  {object}  ErrorResponse
-// @Failure      500  {object}  ErrorResponse
+// @Success      200  {object}  dto.LogoutResponse
+// @Failure      401  {object}  dto.ErrorResponse
+// @Failure      500  {object}  dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /users/logout [post]
 func (h *UserHandler) HandleLogout(c echo.Context) error {
 	userID, ok := c.Get("userID").(int)
 	if !ok {
-		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
+		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 	}
 
 	if err := h.loginUseCase.Logout(c.Request().Context(), userID); err != nil {
-		return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Internal server error"})
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Internal server error"})
 	}
 
-	return c.JSON(http.StatusOK, LogoutResponse{
+	return c.JSON(http.StatusOK, dto.LogoutResponse{
 		Message: "Logged out successfully",
 	})
 }
@@ -136,19 +137,19 @@ func (h *UserHandler) HandleLogout(c echo.Context) error {
 // @Tags         users
 // @Accept       json
 // @Produce      json
-// @Param        request body RegisterRequest true "User registration details"
-// @Success      201  {object}  RegisterResponse
-// @Failure      400  {object}  ErrorResponse
-// @Failure      500  {object}  ErrorResponse
+// @Param        request body dto.RegisterRequest true "User registration details"
+// @Success      201  {object}  dto.RegisterResponse
+// @Failure      400  {object}  dto.ErrorResponse
+// @Failure      500  {object}  dto.ErrorResponse
 // @Router       /users/register [post]
 func (h *UserHandler) HandleRegister(c echo.Context) error {
-	var req RegisterRequest
+	var req dto.RegisterRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid request body"})
 	}
 
 	if err := h.validator.Validate(req); err != nil {
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
 	}
 
 	user := &domain.User{
@@ -160,15 +161,15 @@ func (h *UserHandler) HandleRegister(c echo.Context) error {
 
 	if err := h.userUseCase.Register(c.Request().Context(), user); err != nil {
 		if errors.Is(err, domain.ErrEmailAlreadyRegistered) {
-			return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Email is already registered"})
+			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Email is already registered"})
 		}
 		if errors.Is(err, domain.ErrValidationFailed) {
-			return c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
+			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
 		}
-		return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Something went wrong"})
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
 	}
 
-	return c.JSON(http.StatusCreated, RegisterResponse{
+	return c.JSON(http.StatusCreated, dto.RegisterResponse{
 		Message: "User registered successfully",
 	})
 }

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/billykore/project-one/internal/api/dto"
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
 	"github.com/go-playground/validator/v10"
@@ -35,47 +36,47 @@ func NewPostHandler(postUseCase ports.PostUseCase, validator ports.Validator) *P
 // @Tags         posts
 // @Accept       json
 // @Produce      json
-// @Param        request body CreatePostRequest true "Post details"
-// @Success      201  {object}  CreatePostResponse
-// @Failure      400  {object}  ErrorResponse
-// @Failure      401  {object}  ErrorResponse
-// @Failure      500  {object}  ErrorResponse
+// @Param        request body dto.CreatePostRequest true "Post details"
+// @Success      201  {object}  dto.CreatePostResponse
+// @Failure      400  {object}  dto.ErrorResponse
+// @Failure      401  {object}  dto.ErrorResponse
+// @Failure      500  {object}  dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /posts [post]
 func (h *PostHandler) CreatePost(c echo.Context) error {
 	userID, ok := c.Get("userID").(int)
 	if !ok {
-		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
+		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 	}
 
-	var req CreatePostRequest
+	var req dto.CreatePostRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid request body"})
 	}
 
 	if err := h.validator.Validate(req); err != nil {
 		validationErrs, ok := err.(validator.ValidationErrors)
 		if !ok {
-			return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
+			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid request body"})
 		}
 
 		for _, err := range validationErrs {
 			if err.Field() == "Title" && err.Tag() == "required" {
-				return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Title is required"})
+				return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Title is required"})
 			}
 			if err.Field() == "Content" && err.Tag() == "min" {
-				return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Content must be 10 characters minimum"})
+				return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Content must be 10 characters minimum"})
 			}
 		}
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Validation failed"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Validation failed"})
 	}
 
 	post, err := h.postUseCase.CreatePost(c.Request().Context(), userID, req.Title, req.Content, req.Tags)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Something went wrong"})
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
 	}
 
-	return c.JSON(http.StatusCreated, CreatePostResponse{
+	return c.JSON(http.StatusCreated, dto.CreatePostResponse{
 		ID:      post.ID,
 		Message: "Post created successfully",
 	})
@@ -87,40 +88,40 @@ func (h *PostHandler) CreatePost(c echo.Context) error {
 // @Tags         posts
 // @Produce      json
 // @Param        id   path      int  true  "Post ID"
-// @Success      200  {object}  PostResponse
-// @Failure      400  {object}  ErrorResponse
-// @Failure      401  {object}  ErrorResponse
-// @Failure      403  {object}  ErrorResponse
-// @Failure      404  {object}  ErrorResponse
-// @Failure      500  {object}  ErrorResponse
+// @Success      200  {object}  dto.PostResponse
+// @Failure      400  {object}  dto.ErrorResponse
+// @Failure      401  {object}  dto.ErrorResponse
+// @Failure      403  {object}  dto.ErrorResponse
+// @Failure      404  {object}  dto.ErrorResponse
+// @Failure      500  {object}  dto.ErrorResponse
 // @Router       /posts/{id} [get]
 func (h *PostHandler) GetPostByID(c echo.Context) error {
 	userID, ok := c.Get("userID").(int)
 	if !ok {
-		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
+		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 	}
 
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Post ID must be a number"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Post ID must be a number"})
 	}
 
 	post, err := h.postUseCase.GetPostByID(c.Request().Context(), userID, id)
 	if err != nil {
 		if errors.Is(err, domain.ErrPostNotFound) {
-			return c.JSON(http.StatusNotFound, ErrorResponse{Error: "Post not found"})
+			return c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "Post not found"})
 		}
 		if errors.Is(err, domain.ErrInvalidPost) {
-			return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Post ID must be integer and not 0"})
+			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Post ID must be integer and not 0"})
 		}
 		if errors.Is(err, domain.ErrUnauthorized) {
-			return c.JSON(http.StatusForbidden, ErrorResponse{Error: "You do not have permission to access this post"})
+			return c.JSON(http.StatusForbidden, dto.ErrorResponse{Error: "You do not have permission to access this post"})
 		}
-		return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Something went wrong"})
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
 	}
 
-	return c.JSON(http.StatusOK, PostResponse{
+	return c.JSON(http.StatusOK, dto.PostResponse{
 		ID:        post.ID,
 		Title:     post.Title,
 		Content:   post.Content,
@@ -137,15 +138,15 @@ func (h *PostHandler) GetPostByID(c echo.Context) error {
 // @Produce      json
 // @Param        limit   query     int  false  "Limit"
 // @Param        offset  query     int  false  "Offset"
-// @Success      200     {array}   PostResponse
-// @Failure      401     {object}  ErrorResponse
-// @Failure      500     {object}  ErrorResponse
+// @Success      200     {array}   dto.PostResponse
+// @Failure      401     {object}  dto.ErrorResponse
+// @Failure      500     {object}  dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /posts [get]
 func (h *PostHandler) GetPosts(c echo.Context) error {
 	userID, ok := c.Get("userID").(int)
 	if !ok {
-		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
+		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 	}
 
 	limit, _ := strconv.Atoi(c.QueryParam("limit"))
@@ -157,12 +158,12 @@ func (h *PostHandler) GetPosts(c echo.Context) error {
 
 	posts, err := h.postUseCase.GetPosts(c.Request().Context(), userID, limit, offset)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Something went wrong"})
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
 	}
 
-	response := make([]PostResponse, 0, len(posts))
+	response := make([]dto.PostResponse, 0, len(posts))
 	for _, p := range posts {
-		response = append(response, PostResponse{
+		response = append(response, dto.PostResponse{
 			ID:        p.ID,
 			Title:     p.Title,
 			Content:   p.Content,
@@ -182,47 +183,47 @@ func (h *PostHandler) GetPosts(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Param        id       path      int                true  "Post ID"
-// @Param        request  body      UpdatePostRequest  true  "Post details"
-// @Success      200      {object}  PostResponse
-// @Failure      400      {object}  ErrorResponse
-// @Failure      401      {object}  ErrorResponse
-// @Failure      403      {object}  ErrorResponse
-// @Failure      404      {object}  ErrorResponse
-// @Failure      500      {object}  ErrorResponse
+// @Param        request  body      dto.UpdatePostRequest  true  "Post details"
+// @Success      200      {object}  dto.PostResponse
+// @Failure      400      {object}  dto.ErrorResponse
+// @Failure      401      {object}  dto.ErrorResponse
+// @Failure      403      {object}  dto.ErrorResponse
+// @Failure      404      {object}  dto.ErrorResponse
+// @Failure      500      {object}  dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /posts/{id} [put]
 func (h *PostHandler) UpdatePost(c echo.Context) error {
 	userID, ok := c.Get("userID").(int)
 	if !ok {
-		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
+		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 	}
 
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Post ID must be a number"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Post ID must be a number"})
 	}
 
-	var req UpdatePostRequest
+	var req dto.UpdatePostRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid request body"})
 	}
 
 	post, err := h.postUseCase.UpdatePost(c.Request().Context(), userID, id, req.Title, req.Content)
 	if err != nil {
 		if errors.Is(err, domain.ErrPostNotFound) {
-			return c.JSON(http.StatusNotFound, ErrorResponse{Error: "Post not found"})
+			return c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "Post not found"})
 		}
 		if errors.Is(err, domain.ErrInvalidPost) {
-			return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Post ID must be integer and not 0"})
+			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Post ID must be integer and not 0"})
 		}
 		if errors.Is(err, domain.ErrUnauthorized) {
-			return c.JSON(http.StatusForbidden, ErrorResponse{Error: "You do not have permission to update this post"})
+			return c.JSON(http.StatusForbidden, dto.ErrorResponse{Error: "You do not have permission to update this post"})
 		}
-		return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Something went wrong"})
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
 	}
 
-	return c.JSON(http.StatusOK, PostResponse{
+	return c.JSON(http.StatusOK, dto.PostResponse{
 		ID:        post.ID,
 		Message:   "Post updated successfully",
 		UpdatedAt: post.UpdatedAt,
@@ -235,39 +236,39 @@ func (h *PostHandler) UpdatePost(c echo.Context) error {
 // @Tags         posts
 // @Param        id   path      int  true  "Post ID"
 // @Success      200  {object}  map[string]interface{}
-// @Failure      400  {object}  ErrorResponse
-// @Failure      401  {object}  ErrorResponse
-// @Failure      404  {object}  ErrorResponse
-// @Failure      500  {object}  ErrorResponse
+// @Failure      400  {object}  dto.ErrorResponse
+// @Failure      401  {object}  dto.ErrorResponse
+// @Failure      404  {object}  dto.ErrorResponse
+// @Failure      500  {object}  dto.ErrorResponse
 // @Security     BearerAuth
 // @Router       /posts/{id} [delete]
 func (h *PostHandler) DeletePost(c echo.Context) error {
 	userID, ok := c.Get("userID").(int)
 	if !ok {
-		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
+		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 	}
 
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Post ID must be a number"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Post ID must be a number"})
 	}
 
 	err = h.postUseCase.DeletePost(c.Request().Context(), userID, id)
 	if err != nil {
 		if errors.Is(err, domain.ErrPostNotFound) {
-			return c.JSON(http.StatusNotFound, ErrorResponse{Error: "Post not found"})
+			return c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "Post not found"})
 		}
 		if errors.Is(err, domain.ErrInvalidPost) {
-			return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Post ID must be integer and not 0"})
+			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Post ID must be integer and not 0"})
 		}
 		if errors.Is(err, domain.ErrUnauthorized) {
-			return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
+			return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 		}
-		return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Something went wrong"})
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
 	}
 
-	return c.JSON(http.StatusOK, PostResponse{
+	return c.JSON(http.StatusOK, dto.PostResponse{
 		ID:      id,
 		Message: "Post deleted successfully",
 	})
