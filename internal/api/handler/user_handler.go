@@ -11,20 +11,20 @@ import (
 )
 
 type UserHandler struct {
-	userSvc   ports.UserService
-	loginSvc  ports.LoginService
-	validator ports.Validator
+	userUseCase  ports.UserUseCase
+	loginUseCase ports.LoginUseCase
+	validator    ports.Validator
 }
 
 // NewUserHandler creates a new instance of UserHandler.
-func NewUserHandler(userSvc ports.UserService, loginSvc ports.LoginService, validator ports.Validator) *UserHandler {
-	if userSvc == nil || loginSvc == nil || validator == nil {
+func NewUserHandler(userUseCase ports.UserUseCase, loginUseCase ports.LoginUseCase, validator ports.Validator) *UserHandler {
+	if userUseCase == nil || loginUseCase == nil || validator == nil {
 		panic("NewUserHandler: dependencies must not be nil")
 	}
 	return &UserHandler{
-		userSvc:   userSvc,
-		loginSvc:  loginSvc,
-		validator: validator,
+		userUseCase:  userUseCase,
+		loginUseCase: loginUseCase,
+		validator:    validator,
 	}
 }
 
@@ -45,7 +45,7 @@ func (h *UserHandler) Me(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
 	}
 
-	user, err := h.userSvc.GetCurrentUser(c.Request().Context(), userID)
+	user, err := h.userUseCase.GetCurrentUser(c.Request().Context(), userID)
 	if err != nil {
 		if errors.Is(err, domain.ErrUserNotFound) || errors.Is(err, domain.ErrUnauthorized) {
 			return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
@@ -83,7 +83,7 @@ func (h *UserHandler) HandleLogin(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
 	}
 
-	accessToken, err := h.loginSvc.Login(c.Request().Context(), req.Email, req.Password)
+	accessToken, err := h.loginUseCase.Login(c.Request().Context(), req.Email, req.Password)
 	if err != nil {
 		if errors.Is(err, domain.ErrInvalidCredentials) {
 			return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Invalid email or password"})
@@ -121,7 +121,7 @@ func (h *UserHandler) HandleLogout(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
 	}
 
-	if err := h.loginSvc.Logout(c.Request().Context(), userID); err != nil {
+	if err := h.loginUseCase.Logout(c.Request().Context(), userID); err != nil {
 		return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Internal server error"})
 	}
 
@@ -158,7 +158,7 @@ func (h *UserHandler) HandleRegister(c echo.Context) error {
 		Password:  req.Password,
 	}
 
-	if err := h.userSvc.Register(c.Request().Context(), user); err != nil {
+	if err := h.userUseCase.Register(c.Request().Context(), user); err != nil {
 		if errors.Is(err, domain.ErrEmailAlreadyRegistered) {
 			return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Email is already registered"})
 		}

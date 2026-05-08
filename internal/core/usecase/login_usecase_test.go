@@ -1,4 +1,4 @@
-package service
+package usecase
 
 import (
 	"context"
@@ -7,11 +7,11 @@ import (
 	"time"
 
 	"github.com/billykore/project-one/internal/core/domain"
-	"github.com/billykore/project-one/internal/core/service/mocks"
+	"github.com/billykore/project-one/internal/core/usecase/mocks"
 	"go.uber.org/mock/gomock"
 )
 
-func TestLoginService_Login_WithMocks(t *testing.T) {
+func TestLoginUseCase_Login_WithMocks(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -21,7 +21,7 @@ func TestLoginService_Login_WithMocks(t *testing.T) {
 	mockHasher := mocks.NewMockHasher(ctrl)
 	mockLogger := mocks.NewMockLogger(ctrl)
 
-	svc := NewLoginService(mockRepo, mockTokens, mockUserTokens, mockHasher, mockLogger)
+	svc := NewLoginUseCase(mockRepo, mockTokens, mockUserTokens, mockHasher, mockLogger)
 
 	tests := []struct {
 		name       string
@@ -117,7 +117,7 @@ func TestLoginService_Login_WithMocks(t *testing.T) {
 	}
 }
 
-func TestLoginService_Logout(t *testing.T) {
+func TestLoginUseCase_Logout(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -127,7 +127,7 @@ func TestLoginService_Logout(t *testing.T) {
 	mockHasher := mocks.NewMockHasher(ctrl)
 	mockLogger := mocks.NewMockLogger(ctrl)
 
-	svc := NewLoginService(mockRepo, mockTokens, mockUserTokens, mockHasher, mockLogger)
+	svc := NewLoginUseCase(mockRepo, mockTokens, mockUserTokens, mockHasher, mockLogger)
 
 	t.Run("successful logout", func(t *testing.T) {
 		userID := 1

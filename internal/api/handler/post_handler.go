@@ -12,20 +12,20 @@ import (
 )
 
 type PostHandler struct {
-	postSvc   ports.PostService
-	validator ports.Validator
+	postUseCase ports.PostUseCase
+	validator   ports.Validator
 }
 
-func NewPostHandler(postSvc ports.PostService, validator ports.Validator) *PostHandler {
-	if postSvc == nil {
-		panic("postSvc is required")
+func NewPostHandler(postUseCase ports.PostUseCase, validator ports.Validator) *PostHandler {
+	if postUseCase == nil {
+		panic("postUseCase is required")
 	}
 	if validator == nil {
 		panic("validator is required")
 	}
 	return &PostHandler{
-		postSvc:   postSvc,
-		validator: validator,
+		postUseCase: postUseCase,
+		validator:   validator,
 	}
 }
 
@@ -70,7 +70,7 @@ func (h *PostHandler) CreatePost(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Validation failed"})
 	}
 
-	post, err := h.postSvc.CreatePost(c.Request().Context(), userID, req.Title, req.Content, req.Tags)
+	post, err := h.postUseCase.CreatePost(c.Request().Context(), userID, req.Title, req.Content, req.Tags)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Something went wrong"})
 	}
@@ -106,7 +106,7 @@ func (h *PostHandler) GetPostByID(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Post ID must be a number"})
 	}
 
-	post, err := h.postSvc.GetPostByID(c.Request().Context(), userID, id)
+	post, err := h.postUseCase.GetPostByID(c.Request().Context(), userID, id)
 	if err != nil {
 		if errors.Is(err, domain.ErrPostNotFound) {
 			return c.JSON(http.StatusNotFound, ErrorResponse{Error: "Post not found"})
@@ -123,6 +123,63 @@ func (h *PostHandler) GetPostByID(c echo.Context) error {
 	return c.JSON(http.StatusOK, PostResponse{
 		ID:        post.ID,
 		Message:   post.Title,
+		Content:   post.Content,
+		Tags:      post.Tags,
+		CreatedAt: post.CreatedAt,
+		UpdatedAt: post.UpdatedAt,
+	})
+}
+
+// UpdatePost handles the PUT /posts/:id endpoint.
+// @Summary      Update post
+// @Description  Update an existing post for the authenticated user.
+// @Tags         posts
+// @Accept       json
+// @Produce      json
+// @Param        id       path      int                true  "Post ID"
+// @Param        request  body      UpdatePostRequest  true  "Post details"
+// @Success      200      {object}  PostResponse
+// @Failure      400      {object}  ErrorResponse
+// @Failure      401      {object}  ErrorResponse
+// @Failure      403      {object}  ErrorResponse
+// @Failure      404      {object}  ErrorResponse
+// @Failure      500      {object}  ErrorResponse
+// @Security     BearerAuth
+// @Router       /posts/{id} [put]
+func (h *PostHandler) UpdatePost(c echo.Context) error {
+	userID, ok := c.Get("userID").(int)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
+	}
+
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Post ID must be a number"})
+	}
+
+	var req UpdatePostRequest
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
+	}
+
+	post, err := h.postUseCase.UpdatePost(c.Request().Context(), userID, id, req.Title, req.Content)
+	if err != nil {
+		if errors.Is(err, domain.ErrPostNotFound) {
+			return c.JSON(http.StatusNotFound, ErrorResponse{Error: "Post not found"})
+		}
+		if errors.Is(err, domain.ErrInvalidPost) {
+			return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Post ID must be integer and not 0"})
+		}
+		if errors.Is(err, domain.ErrUnauthorized) {
+			return c.JSON(http.StatusForbidden, ErrorResponse{Error: "You do not have permission to update this post"})
+		}
+		return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Something went wrong"})
+	}
+
+	return c.JSON(http.StatusOK, PostResponse{
+		ID:        post.ID,
+		Message:   "Post updated successfully",
 		Content:   post.Content,
 		Tags:      post.Tags,
 		CreatedAt: post.CreatedAt,

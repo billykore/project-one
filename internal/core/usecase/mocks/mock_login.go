@@ -139,32 +139,32 @@ func (mr *MockTokenServiceMockRecorder) ValidateToken(ctx, token any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateToken", reflect.TypeOf((*MockTokenService)(nil).ValidateToken), ctx, token)
 }
 
-// MockLoginUseCase is a mock of LoginUseCase interface.
-type MockLoginUseCase struct {
+// MockLoginService is a mock of LoginService interface.
+type MockLoginService struct {
 	ctrl     *gomock.Controller
-	recorder *MockLoginUseCaseMockRecorder
+	recorder *MockLoginServiceMockRecorder
 	isgomock struct{}
 }
 
-// MockLoginUseCaseMockRecorder is the mock recorder for MockLoginUseCase.
-type MockLoginUseCaseMockRecorder struct {
-	mock *MockLoginUseCase
+// MockLoginServiceMockRecorder is the mock recorder for MockLoginService.
+type MockLoginServiceMockRecorder struct {
+	mock *MockLoginService
 }
 
-// NewMockLoginUseCase creates a new mock instance.
-func NewMockLoginUseCase(ctrl *gomock.Controller) *MockLoginUseCase {
-	mock := &MockLoginUseCase{ctrl: ctrl}
-	mock.recorder = &MockLoginUseCaseMockRecorder{mock}
+// NewMockLoginService creates a new mock instance.
+func NewMockLoginService(ctrl *gomock.Controller) *MockLoginService {
+	mock := &MockLoginService{ctrl: ctrl}
+	mock.recorder = &MockLoginServiceMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockLoginUseCase) EXPECT() *MockLoginUseCaseMockRecorder {
+func (m *MockLoginService) EXPECT() *MockLoginServiceMockRecorder {
 	return m.recorder
 }
 
 // Login mocks base method.
-func (m *MockLoginUseCase) Login(ctx context.Context, email, password string) (string, error) {
+func (m *MockLoginService) Login(ctx context.Context, email, password string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Login", ctx, email, password)
 	ret0, _ := ret[0].(string)
@@ -173,13 +173,13 @@ func (m *MockLoginUseCase) Login(ctx context.Context, email, password string) (s
 }
 
 // Login indicates an expected call of Login.
-func (mr *MockLoginUseCaseMockRecorder) Login(ctx, email, password any) *gomock.Call {
+func (mr *MockLoginServiceMockRecorder) Login(ctx, email, password any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Login", reflect.TypeOf((*MockLoginUseCase)(nil).Login), ctx, email, password)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Login", reflect.TypeOf((*MockLoginService)(nil).Login), ctx, email, password)
 }
 
 // Logout mocks base method.
-func (m *MockLoginUseCase) Logout(ctx context.Context, userID int) error {
+func (m *MockLoginService) Logout(ctx context.Context, userID int) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Logout", ctx, userID)
 	ret0, _ := ret[0].(error)
@@ -187,7 +187,7 @@ func (m *MockLoginUseCase) Logout(ctx context.Context, userID int) error {
 }
 
 // Logout indicates an expected call of Logout.
-func (mr *MockLoginUseCaseMockRecorder) Logout(ctx, userID any) *gomock.Call {
+func (mr *MockLoginServiceMockRecorder) Logout(ctx, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logout", reflect.TypeOf((*MockLoginUseCase)(nil).Logout), ctx, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logout", reflect.TypeOf((*MockLoginService)(nil).Logout), ctx, userID)
 }

@@ -1,4 +1,4 @@
-package service
+package usecase
 
 import (
 	"context"
@@ -6,18 +6,18 @@ import (
 	"testing"
 
 	"github.com/billykore/project-one/internal/core/domain"
-	"github.com/billykore/project-one/internal/core/service/mocks"
+	"github.com/billykore/project-one/internal/core/usecase/mocks"
 	"go.uber.org/mock/gomock"
 )
 
-func TestUserService_GetCurrentUser(t *testing.T) {
+func TestUserUseCase_GetCurrentUser(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockUserRepository(ctrl)
 	mockTokenRepo := mocks.NewMockUserTokenRepository(ctrl)
 	mockHasher := mocks.NewMockHasher(ctrl)
-	svc := NewUserService(mockRepo, mockTokenRepo, mockHasher)
+	svc := NewUserUseCase(mockRepo, mockTokenRepo, mockHasher)
 
 	ctx := context.Background()
 
@@ -69,14 +69,14 @@ func TestUserService_GetCurrentUser(t *testing.T) {
 	})
 }
 
-func TestUserService_Register(t *testing.T) {
+func TestUserUseCase_Register(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockUserRepository(ctrl)
 	mockTokenRepo := mocks.NewMockUserTokenRepository(ctrl)
 	mockHasher := mocks.NewMockHasher(ctrl)
-	svc := NewUserService(mockRepo, mockTokenRepo, mockHasher)
+	svc := NewUserUseCase(mockRepo, mockTokenRepo, mockHasher)
 
 	ctx := context.Background()
 

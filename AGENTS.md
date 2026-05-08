@@ -1,3 +1,3 @@
-# Read this before begin to planning or developing
+# AI Development Guides
 
-Read and remember all guides in @.agents/skills sub-directories.
+Read and activate skills in @.agents/skills.
