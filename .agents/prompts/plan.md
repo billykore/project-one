@@ -5,10 +5,11 @@ Pre-requisite:
 - Work /internal directory.
 - Read @README.md to understand the project scope, architecture, and constraints.
 - Read @AGENTS.md to learn the coding style, rules, and constraints for this codebase.
+- Use available skills for Go programming language.
 
 Development focus:
 
-- Create API for get post by ID.
+- Create API for updating a post.
 
 Plan:
 
@@ -20,14 +21,20 @@ Plan:
 
 API Specification:
 
-- Method: GET 
+- Method: PUT 
 - Endpoint: /posts/:id
+- Request body:
+```json
+{
+    "title": "Updated title",
+    "content": "Updated content"
+}
+```
 - 200 Success response:
 ```json
 {
     "id": 1,
-    "message": "My first post",
-    "content": "The content is goes here."
+    "message": "Post updated successfully",
 }
 ```
 - 404 Bad Request response:
@@ -53,6 +60,8 @@ Dependencies:
 
 Rules:
 
-- Post ID must be integer and not 0
+- Post ID must be integer and not 0.
+- Title and content must not be empty.
+- If title or content are empty, Use current title or content when updated into the database.
 
 Explain the steps clearly so that a junior programmer or an AI model can easily understand.

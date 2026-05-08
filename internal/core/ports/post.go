@@ -12,6 +12,8 @@ type PostRepository interface {
 	Create(ctx context.Context, post *domain.Post) error
 	// GetByID retrieves a post by its ID.
 	GetByID(ctx context.Context, id int) (*domain.Post, error)
+	// Update updates an existing post in the repository.
+	Update(ctx context.Context, post *domain.Post) error
 }
 
 // PostService is a driving port for post-related application logic.
@@ -20,4 +22,6 @@ type PostService interface {
 	CreatePost(ctx context.Context, userID int, title, content string, tags []string) (*domain.Post, error)
 	// GetPostByID retrieves a post by its ID for a specific user.
 	GetPostByID(ctx context.Context, userID, postID int) (*domain.Post, error)
+	// UpdatePost updates an existing post for a specific user.
+	UpdatePost(ctx context.Context, userID, postID int, title, content string) (*domain.Post, error)
 }

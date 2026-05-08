@@ -129,3 +129,60 @@ func (h *PostHandler) GetPostByID(c echo.Context) error {
 		UpdatedAt: post.UpdatedAt,
 	})
 }
+
+// UpdatePost handles the PUT /posts/:id endpoint.
+// @Summary      Update post
+// @Description  Update an existing post for the authenticated user.
+// @Tags         posts
+// @Accept       json
+// @Produce      json
+// @Param        id       path      int                true  "Post ID"
+// @Param        request  body      UpdatePostRequest  true  "Post details"
+// @Success      200      {object}  PostResponse
+// @Failure      400      {object}  ErrorResponse
+// @Failure      401      {object}  ErrorResponse
+// @Failure      403      {object}  ErrorResponse
+// @Failure      404      {object}  ErrorResponse
+// @Failure      500      {object}  ErrorResponse
+// @Security     BearerAuth
+// @Router       /posts/{id} [put]
+func (h *PostHandler) UpdatePost(c echo.Context) error {
+	userID, ok := c.Get("userID").(int)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
+	}
+
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Post ID must be a number"})
+	}
+
+	var req UpdatePostRequest
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid request body"})
+	}
+
+	post, err := h.postSvc.UpdatePost(c.Request().Context(), userID, id, req.Title, req.Content)
+	if err != nil {
+		if errors.Is(err, domain.ErrPostNotFound) {
+			return c.JSON(http.StatusNotFound, ErrorResponse{Error: "Post not found"})
+		}
+		if errors.Is(err, domain.ErrInvalidPost) {
+			return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Post ID must be integer and not 0"})
+		}
+		if errors.Is(err, domain.ErrUnauthorized) {
+			return c.JSON(http.StatusForbidden, ErrorResponse{Error: "You do not have permission to update this post"})
+		}
+		return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Something went wrong"})
+	}
+
+	return c.JSON(http.StatusOK, PostResponse{
+		ID:        post.ID,
+		Message:   "Post updated successfully",
+		Content:   post.Content,
+		Tags:      post.Tags,
+		CreatedAt: post.CreatedAt,
+		UpdatedAt: post.UpdatedAt,
+	})
+}

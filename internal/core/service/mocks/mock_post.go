@@ -70,6 +70,20 @@ func (mr *MockPostRepositoryMockRecorder) GetByID(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockPostRepository)(nil).GetByID), ctx, id)
 }
 
+// Update mocks base method.
+func (m *MockPostRepository) Update(ctx context.Context, post *domain.Post) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, post)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockPostRepositoryMockRecorder) Update(ctx, post any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockPostRepository)(nil).Update), ctx, post)
+}
+
 // MockPostService is a mock of PostService interface.
 type MockPostService struct {
 	ctrl     *gomock.Controller
@@ -122,4 +136,19 @@ func (m *MockPostService) GetPostByID(ctx context.Context, id int) (*domain.Post
 func (mr *MockPostServiceMockRecorder) GetPostByID(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPostByID", reflect.TypeOf((*MockPostService)(nil).GetPostByID), ctx, id)
+}
+
+// UpdatePost mocks base method.
+func (m *MockPostService) UpdatePost(ctx context.Context, userID, postID int, title, content string) (*domain.Post, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdatePost", ctx, userID, postID, title, content)
+	ret0, _ := ret[0].(*domain.Post)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdatePost indicates an expected call of UpdatePost.
+func (mr *MockPostServiceMockRecorder) UpdatePost(ctx, userID, postID, title, content any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePost", reflect.TypeOf((*MockPostService)(nil).UpdatePost), ctx, userID, postID, title, content)
 }
