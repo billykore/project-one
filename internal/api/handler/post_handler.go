@@ -122,12 +122,48 @@ func (h *PostHandler) GetPostByID(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, PostResponse{
 		ID:        post.ID,
-		Message:   post.Title,
+		Title:     post.Title,
 		Content:   post.Content,
 		Tags:      post.Tags,
 		CreatedAt: post.CreatedAt,
 		UpdatedAt: post.UpdatedAt,
 	})
+}
+
+// GetPosts handles the GET /posts endpoint.
+// @Summary      Get user posts
+// @Description  Retrieve all posts for the authenticated user.
+// @Tags         posts
+// @Produce      json
+// @Success      200  {array}   PostResponse
+// @Failure      401  {object}  ErrorResponse
+// @Failure      500  {object}  ErrorResponse
+// @Security     BearerAuth
+// @Router       /posts [get]
+func (h *PostHandler) GetPosts(c echo.Context) error {
+	userID, ok := c.Get("userID").(int)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
+	}
+
+	posts, err := h.postUseCase.GetPosts(c.Request().Context(), userID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Something went wrong"})
+	}
+
+	response := make([]PostResponse, 0, len(posts))
+	for _, p := range posts {
+		response = append(response, PostResponse{
+			ID:        p.ID,
+			Title:     p.Title,
+			Content:   p.Content,
+			Tags:      p.Tags,
+			CreatedAt: p.CreatedAt,
+			UpdatedAt: p.UpdatedAt,
+		})
+	}
+
+	return c.JSON(http.StatusOK, response)
 }
 
 // UpdatePost handles the PUT /posts/:id endpoint.
@@ -180,9 +216,6 @@ func (h *PostHandler) UpdatePost(c echo.Context) error {
 	return c.JSON(http.StatusOK, PostResponse{
 		ID:        post.ID,
 		Message:   "Post updated successfully",
-		Content:   post.Content,
-		Tags:      post.Tags,
-		CreatedAt: post.CreatedAt,
 		UpdatedAt: post.UpdatedAt,
 	})
 }
@@ -225,8 +258,8 @@ func (h *PostHandler) DeletePost(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Something went wrong"})
 	}
 
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"id":      id,
-		"message": "Post deleted successfully",
+	return c.JSON(http.StatusOK, PostResponse{
+		ID:      id,
+		Message: "Post deleted successfully",
 	})
 }

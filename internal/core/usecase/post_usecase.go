@@ -67,6 +67,15 @@ func (s *postUseCase) GetPostByID(ctx context.Context, userID, id int) (*domain.
 	return post, nil
 }
 
+func (s *postUseCase) GetPosts(ctx context.Context, userID int) ([]*domain.Post, error) {
+	posts, err := s.repo.GetPostsByUserID(ctx, userID)
+	if err != nil {
+		s.log.Error(ctx, "failed to get posts for user", "userID", userID, "error", err)
+		return nil, domain.ErrInternalServer
+	}
+	return posts, nil
+}
+
 func (s *postUseCase) UpdatePost(ctx context.Context, userID, postID int, title, content string) (*domain.Post, error) {
 	if postID <= 0 {
 		return nil, domain.ErrInvalidPost
