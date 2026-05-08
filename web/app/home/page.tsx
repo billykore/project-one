@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useHome } from "./controller";
 
 export default function HomePage() {
@@ -53,12 +54,20 @@ export default function HomePage() {
           height={20}
           priority
         />
-        <button
-          onClick={openLogoutModal}
-          className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-        >
-          Logout
-        </button>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/posts/create"
+            className="rounded-md border border-indigo-600 px-4 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-indigo-400 dark:hover:bg-indigo-950"
+          >
+            Create New Post
+          </Link>
+          <button
+            onClick={openLogoutModal}
+            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          >
+            Logout
+          </button>
+        </div>
       </nav>
 
       <main className="flex flex-1 flex-col items-center justify-center p-8">
