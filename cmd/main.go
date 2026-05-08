@@ -84,6 +84,7 @@ func main() {
 	e.POST("/users/logout", userHdl.HandleLogout, handler.AuthMiddleware(tokenSvc))
 	e.GET("/users/me", userHdl.Me, handler.AuthMiddleware(tokenSvc))
 	e.POST("/posts", postHdl.CreatePost, handler.AuthMiddleware(tokenSvc))
+	e.GET("/posts", postHdl.GetPosts, handler.AuthMiddleware(tokenSvc))
 	e.GET("/posts/:id", postHdl.GetPostByID, handler.AuthMiddleware(tokenSvc))
 	e.PUT("/posts/:id", postHdl.UpdatePost, handler.AuthMiddleware(tokenSvc))
 	e.DELETE("/posts/:id", postHdl.DeletePost, handler.AuthMiddleware(tokenSvc))

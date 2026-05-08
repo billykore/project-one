@@ -2,12 +2,12 @@ You are a senior engineer helping me with a new development. Create plan for fol
 
 Pre-requisite:
 
+- Read @AGENTS.md to apply skills, learn the coding style, rules, and constraints for this codebase.
 - Work /internal directory.
-- Read @AGENTS.md to learn the coding style, rules, and constraints for this codebase.
 
 Development focus:
 
-- Create API for updating a post.
+- Create API for get user's a posts.
 
 Plan:
 
@@ -19,27 +19,45 @@ Plan:
 
 API Specification:
 
-- Method: DELETE 
-- Endpoint: /posts/:id
+- Method: GET 
+- Endpoint: /posts
 - 200 Success response:
 ```json
-{
-    "id": 1,
-    "message": "Post deleted successfully",
-}
+[
+    {
+        "id": 1,
+        "title": "My first post",
+        "content": "Lorem ipsum dolor sit amet consectetur adipiscing elit. Sit amet consectetur adipiscing elit quisque faucibus ex. Adipiscing elit quisque faucibus ex sapien vitae pellentesque.",
+        "tags": [
+            "first-post",
+            "lorem-ipsum"
+        ],
+        "created_at": "2026-05-06T21:04:34.377004+07:00",
+        "updated_at": "2026-05-06T21:04:34.377004+07:00"
+    },
+    {
+        "id": 2,
+        "title": "My second post",
+        "content": "Lorem ipsum dolor sit amet consectetur adipiscing elit. Sit amet consectetur adipiscing elit quisque faucibus ex. Adipiscing elit quisque faucibus ex sapien vitae pellentesque.",
+        "tags": [
+            "second-post",
+            "lorem-ipsum"
+        ],
+        "created_at": "2026-05-06T21:04:34.377004+07:00",
+        "updated_at": "2026-05-06T21:04:34.377004+07:00"
+    },
+    ...(more posts)
+]
+```
+- Success but empty:
+```json
+[]
 ```
 - 401 Unauthorized response:
 ```json
 {
     "error": "Unauthorized"
 }
-```
-- 404 Bad Request response:
-```json
-{
-    "error": "Post not found"
-}
-```
 - 500 Internal Server Error response:
 ```json
 {
@@ -57,14 +75,12 @@ Dependencies:
 
 Rules:
 
-- Post ID must be integer and not 0.
-- The post must be exists in the database.
-- The post must belongs to logged in user.
-- Use soft delete using GORM.
+- The posts must be exists in the database.
+- The posts must belongs to logged in user.
 
-Expected plan output:
+The plan may have:
 
 - Explain the steps clearly so that a junior programmer or an AI model can easily understand.
-- Provides code snippets if necessary.
+- Provides code snippets (if necessary).
 
 Thank you.

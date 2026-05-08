@@ -84,6 +84,21 @@ func (mr *MockPostRepositoryMockRecorder) GetByID(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockPostRepository)(nil).GetByID), ctx, id)
 }
 
+// GetPostsByUserID mocks base method.
+func (m *MockPostRepository) GetPostsByUserID(ctx context.Context, userID, limit, offset int) ([]*domain.Post, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPostsByUserID", ctx, userID, limit, offset)
+	ret0, _ := ret[0].([]*domain.Post)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPostsByUserID indicates an expected call of GetPostsByUserID.
+func (mr *MockPostRepositoryMockRecorder) GetPostsByUserID(ctx, userID, limit, offset any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPostsByUserID", reflect.TypeOf((*MockPostRepository)(nil).GetPostsByUserID), ctx, userID, limit, offset)
+}
+
 // Update mocks base method.
 func (m *MockPostRepository) Update(ctx context.Context, post *domain.Post) error {
 	m.ctrl.T.Helper()
@@ -164,6 +179,21 @@ func (m *MockPostUseCase) GetPostByID(ctx context.Context, userID, postID int) (
 func (mr *MockPostUseCaseMockRecorder) GetPostByID(ctx, userID, postID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPostByID", reflect.TypeOf((*MockPostUseCase)(nil).GetPostByID), ctx, userID, postID)
+}
+
+// GetPosts mocks base method.
+func (m *MockPostUseCase) GetPosts(ctx context.Context, userID, limit, offset int) ([]*domain.Post, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPosts", ctx, userID, limit, offset)
+	ret0, _ := ret[0].([]*domain.Post)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPosts indicates an expected call of GetPosts.
+func (mr *MockPostUseCaseMockRecorder) GetPosts(ctx, userID, limit, offset any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPosts", reflect.TypeOf((*MockPostUseCase)(nil).GetPosts), ctx, userID, limit, offset)
 }
 
 // UpdatePost mocks base method.
