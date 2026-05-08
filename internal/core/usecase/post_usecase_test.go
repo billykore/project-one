@@ -130,34 +130,36 @@ func TestPostUseCase_GetPosts(t *testing.T) {
 
 	ctx := context.Background()
 	userID := 1
+	limit := 10
+	offset := 0
 
 	t.Run("success", func(t *testing.T) {
 		expectedPosts := []*domain.Post{
 			{ID: 1, UserID: userID, Title: "Post 1"},
 			{ID: 2, UserID: userID, Title: "Post 2"},
 		}
-		mockRepo.EXPECT().GetPostsByUserID(ctx, userID).Return(expectedPosts, nil)
+		mockRepo.EXPECT().GetPostsByUserID(ctx, userID, limit, offset).Return(expectedPosts, nil)
 
-		posts, err := svc.GetPosts(ctx, userID)
+		posts, err := svc.GetPosts(ctx, userID, limit, offset)
 
 		assert.NoError(t, err)
 		assert.Equal(t, expectedPosts, posts)
 	})
 
 	t.Run("empty results", func(t *testing.T) {
-		mockRepo.EXPECT().GetPostsByUserID(ctx, userID).Return([]*domain.Post{}, nil)
+		mockRepo.EXPECT().GetPostsByUserID(ctx, userID, limit, offset).Return([]*domain.Post{}, nil)
 
-		posts, err := svc.GetPosts(ctx, userID)
+		posts, err := svc.GetPosts(ctx, userID, limit, offset)
 
 		assert.NoError(t, err)
 		assert.Empty(t, posts)
 	})
 
 	t.Run("repository error", func(t *testing.T) {
-		mockRepo.EXPECT().GetPostsByUserID(ctx, userID).Return(nil, errors.New("db error"))
+		mockRepo.EXPECT().GetPostsByUserID(ctx, userID, limit, offset).Return(nil, errors.New("db error"))
 		mockLog.EXPECT().Error(ctx, "failed to get posts for user", "userID", userID, "error", gomock.Any())
 
-		posts, err := svc.GetPosts(ctx, userID)
+		posts, err := svc.GetPosts(ctx, userID, limit, offset)
 
 		assert.Error(t, err)
 		assert.Nil(t, posts)

@@ -85,18 +85,18 @@ func (mr *MockPostRepositoryMockRecorder) GetByID(ctx, id any) *gomock.Call {
 }
 
 // GetPostsByUserID mocks base method.
-func (m *MockPostRepository) GetPostsByUserID(ctx context.Context, userID int) ([]*domain.Post, error) {
+func (m *MockPostRepository) GetPostsByUserID(ctx context.Context, userID, limit, offset int) ([]*domain.Post, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPostsByUserID", ctx, userID)
+	ret := m.ctrl.Call(m, "GetPostsByUserID", ctx, userID, limit, offset)
 	ret0, _ := ret[0].([]*domain.Post)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetPostsByUserID indicates an expected call of GetPostsByUserID.
-func (mr *MockPostRepositoryMockRecorder) GetPostsByUserID(ctx, userID any) *gomock.Call {
+func (mr *MockPostRepositoryMockRecorder) GetPostsByUserID(ctx, userID, limit, offset any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPostsByUserID", reflect.TypeOf((*MockPostRepository)(nil).GetPostsByUserID), ctx, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPostsByUserID", reflect.TypeOf((*MockPostRepository)(nil).GetPostsByUserID), ctx, userID, limit, offset)
 }
 
 // Update mocks base method.
@@ -182,18 +182,18 @@ func (mr *MockPostUseCaseMockRecorder) GetPostByID(ctx, userID, postID any) *gom
 }
 
 // GetPosts mocks base method.
-func (m *MockPostUseCase) GetPosts(ctx context.Context, userID int) ([]*domain.Post, error) {
+func (m *MockPostUseCase) GetPosts(ctx context.Context, userID, limit, offset int) ([]*domain.Post, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPosts", ctx, userID)
+	ret := m.ctrl.Call(m, "GetPosts", ctx, userID, limit, offset)
 	ret0, _ := ret[0].([]*domain.Post)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetPosts indicates an expected call of GetPosts.
-func (mr *MockPostUseCaseMockRecorder) GetPosts(ctx, userID any) *gomock.Call {
+func (mr *MockPostUseCaseMockRecorder) GetPosts(ctx, userID, limit, offset any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPosts", reflect.TypeOf((*MockPostUseCase)(nil).GetPosts), ctx, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPosts", reflect.TypeOf((*MockPostUseCase)(nil).GetPosts), ctx, userID, limit, offset)
 }
 
 // UpdatePost mocks base method.

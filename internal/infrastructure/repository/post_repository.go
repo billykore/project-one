@@ -74,9 +74,18 @@ func (r *postRepository) GetByID(ctx context.Context, id int) (*domain.Post, err
 	return m.toDomain(), nil
 }
 
-func (r *postRepository) GetPostsByUserID(ctx context.Context, userID int) ([]*domain.Post, error) {
+func (r *postRepository) GetPostsByUserID(ctx context.Context, userID, limit, offset int) ([]*domain.Post, error) {
 	var models []postModel
-	if err := r.db.WithContext(ctx).Where("user_id = ?", userID).Find(&models).Error; err != nil {
+	query := r.db.WithContext(ctx).Where("user_id = ?", userID)
+
+	if limit > 0 {
+		query = query.Limit(limit)
+	}
+	if offset > 0 {
+		query = query.Offset(offset)
+	}
+
+	if err := query.Find(&models).Error; err != nil {
 		return nil, err
 	}
 

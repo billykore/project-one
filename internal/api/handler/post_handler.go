@@ -135,9 +135,11 @@ func (h *PostHandler) GetPostByID(c echo.Context) error {
 // @Description  Retrieve all posts for the authenticated user.
 // @Tags         posts
 // @Produce      json
-// @Success      200  {array}   PostResponse
-// @Failure      401  {object}  ErrorResponse
-// @Failure      500  {object}  ErrorResponse
+// @Param        limit   query     int  false  "Limit"
+// @Param        offset  query     int  false  "Offset"
+// @Success      200     {array}   PostResponse
+// @Failure      401     {object}  ErrorResponse
+// @Failure      500     {object}  ErrorResponse
 // @Security     BearerAuth
 // @Router       /posts [get]
 func (h *PostHandler) GetPosts(c echo.Context) error {
@@ -146,7 +148,14 @@ func (h *PostHandler) GetPosts(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
 	}
 
-	posts, err := h.postUseCase.GetPosts(c.Request().Context(), userID)
+	limit, _ := strconv.Atoi(c.QueryParam("limit"))
+	offset, _ := strconv.Atoi(c.QueryParam("offset"))
+
+	if limit == 0 {
+		limit = 10 // default limit
+	}
+
+	posts, err := h.postUseCase.GetPosts(c.Request().Context(), userID, limit, offset)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Something went wrong"})
 	}

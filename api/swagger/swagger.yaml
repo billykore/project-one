@@ -115,6 +115,15 @@ paths:
   /posts:
     get:
       description: Retrieve all posts for the authenticated user.
+      parameters:
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
       produces:
       - application/json
       responses:

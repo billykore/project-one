@@ -67,8 +67,8 @@ func (s *postUseCase) GetPostByID(ctx context.Context, userID, id int) (*domain.
 	return post, nil
 }
 
-func (s *postUseCase) GetPosts(ctx context.Context, userID int) ([]*domain.Post, error) {
-	posts, err := s.repo.GetPostsByUserID(ctx, userID)
+func (s *postUseCase) GetPosts(ctx context.Context, userID, limit, offset int) ([]*domain.Post, error) {
+	posts, err := s.repo.GetPostsByUserID(ctx, userID, limit, offset)
 	if err != nil {
 		s.log.Error(ctx, "failed to get posts for user", "userID", userID, "error", err)
 		return nil, domain.ErrInternalServer
