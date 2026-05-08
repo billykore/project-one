@@ -30,16 +30,17 @@ func NewUserHandler(userUseCase ports.UserUseCase, loginUseCase ports.LoginUseCa
 }
 
 // Me handles the GET /users/me endpoint.
-// @Summary      Get current user
-// @Description  Get the profile of the currently authenticated user.
-// @Tags         users
-// @Accept       json
-// @Produce      json
-// @Success      200  {object}  dto.UserResponse
-// @Failure      401  {object}  dto.ErrorResponse
-// @Failure      500  {object}  dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /users/me [get]
+//
+//	@Summary		Get current user
+//	@Description	Get the profile of the currently authenticated user.
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	dto.UserResponse
+//	@Failure		401	{object}	dto.ErrorResponse
+//	@Failure		500	{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/users/me [get]
 func (h *UserHandler) Me(c echo.Context) error {
 	userID, ok := c.Get("userID").(int)
 	if !ok {
@@ -63,17 +64,18 @@ func (h *UserHandler) Me(c echo.Context) error {
 }
 
 // HandleLogin handles the POST /users/login endpoint.
-// @Summary      Login
-// @Description  Authenticate a user and return access and refresh tokens via HttpOnly cookies.
-// @Tags         users
-// @Accept       json
-// @Produce      json
-// @Param        request body dto.LoginRequest true "Login credentials"
-// @Success      200  {object}  dto.LoginResponse
-// @Failure      400  {object}  dto.ErrorResponse
-// @Failure      401  {object}  dto.ErrorResponse
-// @Failure      500  {object}  dto.ErrorResponse
-// @Router       /users/login [post]
+//
+//	@Summary		Login
+//	@Description	Authenticate a user and return access and refresh tokens via HttpOnly cookies.
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			LoginRequest	body		dto.LoginRequest	true	"Login credentials"
+//	@Success		200				{object}	dto.LoginResponse
+//	@Failure		400				{object}	dto.ErrorResponse
+//	@Failure		401				{object}	dto.ErrorResponse
+//	@Failure		500				{object}	dto.ErrorResponse
+//	@Router			/users/login [post]
 func (h *UserHandler) HandleLogin(c echo.Context) error {
 	var req dto.LoginRequest
 	if err := c.Bind(&req); err != nil {
@@ -106,16 +108,17 @@ func (h *UserHandler) HandleLogin(c echo.Context) error {
 }
 
 // HandleLogout handles the POST /users/logout endpoint.
-// @Summary      Logout
-// @Description  Invalidate the current user's session.
-// @Tags         users
-// @Accept       json
-// @Produce      json
-// @Success      200  {object}  dto.LogoutResponse
-// @Failure      401  {object}  dto.ErrorResponse
-// @Failure      500  {object}  dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /users/logout [post]
+//
+//	@Summary		Logout
+//	@Description	Invalidate the current user's session.
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	dto.LogoutResponse
+//	@Failure		401	{object}	dto.ErrorResponse
+//	@Failure		500	{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/users/logout [post]
 func (h *UserHandler) HandleLogout(c echo.Context) error {
 	userID, ok := c.Get("userID").(int)
 	if !ok {
@@ -132,16 +135,17 @@ func (h *UserHandler) HandleLogout(c echo.Context) error {
 }
 
 // HandleRegister handles the POST /users/register endpoint.
-// @Summary      Register
-// @Description  Create a new user account.
-// @Tags         users
-// @Accept       json
-// @Produce      json
-// @Param        request body dto.RegisterRequest true "User registration details"
-// @Success      201  {object}  dto.RegisterResponse
-// @Failure      400  {object}  dto.ErrorResponse
-// @Failure      500  {object}  dto.ErrorResponse
-// @Router       /users/register [post]
+//
+//	@Summary		Register
+//	@Description	Create a new user account.
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		dto.RegisterRequest	true	"User registration details"
+//	@Success		201		{object}	dto.RegisterResponse
+//	@Failure		400		{object}	dto.ErrorResponse
+//	@Failure		500		{object}	dto.ErrorResponse
+//	@Router			/users/register [post]
 func (h *UserHandler) HandleRegister(c echo.Context) error {
 	var req dto.RegisterRequest
 	if err := c.Bind(&req); err != nil {

@@ -1,3 +1,4 @@
 #!/bin/bash
 # Usage: ./scripts/docs.sh
-swag init -g cmd/main.go -o api/swagger --parseDependency --parseInternal
+swag fmt
+swag init  -ot go,yaml -g cmd/main.go -o api/swagger --parseDependency --parseInternal

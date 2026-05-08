@@ -312,7 +312,7 @@ paths:
       parameters:
       - description: Login credentials
         in: body
-        name: request
+        name: LoginRequest
         required: true
         schema:
           $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.LoginRequest'

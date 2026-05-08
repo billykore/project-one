@@ -5,15 +5,15 @@ import (
 	"fmt"
 
 	"github.com/billykore/project-one/api/swagger"
+	"github.com/billykore/project-one/internal/adapters/hasher"
+	"github.com/billykore/project-one/internal/adapters/logger"
+	"github.com/billykore/project-one/internal/adapters/repository"
+	"github.com/billykore/project-one/internal/adapters/token"
+	"github.com/billykore/project-one/internal/adapters/validator"
 	"github.com/billykore/project-one/internal/api/handler"
 	"github.com/billykore/project-one/internal/api/middleware"
 	"github.com/billykore/project-one/internal/config"
 	"github.com/billykore/project-one/internal/core/usecase"
-	"github.com/billykore/project-one/internal/infrastructure/hasher"
-	"github.com/billykore/project-one/internal/infrastructure/logger"
-	"github.com/billykore/project-one/internal/infrastructure/repository"
-	"github.com/billykore/project-one/internal/infrastructure/token"
-	"github.com/billykore/project-one/internal/infrastructure/validator"
 	"github.com/labstack/echo/v4"
 
 	echoSwagger "github.com/swaggo/echo-swagger"
@@ -21,14 +21,14 @@ import (
 	"gorm.io/gorm"
 )
 
-// @title           User Service API
-// @version         1.0
-// @description     This is the API server for the User Service.
-// @host            localhost:8080
-// @BasePath        /
-// @securityDefinitions.apikey BearerAuth
-// @in              header
-// @name            Authorization
+// @title						User Service API
+// @version					1.0
+// @description				This is the API server for the User Service.
+// @host						localhost:8080
+// @BasePath					/
+// @securityDefinitions.apikey	BearerAuth
+// @in							header
+// @name						Authorization
 func main() {
 	ctx := context.Background()
 	lgr := logger.New()

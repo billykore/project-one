@@ -327,7 +327,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "Login credentials",
-                        "name": "request",
+                        "name": "LoginRequest",
                         "in": "body",
                         "required": true,
                         "schema": {

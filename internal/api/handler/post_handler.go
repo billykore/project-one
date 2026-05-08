@@ -31,18 +31,19 @@ func NewPostHandler(postUseCase ports.PostUseCase, validator ports.Validator) *P
 }
 
 // CreatePost handles the POST /posts endpoint.
-// @Summary      Create post
-// @Description  Create a new post for the authenticated user.
-// @Tags         posts
-// @Accept       json
-// @Produce      json
-// @Param        request body dto.CreatePostRequest true "Post details"
-// @Success      201  {object}  dto.CreatePostResponse
-// @Failure      400  {object}  dto.ErrorResponse
-// @Failure      401  {object}  dto.ErrorResponse
-// @Failure      500  {object}  dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /posts [post]
+//
+//	@Summary		Create post
+//	@Description	Create a new post for the authenticated user.
+//	@Tags			posts
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		dto.CreatePostRequest	true	"Post details"
+//	@Success		201		{object}	dto.CreatePostResponse
+//	@Failure		400		{object}	dto.ErrorResponse
+//	@Failure		401		{object}	dto.ErrorResponse
+//	@Failure		500		{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/posts [post]
 func (h *PostHandler) CreatePost(c echo.Context) error {
 	userID, ok := c.Get("userID").(int)
 	if !ok {
@@ -83,18 +84,19 @@ func (h *PostHandler) CreatePost(c echo.Context) error {
 }
 
 // GetPostByID handles the GET /posts/:id endpoint.
-// @Summary      Get post by ID
-// @Description  Retrieve a specific post by its ID.
-// @Tags         posts
-// @Produce      json
-// @Param        id   path      int  true  "Post ID"
-// @Success      200  {object}  dto.PostResponse
-// @Failure      400  {object}  dto.ErrorResponse
-// @Failure      401  {object}  dto.ErrorResponse
-// @Failure      403  {object}  dto.ErrorResponse
-// @Failure      404  {object}  dto.ErrorResponse
-// @Failure      500  {object}  dto.ErrorResponse
-// @Router       /posts/{id} [get]
+//
+//	@Summary		Get post by ID
+//	@Description	Retrieve a specific post by its ID.
+//	@Tags			posts
+//	@Produce		json
+//	@Param			id	path		int	true	"Post ID"
+//	@Success		200	{object}	dto.PostResponse
+//	@Failure		400	{object}	dto.ErrorResponse
+//	@Failure		401	{object}	dto.ErrorResponse
+//	@Failure		403	{object}	dto.ErrorResponse
+//	@Failure		404	{object}	dto.ErrorResponse
+//	@Failure		500	{object}	dto.ErrorResponse
+//	@Router			/posts/{id} [get]
 func (h *PostHandler) GetPostByID(c echo.Context) error {
 	userID, ok := c.Get("userID").(int)
 	if !ok {
@@ -132,17 +134,18 @@ func (h *PostHandler) GetPostByID(c echo.Context) error {
 }
 
 // GetPosts handles the GET /posts endpoint.
-// @Summary      Get user posts
-// @Description  Retrieve all posts for the authenticated user.
-// @Tags         posts
-// @Produce      json
-// @Param        limit   query     int  false  "Limit"
-// @Param        offset  query     int  false  "Offset"
-// @Success      200     {array}   dto.PostResponse
-// @Failure      401     {object}  dto.ErrorResponse
-// @Failure      500     {object}  dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /posts [get]
+//
+//	@Summary		Get user posts
+//	@Description	Retrieve all posts for the authenticated user.
+//	@Tags			posts
+//	@Produce		json
+//	@Param			limit	query		int	false	"Limit"
+//	@Param			offset	query		int	false	"Offset"
+//	@Success		200		{array}		dto.PostResponse
+//	@Failure		401		{object}	dto.ErrorResponse
+//	@Failure		500		{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/posts [get]
 func (h *PostHandler) GetPosts(c echo.Context) error {
 	userID, ok := c.Get("userID").(int)
 	if !ok {
@@ -177,21 +180,22 @@ func (h *PostHandler) GetPosts(c echo.Context) error {
 }
 
 // UpdatePost handles the PUT /posts/:id endpoint.
-// @Summary      Update post
-// @Description  Update an existing post for the authenticated user.
-// @Tags         posts
-// @Accept       json
-// @Produce      json
-// @Param        id       path      int                true  "Post ID"
-// @Param        request  body      dto.UpdatePostRequest  true  "Post details"
-// @Success      200      {object}  dto.PostResponse
-// @Failure      400      {object}  dto.ErrorResponse
-// @Failure      401      {object}  dto.ErrorResponse
-// @Failure      403      {object}  dto.ErrorResponse
-// @Failure      404      {object}  dto.ErrorResponse
-// @Failure      500      {object}  dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /posts/{id} [put]
+//
+//	@Summary		Update post
+//	@Description	Update an existing post for the authenticated user.
+//	@Tags			posts
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		int						true	"Post ID"
+//	@Param			request	body		dto.UpdatePostRequest	true	"Post details"
+//	@Success		200		{object}	dto.PostResponse
+//	@Failure		400		{object}	dto.ErrorResponse
+//	@Failure		401		{object}	dto.ErrorResponse
+//	@Failure		403		{object}	dto.ErrorResponse
+//	@Failure		404		{object}	dto.ErrorResponse
+//	@Failure		500		{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/posts/{id} [put]
 func (h *PostHandler) UpdatePost(c echo.Context) error {
 	userID, ok := c.Get("userID").(int)
 	if !ok {
@@ -231,17 +235,18 @@ func (h *PostHandler) UpdatePost(c echo.Context) error {
 }
 
 // DeletePost handles the DELETE /posts/:id endpoint.
-// @Summary      Delete post
-// @Description  Soft delete a post for the authenticated user.
-// @Tags         posts
-// @Param        id   path      int  true  "Post ID"
-// @Success      200  {object}  map[string]interface{}
-// @Failure      400  {object}  dto.ErrorResponse
-// @Failure      401  {object}  dto.ErrorResponse
-// @Failure      404  {object}  dto.ErrorResponse
-// @Failure      500  {object}  dto.ErrorResponse
-// @Security     BearerAuth
-// @Router       /posts/{id} [delete]
+//
+//	@Summary		Delete post
+//	@Description	Soft delete a post for the authenticated user.
+//	@Tags			posts
+//	@Param			id	path		int	true	"Post ID"
+//	@Success		200	{object}	map[string]interface{}
+//	@Failure		400	{object}	dto.ErrorResponse
+//	@Failure		401	{object}	dto.ErrorResponse
+//	@Failure		404	{object}	dto.ErrorResponse
+//	@Failure		500	{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/posts/{id} [delete]
 func (h *PostHandler) DeletePost(c echo.Context) error {
 	userID, ok := c.Get("userID").(int)
 	if !ok {
