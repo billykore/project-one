@@ -1,4 +1,4 @@
-package service
+package usecase
 
 import (
 	"context"
@@ -6,18 +6,18 @@ import (
 	"testing"
 
 	"github.com/billykore/project-one/internal/core/domain"
-	"github.com/billykore/project-one/internal/core/service/mocks"
+	"github.com/billykore/project-one/internal/core/usecase/mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
 
-func TestPostService_CreatePost(t *testing.T) {
+func TestPostUseCase_CreatePost(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockPostRepository(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostService(mockRepo, mockLog)
+	svc := NewPostUseCase(mockRepo, mockLog)
 
 	ctx := context.Background()
 	userID := 1
@@ -56,13 +56,13 @@ func TestPostService_CreatePost(t *testing.T) {
 	})
 }
 
-func TestPostService_GetPostByID(t *testing.T) {
+func TestPostUseCase_GetPostByID(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockPostRepository(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostService(mockRepo, mockLog)
+	svc := NewPostUseCase(mockRepo, mockLog)
 
 	ctx := context.Background()
 	userID := 1
@@ -120,13 +120,13 @@ func TestPostService_GetPostByID(t *testing.T) {
 	})
 }
 
-func TestPostService_UpdatePost(t *testing.T) {
+func TestPostUseCase_UpdatePost(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockPostRepository(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostService(mockRepo, mockLog)
+	svc := NewPostUseCase(mockRepo, mockLog)
 
 	ctx := context.Background()
 	userID := 1

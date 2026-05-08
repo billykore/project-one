@@ -24,8 +24,8 @@ type TokenService interface {
 	ValidateToken(ctx context.Context, token string) (userID int, err error)
 }
 
-// LoginService is a driving port for login-related application logic.
-type LoginService interface {
+// LoginUseCase is a driving port for login-related application logic.
+type LoginUseCase interface {
 	// Login authenticates a user and returns tokens.
 	Login(ctx context.Context, email, password string) (accessToken string, err error)
 	// Logout invalidates the given token.

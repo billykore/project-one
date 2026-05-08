@@ -16,8 +16,8 @@ type PostRepository interface {
 	Update(ctx context.Context, post *domain.Post) error
 }
 
-// PostService is a driving port for post-related application logic.
-type PostService interface {
+// PostUseCase is a driving port for post-related application logic.
+type PostUseCase interface {
 	// CreatePost creates a new post with the given details.
 	CreatePost(ctx context.Context, userID int, title, content string, tags []string) (*domain.Post, error)
 	// GetPostByID retrieves a post by its ID for a specific user.

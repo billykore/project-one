@@ -84,32 +84,32 @@ func (mr *MockPostRepositoryMockRecorder) Update(ctx, post any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockPostRepository)(nil).Update), ctx, post)
 }
 
-// MockPostUseCase is a mock of PostUseCase interface.
-type MockPostUseCase struct {
+// MockPostService is a mock of PostService interface.
+type MockPostService struct {
 	ctrl     *gomock.Controller
-	recorder *MockPostUseCaseMockRecorder
+	recorder *MockPostServiceMockRecorder
 	isgomock struct{}
 }
 
-// MockPostUseCaseMockRecorder is the mock recorder for MockPostUseCase.
-type MockPostUseCaseMockRecorder struct {
-	mock *MockPostUseCase
+// MockPostServiceMockRecorder is the mock recorder for MockPostService.
+type MockPostServiceMockRecorder struct {
+	mock *MockPostService
 }
 
-// NewMockPostUseCase creates a new mock instance.
-func NewMockPostUseCase(ctrl *gomock.Controller) *MockPostUseCase {
-	mock := &MockPostUseCase{ctrl: ctrl}
-	mock.recorder = &MockPostUseCaseMockRecorder{mock}
+// NewMockPostService creates a new mock instance.
+func NewMockPostService(ctrl *gomock.Controller) *MockPostService {
+	mock := &MockPostService{ctrl: ctrl}
+	mock.recorder = &MockPostServiceMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockPostUseCase) EXPECT() *MockPostUseCaseMockRecorder {
+func (m *MockPostService) EXPECT() *MockPostServiceMockRecorder {
 	return m.recorder
 }
 
 // CreatePost mocks base method.
-func (m *MockPostUseCase) CreatePost(ctx context.Context, userID int, title, content string, tags []string) (*domain.Post, error) {
+func (m *MockPostService) CreatePost(ctx context.Context, userID int, title, content string, tags []string) (*domain.Post, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreatePost", ctx, userID, title, content, tags)
 	ret0, _ := ret[0].(*domain.Post)
@@ -118,13 +118,13 @@ func (m *MockPostUseCase) CreatePost(ctx context.Context, userID int, title, con
 }
 
 // CreatePost indicates an expected call of CreatePost.
-func (mr *MockPostUseCaseMockRecorder) CreatePost(ctx, userID, title, content, tags any) *gomock.Call {
+func (mr *MockPostServiceMockRecorder) CreatePost(ctx, userID, title, content, tags any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePost", reflect.TypeOf((*MockPostUseCase)(nil).CreatePost), ctx, userID, title, content, tags)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePost", reflect.TypeOf((*MockPostService)(nil).CreatePost), ctx, userID, title, content, tags)
 }
 
 // GetPostByID mocks base method.
-func (m *MockPostUseCase) GetPostByID(ctx context.Context, userID, postID int) (*domain.Post, error) {
+func (m *MockPostService) GetPostByID(ctx context.Context, userID, postID int) (*domain.Post, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPostByID", ctx, userID, postID)
 	ret0, _ := ret[0].(*domain.Post)
@@ -133,13 +133,13 @@ func (m *MockPostUseCase) GetPostByID(ctx context.Context, userID, postID int) (
 }
 
 // GetPostByID indicates an expected call of GetPostByID.
-func (mr *MockPostUseCaseMockRecorder) GetPostByID(ctx, userID, postID any) *gomock.Call {
+func (mr *MockPostServiceMockRecorder) GetPostByID(ctx, userID, postID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPostByID", reflect.TypeOf((*MockPostUseCase)(nil).GetPostByID), ctx, userID, postID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPostByID", reflect.TypeOf((*MockPostService)(nil).GetPostByID), ctx, userID, postID)
 }
 
 // UpdatePost mocks base method.
-func (m *MockPostUseCase) UpdatePost(ctx context.Context, userID, postID int, title, content string) (*domain.Post, error) {
+func (m *MockPostService) UpdatePost(ctx context.Context, userID, postID int, title, content string) (*domain.Post, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdatePost", ctx, userID, postID, title, content)
 	ret0, _ := ret[0].(*domain.Post)
@@ -148,7 +148,7 @@ func (m *MockPostUseCase) UpdatePost(ctx context.Context, userID, postID int, ti
 }
 
 // UpdatePost indicates an expected call of UpdatePost.
-func (mr *MockPostUseCaseMockRecorder) UpdatePost(ctx, userID, postID, title, content any) *gomock.Call {
+func (mr *MockPostServiceMockRecorder) UpdatePost(ctx, userID, postID, title, content any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePost", reflect.TypeOf((*MockPostUseCase)(nil).UpdatePost), ctx, userID, postID, title, content)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePost", reflect.TypeOf((*MockPostService)(nil).UpdatePost), ctx, userID, postID, title, content)
 }

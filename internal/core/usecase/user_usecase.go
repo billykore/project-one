@@ -1,4 +1,4 @@
-package service
+package usecase
 
 import (
 	"context"
@@ -9,31 +9,31 @@ import (
 	"github.com/billykore/project-one/internal/core/ports"
 )
 
-type userService struct {
+type userUseCase struct {
 	userRepo  ports.UserRepository
 	tokenRepo ports.TokenRepository
 	hasher    ports.Hasher
 }
 
-// NewUserService creates a new instance of ports.UserService.
-func NewUserService(userRepo ports.UserRepository, tokenRepo ports.TokenRepository, hasher ports.Hasher) ports.UserService {
+// NewUserUseCase creates a new instance of ports.UserUseCase.
+func NewUserUseCase(userRepo ports.UserRepository, tokenRepo ports.TokenRepository, hasher ports.Hasher) ports.UserUseCase {
 	if userRepo == nil {
-		panic("NewUserService: userRepo is required")
+		panic("NewUserUseCase: userRepo is required")
 	}
 	if tokenRepo == nil {
-		panic("NewUserService: tokenRepo is required")
+		panic("NewUserUseCase: tokenRepo is required")
 	}
 	if hasher == nil {
-		panic("NewUserService: hasher is required")
+		panic("NewUserUseCase: hasher is required")
 	}
-	return &userService{
+	return &userUseCase{
 		userRepo:  userRepo,
 		tokenRepo: tokenRepo,
 		hasher:    hasher,
 	}
 }
 
-func (s *userService) GetCurrentUser(ctx context.Context, id int) (*domain.User, error) {
+func (s *userUseCase) GetCurrentUser(ctx context.Context, id int) (*domain.User, error) {
 	token, err := s.tokenRepo.GetTokenByUserID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("get token by user id: %w", err)
@@ -48,7 +48,7 @@ func (s *userService) GetCurrentUser(ctx context.Context, id int) (*domain.User,
 	return user, nil
 }
 
-func (s *userService) Register(ctx context.Context, user *domain.User) error {
+func (s *userUseCase) Register(ctx context.Context, user *domain.User) error {
 	existingUser, err := s.userRepo.GetUserByEmail(ctx, user.Email)
 	if err == nil && existingUser != nil {
 		return domain.ErrEmailAlreadyRegistered

@@ -5,14 +5,14 @@ import (
 	"fmt"
 
 	"github.com/billykore/project-one/api/swagger"
-	"github.com/billykore/project-one/internal/adapters/handler"
-	"github.com/billykore/project-one/internal/adapters/hasher"
-	"github.com/billykore/project-one/internal/adapters/logger"
-	"github.com/billykore/project-one/internal/adapters/repository"
-	"github.com/billykore/project-one/internal/adapters/token"
-	"github.com/billykore/project-one/internal/adapters/validator"
+	"github.com/billykore/project-one/internal/api/handler"
 	"github.com/billykore/project-one/internal/config"
-	"github.com/billykore/project-one/internal/core/service"
+	"github.com/billykore/project-one/internal/core/usecase"
+	"github.com/billykore/project-one/internal/infrastructure/hasher"
+	"github.com/billykore/project-one/internal/infrastructure/logger"
+	"github.com/billykore/project-one/internal/infrastructure/repository"
+	"github.com/billykore/project-one/internal/infrastructure/token"
+	"github.com/billykore/project-one/internal/infrastructure/validator"
 	"github.com/labstack/echo/v4"
 
 	echoSwagger "github.com/swaggo/echo-swagger"
@@ -62,14 +62,14 @@ func main() {
 	tokenSvc := token.NewJWTTokenService(cfg.JWT.SecretKey, cfg.JWT.ExpirationTime)
 	hasher := hasher.NewBcryptHasher()
 
-	// 4. Initialize Service
-	loginSvc := service.NewLoginService(userRepo, tokenSvc, userTokenRepo, hasher, lgr)
-	userSvc := service.NewUserService(userRepo, userTokenRepo, hasher)
-	postSvc := service.NewPostService(postRepo, lgr)
+	// 4. Initialize UseCase
+	loginUc := usecase.NewLoginUseCase(userRepo, tokenSvc, userTokenRepo, hasher, lgr)
+	userUc := usecase.NewUserUseCase(userRepo, userTokenRepo, hasher)
+	postUc := usecase.NewPostUseCase(postRepo, lgr)
 
 	// 5. Initialize Handler
-	userHdl := handler.NewUserHandler(userSvc, loginSvc, val)
-	postHdl := handler.NewPostHandler(postSvc, val)
+	userHdl := handler.NewUserHandler(userUc, loginUc, val)
+	postHdl := handler.NewPostHandler(postUc, val)
 
 	// 6. Set up Echo
 	e := echo.New()
