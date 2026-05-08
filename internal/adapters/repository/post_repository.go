@@ -78,7 +78,7 @@ func (r *postRepository) Update(ctx context.Context, post *domain.Post) error {
 	var m postModel
 	m.ID = uint(post.ID)
 	m.fromDomain(post)
-	if err := r.db.WithContext(ctx).Save(&m).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&m).Select("Title", "Content", "Tags").Updates(m).Error; err != nil {
 		return err
 	}
 	post.UpdatedAt = m.UpdatedAt

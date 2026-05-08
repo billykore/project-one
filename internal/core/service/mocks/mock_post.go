@@ -124,18 +124,18 @@ func (mr *MockPostServiceMockRecorder) CreatePost(ctx, userID, title, content, t
 }
 
 // GetPostByID mocks base method.
-func (m *MockPostService) GetPostByID(ctx context.Context, id int) (*domain.Post, error) {
+func (m *MockPostService) GetPostByID(ctx context.Context, userID, postID int) (*domain.Post, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPostByID", ctx, id)
+	ret := m.ctrl.Call(m, "GetPostByID", ctx, userID, postID)
 	ret0, _ := ret[0].(*domain.Post)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetPostByID indicates an expected call of GetPostByID.
-func (mr *MockPostServiceMockRecorder) GetPostByID(ctx, id any) *gomock.Call {
+func (mr *MockPostServiceMockRecorder) GetPostByID(ctx, userID, postID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPostByID", reflect.TypeOf((*MockPostService)(nil).GetPostByID), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPostByID", reflect.TypeOf((*MockPostService)(nil).GetPostByID), ctx, userID, postID)
 }
 
 // UpdatePost mocks base method.

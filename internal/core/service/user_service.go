@@ -9,14 +9,14 @@ import (
 	"github.com/billykore/project-one/internal/core/ports"
 )
 
-type UserService struct {
+type userService struct {
 	userRepo  ports.UserRepository
 	tokenRepo ports.TokenRepository
 	hasher    ports.Hasher
 }
 
-// NewUserService creates a new instance of UserService.
-func NewUserService(userRepo ports.UserRepository, tokenRepo ports.TokenRepository, hasher ports.Hasher) *UserService {
+// NewUserService creates a new instance of ports.UserService.
+func NewUserService(userRepo ports.UserRepository, tokenRepo ports.TokenRepository, hasher ports.Hasher) ports.UserService {
 	if userRepo == nil {
 		panic("NewUserService: userRepo is required")
 	}
@@ -26,14 +26,14 @@ func NewUserService(userRepo ports.UserRepository, tokenRepo ports.TokenReposito
 	if hasher == nil {
 		panic("NewUserService: hasher is required")
 	}
-	return &UserService{
+	return &userService{
 		userRepo:  userRepo,
 		tokenRepo: tokenRepo,
 		hasher:    hasher,
 	}
 }
 
-func (s *UserService) GetCurrentUser(ctx context.Context, id int) (*domain.User, error) {
+func (s *userService) GetCurrentUser(ctx context.Context, id int) (*domain.User, error) {
 	token, err := s.tokenRepo.GetTokenByUserID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("get token by user id: %w", err)
@@ -48,7 +48,7 @@ func (s *UserService) GetCurrentUser(ctx context.Context, id int) (*domain.User,
 	return user, nil
 }
 
-func (s *UserService) Register(ctx context.Context, user *domain.User) error {
+func (s *userService) Register(ctx context.Context, user *domain.User) error {
 	existingUser, err := s.userRepo.GetUserByEmail(ctx, user.Email)
 	if err == nil && existingUser != nil {
 		return domain.ErrEmailAlreadyRegistered

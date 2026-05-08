@@ -9,25 +9,26 @@ import (
 	"github.com/billykore/project-one/internal/core/ports"
 )
 
-type PostService struct {
+type postService struct {
 	repo ports.PostRepository
 	log  ports.Logger
 }
 
-func NewPostService(repo ports.PostRepository, log ports.Logger) *PostService {
+// NewPostService creates a new instance of ports.PostService.
+func NewPostService(repo ports.PostRepository, log ports.Logger) ports.PostService {
 	if repo == nil {
 		panic("NewPostService: repo is required")
 	}
 	if log == nil {
 		panic("NewPostService: log is required")
 	}
-	return &PostService{
+	return &postService{
 		repo: repo,
 		log:  log,
 	}
 }
 
-func (s *PostService) CreatePost(ctx context.Context, userID int, title, content string, tags []string) (*domain.Post, error) {
+func (s *postService) CreatePost(ctx context.Context, userID int, title, content string, tags []string) (*domain.Post, error) {
 	post := &domain.Post{
 		UserID:  userID,
 		Title:   title,
@@ -44,7 +45,7 @@ func (s *PostService) CreatePost(ctx context.Context, userID int, title, content
 	return post, nil
 }
 
-func (s *PostService) GetPostByID(ctx context.Context, userID, id int) (*domain.Post, error) {
+func (s *postService) GetPostByID(ctx context.Context, userID, id int) (*domain.Post, error) {
 	if id <= 0 {
 		return nil, domain.ErrInvalidPost
 	}
@@ -66,7 +67,7 @@ func (s *PostService) GetPostByID(ctx context.Context, userID, id int) (*domain.
 	return post, nil
 }
 
-func (s *PostService) UpdatePost(ctx context.Context, userID, postID int, title, content string) (*domain.Post, error) {
+func (s *postService) UpdatePost(ctx context.Context, userID, postID int, title, content string) (*domain.Post, error) {
 	if postID <= 0 {
 		return nil, domain.ErrInvalidPost
 	}
