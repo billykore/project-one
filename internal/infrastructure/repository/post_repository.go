@@ -84,3 +84,10 @@ func (r *postRepository) Update(ctx context.Context, post *domain.Post) error {
 	post.UpdatedAt = m.UpdatedAt
 	return nil
 }
+
+func (r *postRepository) Delete(ctx context.Context, id int) error {
+	if err := r.db.WithContext(ctx).Delete(&postModel{}, id).Error; err != nil {
+		return err
+	}
+	return nil
+}

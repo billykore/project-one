@@ -1,4 +1,4 @@
-.PHONY: build run test mock vet lint clean docs help migrate-create migrate-up migrate-down
+.PHONY: build run test mock vet lint clean docs help migrate-create migrate-up migrate-down check
 
 BUILD_DIR := ./bin
 
@@ -49,3 +49,6 @@ migrate-down:
 ## help: Display available targets
 help:
 	./scripts/help.sh
+
+## check: Run all checks (docs, vet, lint, test)
+check: docs vet lint test
