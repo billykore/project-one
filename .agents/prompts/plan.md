@@ -3,9 +3,7 @@ You are a senior engineer helping me with a new development. Create plan for fol
 Pre-requisite:
 
 - Work /internal directory.
-- Read @README.md to understand the project scope, architecture, and constraints.
 - Read @AGENTS.md to learn the coding style, rules, and constraints for this codebase.
-- Use available skills for Go programming language.
 
 Development focus:
 
@@ -21,20 +19,19 @@ Plan:
 
 API Specification:
 
-- Method: PUT 
+- Method: DELETE 
 - Endpoint: /posts/:id
-- Request body:
-```json
-{
-    "title": "Updated title",
-    "content": "Updated content"
-}
-```
 - 200 Success response:
 ```json
 {
     "id": 1,
-    "message": "Post updated successfully",
+    "message": "Post deleted successfully",
+}
+```
+- 401 Unauthorized response:
+```json
+{
+    "error": "Unauthorized"
 }
 ```
 - 404 Bad Request response:
@@ -61,7 +58,13 @@ Dependencies:
 Rules:
 
 - Post ID must be integer and not 0.
-- Title and content must not be empty.
-- If title or content are empty, Use current title or content when updated into the database.
+- The post must be exists in the database.
+- The post must belongs to logged in user.
+- Use soft delete using GORM.
 
-Explain the steps clearly so that a junior programmer or an AI model can easily understand.
+Expected plan output:
+
+- Explain the steps clearly so that a junior programmer or an AI model can easily understand.
+- Provides code snippets if necessary.
+
+Thank you.

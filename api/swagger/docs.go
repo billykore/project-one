@@ -40,7 +40,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_adapters_handler.CreatePostRequest"
+                            "$ref": "#/definitions/internal_api_handler.CreatePostRequest"
                         }
                     }
                 ],
@@ -48,25 +48,212 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/internal_adapters_handler.CreatePostResponse"
+                            "$ref": "#/definitions/internal_api_handler.CreatePostResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_adapters_handler.ErrorResponse"
+                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/internal_adapters_handler.ErrorResponse"
+                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_adapters_handler.ErrorResponse"
+                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/posts/{id}": {
+            "get": {
+                "description": "Retrieve a specific post by its ID.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "posts"
+                ],
+                "summary": "Get post by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_api_handler.PostResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update an existing post for the authenticated user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "posts"
+                ],
+                "summary": "Update post",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Post details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_api_handler.UpdatePostRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_api_handler.PostResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Soft delete a post for the authenticated user.",
+                "tags": [
+                    "posts"
+                ],
+                "summary": "Delete post",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
                         }
                     }
                 }
@@ -92,7 +279,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_adapters_handler.LoginRequest"
+                            "$ref": "#/definitions/internal_api_handler.LoginRequest"
                         }
                     }
                 ],
@@ -100,25 +287,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_adapters_handler.LoginResponse"
+                            "$ref": "#/definitions/internal_api_handler.LoginResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_adapters_handler.ErrorResponse"
+                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/internal_adapters_handler.ErrorResponse"
+                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_adapters_handler.ErrorResponse"
+                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
                         }
                     }
                 }
@@ -146,19 +333,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_adapters_handler.LogoutResponse"
+                            "$ref": "#/definitions/internal_api_handler.LogoutResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/internal_adapters_handler.ErrorResponse"
+                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_adapters_handler.ErrorResponse"
+                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
                         }
                     }
                 }
@@ -186,19 +373,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_adapters_handler.UserResponse"
+                            "$ref": "#/definitions/internal_api_handler.UserResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/internal_adapters_handler.ErrorResponse"
+                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_adapters_handler.ErrorResponse"
+                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
                         }
                     }
                 }
@@ -224,7 +411,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_adapters_handler.RegisterRequest"
+                            "$ref": "#/definitions/internal_api_handler.RegisterRequest"
                         }
                     }
                 ],
@@ -232,19 +419,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/internal_adapters_handler.RegisterResponse"
+                            "$ref": "#/definitions/internal_api_handler.RegisterResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_adapters_handler.ErrorResponse"
+                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_adapters_handler.ErrorResponse"
+                            "$ref": "#/definitions/internal_api_handler.ErrorResponse"
                         }
                     }
                 }
@@ -252,7 +439,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "internal_adapters_handler.CreatePostRequest": {
+        "internal_api_handler.CreatePostRequest": {
             "type": "object",
             "required": [
                 "content",
@@ -274,18 +461,18 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_adapters_handler.CreatePostResponse": {
+        "internal_api_handler.CreatePostResponse": {
             "type": "object",
             "properties": {
-                "message": {
-                    "type": "string"
+                "id": {
+                    "type": "integer"
                 },
-                "redirect_url": {
+                "message": {
                     "type": "string"
                 }
             }
         },
-        "internal_adapters_handler.ErrorResponse": {
+        "internal_api_handler.ErrorResponse": {
             "type": "object",
             "properties": {
                 "error": {
@@ -293,7 +480,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_adapters_handler.LoginRequest": {
+        "internal_api_handler.LoginRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -309,7 +496,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_adapters_handler.LoginResponse": {
+        "internal_api_handler.LoginResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -317,7 +504,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_adapters_handler.LogoutResponse": {
+        "internal_api_handler.LogoutResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -325,7 +512,33 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_adapters_handler.RegisterRequest": {
+        "internal_api_handler.PostResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_api_handler.RegisterRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -351,7 +564,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_adapters_handler.RegisterResponse": {
+        "internal_api_handler.RegisterResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -359,7 +572,18 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_adapters_handler.UserResponse": {
+        "internal_api_handler.UpdatePostRequest": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_api_handler.UserResponse": {
             "type": "object",
             "properties": {
                 "email": {

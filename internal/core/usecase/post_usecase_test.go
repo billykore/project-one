@@ -222,3 +222,66 @@ func TestPostUseCase_UpdatePost(t *testing.T) {
 		assert.True(t, errors.Is(err, domain.ErrInvalidPost))
 	})
 }
+
+func TestPostUseCase_DeletePost(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mocks.NewMockPostRepository(ctrl)
+	mockLog := mocks.NewMockLogger(ctrl)
+	svc := NewPostUseCase(mockRepo, mockLog)
+
+	ctx := context.Background()
+	userID := 1
+	postID := 1
+
+	t.Run("success", func(t *testing.T) {
+		existingPost := &domain.Post{ID: postID, UserID: userID}
+		mockRepo.EXPECT().GetByID(ctx, postID).Return(existingPost, nil)
+		mockRepo.EXPECT().Delete(ctx, postID).Return(nil)
+		mockLog.EXPECT().Info(ctx, "post deleted successfully", "postID", postID, "userID", userID)
+
+		err := svc.DeletePost(ctx, userID, postID)
+
+		assert.NoError(t, err)
+	})
+
+	t.Run("not found", func(t *testing.T) {
+		mockRepo.EXPECT().GetByID(ctx, postID).Return(nil, domain.ErrPostNotFound)
+
+		err := svc.DeletePost(ctx, userID, postID)
+
+		assert.Error(t, err)
+		assert.True(t, errors.Is(err, domain.ErrPostNotFound))
+	})
+
+	t.Run("unauthorized delete", func(t *testing.T) {
+		existingPost := &domain.Post{ID: postID, UserID: 2}
+		mockRepo.EXPECT().GetByID(ctx, postID).Return(existingPost, nil)
+		mockLog.EXPECT().Error(ctx, "unauthorized delete attempt", "postID", postID, "userID", userID)
+
+		err := svc.DeletePost(ctx, userID, postID)
+
+		assert.Error(t, err)
+		assert.True(t, errors.Is(err, domain.ErrUnauthorized))
+	})
+
+	t.Run("repository error on delete", func(t *testing.T) {
+		existingPost := &domain.Post{ID: postID, UserID: userID}
+		mockRepo.EXPECT().GetByID(ctx, postID).Return(existingPost, nil)
+		mockRepo.EXPECT().Delete(ctx, postID).Return(errors.New("db error"))
+		mockLog.EXPECT().Error(ctx, "failed to delete post", "postID", postID, "error", gomock.Any())
+
+		err := svc.DeletePost(ctx, userID, postID)
+
+		assert.Error(t, err)
+		assert.True(t, errors.Is(err, domain.ErrInternalServer))
+	})
+
+	t.Run("invalid id", func(t *testing.T) {
+		err := svc.DeletePost(ctx, userID, 0)
+
+		assert.Error(t, err)
+		assert.True(t, errors.Is(err, domain.ErrInvalidPost))
+	})
+}

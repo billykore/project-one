@@ -104,3 +104,31 @@ func (s *postUseCase) UpdatePost(ctx context.Context, userID, postID int, title,
 	s.log.Info(ctx, "post updated successfully", "postID", post.ID, "userID", userID)
 	return post, nil
 }
+
+func (s *postUseCase) DeletePost(ctx context.Context, userID, postID int) error {
+	if postID <= 0 {
+		return domain.ErrInvalidPost
+	}
+
+	post, err := s.repo.GetByID(ctx, postID)
+	if err != nil {
+		if errors.Is(err, domain.ErrPostNotFound) {
+			return err
+		}
+		s.log.Error(ctx, "failed to get post for deletion", "postID", postID, "error", err)
+		return domain.ErrInternalServer
+	}
+
+	if post.UserID != userID {
+		s.log.Error(ctx, "unauthorized delete attempt", "postID", postID, "userID", userID)
+		return domain.ErrUnauthorized
+	}
+
+	if err := s.repo.Delete(ctx, postID); err != nil {
+		s.log.Error(ctx, "failed to delete post", "postID", postID, "error", err)
+		return domain.ErrInternalServer
+	}
+
+	s.log.Info(ctx, "post deleted successfully", "postID", postID, "userID", userID)
+	return nil
+}

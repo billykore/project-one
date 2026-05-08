@@ -14,6 +14,8 @@ type PostRepository interface {
 	GetByID(ctx context.Context, id int) (*domain.Post, error)
 	// Update updates an existing post in the repository.
 	Update(ctx context.Context, post *domain.Post) error
+	// Delete removes a post from the repository.
+	Delete(ctx context.Context, id int) error
 }
 
 // PostUseCase is a driving port for post-related application logic.
@@ -24,4 +26,6 @@ type PostUseCase interface {
 	GetPostByID(ctx context.Context, userID, postID int) (*domain.Post, error)
 	// UpdatePost updates an existing post for a specific user.
 	UpdatePost(ctx context.Context, userID, postID int, title, content string) (*domain.Post, error)
+	// DeletePost removes a post for a specific user.
+	DeletePost(ctx context.Context, userID, postID int) error
 }

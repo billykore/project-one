@@ -186,3 +186,47 @@ func (h *PostHandler) UpdatePost(c echo.Context) error {
 		UpdatedAt: post.UpdatedAt,
 	})
 }
+
+// DeletePost handles the DELETE /posts/:id endpoint.
+// @Summary      Delete post
+// @Description  Soft delete a post for the authenticated user.
+// @Tags         posts
+// @Param        id   path      int  true  "Post ID"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      400  {object}  ErrorResponse
+// @Failure      401  {object}  ErrorResponse
+// @Failure      404  {object}  ErrorResponse
+// @Failure      500  {object}  ErrorResponse
+// @Security     BearerAuth
+// @Router       /posts/{id} [delete]
+func (h *PostHandler) DeletePost(c echo.Context) error {
+	userID, ok := c.Get("userID").(int)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
+	}
+
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Post ID must be a number"})
+	}
+
+	err = h.postUseCase.DeletePost(c.Request().Context(), userID, id)
+	if err != nil {
+		if errors.Is(err, domain.ErrPostNotFound) {
+			return c.JSON(http.StatusNotFound, ErrorResponse{Error: "Post not found"})
+		}
+		if errors.Is(err, domain.ErrInvalidPost) {
+			return c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Post ID must be integer and not 0"})
+		}
+		if errors.Is(err, domain.ErrUnauthorized) {
+			return c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Unauthorized"})
+		}
+		return c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Something went wrong"})
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"id":      id,
+		"message": "Post deleted successfully",
+	})
+}

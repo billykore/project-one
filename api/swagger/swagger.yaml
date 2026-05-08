@@ -1,6 +1,6 @@
 basePath: /
 definitions:
-  internal_adapters_handler.CreatePostRequest:
+  internal_api_handler.CreatePostRequest:
     properties:
       content:
         minLength: 10
@@ -15,19 +15,19 @@ definitions:
     - content
     - title
     type: object
-  internal_adapters_handler.CreatePostResponse:
+  internal_api_handler.CreatePostResponse:
     properties:
+      id:
+        type: integer
       message:
         type: string
-      redirect_url:
-        type: string
     type: object
-  internal_adapters_handler.ErrorResponse:
+  internal_api_handler.ErrorResponse:
     properties:
       error:
         type: string
     type: object
-  internal_adapters_handler.LoginRequest:
+  internal_api_handler.LoginRequest:
     properties:
       email:
         type: string
@@ -38,17 +38,34 @@ definitions:
     - email
     - password
     type: object
-  internal_adapters_handler.LoginResponse:
+  internal_api_handler.LoginResponse:
     properties:
       message:
         type: string
     type: object
-  internal_adapters_handler.LogoutResponse:
+  internal_api_handler.LogoutResponse:
     properties:
       message:
         type: string
     type: object
-  internal_adapters_handler.RegisterRequest:
+  internal_api_handler.PostResponse:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      message:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      updated_at:
+        type: string
+    type: object
+  internal_api_handler.RegisterRequest:
     properties:
       email:
         type: string
@@ -67,12 +84,19 @@ definitions:
     - last_name
     - password
     type: object
-  internal_adapters_handler.RegisterResponse:
+  internal_api_handler.RegisterResponse:
     properties:
       message:
         type: string
     type: object
-  internal_adapters_handler.UserResponse:
+  internal_api_handler.UpdatePostRequest:
+    properties:
+      content:
+        type: string
+      title:
+        type: string
+    type: object
+  internal_api_handler.UserResponse:
     properties:
       email:
         type: string
@@ -97,29 +121,151 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/internal_adapters_handler.CreatePostRequest'
+          $ref: '#/definitions/internal_api_handler.CreatePostRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/internal_adapters_handler.CreatePostResponse'
+            $ref: '#/definitions/internal_api_handler.CreatePostResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_adapters_handler.ErrorResponse'
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_adapters_handler.ErrorResponse'
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_adapters_handler.ErrorResponse'
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Create post
+      tags:
+      - posts
+  /posts/{id}:
+    delete:
+      description: Soft delete a post for the authenticated user.
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete post
+      tags:
+      - posts
+    get:
+      description: Retrieve a specific post by its ID.
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_api_handler.PostResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+      summary: Get post by ID
+      tags:
+      - posts
+    put:
+      consumes:
+      - application/json
+      description: Update an existing post for the authenticated user.
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Post details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_api_handler.UpdatePostRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_api_handler.PostResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update post
       tags:
       - posts
   /users/login:
@@ -134,26 +280,26 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/internal_adapters_handler.LoginRequest'
+          $ref: '#/definitions/internal_api_handler.LoginRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_adapters_handler.LoginResponse'
+            $ref: '#/definitions/internal_api_handler.LoginResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_adapters_handler.ErrorResponse'
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_adapters_handler.ErrorResponse'
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_adapters_handler.ErrorResponse'
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
       summary: Login
       tags:
       - users
@@ -168,15 +314,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_adapters_handler.LogoutResponse'
+            $ref: '#/definitions/internal_api_handler.LogoutResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_adapters_handler.ErrorResponse'
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_adapters_handler.ErrorResponse'
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Logout
@@ -193,15 +339,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_adapters_handler.UserResponse'
+            $ref: '#/definitions/internal_api_handler.UserResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/internal_adapters_handler.ErrorResponse'
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_adapters_handler.ErrorResponse'
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Get current user
@@ -218,22 +364,22 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/internal_adapters_handler.RegisterRequest'
+          $ref: '#/definitions/internal_api_handler.RegisterRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/internal_adapters_handler.RegisterResponse'
+            $ref: '#/definitions/internal_api_handler.RegisterResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_adapters_handler.ErrorResponse'
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_adapters_handler.ErrorResponse'
+            $ref: '#/definitions/internal_api_handler.ErrorResponse'
       summary: Register
       tags:
       - users
