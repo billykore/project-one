@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { loginSchema, LoginFormData, LoginErrors, LoginResponse } from "./model";
 import { ZodError } from "zod";
-import { api } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 import { useRouter } from "next/navigation";
 
 export const useLogin = () => {
@@ -47,7 +47,7 @@ export const useLogin = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     
     if (!validate()) return;
@@ -64,8 +64,13 @@ export const useLogin = () => {
       // Redirect to home page (cookies are set by backend)
       router.push("/home");
     } catch (err) {
+      if (err instanceof ApiError && (err.status === 401 || err.status === 400)) {
+        setErrors({ general: err.message });
+        return;
+      }
+
       const errorMessage = err instanceof Error ? err.message : "An error occurred. Please try again later.";
-      setErrors({ general: errorMessage });
+      router.push(`/error?message=${encodeURIComponent(errorMessage)}`);
     } finally {
       setIsSubmitting(false);
     }

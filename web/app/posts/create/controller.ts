@@ -27,6 +27,10 @@ export const useCreatePost = () => {
           router.push("/login");
           return;
         }
+        if (err instanceof Error) {
+          router.push("/error?message=" + encodeURIComponent(err.message));
+          return;
+        }
         setIsLoading(false);
       }
     };
@@ -96,11 +100,16 @@ export const useCreatePost = () => {
       // Redirect to home page on success
       router.push("/home");
     } catch (err) {
+      if (err instanceof ApiError && (err.status === 400 || err.status === 401 || err.status === 403)) {
+        setErrors({ general: err.message });
+        return;
+      }
+
       const errorMessage =
         err instanceof Error
           ? err.message
           : "An error occurred while creating the post. Please try again.";
-      setErrors({ general: errorMessage });
+      router.push(`/error?message=${encodeURIComponent(errorMessage)}`);
     } finally {
       setIsSubmitting(false);
     }

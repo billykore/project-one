@@ -29,11 +29,8 @@ export const useHome = () => {
           return;
         }
 
-        setState({
-          user: null,
-          isLoading: false,
-          error: err instanceof Error ? err.message : "Failed to load user data",
-        });
+        const message = err instanceof Error ? err.message : "Failed to load user data";
+        router.push(`/error?message=${encodeURIComponent(message)}`);
       }
     };
 
