@@ -15,6 +15,7 @@ export const usePosts = () => {
     const fetchPosts = async () => {
       try {
         const posts = await api.get<Post[]>("/posts");
+        console.log("Posts API Response:", posts);
         setState({
           posts: Array.isArray(posts) ? posts : [],
           isLoading: false,
