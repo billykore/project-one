@@ -88,6 +88,20 @@ export default function HomePage() {
               <p className="mt-4 text-gray-600 dark:text-zinc-400">
                 This is your personal dashboard. From here you can manage your account and access all the features of our platform.
               </p>
+              <div className="mt-6 flex flex-wrap gap-4 justify-center sm:justify-start">
+                <Link
+                  href="/posts"
+                  className="rounded-md bg-white border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-700 transition-colors"
+                >
+                  View All Your Posts
+                </Link>
+                <Link
+                  href="/posts/create"
+                  className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+                >
+                  Create a New Post
+                </Link>
+              </div>
             </div>
           </div>
         </div>

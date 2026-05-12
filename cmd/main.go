@@ -15,6 +15,7 @@ import (
 	"github.com/billykore/project-one/internal/config"
 	"github.com/billykore/project-one/internal/core/usecase"
 	"github.com/labstack/echo/v4"
+	echomiddleware "github.com/labstack/echo/v4/middleware"
 
 	echoSwagger "github.com/swaggo/echo-swagger"
 	"gorm.io/driver/postgres"
@@ -74,6 +75,8 @@ func main() {
 
 	// 6. Set up Echo
 	e := echo.New()
+	e.Use(echomiddleware.RequestLogger())
+	e.Use(echomiddleware.Recover())
 
 	// Only expose Swagger UI in non-production environments
 	if cfg.App.Env != "production" {

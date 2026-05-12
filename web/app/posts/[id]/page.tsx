@@ -1,0 +1,109 @@
+"use client";
+
+import Link from "next/link";
+import Image from "next/image";
+import { usePostDetail } from "./controller";
+
+export default function PostDetailPage() {
+  const { post, isLoading, error } = usePostDetail();
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="text-xl font-semibold text-gray-700">Loading post...</div>
+      </div>
+    );
+  }
+
+  if (error || !post) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 p-8">
+        <div className="flex w-full max-w-md flex-col items-center rounded-xl bg-white p-8 shadow-lg text-center dark:bg-zinc-900">
+          <div className="text-xl font-semibold text-red-600 mb-4">
+            {error || "Post not found"}
+          </div>
+          <Link
+            href="/posts"
+            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+          >
+            Back to All Posts
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex min-h-screen flex-col bg-gray-50 font-sans dark:bg-black">
+      <nav className="flex items-center justify-between bg-white px-8 py-4 shadow-sm dark:bg-zinc-900">
+        <div className="flex items-center gap-4">
+          <Link href="/home">
+            <Image
+              className="dark:invert"
+              src="/next.svg"
+              alt="Next.js logo"
+              width={100}
+              height={20}
+              priority
+            />
+          </Link>
+          <span className="text-xl font-bold text-gray-900 dark:text-zinc-50">Post Details</span>
+        </div>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/posts"
+            className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+          >
+            Back to Posts
+          </Link>
+        </div>
+      </nav>
+
+      <main className="mx-auto w-full max-w-3xl flex-1 p-8">
+        <article className="rounded-xl bg-white p-8 shadow-lg dark:bg-zinc-900 sm:p-12">
+          <header className="mb-8 border-b border-gray-100 pb-8 dark:border-zinc-800">
+            <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-zinc-50">
+              {post.title}
+            </h1>
+            <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-gray-500">
+              <time dateTime={post.created_at}>
+                Created on {new Date(post.created_at).toLocaleDateString(undefined, {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </time>
+              {post.updated_at !== post.created_at && (
+                <span className="italic">
+                  (Updated: {new Date(post.updated_at).toLocaleDateString()})
+                </span>
+              )}
+            </div>
+            {post.tags && post.tags.length > 0 && (
+              <div className="mt-6 flex flex-wrap gap-2">
+                {post.tags.map((tag) => (
+                  <span 
+                    key={tag} 
+                    className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400"
+                  >
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            )}
+          </header>
+
+          <div className="prose prose-indigo max-w-none dark:prose-invert">
+            <p className="whitespace-pre-wrap text-lg leading-relaxed text-gray-700 dark:text-zinc-300">
+              {post.content}
+            </p>
+          </div>
+        </article>
+      </main>
+
+      <footer className="bg-white py-6 text-center text-sm text-gray-500 dark:bg-zinc-900 dark:text-zinc-400">
+        &copy; {new Date().getFullYear()} Project One. All rights reserved.
+      </footer>
+    </div>
+  );
+}

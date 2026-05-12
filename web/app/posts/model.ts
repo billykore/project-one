@@ -1,0 +1,15 @@
+export interface Post {
+  id: number;
+  title: string;
+  content: string;
+  tags?: string[];
+  created_at: string;
+  updated_at: string;
+  message?: string;
+}
+
+export interface PostsState {
+  posts: Post[];
+  isLoading: boolean;
+  error: string | null;
+}
