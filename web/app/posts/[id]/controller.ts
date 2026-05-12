@@ -18,12 +18,8 @@ export const usePostDetail = () => {
   useEffect(() => {
     if (!id) return;
 
-    const checkAuthAndFetchPost = async () => {
+    const fetchPost = async () => {
       try {
-        // First verify authentication
-        await api.get("/users/me");
-
-        // Then fetch post
         const post = await api.get<Post>(`/posts/${id}`);
         setState({
           post,
@@ -45,7 +41,7 @@ export const usePostDetail = () => {
       }
     };
 
-    checkAuthAndFetchPost();
+    fetchPost();
   }, [id, router]);
 
   return {

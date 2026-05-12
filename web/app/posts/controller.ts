@@ -12,12 +12,8 @@ export const usePosts = () => {
   });
 
   useEffect(() => {
-    const checkAuthAndFetchPosts = async () => {
+    const fetchPosts = async () => {
       try {
-        // First verify authentication
-        await api.get("/users/me");
-        
-        // Then fetch posts
         const posts = await api.get<Post[]>("/posts");
         setState({
           posts: posts || [],
@@ -37,11 +33,10 @@ export const usePosts = () => {
           isLoading: false,
           error: message,
         }));
-        router.push(`/error?message=${encodeURIComponent(message)}`);
       }
     };
 
-    checkAuthAndFetchPosts();
+    fetchPosts();
   }, [router]);
 
   const truncateContent = (content: string, limit: number = 100) => {

@@ -71,7 +71,7 @@ export default function PostsPage() {
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {posts.length > 0 ? posts.map((post) => (
+            {posts.map((post) => (
               <Link 
                 key={post.id} 
                 href={`/posts/${post.id}`}
@@ -90,7 +90,7 @@ export default function PostsPage() {
                   </span>
                 </div>
               </Link>
-            )) : <p>No posts available.</p>}
+            ))}
           </div>
         )}
       </main>
