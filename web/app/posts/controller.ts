@@ -16,7 +16,7 @@ export const usePosts = () => {
       try {
         const posts = await api.get<Post[]>("/posts");
         setState({
-          posts: posts || [],
+          posts: Array.isArray(posts) ? posts : [],
           isLoading: false,
           error: null,
         });
