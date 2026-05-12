@@ -1,27 +1,29 @@
-"use client";
-
 import Link from "next/link";
 import Image from "next/image";
-import { usePosts } from "./controller";
+import { redirect } from "next/navigation";
+import { apiServer } from "@/lib/api-server";
+import { ApiError } from "@/lib/api";
+import { Post } from "./model";
 
-export default function PostsPage() {
-  const { posts, isLoading, error, truncateContent } = usePosts();
-
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="text-xl font-semibold text-gray-700">Loading posts...</div>
-      </div>
-    );
+async function getPosts() {
+  try {
+    const posts = await apiServer.get<Post[]>("/posts");
+    return Array.isArray(posts) ? posts : [];
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 401) {
+      redirect("/login");
+    }
+    throw err;
   }
+}
 
-  if (error) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="text-xl font-semibold text-red-600">Error: {error}</div>
-      </div>
-    );
-  }
+const truncateContent = (content: string, limit: number = 100) => {
+  if (content.length <= limit) return content;
+  return content.slice(0, limit) + "...";
+};
+
+export default async function PostsPage() {
+  const posts = await getPosts();
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50 font-sans dark:bg-black">

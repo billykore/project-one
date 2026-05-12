@@ -7,9 +7,3 @@ export interface Post {
   updated_at: string;
   message?: string;
 }
-
-export interface PostsState {
-  posts: Post[];
-  isLoading: boolean;
-  error: string | null;
-}
