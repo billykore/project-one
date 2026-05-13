@@ -17,7 +17,7 @@ func TestLoginUseCase_Login_WithMocks(t *testing.T) {
 
 	mockRepo := mocks.NewMockUserRepository(ctrl)
 	mockTokens := mocks.NewMockTokenService(ctrl)
-	mockUserTokens := mocks.NewMockUserTokenRepository(ctrl)
+	mockUserTokens := mocks.NewMockTokenRepository(ctrl)
 	mockHasher := mocks.NewMockHasher(ctrl)
 	mockLogger := mocks.NewMockLogger(ctrl)
 
@@ -123,7 +123,7 @@ func TestLoginUseCase_Logout(t *testing.T) {
 
 	mockRepo := mocks.NewMockUserRepository(ctrl)
 	mockTokens := mocks.NewMockTokenService(ctrl)
-	mockUserTokens := mocks.NewMockUserTokenRepository(ctrl)
+	mockUserTokens := mocks.NewMockTokenRepository(ctrl)
 	mockHasher := mocks.NewMockHasher(ctrl)
 	mockLogger := mocks.NewMockLogger(ctrl)
 

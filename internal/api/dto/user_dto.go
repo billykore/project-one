@@ -35,6 +35,20 @@ type UserResponse struct {
 	Name  string `json:"name"`
 }
 
+// GetFollowingRequest is the query parameters for getting following list.
+type GetFollowingRequest struct {
+	Limit  int `query:"limit" validate:"omitempty,min=1,max=100"`
+	Offset int `query:"offset" validate:"omitempty,min=0"`
+}
+
+// FollowingResponse is the response body for a user being followed.
+type FollowingResponse struct {
+	ID         int    `json:"id"`
+	Name       string `json:"name"`
+	FollowedAt string `json:"followed_at"`
+	IsMutual   bool   `json:"is_mutual"`
+}
+
 // FollowResponse is the response body for a successful follow action.
 type FollowResponse struct {
 	Message string     `json:"message"`
