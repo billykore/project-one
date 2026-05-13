@@ -89,6 +89,7 @@ func main() {
 	e.POST("/users/login", userHdl.HandleLogin)
 	e.POST("/users/logout", userHdl.HandleLogout, middleware.Authorize(tokenSvc))
 	e.GET("/users/me", userHdl.Me, middleware.Authorize(tokenSvc))
+	e.GET("/users/me/following", userHdl.GetFollowing, middleware.Authorize(tokenSvc))
 	e.POST("/users/:userId/follow", userHdl.HandleFollow, middleware.Authorize(tokenSvc))
 	e.POST("/posts", postHdl.CreatePost, middleware.Authorize(tokenSvc))
 	e.GET("/posts", postHdl.GetPosts, middleware.Authorize(tokenSvc))

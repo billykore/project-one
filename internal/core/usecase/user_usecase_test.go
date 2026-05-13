@@ -15,7 +15,7 @@ func TestUserUseCase_GetCurrentUser(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockUserRepository(ctrl)
-	mockTokenRepo := mocks.NewMockUserTokenRepository(ctrl)
+	mockTokenRepo := mocks.NewMockTokenRepository(ctrl)
 	mockHasher := mocks.NewMockHasher(ctrl)
 	svc := NewUserUseCase(mockRepo, mockTokenRepo, mockHasher)
 
@@ -74,7 +74,7 @@ func TestUserUseCase_Register(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockUserRepository(ctrl)
-	mockTokenRepo := mocks.NewMockUserTokenRepository(ctrl)
+	mockTokenRepo := mocks.NewMockTokenRepository(ctrl)
 	mockHasher := mocks.NewMockHasher(ctrl)
 	svc := NewUserUseCase(mockRepo, mockTokenRepo, mockHasher)
 

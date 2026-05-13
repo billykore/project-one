@@ -40,3 +40,22 @@ func (u *followUseCase) Follow(ctx context.Context, followerID, followedID int) 
 
 	return follow, nil
 }
+
+func (u *followUseCase) GetFollowing(ctx context.Context, followerID int, limit, offset int) ([]*domain.Following, error) {
+	if limit <= 0 {
+		limit = 10
+	}
+	if limit > 100 {
+		limit = 100
+	}
+	if offset < 0 {
+		offset = 0
+	}
+
+	following, err := u.followRepo.GetFollowing(ctx, followerID, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("get following: %w", err)
+	}
+
+	return following, nil
+}
