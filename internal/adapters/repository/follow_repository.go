@@ -38,10 +38,7 @@ func (r *followRepository) Create(ctx context.Context, follow *domain.Follow) er
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return domain.ErrAlreadyFollowing
 		}
-		if errors.Is(err, gorm.ErrForeignKeyViolated) {
-			return domain.ErrUserNotFound
-		}
-		return err
+		return domain.ErrUserNotFound
 	}
 	follow.CreatedAt = m.CreatedAt
 	return nil

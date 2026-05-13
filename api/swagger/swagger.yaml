@@ -27,6 +27,20 @@ definitions:
       error:
         type: string
     type: object
+  github_com_billykore_project-one_internal_api_dto.FollowData:
+    properties:
+      followed_at:
+        type: string
+      followed_user_id:
+        type: integer
+    type: object
+  github_com_billykore_project-one_internal_api_dto.FollowResponse:
+    properties:
+      data:
+        $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.FollowData'
+      message:
+        type: string
+    type: object
   github_com_billykore_project-one_internal_api_dto.LoginRequest:
     properties:
       email:
@@ -303,6 +317,41 @@ paths:
       summary: Update post
       tags:
       - posts
+  /users/{userId}/follow:
+    post:
+      consumes:
+      - application/json
+      description: Allows an authenticated user to follow another user.
+      parameters:
+      - description: User ID to follow
+        in: path
+        name: userId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.FollowResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Follow a user
+      tags:
+      - users
   /users/login:
     post:
       consumes:
