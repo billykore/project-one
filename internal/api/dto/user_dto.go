@@ -34,3 +34,15 @@ type UserResponse struct {
 	Email string `json:"email"`
 	Name  string `json:"name"`
 }
+
+// FollowResponse is the response body for a successful follow action.
+type FollowResponse struct {
+	Message string     `json:"message"`
+	Data    FollowData `json:"data"`
+}
+
+// FollowData is the data part of the follow response.
+type FollowData struct {
+	FollowedUserID int    `json:"followed_user_id"`
+	FollowedAt     string `json:"followed_at"`
+}

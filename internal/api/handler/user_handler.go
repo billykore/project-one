@@ -3,7 +3,9 @@ package handler
 import (
 	"errors"
 	"net/http"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/billykore/project-one/internal/api/dto"
 	"github.com/billykore/project-one/internal/core/domain"
@@ -12,20 +14,27 @@ import (
 )
 
 type UserHandler struct {
-	userUseCase  ports.UserUseCase
-	loginUseCase ports.LoginUseCase
-	validator    ports.Validator
+	userUseCase   ports.UserUseCase
+	loginUseCase  ports.LoginUseCase
+	followUseCase ports.FollowUseCase
+	validator     ports.Validator
 }
 
 // NewUserHandler creates a new instance of UserHandler.
-func NewUserHandler(userUseCase ports.UserUseCase, loginUseCase ports.LoginUseCase, validator ports.Validator) *UserHandler {
-	if userUseCase == nil || loginUseCase == nil || validator == nil {
+func NewUserHandler(
+	userUseCase ports.UserUseCase,
+	loginUseCase ports.LoginUseCase,
+	followUseCase ports.FollowUseCase,
+	validator ports.Validator,
+) *UserHandler {
+	if userUseCase == nil || loginUseCase == nil || followUseCase == nil || validator == nil {
 		panic("NewUserHandler: dependencies must not be nil")
 	}
 	return &UserHandler{
-		userUseCase:  userUseCase,
-		loginUseCase: loginUseCase,
-		validator:    validator,
+		userUseCase:   userUseCase,
+		loginUseCase:  loginUseCase,
+		followUseCase: followUseCase,
+		validator:     validator,
 	}
 }
 
@@ -175,5 +184,50 @@ func (h *UserHandler) HandleRegister(c echo.Context) error {
 
 	return c.JSON(http.StatusCreated, dto.RegisterResponse{
 		Message: "User registered successfully",
+	})
+}
+
+// HandleFollow handles the POST /users/{userId}/follow endpoint.
+//
+//	@Summary		Follow a user
+//	@Description	Allows an authenticated user to follow another user.
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			userId	path		int	true	"User ID to follow"
+//	@Success		200		{object}	dto.FollowResponse
+//	@Failure		400		{object}	dto.ErrorResponse
+//	@Failure		401		{object}	dto.ErrorResponse
+//	@Failure		500		{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/users/{userId}/follow [post]
+func (h *UserHandler) HandleFollow(c echo.Context) error {
+	followerID, ok := c.Get("userID").(int)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
+	}
+
+	followedID, err := strconv.Atoi(c.Param("userId"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid request"})
+	}
+
+	follow, err := h.followUseCase.Follow(c.Request().Context(), followerID, followedID)
+	if err != nil {
+		if errors.Is(err, domain.ErrCannotFollowSelf) || errors.Is(err, domain.ErrAlreadyFollowing) {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+		}
+		if errors.Is(err, domain.ErrUserNotFound) {
+			return c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "User not found"})
+		}
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
+	}
+
+	return c.JSON(http.StatusOK, dto.FollowResponse{
+		Message: "You are now following this user.",
+		Data: dto.FollowData{
+			FollowedUserID: follow.FollowedID,
+			FollowedAt:     follow.CreatedAt.Format(time.RFC3339),
+		},
 	})
 }

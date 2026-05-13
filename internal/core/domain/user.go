@@ -21,6 +21,10 @@ var (
 	ErrEmailAlreadyRegistered = errors.New("email is already registered")
 	// ErrValidationFailed is returned when domain validation fails.
 	ErrValidationFailed = errors.New("validation failed")
+	// ErrAlreadyFollowing is returned when a user tries to follow someone they already follow.
+	ErrAlreadyFollowing = errors.New("already following this user")
+	// ErrCannotFollowSelf is returned when a user tries to follow themselves.
+	ErrCannotFollowSelf = errors.New("cannot follow yourself")
 )
 
 // User is the core domain entity representing a user in the system.
