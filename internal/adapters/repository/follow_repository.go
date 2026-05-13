@@ -20,14 +20,6 @@ func (m *followModel) TableName() string {
 	return "follows"
 }
 
-func (m *followModel) toDomain() *domain.Follow {
-	return &domain.Follow{
-		FollowerID: m.FollowerID,
-		FollowedID: m.FollowedID,
-		CreatedAt:  m.CreatedAt,
-	}
-}
-
 type followRepository struct {
 	db *gorm.DB
 }
@@ -45,6 +37,9 @@ func (r *followRepository) Create(ctx context.Context, follow *domain.Follow) er
 	if err := r.db.WithContext(ctx).Create(&m).Error; err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return domain.ErrAlreadyFollowing
+		}
+		if errors.Is(err, gorm.ErrForeignKeyViolated) {
+			return domain.ErrUserNotFound
 		}
 		return err
 	}

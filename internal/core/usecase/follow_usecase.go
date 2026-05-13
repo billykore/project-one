@@ -29,21 +29,6 @@ func (u *followUseCase) Follow(ctx context.Context, followerID, followedID int) 
 		return nil, domain.ErrCannotFollowSelf
 	}
 
-	// Verify followed user exists
-	_, err := u.userRepo.GetUserByID(ctx, followedID)
-	if err != nil {
-		return nil, fmt.Errorf("verify followed user: %w", err)
-	}
-
-	// Check if already following
-	isFollowing, err := u.followRepo.IsFollowing(ctx, followerID, followedID)
-	if err != nil {
-		return nil, fmt.Errorf("check following status: %w", err)
-	}
-	if isFollowing {
-		return nil, domain.ErrAlreadyFollowing
-	}
-
 	follow := &domain.Follow{
 		FollowerID: followerID,
 		FollowedID: followedID,

@@ -24,8 +24,6 @@ func TestFollowUseCase_Follow(t *testing.T) {
 		followerID := 1
 		followedID := 2
 
-		mockUserRepo.EXPECT().GetUserByID(ctx, followedID).Return(&domain.User{ID: followedID}, nil)
-		mockFollowRepo.EXPECT().IsFollowing(ctx, followerID, followedID).Return(false, nil)
 		mockFollowRepo.EXPECT().Create(ctx, gomock.Any()).Return(nil)
 
 		follow, err := svc.Follow(ctx, followerID, followedID)
@@ -51,7 +49,7 @@ func TestFollowUseCase_Follow(t *testing.T) {
 		followerID := 1
 		followedID := 99
 
-		mockUserRepo.EXPECT().GetUserByID(ctx, followedID).Return(nil, domain.ErrUserNotFound)
+		mockFollowRepo.EXPECT().Create(ctx, gomock.Any()).Return(domain.ErrUserNotFound)
 
 		_, err := svc.Follow(ctx, followerID, followedID)
 
@@ -64,8 +62,7 @@ func TestFollowUseCase_Follow(t *testing.T) {
 		followerID := 1
 		followedID := 2
 
-		mockUserRepo.EXPECT().GetUserByID(ctx, followedID).Return(&domain.User{ID: followedID}, nil)
-		mockFollowRepo.EXPECT().IsFollowing(ctx, followerID, followedID).Return(true, nil)
+		mockFollowRepo.EXPECT().Create(ctx, gomock.Any()).Return(domain.ErrAlreadyFollowing)
 
 		_, err := svc.Follow(ctx, followerID, followedID)
 

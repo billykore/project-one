@@ -208,8 +208,8 @@ func (h *UserHandler) HandleFollow(c echo.Context) error {
 	}
 
 	followedID, err := strconv.Atoi(c.Param("userId"))
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid request"})
+	if err != nil || followedID <= 0 {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid user ID"})
 	}
 
 	follow, err := h.followUseCase.Follow(c.Request().Context(), followerID, followedID)
