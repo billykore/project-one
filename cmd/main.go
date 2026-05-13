@@ -61,6 +61,7 @@ func main() {
 	userRepo := repository.NewUserRepository(db)
 	userTokenRepo := repository.NewUserTokenRepository(db)
 	postRepo := repository.NewPostRepository(db)
+	followRepo := repository.NewFollowRepository(db)
 	tokenSvc := token.NewJWTTokenService(cfg.JWT.SecretKey, cfg.JWT.ExpirationTime)
 	hasher := hasher.NewBcryptHasher()
 
@@ -68,9 +69,10 @@ func main() {
 	loginUc := usecase.NewLoginUseCase(userRepo, tokenSvc, userTokenRepo, hasher, lgr)
 	userUc := usecase.NewUserUseCase(userRepo, userTokenRepo, hasher)
 	postUc := usecase.NewPostUseCase(postRepo, lgr)
+	followUc := usecase.NewFollowUseCase(followRepo, userRepo)
 
 	// 5. Initialize Handler
-	userHdl := handler.NewUserHandler(userUc, loginUc, val)
+	userHdl := handler.NewUserHandler(userUc, loginUc, followUc, val)
 	postHdl := handler.NewPostHandler(postUc, val)
 
 	// 6. Set up Echo
@@ -87,6 +89,7 @@ func main() {
 	e.POST("/users/login", userHdl.HandleLogin)
 	e.POST("/users/logout", userHdl.HandleLogout, middleware.Authorize(tokenSvc))
 	e.GET("/users/me", userHdl.Me, middleware.Authorize(tokenSvc))
+	e.POST("/users/:userId/follow", userHdl.HandleFollow, middleware.Authorize(tokenSvc))
 	e.POST("/posts", postHdl.CreatePost, middleware.Authorize(tokenSvc))
 	e.GET("/posts", postHdl.GetPosts, middleware.Authorize(tokenSvc))
 	e.GET("/posts/:id", postHdl.GetPostByID, middleware.Authorize(tokenSvc))
