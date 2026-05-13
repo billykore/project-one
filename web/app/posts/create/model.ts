@@ -8,11 +8,14 @@ export const createPostSchema = z.object({
 
 export type CreatePostFormData = z.infer<typeof createPostSchema>;
 
-export interface CreatePostErrors {
-  title?: string;
-  content?: string;
-  tags?: string;
-  general?: string;
+export interface FormState {
+  errors?: {
+    title?: string[];
+    content?: string[];
+    tags?: string[];
+    general?: string[];
+  };
+  message?: string | null;
 }
 
 export interface CreatePostResponse {

@@ -1,37 +1,37 @@
-"use client";
-
 import Link from "next/link";
 import Image from "next/image";
-import { usePostDetail } from "./controller";
+import { redirect, notFound } from "next/navigation";
+import { apiServer } from "@/lib/api-server";
+import { ApiError } from "@/lib/api";
+import { Post } from "../model";
 
-export default function PostDetailPage() {
-  const { post, isLoading, error } = usePostDetail();
-
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="text-xl font-semibold text-gray-700">Loading post...</div>
-      </div>
-    );
+async function getPost(id: string) {
+  try {
+    const post = await apiServer.get<Post>(`/posts/${id}`);
+    if (!post) {
+      notFound();
+    }
+    return post;
+  } catch (err) {
+    if (err instanceof ApiError) {
+      if (err.status === 401) {
+        redirect("/login");
+      }
+      if (err.status === 404) {
+        notFound();
+      }
+    }
+    throw err;
   }
+}
 
-  if (error || !post) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 p-8">
-        <div className="flex w-full max-w-md flex-col items-center rounded-xl bg-white p-8 shadow-lg text-center dark:bg-zinc-900">
-          <div className="text-xl font-semibold text-red-600 mb-4">
-            {error || "Post not found"}
-          </div>
-          <Link
-            href="/posts"
-            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
-          >
-            Back to All Posts
-          </Link>
-        </div>
-      </div>
-    );
-  }
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function PostDetailPage({ params }: PageProps) {
+  const { id } = await params;
+  const post = await getPost(id);
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50 font-sans dark:bg-black">
