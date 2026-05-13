@@ -72,7 +72,7 @@ func main() {
 	followUc := usecase.NewFollowUseCase(followRepo, userRepo)
 
 	// 5. Initialize Handler
-	userHdl := handler.NewUserHandler(userUc, loginUc, followUc, val)
+	userHdl := handler.NewUserHandler(userUc, loginUc, followUc, val, lgr)
 	postHdl := handler.NewPostHandler(postUc, val)
 
 	// 6. Set up Echo

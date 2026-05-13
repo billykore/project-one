@@ -41,7 +41,7 @@ func (u *followUseCase) Follow(ctx context.Context, followerID, followedID int) 
 	return follow, nil
 }
 
-func (u *followUseCase) GetFollowing(ctx context.Context, followerID int, limit, offset int) ([]*domain.Following, error) {
+func (u *followUseCase) GetFollowing(ctx context.Context, followerID int, limit, offset int) ([]domain.Following, error) {
 	if limit <= 0 {
 		limit = 10
 	}

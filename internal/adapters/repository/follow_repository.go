@@ -55,8 +55,8 @@ func (r *followRepository) IsFollowing(ctx context.Context, followerID, followed
 	return count > 0, nil
 }
 
-func (r *followRepository) GetFollowing(ctx context.Context, followerID int, limit, offset int) ([]*domain.Following, error) {
-	var results []*domain.Following
+func (r *followRepository) GetFollowing(ctx context.Context, followerID int, limit, offset int) ([]domain.Following, error) {
+	var results []domain.Following
 	err := r.db.WithContext(ctx).Table("follows").
 		Select("users.id, users.first_name, users.last_name, follows.created_at AS followed_at, (mutual.follower_id IS NOT NULL) AS is_mutual").
 		Joins("INNER JOIN users ON users.id = follows.followed_id").

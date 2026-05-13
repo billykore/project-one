@@ -18,6 +18,7 @@ type UserHandler struct {
 	loginUseCase  ports.LoginUseCase
 	followUseCase ports.FollowUseCase
 	validator     ports.Validator
+	log           ports.Logger
 }
 
 // NewUserHandler creates a new instance of UserHandler.
@@ -26,8 +27,9 @@ func NewUserHandler(
 	loginUseCase ports.LoginUseCase,
 	followUseCase ports.FollowUseCase,
 	validator ports.Validator,
+	log ports.Logger,
 ) *UserHandler {
-	if userUseCase == nil || loginUseCase == nil || followUseCase == nil || validator == nil {
+	if userUseCase == nil || loginUseCase == nil || followUseCase == nil || validator == nil || log == nil {
 		panic("NewUserHandler: dependencies must not be nil")
 	}
 	return &UserHandler{
@@ -35,6 +37,7 @@ func NewUserHandler(
 		loginUseCase:  loginUseCase,
 		followUseCase: followUseCase,
 		validator:     validator,
+		log:           log,
 	}
 }
 
@@ -61,6 +64,7 @@ func (h *UserHandler) Me(c echo.Context) error {
 		if errors.Is(err, domain.ErrUserNotFound) || errors.Is(err, domain.ErrUnauthorized) {
 			return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 		}
+		h.log.Error(c.Request().Context(), "failed to get current user", "userID", userID, "error", err)
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Internal Server Error"})
 	}
 
@@ -100,6 +104,7 @@ func (h *UserHandler) HandleLogin(c echo.Context) error {
 		if errors.Is(err, domain.ErrInvalidCredentials) {
 			return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Invalid email or password"})
 		}
+		h.log.Error(c.Request().Context(), "login failed", "email", req.Email, "error", err)
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Internal server error"})
 	}
 
@@ -135,6 +140,7 @@ func (h *UserHandler) HandleLogout(c echo.Context) error {
 	}
 
 	if err := h.loginUseCase.Logout(c.Request().Context(), userID); err != nil {
+		h.log.Error(c.Request().Context(), "logout failed", "userID", userID, "error", err)
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Internal server error"})
 	}
 
@@ -179,6 +185,7 @@ func (h *UserHandler) HandleRegister(c echo.Context) error {
 		if errors.Is(err, domain.ErrValidationFailed) {
 			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
 		}
+		h.log.Error(c.Request().Context(), "registration failed", "email", req.Email, "error", err)
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
 	}
 
@@ -220,6 +227,7 @@ func (h *UserHandler) HandleFollow(c echo.Context) error {
 		if errors.Is(err, domain.ErrUserNotFound) {
 			return c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "User not found"})
 		}
+		h.log.Error(c.Request().Context(), "follow failed", "followerID", followerID, "followedID", followedID, "error", err)
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
 	}
 
@@ -264,6 +272,7 @@ func (h *UserHandler) GetFollowing(c echo.Context) error {
 
 	following, err := h.followUseCase.GetFollowing(c.Request().Context(), followerID, req.Limit, req.Offset)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "get following failed", "followerID", followerID, "error", err)
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
 	}
 

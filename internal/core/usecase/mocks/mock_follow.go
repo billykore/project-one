@@ -56,10 +56,10 @@ func (mr *MockFollowRepositoryMockRecorder) Create(ctx, follow any) *gomock.Call
 }
 
 // GetFollowing mocks base method.
-func (m *MockFollowRepository) GetFollowing(ctx context.Context, followerID, limit, offset int) ([]*domain.Following, error) {
+func (m *MockFollowRepository) GetFollowing(ctx context.Context, followerID, limit, offset int) ([]domain.Following, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetFollowing", ctx, followerID, limit, offset)
-	ret0, _ := ret[0].([]*domain.Following)
+	ret0, _ := ret[0].([]domain.Following)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -125,10 +125,10 @@ func (mr *MockFollowUseCaseMockRecorder) Follow(ctx, followerID, followedID any)
 }
 
 // GetFollowing mocks base method.
-func (m *MockFollowUseCase) GetFollowing(ctx context.Context, followerID, limit, offset int) ([]*domain.Following, error) {
+func (m *MockFollowUseCase) GetFollowing(ctx context.Context, followerID, limit, offset int) ([]domain.Following, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetFollowing", ctx, followerID, limit, offset)
-	ret0, _ := ret[0].([]*domain.Following)
+	ret0, _ := ret[0].([]domain.Following)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
