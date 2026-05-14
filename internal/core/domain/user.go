@@ -4,8 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"net/mail"
+	"regexp"
 	"time"
 )
+
+var usernameRegex = regexp.MustCompile("^[a-zA-Z0-9_]+$")
 
 // Sentinel domain errors used across the application.
 var (
@@ -60,6 +63,9 @@ func (u *User) Validate() error {
 	}
 	if len(u.Username) < 3 {
 		return fmt.Errorf("%w: username must be at least 3 characters", ErrValidationFailed)
+	}
+	if !usernameRegex.MatchString(u.Username) {
+		return fmt.Errorf("%w: username can only contain alphanumeric characters and underscores", ErrValidationFailed)
 	}
 	if u.FirstName == "" {
 		return fmt.Errorf("%w: first name is required", ErrValidationFailed)

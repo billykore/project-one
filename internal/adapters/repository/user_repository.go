@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/billykore/project-one/internal/core/domain"
@@ -90,6 +91,9 @@ func (r *userRepository) CreateUser(ctx context.Context, user *domain.User) erro
 	}
 	if err := r.db.WithContext(ctx).Create(&m).Error; err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			if strings.Contains(err.Error(), "username") {
+				return domain.ErrUsernameAlreadyTaken
+			}
 			return domain.ErrEmailAlreadyRegistered
 		}
 		return err
