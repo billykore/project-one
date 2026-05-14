@@ -17,3 +17,12 @@ type Following struct {
 	FollowedAt time.Time
 	IsMutual   bool
 }
+
+// Follower represents a user following the current user with metadata.
+type Follower struct {
+	ID         int
+	FirstName  string
+	LastName   string
+	FollowedAt time.Time
+	IsMutual   bool
+}

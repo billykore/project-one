@@ -107,3 +107,43 @@ func TestFollowUseCase_GetFollowing(t *testing.T) {
 		assert.NoError(t, err)
 	})
 }
+
+func TestFollowUseCase_GetFollowers(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockFollowRepo := mocks.NewMockFollowRepository(ctrl)
+	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	svc := NewFollowUseCase(mockFollowRepo, mockUserRepo)
+
+	ctx := context.Background()
+
+	t.Run("success", func(t *testing.T) {
+		followedID := 1
+		limit := 10
+		offset := 0
+
+		expectedFollowers := []domain.Follower{
+			{ID: 2, FirstName: "John", LastName: "Doe", IsMutual: true},
+		}
+
+		mockFollowRepo.EXPECT().GetFollowers(ctx, followedID, limit, offset).Return(expectedFollowers, nil)
+
+		results, err := svc.GetFollowers(ctx, followedID, limit, offset)
+
+		require.NoError(t, err)
+		assert.Equal(t, expectedFollowers, results)
+	})
+
+	t.Run("pagination defaults", func(t *testing.T) {
+		followedID := 1
+		// limit <= 0 should default to 10
+		// offset < 0 should default to 0
+
+		mockFollowRepo.EXPECT().GetFollowers(ctx, followedID, 10, 0).Return([]domain.Follower{}, nil)
+
+		_, err := svc.GetFollowers(ctx, followedID, 0, -1)
+
+		assert.NoError(t, err)
+	})
+}

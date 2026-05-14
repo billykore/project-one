@@ -62,7 +62,21 @@ func (r *followRepository) GetFollowing(ctx context.Context, followerID int, lim
 		Joins("INNER JOIN users ON users.id = follows.followed_id").
 		Joins("LEFT JOIN follows AS mutual ON mutual.follower_id = follows.followed_id AND mutual.followed_id = follows.follower_id").
 		Where("follows.follower_id = ?", followerID).
-		Order("follows.created_at DESC").
+		Order("follows.created_at DESC, follows.followed_id DESC").
+		Limit(limit).Offset(offset).
+		Scan(&results).Error
+
+	return results, err
+}
+
+func (r *followRepository) GetFollowers(ctx context.Context, followedID int, limit, offset int) ([]domain.Follower, error) {
+	var results []domain.Follower
+	err := r.db.WithContext(ctx).Table("follows").
+		Select("users.id, users.first_name, users.last_name, follows.created_at AS followed_at, (mutual.follower_id IS NOT NULL) AS is_mutual").
+		Joins("INNER JOIN users ON users.id = follows.follower_id").
+		Joins("LEFT JOIN follows AS mutual ON mutual.follower_id = follows.followed_id AND mutual.followed_id = follows.follower_id").
+		Where("follows.followed_id = ?", followedID).
+		Order("follows.created_at DESC, follows.follower_id DESC").
 		Limit(limit).Offset(offset).
 		Scan(&results).Error
 
