@@ -41,6 +41,18 @@ func (u *followUseCase) Follow(ctx context.Context, followerID, followedID int) 
 	return follow, nil
 }
 
+func (u *followUseCase) Unfollow(ctx context.Context, followerID, followedID int) error {
+	if followerID == followedID {
+		return domain.ErrCannotUnfollowSelf
+	}
+
+	if err := u.followRepo.Delete(ctx, followerID, followedID); err != nil {
+		return fmt.Errorf("delete follow: %w", err)
+	}
+
+	return nil
+}
+
 func (u *followUseCase) GetFollowing(ctx context.Context, followerID int, limit, offset int) ([]domain.Following, error) {
 	if limit <= 0 {
 		limit = 10

@@ -240,6 +240,45 @@ func (h *UserHandler) HandleFollow(c echo.Context) error {
 	})
 }
 
+// HandleUnfollow handles the DELETE /users/{userId}/follow endpoint.
+//
+//	@Summary		Unfollow a user
+//	@Description	Allows an authenticated user to unfollow another user.
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			userId	path		int	true	"User ID to unfollow"
+//	@Success		200		{object}	dto.UnfollowResponse
+//	@Failure		400		{object}	dto.ErrorResponse
+//	@Failure		401		{object}	dto.ErrorResponse
+//	@Failure		500		{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/users/{userId}/follow [delete]
+func (h *UserHandler) HandleUnfollow(c echo.Context) error {
+	followerID, ok := c.Get("userID").(int)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
+	}
+
+	followedID, err := strconv.Atoi(c.Param("userId"))
+	if err != nil || followedID <= 0 {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid user ID"})
+	}
+
+	err = h.followUseCase.Unfollow(c.Request().Context(), followerID, followedID)
+	if err != nil {
+		if errors.Is(err, domain.ErrCannotUnfollowSelf) || errors.Is(err, domain.ErrNotFollowing) {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+		}
+		h.log.Error(c.Request().Context(), "unfollow failed", "followerID", followerID, "followedID", followedID, "error", err)
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
+	}
+
+	return c.JSON(http.StatusOK, dto.UnfollowResponse{
+		Message: "Success unfollowed this user.",
+	})
+}
+
 // GetFollowing handles the GET /users/me/following endpoint.
 //
 //	@Summary		Get following list

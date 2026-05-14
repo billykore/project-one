@@ -82,3 +82,16 @@ func (r *followRepository) GetFollowers(ctx context.Context, followedID int, lim
 
 	return results, err
 }
+
+func (r *followRepository) Delete(ctx context.Context, followerID, followedID int) error {
+	result := r.db.WithContext(ctx).
+		Where("follower_id = ? AND followed_id = ?", followerID, followedID).
+		Delete(&followModel{})
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return domain.ErrNotFollowing
+	}
+	return nil
+}
