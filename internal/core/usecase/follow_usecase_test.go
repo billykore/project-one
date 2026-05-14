@@ -68,6 +68,46 @@ func TestFollowUseCase_Follow(t *testing.T) {
 	})
 }
 
+func TestFollowUseCase_Unfollow(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockFollowRepo := mocks.NewMockFollowRepository(ctrl)
+	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	svc := NewFollowUseCase(mockFollowRepo, mockUserRepo)
+
+	ctx := context.Background()
+
+	t.Run("success", func(t *testing.T) {
+		followerID := 1
+		followedID := 2
+
+		mockFollowRepo.EXPECT().Delete(ctx, followerID, followedID).Return(nil)
+
+		err := svc.Unfollow(ctx, followerID, followedID)
+
+		assert.NoError(t, err)
+	})
+
+	t.Run("cannot unfollow self", func(t *testing.T) {
+		userID := 1
+		err := svc.Unfollow(ctx, userID, userID)
+
+		assert.ErrorIs(t, err, domain.ErrCannotUnfollowSelf)
+	})
+
+	t.Run("not following", func(t *testing.T) {
+		followerID := 1
+		followedID := 2
+
+		mockFollowRepo.EXPECT().Delete(ctx, followerID, followedID).Return(domain.ErrNotFollowing)
+
+		err := svc.Unfollow(ctx, followerID, followedID)
+
+		assert.ErrorIs(t, err, domain.ErrNotFollowing)
+	})
+}
+
 func TestFollowUseCase_GetFollowing(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

@@ -16,6 +16,8 @@ type FollowRepository interface {
 	GetFollowing(ctx context.Context, followerID int, limit, offset int) ([]domain.Following, error)
 	// GetFollowers fetches the paginated list of users following a specific user.
 	GetFollowers(ctx context.Context, followedID int, limit, offset int) ([]domain.Follower, error)
+	// Delete removes an existing follow relationship.
+	Delete(ctx context.Context, followerID, followedID int) error
 }
 
 // FollowUseCase defines the interface for follow-related business logic.
@@ -26,4 +28,6 @@ type FollowUseCase interface {
 	GetFollowing(ctx context.Context, followerID int, limit, offset int) ([]domain.Following, error)
 	// GetFollowers handles the logic for getting the followers list of a user.
 	GetFollowers(ctx context.Context, followedID int, limit, offset int) ([]domain.Follower, error)
+	// Unfollow handles the logic for a user unfollowing another user.
+	Unfollow(ctx context.Context, followerID, followedID int) error
 }

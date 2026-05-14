@@ -25,6 +25,10 @@ var (
 	ErrAlreadyFollowing = errors.New("already following this user")
 	// ErrCannotFollowSelf is returned when a user tries to follow themselves.
 	ErrCannotFollowSelf = errors.New("cannot follow yourself")
+	// ErrNotFollowing is returned when a user tries to unfollow someone they are not following.
+	ErrNotFollowing = errors.New("not following this user")
+	// ErrCannotUnfollowSelf is returned when a user tries to unfollow themselves.
+	ErrCannotUnfollowSelf = errors.New("cannot unfollow yourself")
 )
 
 // User is the core domain entity representing a user in the system.

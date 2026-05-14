@@ -55,6 +55,20 @@ func (mr *MockFollowRepositoryMockRecorder) Create(ctx, follow any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockFollowRepository)(nil).Create), ctx, follow)
 }
 
+// Delete mocks base method.
+func (m *MockFollowRepository) Delete(ctx context.Context, followerID, followedID int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, followerID, followedID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockFollowRepositoryMockRecorder) Delete(ctx, followerID, followedID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockFollowRepository)(nil).Delete), ctx, followerID, followedID)
+}
+
 // GetFollowers mocks base method.
 func (m *MockFollowRepository) GetFollowers(ctx context.Context, followedID, limit, offset int) ([]domain.Follower, error) {
 	m.ctrl.T.Helper()
@@ -167,4 +181,18 @@ func (m *MockFollowUseCase) GetFollowing(ctx context.Context, followerID, limit,
 func (mr *MockFollowUseCaseMockRecorder) GetFollowing(ctx, followerID, limit, offset any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFollowing", reflect.TypeOf((*MockFollowUseCase)(nil).GetFollowing), ctx, followerID, limit, offset)
+}
+
+// Unfollow mocks base method.
+func (m *MockFollowUseCase) Unfollow(ctx context.Context, followerID, followedID int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Unfollow", ctx, followerID, followedID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Unfollow indicates an expected call of Unfollow.
+func (mr *MockFollowUseCaseMockRecorder) Unfollow(ctx, followerID, followedID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Unfollow", reflect.TypeOf((*MockFollowUseCase)(nil).Unfollow), ctx, followerID, followedID)
 }

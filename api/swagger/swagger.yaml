@@ -127,6 +127,11 @@ definitions:
       message:
         type: string
     type: object
+  github_com_billykore_project-one_internal_api_dto.UnfollowResponse:
+    properties:
+      message:
+        type: string
+    type: object
   github_com_billykore_project-one_internal_api_dto.UpdatePostRequest:
     properties:
       content:
@@ -340,6 +345,40 @@ paths:
       tags:
       - posts
   /users/{userId}/follow:
+    delete:
+      consumes:
+      - application/json
+      description: Allows an authenticated user to unfollow another user.
+      parameters:
+      - description: User ID to unfollow
+        in: path
+        name: userId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.UnfollowResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Unfollow a user
+      tags:
+      - users
     post:
       consumes:
       - application/json

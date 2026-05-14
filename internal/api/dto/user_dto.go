@@ -63,6 +63,11 @@ type FollowerResponse struct {
 	IsMutual   bool   `json:"is_mutual"`
 }
 
+// UnfollowResponse is the response body for a successful unfollow action.
+type UnfollowResponse struct {
+	Message string `json:"message"`
+}
+
 // FollowResponse is the response body for a successful follow action.
 type FollowResponse struct {
 	Message string     `json:"message"`
