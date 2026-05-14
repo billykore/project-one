@@ -221,8 +221,11 @@ func (h *UserHandler) HandleFollow(c echo.Context) error {
 
 	follow, err := h.followUseCase.Follow(c.Request().Context(), followerID, followedID)
 	if err != nil {
-		if errors.Is(err, domain.ErrCannotFollowSelf) || errors.Is(err, domain.ErrAlreadyFollowing) {
-			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+		if errors.Is(err, domain.ErrCannotFollowSelf) {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: domain.ErrCannotFollowSelf.Error()})
+		}
+		if errors.Is(err, domain.ErrAlreadyFollowing) {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: domain.ErrAlreadyFollowing.Error()})
 		}
 		if errors.Is(err, domain.ErrUserNotFound) {
 			return c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "User not found"})
@@ -267,15 +270,18 @@ func (h *UserHandler) HandleUnfollow(c echo.Context) error {
 
 	err = h.followUseCase.Unfollow(c.Request().Context(), followerID, followedID)
 	if err != nil {
-		if errors.Is(err, domain.ErrCannotUnfollowSelf) || errors.Is(err, domain.ErrNotFollowing) {
-			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+		if errors.Is(err, domain.ErrCannotUnfollowSelf) {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: domain.ErrCannotUnfollowSelf.Error()})
+		}
+		if errors.Is(err, domain.ErrNotFollowing) {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: domain.ErrNotFollowing.Error()})
 		}
 		h.log.Error(c.Request().Context(), "unfollow failed", "followerID", followerID, "followedID", followedID, "error", err)
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
 	}
 
 	return c.JSON(http.StatusOK, dto.UnfollowResponse{
-		Message: "Success unfollowed this user.",
+		Message: "Successfully unfollowed this user.",
 	})
 }
 
