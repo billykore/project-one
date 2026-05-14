@@ -84,11 +84,13 @@ func TestUserUseCase_Register(t *testing.T) {
 		user := &domain.User{
 			FirstName: "John",
 			LastName:  "Doe",
+			Username:  "johndoe",
 			Email:     "john@example.com",
 			Password:  "password123",
 		}
 
 		mockRepo.EXPECT().GetUserByEmail(ctx, user.Email).Return(nil, domain.ErrUserNotFound)
+		mockRepo.EXPECT().GetUserByUsername(ctx, user.Username).Return(nil, domain.ErrUserNotFound)
 		mockHasher.EXPECT().Hash(ctx, user.Password).Return("hashed_password", nil)
 		mockRepo.EXPECT().CreateUser(ctx, gomock.Any()).DoAndReturn(func(ctx context.Context, u *domain.User) error {
 			if u.Password != "hashed_password" {
@@ -122,15 +124,33 @@ func TestUserUseCase_Register(t *testing.T) {
 		}
 	})
 
+	t.Run("username already taken", func(t *testing.T) {
+		user := &domain.User{
+			Username: "johndoe",
+			Email:    "john@example.com",
+		}
+
+		mockRepo.EXPECT().GetUserByEmail(ctx, user.Email).Return(nil, domain.ErrUserNotFound)
+		mockRepo.EXPECT().GetUserByUsername(ctx, user.Username).Return(&domain.User{ID: 1}, nil)
+
+		err := svc.Register(ctx, user)
+
+		if !errors.Is(err, domain.ErrUsernameAlreadyTaken) {
+			t.Errorf("Register() error = %v, want %v", err, domain.ErrUsernameAlreadyTaken)
+		}
+	})
+
 	t.Run("validation failure", func(t *testing.T) {
 		user := &domain.User{
 			FirstName: "Jo", // too short
 			LastName:  "Doe",
+			Username:  "johndoe",
 			Email:     "john@example.com",
 			Password:  "password123",
 		}
 
 		mockRepo.EXPECT().GetUserByEmail(ctx, user.Email).Return(nil, domain.ErrUserNotFound)
+		mockRepo.EXPECT().GetUserByUsername(ctx, user.Username).Return(nil, domain.ErrUserNotFound)
 
 		err := svc.Register(ctx, user)
 

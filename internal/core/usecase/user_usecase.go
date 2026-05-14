@@ -57,6 +57,14 @@ func (s *userUseCase) Register(ctx context.Context, user *domain.User) error {
 		return fmt.Errorf("get user by email: %w", err)
 	}
 
+	existingUsername, err := s.userRepo.GetUserByUsername(ctx, user.Username)
+	if err == nil && existingUsername != nil {
+		return domain.ErrUsernameAlreadyTaken
+	}
+	if err != nil && !errors.Is(err, domain.ErrUserNotFound) {
+		return fmt.Errorf("get user by username: %w", err)
+	}
+
 	if err := user.Validate(); err != nil {
 		return fmt.Errorf("validate user: %w", err)
 	}

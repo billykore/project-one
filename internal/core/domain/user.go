@@ -29,6 +29,8 @@ var (
 	ErrNotFollowing = errors.New("not following this user")
 	// ErrCannotUnfollowSelf is returned when a user tries to unfollow themselves.
 	ErrCannotUnfollowSelf = errors.New("cannot unfollow yourself")
+	// ErrUsernameAlreadyTaken is returned when attempting to register a username that is already in use.
+	ErrUsernameAlreadyTaken = errors.New("username is already taken")
 )
 
 // User is the core domain entity representing a user in the system.
@@ -37,6 +39,8 @@ type User struct {
 	ID int
 	// Email is the user's primary email address.
 	Email string
+	// Username is the user's unique username.
+	Username string
 	// Password is the hashed password of the user.
 	Password string
 	// FirstName is the user's first name.
@@ -51,6 +55,12 @@ type User struct {
 
 // Validate performs domain-level validation on the User entity.
 func (u *User) Validate() error {
+	if u.Username == "" {
+		return fmt.Errorf("%w: username is required", ErrValidationFailed)
+	}
+	if len(u.Username) < 3 {
+		return fmt.Errorf("%w: username must be at least 3 characters", ErrValidationFailed)
+	}
 	if u.FirstName == "" {
 		return fmt.Errorf("%w: first name is required", ErrValidationFailed)
 	}

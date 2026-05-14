@@ -20,6 +20,7 @@ type LogoutResponse struct {
 type RegisterRequest struct {
 	FirstName string `json:"first_name" validate:"required,min=3"`
 	LastName  string `json:"last_name" validate:"required,min=3"`
+	Username  string `json:"username" validate:"required,min=3"`
 	Email     string `json:"email" validate:"required,email"`
 	Password  string `json:"password" validate:"required,min=8"`
 }
@@ -31,8 +32,9 @@ type RegisterResponse struct {
 
 // UserResponse is the response body for user data.
 type UserResponse struct {
-	Email string `json:"email"`
-	Name  string `json:"name"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Name     string `json:"name"`
 }
 
 // GetFollowingRequest is the query parameters for getting following list.
