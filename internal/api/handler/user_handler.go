@@ -288,3 +288,52 @@ func (h *UserHandler) GetFollowing(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, res)
 }
+
+// GetFollowers handles the GET /users/me/followers endpoint.
+//
+//	@Summary		Get followers list
+//	@Description	Get the list of users following the currently authenticated user.
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit	query		int	false	"Limit for pagination"
+//	@Param			offset	query		int	false	"Offset for pagination"
+//	@Success		200		{array}		dto.FollowerResponse
+//	@Failure		400		{object}	dto.ErrorResponse
+//	@Failure		401		{object}	dto.ErrorResponse
+//	@Failure		500		{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/users/me/followers [get]
+func (h *UserHandler) GetFollowers(c echo.Context) error {
+	followedID, ok := c.Get("userID").(int)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
+	}
+
+	var req dto.GetFollowersRequest
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid query parameters"})
+	}
+
+	if err := h.validator.Validate(req); err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+	}
+
+	followers, err := h.followUseCase.GetFollowers(c.Request().Context(), followedID, req.Limit, req.Offset)
+	if err != nil {
+		h.log.Error(c.Request().Context(), "get followers failed", "followedID", followedID, "error", err)
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
+	}
+
+	res := make([]dto.FollowerResponse, 0, len(followers))
+	for _, f := range followers {
+		res = append(res, dto.FollowerResponse{
+			ID:         f.ID,
+			Name:       f.FirstName + " " + f.LastName,
+			FollowedAt: f.FollowedAt.Format(time.RFC3339),
+			IsMutual:   f.IsMutual,
+		})
+	}
+
+	return c.JSON(http.StatusOK, res)
+}

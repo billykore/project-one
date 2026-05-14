@@ -55,6 +55,21 @@ func (mr *MockFollowRepositoryMockRecorder) Create(ctx, follow any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockFollowRepository)(nil).Create), ctx, follow)
 }
 
+// GetFollowers mocks base method.
+func (m *MockFollowRepository) GetFollowers(ctx context.Context, followedID, limit, offset int) ([]domain.Follower, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFollowers", ctx, followedID, limit, offset)
+	ret0, _ := ret[0].([]domain.Follower)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFollowers indicates an expected call of GetFollowers.
+func (mr *MockFollowRepositoryMockRecorder) GetFollowers(ctx, followedID, limit, offset any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFollowers", reflect.TypeOf((*MockFollowRepository)(nil).GetFollowers), ctx, followedID, limit, offset)
+}
+
 // GetFollowing mocks base method.
 func (m *MockFollowRepository) GetFollowing(ctx context.Context, followerID, limit, offset int) ([]domain.Following, error) {
 	m.ctrl.T.Helper()
@@ -122,6 +137,21 @@ func (m *MockFollowUseCase) Follow(ctx context.Context, followerID, followedID i
 func (mr *MockFollowUseCaseMockRecorder) Follow(ctx, followerID, followedID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Follow", reflect.TypeOf((*MockFollowUseCase)(nil).Follow), ctx, followerID, followedID)
+}
+
+// GetFollowers mocks base method.
+func (m *MockFollowUseCase) GetFollowers(ctx context.Context, followedID, limit, offset int) ([]domain.Follower, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFollowers", ctx, followedID, limit, offset)
+	ret0, _ := ret[0].([]domain.Follower)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFollowers indicates an expected call of GetFollowers.
+func (mr *MockFollowUseCaseMockRecorder) GetFollowers(ctx, followedID, limit, offset any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFollowers", reflect.TypeOf((*MockFollowUseCase)(nil).GetFollowers), ctx, followedID, limit, offset)
 }
 
 // GetFollowing mocks base method.
