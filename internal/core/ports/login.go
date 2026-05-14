@@ -6,16 +6,6 @@ import (
 	"github.com/billykore/project-one/internal/core/domain"
 )
 
-// UserRepository is a driven port for user persistence.
-type UserRepository interface {
-	// GetUserByEmail retrieves a user by their email address.
-	GetUserByEmail(ctx context.Context, email string) (*domain.User, error)
-	// GetUserByID retrieves a user by their ID.
-	GetUserByID(ctx context.Context, id int) (*domain.User, error)
-	// CreateUser saves a new user to the repository.
-	CreateUser(ctx context.Context, user *domain.User) error
-}
-
 // TokenService is a driven port for token management.
 type TokenService interface {
 	// GenerateTokens creates new access and refresh tokens for the given user.

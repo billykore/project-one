@@ -69,8 +69,9 @@ func (h *UserHandler) Me(c echo.Context) error {
 	}
 
 	res := dto.UserResponse{
-		Email: user.Email,
-		Name:  user.FirstName + " " + user.LastName,
+		Username: user.Username,
+		Email:    user.Email,
+		Name:     user.FirstName + " " + user.LastName,
 	}
 
 	return c.JSON(http.StatusOK, res)
@@ -174,6 +175,7 @@ func (h *UserHandler) HandleRegister(c echo.Context) error {
 	user := &domain.User{
 		FirstName: strings.TrimSpace(req.FirstName),
 		LastName:  strings.TrimSpace(req.LastName),
+		Username:  strings.ToLower(strings.TrimSpace(req.Username)),
 		Email:     strings.ToLower(strings.TrimSpace(req.Email)),
 		Password:  req.Password,
 	}
@@ -181,6 +183,9 @@ func (h *UserHandler) HandleRegister(c echo.Context) error {
 	if err := h.userUseCase.Register(c.Request().Context(), user); err != nil {
 		if errors.Is(err, domain.ErrEmailAlreadyRegistered) {
 			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Email is already registered"})
+		}
+		if errors.Is(err, domain.ErrUsernameAlreadyTaken) {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Username is already taken"})
 		}
 		if errors.Is(err, domain.ErrValidationFailed) {
 			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
