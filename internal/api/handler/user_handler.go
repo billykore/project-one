@@ -278,12 +278,7 @@ func (h *UserHandler) GetFollowing(c echo.Context) error {
 
 	res := make([]dto.FollowingResponse, 0, len(following))
 	for _, f := range following {
-		res = append(res, dto.FollowingResponse{
-			ID:         f.ID,
-			Name:       f.FirstName + " " + f.LastName,
-			FollowedAt: f.FollowedAt.Format(time.RFC3339),
-			IsMutual:   f.IsMutual,
-		})
+		res = append(res, toFollowingResponse(f))
 	}
 
 	return c.JSON(http.StatusOK, res)
@@ -327,13 +322,26 @@ func (h *UserHandler) GetFollowers(c echo.Context) error {
 
 	res := make([]dto.FollowerResponse, 0, len(followers))
 	for _, f := range followers {
-		res = append(res, dto.FollowerResponse{
-			ID:         f.ID,
-			Name:       f.FirstName + " " + f.LastName,
-			FollowedAt: f.FollowedAt.Format(time.RFC3339),
-			IsMutual:   f.IsMutual,
-		})
+		res = append(res, toFollowerResponse(f))
 	}
 
 	return c.JSON(http.StatusOK, res)
+}
+
+func toFollowingResponse(f domain.Following) dto.FollowingResponse {
+	return dto.FollowingResponse{
+		ID:         f.ID,
+		Name:       f.FirstName + " " + f.LastName,
+		FollowedAt: f.FollowedAt.Format(time.RFC3339),
+		IsMutual:   f.IsMutual,
+	}
+}
+
+func toFollowerResponse(f domain.Follower) dto.FollowerResponse {
+	return dto.FollowerResponse{
+		ID:         f.ID,
+		Name:       f.FirstName + " " + f.LastName,
+		FollowedAt: f.FollowedAt.Format(time.RFC3339),
+		IsMutual:   f.IsMutual,
+	}
 }
