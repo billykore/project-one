@@ -1,10 +1,19 @@
-# Go Backend & Next.js Fullstack Template
+# Go Backend & Next.js Fullstack App
 
 A robust, production-ready fullstack application featuring a **Go** backend structured with **Clean Architecture** and a modern **Next.js** frontend.
+
+## ✨ Features
+
+* **User Management**: Registration and login with Email/Username and Password (JWT-based).
+* **Social Connectivity**: Follow and unfollow users to build a personal feed.
+* **Content Creation**: Create and view posts with real-time feedback.
+* **Clean Architecture**: Backend strictly follows separation of concerns for testability and maintainability.
+* **Modern Frontend**: Server-side rendering and interactive UI using Next.js 16 and Tailwind 4.
 
 ## 🚀 Tech Stack
 
 ### Backend
+
 * **Language**: Go 1.26+
 * **Framework**: [Echo](https://echo.labstack.com/) (HTTP)
 * **ORM**: [GORM](https://gorm.io/) with PostgreSQL
@@ -15,6 +24,7 @@ A robust, production-ready fullstack application featuring a **Go** backend stru
 * **API Documentation**: [Swaggo](https://github.com/swaggo/swag)
 
 ### Frontend
+
 * **Framework**: [Next.js 16.2.4](https://nextjs.org/) (App Router)
 * **Library**: [React 19](https://react.dev/)
 * **Styling**: [Tailwind CSS 4](https://tailwindcss.com/)
@@ -27,40 +37,47 @@ A robust, production-ready fullstack application featuring a **Go** backend stru
 
 The backend follows **Clean Architecture** principles to ensure separation of concerns and maintainability:
 
-*   **Core/Domain**: Pure Go business entities and sentinel errors. Zero dependencies on external libraries or frameworks.
-*   **Core/Ports**: Dependency inversion interfaces defining how the domain interacts with the outside world.
-*   **Core/UseCase**: Orchestrates business logic by implementing ports and domain models.
-*   **Infrastructure (Adapters)**: Implementations of ports (GORM repositories, JWT service, Bcrypt hasher, etc.).
-*   **API**: Echo handlers and DTOs (Data Transfer Objects) that interface with the UseCases.
+* **Core/Domain**: Pure Go business entities and sentinel errors. Zero dependencies on external libraries or frameworks.
+* **Core/Ports**: Dependency inversion interfaces defining how the domain interacts with the outside world.
+* **Core/UseCase**: Orchestrates business logic by implementing ports and domain models.
+* **Adapters**: Concrete implementations of ports (GORM repositories, JWT service, Bcrypt hasher, etc.).
+* **API**: Echo handlers, DTOs (Data Transfer Objects), and Middleware.
 
-The frontend uses the **Next.js App Router** with a clear separation of concerns in the `web/app` directory.
+The frontend uses the **Next.js App Router** with a clean separation of models, controllers, and views in the `web/app` directory.
 
 ---
 
 ## 🛠️ Getting Started
 
 ### Prerequisites
-*   Go 1.26+
-*   PostgreSQL
-*   Node.js & npm (for frontend)
+
+* Go 1.26+
+* PostgreSQL
+* Node.js & npm (for frontend)
 
 ### Backend Setup
-1.  **Configure**: Copy `configs/config.yaml.example` to `configs/config.yaml` and update your database credentials.
-2.  **Migrate**: Run migrations to set up the database schema.
+
+1. **Configure**: Copy `configs/config.yaml.example` to `configs/config.yaml` and update your database credentials.
+2. **Migrate**: Run migrations to set up the database schema.
+
     ```bash
     make migrate-up dsn="postgres://user:pass@host:port/db?sslmode=disable"
     ```
-3.  **Run**: Start the API server on `:8080`.
+
+3. **Run**: Start the API server on `:8080`.
+
     ```bash
     make run
     ```
 
 ### Frontend Setup
-1.  Navigate to the `web/` directory.
-2.  Install dependencies: `npm install`
-3.  Run development server: `npm run dev`
+
+1. Navigate to the `web/` directory.
+2. Install dependencies: `npm install`
+3. Run development server: `npm run dev`
 
 ### Developer Commands
+
 | Command | Description |
 | :--- | :--- |
 | `make test` | Run all unit tests |
@@ -84,7 +101,8 @@ The frontend uses the **Next.js App Router** with a clear separation of concerns
 │   │   ├── domain/       # Business entities
 │   │   ├── ports/        # Interface definitions
 │   │   └── usecase/      # Business logic implementation
-│   └── infrastructure/   # Database and Service implementations
+│   ├── adapters/         # Implementation of ports (DB, services)
+│   └── config/           # Application configuration logic
 ├── scripts/              # Helper shell scripts
 └── web/                  # Next.js frontend application
 ```
