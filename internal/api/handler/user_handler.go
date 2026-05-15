@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -65,6 +66,43 @@ func (h *UserHandler) Me(c echo.Context) error {
 		}
 		h.log.Error(c.Request().Context(), "failed to get current user", "username", username, "error", err)
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Internal Server Error"})
+	}
+
+	res := dto.UserResponse{
+		Username: user.Username,
+		Email:    user.Email,
+		Name:     user.FirstName + " " + user.LastName,
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+// GetProfile handles the GET /users/:username endpoint.
+//
+//	@Summary		Get user profile
+//	@Description	Get the profile of a user by their username.
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			username	path		string	true	"Username"
+//	@Success		200			{object}	dto.UserResponse
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Router			/users/{username} [get]
+func (h *UserHandler) GetProfile(c echo.Context) error {
+	username := c.Param("username")
+	if username == "" {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid username"})
+	}
+
+	user, err := h.userUseCase.GetUserProfile(c.Request().Context(), username)
+	if err != nil {
+		if errors.Is(err, domain.ErrUserNotFound) {
+			return c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: fmt.Sprintf("User %s not found", username)})
+		}
+		h.log.Error(c.Request().Context(), "failed to get user profile", "username", username, "error", err)
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
 	}
 
 	res := dto.UserResponse{
