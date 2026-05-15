@@ -22,12 +22,11 @@ func TestUserUseCase_GetCurrentUser(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("success", func(t *testing.T) {
-		userID := 1
-		expectedUser := &domain.User{ID: userID, Email: "test@example.com"}
+		username := "testuser"
+		expectedUser := &domain.User{ID: 1, Username: username, Email: "test@example.com"}
 
-		mockTokenRepo.EXPECT().GetTokenByUserID(ctx, userID).Return(&domain.UserToken{UserID: userID}, nil)
-		mockRepo.EXPECT().GetUserByID(ctx, userID).Return(expectedUser, nil)
-		user, err := svc.GetCurrentUser(ctx, userID)
+		mockRepo.EXPECT().GetUserByUsername(ctx, username).Return(expectedUser, nil)
+		user, err := svc.GetCurrentUser(ctx, username)
 
 		if err != nil {
 			t.Errorf("GetCurrentUser() unexpected error = %v", err)
@@ -38,30 +37,14 @@ func TestUserUseCase_GetCurrentUser(t *testing.T) {
 	})
 
 	t.Run("user not found", func(t *testing.T) {
-		userID := 2
+		username := "notfound"
 
-		mockTokenRepo.EXPECT().GetTokenByUserID(ctx, userID).Return(&domain.UserToken{UserID: userID}, nil)
-		mockRepo.EXPECT().GetUserByID(ctx, userID).Return(nil, domain.ErrUserNotFound)
+		mockRepo.EXPECT().GetUserByUsername(ctx, username).Return(nil, domain.ErrUserNotFound)
 
-		user, err := svc.GetCurrentUser(ctx, userID)
+		user, err := svc.GetCurrentUser(ctx, username)
 
 		if !errors.Is(err, domain.ErrUserNotFound) {
 			t.Errorf("GetCurrentUser() error = %v, want %v", err, domain.ErrUserNotFound)
-		}
-		if user != nil {
-			t.Errorf("GetCurrentUser() user = %v, want nil", user)
-		}
-	})
-
-	t.Run("unauthorized", func(t *testing.T) {
-		userID := 3
-
-		mockTokenRepo.EXPECT().GetTokenByUserID(ctx, userID).Return(nil, nil)
-
-		user, err := svc.GetCurrentUser(ctx, userID)
-
-		if !errors.Is(err, domain.ErrUnauthorized) {
-			t.Errorf("GetCurrentUser() error = %v, want %v", err, domain.ErrUnauthorized)
 		}
 		if user != nil {
 			t.Errorf("GetCurrentUser() user = %v, want nil", user)

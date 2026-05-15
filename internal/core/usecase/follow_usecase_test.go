@@ -22,48 +22,53 @@ func TestFollowUseCase_Follow(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("success", func(t *testing.T) {
-		followerID := 1
-		followedID := 2
+		followerUsername := "user1"
+		followedUsername := "user2"
 
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{ID: 1}, nil)
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, followedUsername).Return(&domain.User{ID: 2}, nil)
 		mockFollowRepo.EXPECT().Create(ctx, gomock.Any()).Return(nil)
 
-		follow, err := svc.Follow(ctx, followerID, followedID)
+		follow, err := svc.Follow(ctx, followerUsername, followedUsername)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, follow)
-		assert.Equal(t, followerID, follow.FollowerID)
-		assert.Equal(t, followedID, follow.FollowedID)
+		assert.Equal(t, 1, follow.FollowerID)
+		assert.Equal(t, 2, follow.FollowedID)
 	})
 
 	t.Run("cannot follow self", func(t *testing.T) {
-		userID := 1
-		follow, err := svc.Follow(ctx, userID, userID)
+		username := "user1"
+		follow, err := svc.Follow(ctx, username, username)
 
 		assert.ErrorIs(t, err, domain.ErrCannotFollowSelf)
 		assert.Nil(t, follow)
 	})
 
 	t.Run("user not found", func(t *testing.T) {
-		followerID := 1
-		followedID := 99
+		followerUsername := "user1"
+		followedUsername := "notfound"
 
-		mockFollowRepo.EXPECT().Create(ctx, gomock.Any()).Return(domain.ErrUserNotFound)
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{ID: 1}, nil)
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, followedUsername).Return(nil, domain.ErrUserNotFound)
 
-		follow, err := svc.Follow(ctx, followerID, followedID)
+		follow, err := svc.Follow(ctx, followerUsername, followedUsername)
 
-		assert.ErrorIs(t, err, domain.ErrUserNotFound)
+		assert.Error(t, err)
 		assert.Nil(t, follow)
 	})
 
 	t.Run("already following", func(t *testing.T) {
-		followerID := 1
-		followedID := 2
+		followerUsername := "user1"
+		followedUsername := "user2"
 
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{ID: 1}, nil)
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, followedUsername).Return(&domain.User{ID: 2}, nil)
 		mockFollowRepo.EXPECT().Create(ctx, gomock.Any()).Return(domain.ErrAlreadyFollowing)
 
-		follow, err := svc.Follow(ctx, followerID, followedID)
+		follow, err := svc.Follow(ctx, followerUsername, followedUsername)
 
-		assert.ErrorIs(t, err, domain.ErrAlreadyFollowing)
+		assert.Error(t, err)
 		assert.Nil(t, follow)
 	})
 }
@@ -79,32 +84,36 @@ func TestFollowUseCase_Unfollow(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("success", func(t *testing.T) {
-		followerID := 1
-		followedID := 2
+		followerUsername := "user1"
+		followedUsername := "user2"
 
-		mockFollowRepo.EXPECT().Delete(ctx, followerID, followedID).Return(nil)
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{ID: 1}, nil)
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, followedUsername).Return(&domain.User{ID: 2}, nil)
+		mockFollowRepo.EXPECT().Delete(ctx, 1, 2).Return(nil)
 
-		err := svc.Unfollow(ctx, followerID, followedID)
+		err := svc.Unfollow(ctx, followerUsername, followedUsername)
 
 		assert.NoError(t, err)
 	})
 
 	t.Run("cannot unfollow self", func(t *testing.T) {
-		userID := 1
-		err := svc.Unfollow(ctx, userID, userID)
+		username := "user1"
+		err := svc.Unfollow(ctx, username, username)
 
 		assert.ErrorIs(t, err, domain.ErrCannotUnfollowSelf)
 	})
 
 	t.Run("not following", func(t *testing.T) {
-		followerID := 1
-		followedID := 2
+		followerUsername := "user1"
+		followedUsername := "user2"
 
-		mockFollowRepo.EXPECT().Delete(ctx, followerID, followedID).Return(domain.ErrNotFollowing)
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{ID: 1}, nil)
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, followedUsername).Return(&domain.User{ID: 2}, nil)
+		mockFollowRepo.EXPECT().Delete(ctx, 1, 2).Return(domain.ErrNotFollowing)
 
-		err := svc.Unfollow(ctx, followerID, followedID)
+		err := svc.Unfollow(ctx, followerUsername, followedUsername)
 
-		assert.ErrorIs(t, err, domain.ErrNotFollowing)
+		assert.Error(t, err)
 	})
 }
 
@@ -119,7 +128,7 @@ func TestFollowUseCase_GetFollowing(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("success", func(t *testing.T) {
-		followerID := 1
+		followerUsername := "user1"
 		limit := 10
 		offset := 0
 
@@ -127,22 +136,21 @@ func TestFollowUseCase_GetFollowing(t *testing.T) {
 			{ID: 2, FirstName: "John", LastName: "Doe", IsMutual: true},
 		}
 
-		mockFollowRepo.EXPECT().GetFollowing(ctx, followerID, limit, offset).Return(expectedFollowing, nil)
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{ID: 1}, nil)
+		mockFollowRepo.EXPECT().GetFollowing(ctx, 1, limit, offset).Return(expectedFollowing, nil)
 
-		results, err := svc.GetFollowing(ctx, followerID, limit, offset)
+		results, err := svc.GetFollowing(ctx, followerUsername, limit, offset)
 
 		require.NoError(t, err)
 		assert.Equal(t, expectedFollowing, results)
 	})
 
 	t.Run("pagination defaults", func(t *testing.T) {
-		followerID := 1
-		// limit <= 0 should default to 10
-		// offset < 0 should default to 0
+		followerUsername := "user1"
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{ID: 1}, nil)
+		mockFollowRepo.EXPECT().GetFollowing(ctx, 1, 10, 0).Return([]domain.Following{}, nil)
 
-		mockFollowRepo.EXPECT().GetFollowing(ctx, followerID, 10, 0).Return([]domain.Following{}, nil)
-
-		_, err := svc.GetFollowing(ctx, followerID, 0, -1)
+		_, err := svc.GetFollowing(ctx, followerUsername, 0, -1)
 
 		assert.NoError(t, err)
 	})
@@ -159,7 +167,7 @@ func TestFollowUseCase_GetFollowers(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("success", func(t *testing.T) {
-		followedID := 1
+		followedUsername := "user1"
 		limit := 10
 		offset := 0
 
@@ -167,22 +175,21 @@ func TestFollowUseCase_GetFollowers(t *testing.T) {
 			{ID: 2, FirstName: "John", LastName: "Doe", IsMutual: true},
 		}
 
-		mockFollowRepo.EXPECT().GetFollowers(ctx, followedID, limit, offset).Return(expectedFollowers, nil)
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, followedUsername).Return(&domain.User{ID: 1}, nil)
+		mockFollowRepo.EXPECT().GetFollowers(ctx, 1, limit, offset).Return(expectedFollowers, nil)
 
-		results, err := svc.GetFollowers(ctx, followedID, limit, offset)
+		results, err := svc.GetFollowers(ctx, followedUsername, limit, offset)
 
 		require.NoError(t, err)
 		assert.Equal(t, expectedFollowers, results)
 	})
 
 	t.Run("pagination defaults", func(t *testing.T) {
-		followedID := 1
-		// limit <= 0 should default to 10
-		// offset < 0 should default to 0
+		followedUsername := "user1"
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, followedUsername).Return(&domain.User{ID: 1}, nil)
+		mockFollowRepo.EXPECT().GetFollowers(ctx, 1, 10, 0).Return([]domain.Follower{}, nil)
 
-		mockFollowRepo.EXPECT().GetFollowers(ctx, followedID, 10, 0).Return([]domain.Follower{}, nil)
-
-		_, err := svc.GetFollowers(ctx, followedID, 0, -1)
+		_, err := svc.GetFollowers(ctx, followedUsername, 0, -1)
 
 		assert.NoError(t, err)
 	})

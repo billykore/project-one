@@ -65,7 +65,7 @@ func (s *loginUseCase) Login(ctx context.Context, email, password string) (strin
 	// 3. Generate tokens
 	accessToken, err := s.tokens.GenerateTokens(ctx, user)
 	if err != nil {
-		s.log.Error(ctx, "failed to generate tokens", "userID", user.ID, "error", err)
+		s.log.Error(ctx, "failed to generate tokens", "username", user.Username, "error", err)
 		return "", fmt.Errorf("generate tokens: %w", err)
 	}
 
@@ -76,24 +76,29 @@ func (s *loginUseCase) Login(ctx context.Context, email, password string) (strin
 		ExpiresAt: accessToken.ExpiresAt,
 	})
 	if err != nil {
-		s.log.Error(ctx, "failed to store user token", "userID", user.ID, "error", err)
+		s.log.Error(ctx, "failed to store user token", "username", user.Username, "error", err)
 		return "", fmt.Errorf("store user token: %w", err)
 	}
 
-	s.log.Info(ctx, "user logged in successfully", "userID", user.ID)
+	s.log.Info(ctx, "user logged in successfully", "username", user.Username)
 	return accessToken.Token, nil
 }
 
-func (s *loginUseCase) Logout(ctx context.Context, userID int) error {
-	if userID == 0 {
-		return fmt.Errorf("%w: userID cannot be zero", domain.ErrValidationFailed)
+func (s *loginUseCase) Logout(ctx context.Context, username string) error {
+	if username == "" {
+		return fmt.Errorf("%w: username cannot be empty", domain.ErrValidationFailed)
+	}
+	user, err := s.repo.GetUserByUsername(ctx, username)
+	if err != nil {
+		s.log.Error(ctx, "failed to get user by username on logout", "username", username, "error", err)
+		return fmt.Errorf("get user by username: %w", err)
 	}
 
-	if err := s.tokenRepo.DeleteTokenByUserID(ctx, userID); err != nil {
-		s.log.Error(ctx, "failed to delete user token on logout", "userID", userID, "error", err)
+	if err := s.tokenRepo.DeleteTokenByUserID(ctx, user.ID); err != nil {
+		s.log.Error(ctx, "failed to delete user token on logout", "username", username, "error", err)
 		return fmt.Errorf("delete user token: %w", err)
 	}
 
-	s.log.Info(ctx, "user logged out successfully")
+	s.log.Info(ctx, "user logged out successfully", "username", username)
 	return nil
 }

@@ -26,8 +26,8 @@ func (s *jwtTokenService) GenerateTokens(_ context.Context, user *domain.User) (
 	// Access token
 	accessExp := time.Now().Add(s.accessExpiration)
 	accessClaims := jwt.MapClaims{
-		"userID": user.ID,
-		"exp":    accessExp.Unix(),
+		"username": user.Username,
+		"exp":      accessExp.Unix(),
 	}
 	accessToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims).SignedString(s.secret)
 	if err != nil {
@@ -37,27 +37,27 @@ func (s *jwtTokenService) GenerateTokens(_ context.Context, user *domain.User) (
 	return &domain.UserToken{Token: accessToken, ExpiresAt: accessExp}, nil
 }
 
-func (s *jwtTokenService) ValidateToken(_ context.Context, tokenString string) (int, error) {
+func (s *jwtTokenService) ValidateToken(_ context.Context, tokenString string) (string, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, domain.ErrUnauthorized
+			return "", domain.ErrUnauthorized
 		}
 		return s.secret, nil
 	})
 
 	if err != nil || !token.Valid {
-		return 0, domain.ErrUnauthorized
+		return "", domain.ErrUnauthorized
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		return 0, domain.ErrUnauthorized
+		return "", domain.ErrUnauthorized
 	}
 
-	userID, ok := claims["userID"].(float64)
+	username, ok := claims["username"].(string)
 	if !ok {
-		return 0, domain.ErrUnauthorized
+		return "", domain.ErrUnauthorized
 	}
 
-	return int(userID), nil
+	return username, nil
 }

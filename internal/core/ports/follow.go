@@ -23,11 +23,11 @@ type FollowRepository interface {
 // FollowUseCase defines the interface for follow-related business logic.
 type FollowUseCase interface {
 	// Follow handles the logic for a user following another user.
-	Follow(ctx context.Context, followerID, followedID int) (*domain.Follow, error)
+	Follow(ctx context.Context, followerUsername, followedUsername string) (*domain.Follow, error)
 	// GetFollowing handles the logic for getting the following list of a user.
-	GetFollowing(ctx context.Context, followerID int, limit, offset int) ([]domain.Following, error)
+	GetFollowing(ctx context.Context, followerUsername string, limit, offset int) ([]domain.Following, error)
 	// GetFollowers handles the logic for getting the followers list of a user.
-	GetFollowers(ctx context.Context, followedID int, limit, offset int) ([]domain.Follower, error)
+	GetFollowers(ctx context.Context, followedUsername string, limit, offset int) ([]domain.Follower, error)
 	// Unfollow handles the logic for a user unfollowing another user.
-	Unfollow(ctx context.Context, followerID, followedID int) error
+	Unfollow(ctx context.Context, followerUsername, followedUsername string) error
 }
