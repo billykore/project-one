@@ -4,14 +4,14 @@ import "time"
 
 // Follow represents a follower-followed relationship between users.
 type Follow struct {
-	FollowerID int
-	FollowedID int
-	CreatedAt  time.Time
+	FollowerUsername string
+	FollowedUsername string
+	CreatedAt        time.Time
 }
 
 // Following represents a user being followed by the current user with metadata.
 type Following struct {
-	ID         int
+	Username   string
 	FirstName  string
 	LastName   string
 	FollowedAt time.Time
@@ -20,7 +20,7 @@ type Following struct {
 
 // Follower represents a user following the current user with metadata.
 type Follower struct {
-	ID         int
+	Username   string
 	FirstName  string
 	LastName   string
 	FollowedAt time.Time

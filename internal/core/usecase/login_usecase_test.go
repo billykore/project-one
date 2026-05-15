@@ -36,7 +36,7 @@ func TestLoginUseCase_Login_WithMocks(t *testing.T) {
 			email:    "user@example.com",
 			password: "password123",
 			setup: func() {
-				user := &domain.User{ID: 1, Email: "user@example.com", Password: "hashed_password"}
+				user := &domain.User{Username: "user1", Email: "user@example.com", Password: "hashed_password"}
 				exp := time.Now().Add(time.Hour)
 				accessToken := &domain.UserToken{Token: "access", ExpiresAt: exp}
 
@@ -44,7 +44,7 @@ func TestLoginUseCase_Login_WithMocks(t *testing.T) {
 				mockHasher.EXPECT().Compare(gomock.Any(), "password123", "hashed_password").Return(nil)
 				mockTokens.EXPECT().GenerateTokens(gomock.Any(), user).Return(accessToken, nil)
 				mockUserTokens.EXPECT().StoreToken(gomock.Any(), &domain.UserToken{
-					UserID:    1,
+					Username:  user.Username,
 					Token:     "access",
 					ExpiresAt: exp,
 				}).Return(nil)
@@ -131,8 +131,8 @@ func TestLoginUseCase_Logout(t *testing.T) {
 
 	t.Run("successful logout", func(t *testing.T) {
 		username := "testuser"
-		mockUserTokens.EXPECT().DeleteTokenByUserID(gomock.Any(), 1).Return(nil)
-		mockRepo.EXPECT().GetUserByUsername(gomock.Any(), username).Return(&domain.User{ID: 1}, nil)
+		mockUserTokens.EXPECT().DeleteTokenByUsername(gomock.Any(), username).Return(nil)
+		mockRepo.EXPECT().GetUserByUsername(gomock.Any(), username).Return(&domain.User{Username: username}, nil)
 		mockLogger.EXPECT().Info(gomock.Any(), "user logged out successfully", "username", username)
 
 		err := svc.Logout(context.Background(), username)
@@ -143,8 +143,8 @@ func TestLoginUseCase_Logout(t *testing.T) {
 
 	t.Run("failed logout", func(t *testing.T) {
 		username := "testuser"
-		mockRepo.EXPECT().GetUserByUsername(gomock.Any(), username).Return(&domain.User{ID: 1}, nil)
-		mockUserTokens.EXPECT().DeleteTokenByUserID(gomock.Any(), 1).Return(errors.New("db error"))
+		mockRepo.EXPECT().GetUserByUsername(gomock.Any(), username).Return(&domain.User{Username: username}, nil)
+		mockUserTokens.EXPECT().DeleteTokenByUsername(gomock.Any(), username).Return(errors.New("db error"))
 		mockLogger.EXPECT().Error(gomock.Any(), "failed to delete user token on logout", "username", username, "error", errors.New("db error"))
 
 		err := svc.Logout(context.Background(), username)

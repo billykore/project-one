@@ -609,7 +609,7 @@
                 }
             }
         },
-        "/users/{userId}/follow": {
+        "/users/{username}/follow": {
             "post": {
                 "security": [
                     {
@@ -629,9 +629,9 @@
                 "summary": "Follow a user",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "User ID to follow",
-                        "name": "userId",
+                        "type": "string",
+                        "description": "Username to follow",
+                        "name": "username",
                         "in": "path",
                         "required": true
                     }
@@ -682,9 +682,9 @@
                 "summary": "Unfollow a user",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "User ID to unfollow",
-                        "name": "userId",
+                        "type": "string",
+                        "description": "Username to unfollow",
+                        "name": "username",
                         "in": "path",
                         "required": true
                     }
@@ -766,8 +766,8 @@
                 "followed_at": {
                     "type": "string"
                 },
-                "followed_user_id": {
-                    "type": "integer"
+                "followed_username": {
+                    "type": "string"
                 }
             }
         },
@@ -788,13 +788,13 @@
                 "followed_at": {
                     "type": "string"
                 },
-                "id": {
-                    "type": "integer"
-                },
                 "is_mutual": {
                     "type": "boolean"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -805,13 +805,13 @@
                 "followed_at": {
                     "type": "string"
                 },
-                "id": {
-                    "type": "integer"
-                },
                 "is_mutual": {
                     "type": "boolean"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -883,7 +883,8 @@
                 "email",
                 "first_name",
                 "last_name",
-                "password"
+                "password",
+                "username"
             ],
             "properties": {
                 "email": {
@@ -900,6 +901,10 @@
                 "password": {
                     "type": "string",
                     "minLength": 8
+                },
+                "username": {
+                    "type": "string",
+                    "minLength": 3
                 }
             }
         },
@@ -937,6 +942,9 @@
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }

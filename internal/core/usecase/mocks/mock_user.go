@@ -125,18 +125,18 @@ func (m *MockUserUseCase) EXPECT() *MockUserUseCaseMockRecorder {
 }
 
 // GetCurrentUser mocks base method.
-func (m *MockUserUseCase) GetCurrentUser(ctx context.Context, id int) (*domain.User, error) {
+func (m *MockUserUseCase) GetCurrentUser(ctx context.Context, username string) (*domain.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCurrentUser", ctx, id)
+	ret := m.ctrl.Call(m, "GetCurrentUser", ctx, username)
 	ret0, _ := ret[0].(*domain.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetCurrentUser indicates an expected call of GetCurrentUser.
-func (mr *MockUserUseCaseMockRecorder) GetCurrentUser(ctx, id any) *gomock.Call {
+func (mr *MockUserUseCaseMockRecorder) GetCurrentUser(ctx, username any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentUser", reflect.TypeOf((*MockUserUseCase)(nil).GetCurrentUser), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentUser", reflect.TypeOf((*MockUserUseCase)(nil).GetCurrentUser), ctx, username)
 }
 
 // Register mocks base method.

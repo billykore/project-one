@@ -615,7 +615,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/{userId}/follow": {
+        "/users/{username}/follow": {
             "post": {
                 "security": [
                     {
@@ -635,9 +635,9 @@ const docTemplate = `{
                 "summary": "Follow a user",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "User ID to follow",
-                        "name": "userId",
+                        "type": "string",
+                        "description": "Username to follow",
+                        "name": "username",
                         "in": "path",
                         "required": true
                     }
@@ -688,9 +688,9 @@ const docTemplate = `{
                 "summary": "Unfollow a user",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "User ID to unfollow",
-                        "name": "userId",
+                        "type": "string",
+                        "description": "Username to unfollow",
+                        "name": "username",
                         "in": "path",
                         "required": true
                     }
@@ -772,8 +772,8 @@ const docTemplate = `{
                 "followed_at": {
                     "type": "string"
                 },
-                "followed_user_id": {
-                    "type": "integer"
+                "followed_username": {
+                    "type": "string"
                 }
             }
         },
@@ -794,13 +794,13 @@ const docTemplate = `{
                 "followed_at": {
                     "type": "string"
                 },
-                "id": {
-                    "type": "integer"
-                },
                 "is_mutual": {
                     "type": "boolean"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -811,13 +811,13 @@ const docTemplate = `{
                 "followed_at": {
                     "type": "string"
                 },
-                "id": {
-                    "type": "integer"
-                },
                 "is_mutual": {
                     "type": "boolean"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -889,7 +889,8 @@ const docTemplate = `{
                 "email",
                 "first_name",
                 "last_name",
-                "password"
+                "password",
+                "username"
             ],
             "properties": {
                 "email": {
@@ -906,6 +907,10 @@ const docTemplate = `{
                 "password": {
                     "type": "string",
                     "minLength": 8
+                },
+                "username": {
+                    "type": "string",
+                    "minLength": 3
                 }
             }
         },
@@ -943,6 +948,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }

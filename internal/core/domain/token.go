@@ -6,6 +6,7 @@ import "time"
 type UserToken struct {
 	ID        int
 	UserID    int
+	Username  string
 	Token     string
 	ExpiresAt time.Time
 }

@@ -71,7 +71,7 @@ func (s *loginUseCase) Login(ctx context.Context, email, password string) (strin
 
 	// 4. Store access token
 	err = s.tokenRepo.StoreToken(ctx, &domain.UserToken{
-		UserID:    user.ID,
+		Username:  user.Username,
 		Token:     accessToken.Token,
 		ExpiresAt: accessToken.ExpiresAt,
 	})
@@ -94,7 +94,7 @@ func (s *loginUseCase) Logout(ctx context.Context, username string) error {
 		return fmt.Errorf("get user by username: %w", err)
 	}
 
-	if err := s.tokenRepo.DeleteTokenByUserID(ctx, user.ID); err != nil {
+	if err := s.tokenRepo.DeleteTokenByUsername(ctx, user.Username); err != nil {
 		s.log.Error(ctx, "failed to delete user token on logout", "username", username, "error", err)
 		return fmt.Errorf("delete user token: %w", err)
 	}

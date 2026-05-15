@@ -31,8 +31,8 @@ definitions:
     properties:
       followed_at:
         type: string
-      followed_user_id:
-        type: integer
+      followed_username:
+        type: string
     type: object
   github_com_billykore_project-one_internal_api_dto.FollowResponse:
     properties:
@@ -45,22 +45,22 @@ definitions:
     properties:
       followed_at:
         type: string
-      id:
-        type: integer
       is_mutual:
         type: boolean
       name:
+        type: string
+      username:
         type: string
     type: object
   github_com_billykore_project-one_internal_api_dto.FollowingResponse:
     properties:
       followed_at:
         type: string
-      id:
-        type: integer
       is_mutual:
         type: boolean
       name:
+        type: string
+      username:
         type: string
     type: object
   github_com_billykore_project-one_internal_api_dto.LoginRequest:
@@ -116,11 +116,15 @@ definitions:
       password:
         minLength: 8
         type: string
+      username:
+        minLength: 3
+        type: string
     required:
     - email
     - first_name
     - last_name
     - password
+    - username
     type: object
   github_com_billykore_project-one_internal_api_dto.RegisterResponse:
     properties:
@@ -144,6 +148,8 @@ definitions:
       email:
         type: string
       name:
+        type: string
+      username:
         type: string
     type: object
 host: localhost:8080
@@ -344,17 +350,17 @@ paths:
       summary: Update post
       tags:
       - posts
-  /users/{userId}/follow:
+  /users/{username}/follow:
     delete:
       consumes:
       - application/json
       description: Allows an authenticated user to unfollow another user.
       parameters:
-      - description: User ID to unfollow
+      - description: Username to unfollow
         in: path
-        name: userId
+        name: username
         required: true
-        type: integer
+        type: string
       produces:
       - application/json
       responses:
@@ -384,11 +390,11 @@ paths:
       - application/json
       description: Allows an authenticated user to follow another user.
       parameters:
-      - description: User ID to follow
+      - description: Username to follow
         in: path
-        name: userId
+        name: username
         required: true
-        type: integer
+        type: string
       produces:
       - application/json
       responses:

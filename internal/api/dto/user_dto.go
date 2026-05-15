@@ -45,7 +45,7 @@ type GetFollowingRequest struct {
 
 // FollowingResponse is the response body for a user being followed.
 type FollowingResponse struct {
-	ID         int    `json:"id"`
+	Username   string `json:"username"`
 	Name       string `json:"name"`
 	FollowedAt string `json:"followed_at"`
 	IsMutual   bool   `json:"is_mutual"`
@@ -59,7 +59,7 @@ type GetFollowersRequest struct {
 
 // FollowerResponse is the response body for a user following.
 type FollowerResponse struct {
-	ID         int    `json:"id"`
+	Username   string `json:"username"`
 	Name       string `json:"name"`
 	FollowedAt string `json:"followed_at"`
 	IsMutual   bool   `json:"is_mutual"`
@@ -78,6 +78,6 @@ type FollowResponse struct {
 
 // FollowData is the data part of the follow response.
 type FollowData struct {
-	FollowedUserID int    `json:"followed_user_id"`
-	FollowedAt     string `json:"followed_at"`
+	FollowedUsername string `json:"followed_username"`
+	FollowedAt       string `json:"followed_at"`
 }

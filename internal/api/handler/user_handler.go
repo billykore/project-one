@@ -206,10 +206,10 @@ func (h *UserHandler) HandleRegister(c echo.Context) error {
 //	@Accept			json
 //	@Produce		json
 //	@Param			username	path		string	true	"Username to follow"
-//	@Success		200		{object}	dto.FollowResponse
-//	@Failure		400		{object}	dto.ErrorResponse
-//	@Failure		401		{object}	dto.ErrorResponse
-//	@Failure		500		{object}	dto.ErrorResponse
+//	@Success		200			{object}	dto.FollowResponse
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/users/{username}/follow [post]
 func (h *UserHandler) HandleFollow(c echo.Context) error {
@@ -241,8 +241,8 @@ func (h *UserHandler) HandleFollow(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.FollowResponse{
 		Message: "You are now following this user.",
 		Data: dto.FollowData{
-			FollowedUserID: follow.FollowedID,
-			FollowedAt:     follow.CreatedAt.Format(time.RFC3339),
+			FollowedUsername: follow.FollowedUsername,
+			FollowedAt:       follow.CreatedAt.Format(time.RFC3339),
 		},
 	})
 }
@@ -255,10 +255,10 @@ func (h *UserHandler) HandleFollow(c echo.Context) error {
 //	@Accept			json
 //	@Produce		json
 //	@Param			username	path		string	true	"Username to unfollow"
-//	@Success		200		{object}	dto.UnfollowResponse
-//	@Failure		400		{object}	dto.ErrorResponse
-//	@Failure		401		{object}	dto.ErrorResponse
-//	@Failure		500		{object}	dto.ErrorResponse
+//	@Success		200			{object}	dto.UnfollowResponse
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/users/{username}/follow [delete]
 func (h *UserHandler) HandleUnfollow(c echo.Context) error {
@@ -379,7 +379,7 @@ func (h *UserHandler) GetFollowers(c echo.Context) error {
 
 func toFollowingResponse(f domain.Following) dto.FollowingResponse {
 	return dto.FollowingResponse{
-		ID:         f.ID,
+		Username:   f.Username,
 		Name:       f.FirstName + " " + f.LastName,
 		FollowedAt: f.FollowedAt.Format(time.RFC3339),
 		IsMutual:   f.IsMutual,
@@ -388,7 +388,7 @@ func toFollowingResponse(f domain.Following) dto.FollowingResponse {
 
 func toFollowerResponse(f domain.Follower) dto.FollowerResponse {
 	return dto.FollowerResponse{
-		ID:         f.ID,
+		Username:   f.Username,
 		Name:       f.FirstName + " " + f.LastName,
 		FollowedAt: f.FollowedAt.Format(time.RFC3339),
 		IsMutual:   f.IsMutual,

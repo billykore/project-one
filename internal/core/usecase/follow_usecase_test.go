@@ -25,16 +25,16 @@ func TestFollowUseCase_Follow(t *testing.T) {
 		followerUsername := "user1"
 		followedUsername := "user2"
 
-		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{ID: 1}, nil)
-		mockUserRepo.EXPECT().GetUserByUsername(ctx, followedUsername).Return(&domain.User{ID: 2}, nil)
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{Username: "user1"}, nil)
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, followedUsername).Return(&domain.User{Username: "user2"}, nil)
 		mockFollowRepo.EXPECT().Create(ctx, gomock.Any()).Return(nil)
 
 		follow, err := svc.Follow(ctx, followerUsername, followedUsername)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, follow)
-		assert.Equal(t, 1, follow.FollowerID)
-		assert.Equal(t, 2, follow.FollowedID)
+		assert.Equal(t, "user1", follow.FollowerUsername)
+		assert.Equal(t, "user2", follow.FollowedUsername)
 	})
 
 	t.Run("cannot follow self", func(t *testing.T) {
@@ -49,7 +49,7 @@ func TestFollowUseCase_Follow(t *testing.T) {
 		followerUsername := "user1"
 		followedUsername := "notfound"
 
-		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{ID: 1}, nil)
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{Username: "user1"}, nil)
 		mockUserRepo.EXPECT().GetUserByUsername(ctx, followedUsername).Return(nil, domain.ErrUserNotFound)
 
 		follow, err := svc.Follow(ctx, followerUsername, followedUsername)
@@ -62,8 +62,8 @@ func TestFollowUseCase_Follow(t *testing.T) {
 		followerUsername := "user1"
 		followedUsername := "user2"
 
-		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{ID: 1}, nil)
-		mockUserRepo.EXPECT().GetUserByUsername(ctx, followedUsername).Return(&domain.User{ID: 2}, nil)
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{Username: "user1"}, nil)
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, followedUsername).Return(&domain.User{Username: "user2"}, nil)
 		mockFollowRepo.EXPECT().Create(ctx, gomock.Any()).Return(domain.ErrAlreadyFollowing)
 
 		follow, err := svc.Follow(ctx, followerUsername, followedUsername)
@@ -87,9 +87,9 @@ func TestFollowUseCase_Unfollow(t *testing.T) {
 		followerUsername := "user1"
 		followedUsername := "user2"
 
-		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{ID: 1}, nil)
-		mockUserRepo.EXPECT().GetUserByUsername(ctx, followedUsername).Return(&domain.User{ID: 2}, nil)
-		mockFollowRepo.EXPECT().Delete(ctx, 1, 2).Return(nil)
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{Username: "user1"}, nil)
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, followedUsername).Return(&domain.User{Username: "user2"}, nil)
+		mockFollowRepo.EXPECT().Delete(ctx, "user1", "user2").Return(nil)
 
 		err := svc.Unfollow(ctx, followerUsername, followedUsername)
 
@@ -107,9 +107,9 @@ func TestFollowUseCase_Unfollow(t *testing.T) {
 		followerUsername := "user1"
 		followedUsername := "user2"
 
-		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{ID: 1}, nil)
-		mockUserRepo.EXPECT().GetUserByUsername(ctx, followedUsername).Return(&domain.User{ID: 2}, nil)
-		mockFollowRepo.EXPECT().Delete(ctx, 1, 2).Return(domain.ErrNotFollowing)
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{Username: "user1"}, nil)
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, followedUsername).Return(&domain.User{Username: "user2"}, nil)
+		mockFollowRepo.EXPECT().Delete(ctx, "user1", "user2").Return(domain.ErrNotFollowing)
 
 		err := svc.Unfollow(ctx, followerUsername, followedUsername)
 
@@ -133,11 +133,11 @@ func TestFollowUseCase_GetFollowing(t *testing.T) {
 		offset := 0
 
 		expectedFollowing := []domain.Following{
-			{ID: 2, FirstName: "John", LastName: "Doe", IsMutual: true},
+			{Username: "user2", FirstName: "John", LastName: "Doe", IsMutual: true},
 		}
 
-		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{ID: 1}, nil)
-		mockFollowRepo.EXPECT().GetFollowing(ctx, 1, limit, offset).Return(expectedFollowing, nil)
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{Username: "user1"}, nil)
+		mockFollowRepo.EXPECT().GetFollowing(ctx, "user1", limit, offset).Return(expectedFollowing, nil)
 
 		results, err := svc.GetFollowing(ctx, followerUsername, limit, offset)
 
@@ -147,8 +147,8 @@ func TestFollowUseCase_GetFollowing(t *testing.T) {
 
 	t.Run("pagination defaults", func(t *testing.T) {
 		followerUsername := "user1"
-		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{ID: 1}, nil)
-		mockFollowRepo.EXPECT().GetFollowing(ctx, 1, 10, 0).Return([]domain.Following{}, nil)
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{Username: "user1"}, nil)
+		mockFollowRepo.EXPECT().GetFollowing(ctx, "user1", 10, 0).Return([]domain.Following{}, nil)
 
 		_, err := svc.GetFollowing(ctx, followerUsername, 0, -1)
 
@@ -172,11 +172,11 @@ func TestFollowUseCase_GetFollowers(t *testing.T) {
 		offset := 0
 
 		expectedFollowers := []domain.Follower{
-			{ID: 2, FirstName: "John", LastName: "Doe", IsMutual: true},
+			{Username: "user1", FirstName: "John", LastName: "Doe", IsMutual: true},
 		}
 
-		mockUserRepo.EXPECT().GetUserByUsername(ctx, followedUsername).Return(&domain.User{ID: 1}, nil)
-		mockFollowRepo.EXPECT().GetFollowers(ctx, 1, limit, offset).Return(expectedFollowers, nil)
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, followedUsername).Return(&domain.User{Username: "user1"}, nil)
+		mockFollowRepo.EXPECT().GetFollowers(ctx, "user1", limit, offset).Return(expectedFollowers, nil)
 
 		results, err := svc.GetFollowers(ctx, followedUsername, limit, offset)
 
@@ -186,8 +186,8 @@ func TestFollowUseCase_GetFollowers(t *testing.T) {
 
 	t.Run("pagination defaults", func(t *testing.T) {
 		followedUsername := "user1"
-		mockUserRepo.EXPECT().GetUserByUsername(ctx, followedUsername).Return(&domain.User{ID: 1}, nil)
-		mockFollowRepo.EXPECT().GetFollowers(ctx, 1, 10, 0).Return([]domain.Follower{}, nil)
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, followedUsername).Return(&domain.User{Username: "user1"}, nil)
+		mockFollowRepo.EXPECT().GetFollowers(ctx, "user1", 10, 0).Return([]domain.Follower{}, nil)
 
 		_, err := svc.GetFollowers(ctx, followedUsername, 0, -1)
 

@@ -12,6 +12,7 @@ import (
 type userTokenModel struct {
 	ID        int       `gorm:"primaryKey;autoIncrement"`
 	UserID    int       `gorm:"notNull"`
+	Username  string    `gorm:"notNull"`
 	Token     string    `gorm:"notNull"`
 	ExpiresAt time.Time `gorm:"notNull"`
 	CreatedAt time.Time
@@ -24,7 +25,7 @@ func (m *userTokenModel) TableName() string {
 func fromDomainUserToken(token *domain.UserToken) *userTokenModel {
 	return &userTokenModel{
 		ID:        token.ID,
-		UserID:    token.UserID,
+		Username:  token.Username,
 		Token:     token.Token,
 		ExpiresAt: token.ExpiresAt,
 	}
@@ -44,9 +45,9 @@ func (r *userTokenRepository) StoreToken(ctx context.Context, token *domain.User
 	return r.db.WithContext(ctx).Create(m).Error
 }
 
-func (r *userTokenRepository) GetTokenByUserID(ctx context.Context, userID int) (*domain.UserToken, error) {
+func (r *userTokenRepository) GetTokenByUsername(ctx context.Context, username string) (*domain.UserToken, error) {
 	var m userTokenModel
-	err := r.db.WithContext(ctx).Where("user_id = ?", userID).First(&m).Error
+	err := r.db.WithContext(ctx).Where("username = ?", username).First(&m).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil // No token found for this user
@@ -55,12 +56,12 @@ func (r *userTokenRepository) GetTokenByUserID(ctx context.Context, userID int) 
 	}
 	return &domain.UserToken{
 		ID:        m.ID,
-		UserID:    m.UserID,
+		Username:  m.Username,
 		Token:     m.Token,
 		ExpiresAt: m.ExpiresAt,
 	}, nil
 }
 
-func (r *userTokenRepository) DeleteTokenByUserID(ctx context.Context, userID int) error {
-	return r.db.WithContext(ctx).Where("user_id = ?", userID).Delete(&userTokenModel{}).Error
+func (r *userTokenRepository) DeleteTokenByUsername(ctx context.Context, username string) error {
+	return r.db.WithContext(ctx).Where("username = ?", username).Delete(&userTokenModel{}).Error
 }

@@ -41,33 +41,33 @@ func (m *MockTokenRepository) EXPECT() *MockTokenRepositoryMockRecorder {
 	return m.recorder
 }
 
-// DeleteTokenByUserID mocks base method.
-func (m *MockTokenRepository) DeleteTokenByUserID(ctx context.Context, userID int) error {
+// DeleteTokenByUsername mocks base method.
+func (m *MockTokenRepository) DeleteTokenByUsername(ctx context.Context, username string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteTokenByUserID", ctx, userID)
+	ret := m.ctrl.Call(m, "DeleteTokenByUsername", ctx, username)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteTokenByUserID indicates an expected call of DeleteTokenByUserID.
-func (mr *MockTokenRepositoryMockRecorder) DeleteTokenByUserID(ctx, userID any) *gomock.Call {
+// DeleteTokenByUsername indicates an expected call of DeleteTokenByUsername.
+func (mr *MockTokenRepositoryMockRecorder) DeleteTokenByUsername(ctx, username any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTokenByUserID", reflect.TypeOf((*MockTokenRepository)(nil).DeleteTokenByUserID), ctx, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTokenByUsername", reflect.TypeOf((*MockTokenRepository)(nil).DeleteTokenByUsername), ctx, username)
 }
 
-// GetTokenByUserID mocks base method.
-func (m *MockTokenRepository) GetTokenByUserID(ctx context.Context, userID int) (*domain.UserToken, error) {
+// GetTokenByUsername mocks base method.
+func (m *MockTokenRepository) GetTokenByUsername(ctx context.Context, username string) (*domain.UserToken, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTokenByUserID", ctx, userID)
+	ret := m.ctrl.Call(m, "GetTokenByUsername", ctx, username)
 	ret0, _ := ret[0].(*domain.UserToken)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetTokenByUserID indicates an expected call of GetTokenByUserID.
-func (mr *MockTokenRepositoryMockRecorder) GetTokenByUserID(ctx, userID any) *gomock.Call {
+// GetTokenByUsername indicates an expected call of GetTokenByUsername.
+func (mr *MockTokenRepositoryMockRecorder) GetTokenByUsername(ctx, username any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTokenByUserID", reflect.TypeOf((*MockTokenRepository)(nil).GetTokenByUserID), ctx, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTokenByUsername", reflect.TypeOf((*MockTokenRepository)(nil).GetTokenByUsername), ctx, username)
 }
 
 // StoreToken mocks base method.

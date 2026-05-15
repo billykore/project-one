@@ -1,0 +1,1 @@
+ALTER TABLE follows DROP COLUMN followed_username;
