@@ -24,4 +24,6 @@ type UserUseCase interface {
 	GetCurrentUser(ctx context.Context, username string) (*domain.User, error)
 	// Register creates a new user account.
 	Register(ctx context.Context, user *domain.User) error
+	// GetUserProfile retrieves the profile of the user with the given username.
+	GetUserProfile(ctx context.Context, username string) (*domain.User, error)
 }
