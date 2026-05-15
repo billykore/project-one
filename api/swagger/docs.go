@@ -711,6 +711,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
                         }
                     },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {

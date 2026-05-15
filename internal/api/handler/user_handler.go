@@ -235,6 +235,7 @@ func (h *UserHandler) HandleRegister(c echo.Context) error {
 //	@Success		200			{object}	dto.FollowResponse
 //	@Failure		400			{object}	dto.ErrorResponse
 //	@Failure		401			{object}	dto.ErrorResponse
+//	@Failure		404			{object}	dto.ErrorResponse
 //	@Failure		500			{object}	dto.ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/users/{username}/follow [post]
