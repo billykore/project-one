@@ -33,17 +33,10 @@ func NewUserUseCase(userRepo ports.UserRepository, tokenRepo ports.TokenReposito
 	}
 }
 
-func (s *userUseCase) GetCurrentUser(ctx context.Context, id int) (*domain.User, error) {
-	token, err := s.tokenRepo.GetTokenByUserID(ctx, id)
+func (s *userUseCase) GetCurrentUser(ctx context.Context, username string) (*domain.User, error) {
+	user, err := s.userRepo.GetUserByUsername(ctx, username)
 	if err != nil {
-		return nil, fmt.Errorf("get token by user id: %w", err)
-	}
-	if token == nil {
-		return nil, domain.ErrUnauthorized
-	}
-	user, err := s.userRepo.GetUserByID(ctx, id)
-	if err != nil {
-		return nil, fmt.Errorf("get user by id: %w", err)
+		return nil, fmt.Errorf("get user by username: %w", err)
 	}
 	return user, nil
 }

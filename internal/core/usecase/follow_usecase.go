@@ -24,14 +24,24 @@ func NewFollowUseCase(followRepo ports.FollowRepository, userRepo ports.UserRepo
 	}
 }
 
-func (u *followUseCase) Follow(ctx context.Context, followerID, followedID int) (*domain.Follow, error) {
-	if followerID == followedID {
+func (u *followUseCase) Follow(ctx context.Context, followerUsername, followedUsername string) (*domain.Follow, error) {
+	if followerUsername == followedUsername {
 		return nil, domain.ErrCannotFollowSelf
 	}
 
+	follower, err := u.userRepo.GetUserByUsername(ctx, followerUsername)
+	if err != nil {
+		return nil, fmt.Errorf("get follower by username: %w", err)
+	}
+
+	followed, err := u.userRepo.GetUserByUsername(ctx, followedUsername)
+	if err != nil {
+		return nil, fmt.Errorf("get followed by username: %w", err)
+	}
+
 	follow := &domain.Follow{
-		FollowerID: followerID,
-		FollowedID: followedID,
+		FollowerID: follower.ID,
+		FollowedID: followed.ID,
 	}
 
 	if err := u.followRepo.Create(ctx, follow); err != nil {
@@ -41,19 +51,29 @@ func (u *followUseCase) Follow(ctx context.Context, followerID, followedID int) 
 	return follow, nil
 }
 
-func (u *followUseCase) Unfollow(ctx context.Context, followerID, followedID int) error {
-	if followerID == followedID {
+func (u *followUseCase) Unfollow(ctx context.Context, followerUsername, followedUsername string) error {
+	if followerUsername == followedUsername {
 		return domain.ErrCannotUnfollowSelf
 	}
 
-	if err := u.followRepo.Delete(ctx, followerID, followedID); err != nil {
+	follower, err := u.userRepo.GetUserByUsername(ctx, followerUsername)
+	if err != nil {
+		return fmt.Errorf("get follower by username: %w", err)
+	}
+
+	followed, err := u.userRepo.GetUserByUsername(ctx, followedUsername)
+	if err != nil {
+		return fmt.Errorf("get followed by username: %w", err)
+	}
+
+	if err := u.followRepo.Delete(ctx, follower.ID, followed.ID); err != nil {
 		return fmt.Errorf("delete follow: %w", err)
 	}
 
 	return nil
 }
 
-func (u *followUseCase) GetFollowing(ctx context.Context, followerID int, limit, offset int) ([]domain.Following, error) {
+func (u *followUseCase) GetFollowing(ctx context.Context, followerUsername string, limit, offset int) ([]domain.Following, error) {
 	if limit <= 0 {
 		limit = 10
 	}
@@ -64,7 +84,12 @@ func (u *followUseCase) GetFollowing(ctx context.Context, followerID int, limit,
 		offset = 0
 	}
 
-	following, err := u.followRepo.GetFollowing(ctx, followerID, limit, offset)
+	follower, err := u.userRepo.GetUserByUsername(ctx, followerUsername)
+	if err != nil {
+		return nil, fmt.Errorf("get follower by username: %w", err)
+	}
+
+	following, err := u.followRepo.GetFollowing(ctx, follower.ID, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("get following: %w", err)
 	}
@@ -72,7 +97,7 @@ func (u *followUseCase) GetFollowing(ctx context.Context, followerID int, limit,
 	return following, nil
 }
 
-func (u *followUseCase) GetFollowers(ctx context.Context, followedID int, limit, offset int) ([]domain.Follower, error) {
+func (u *followUseCase) GetFollowers(ctx context.Context, followedUsername string, limit, offset int) ([]domain.Follower, error) {
 	if limit <= 0 {
 		limit = 10
 	}
@@ -83,7 +108,12 @@ func (u *followUseCase) GetFollowers(ctx context.Context, followedID int, limit,
 		offset = 0
 	}
 
-	followers, err := u.followRepo.GetFollowers(ctx, followedID, limit, offset)
+	followed, err := u.userRepo.GetUserByUsername(ctx, followedUsername)
+	if err != nil {
+		return nil, fmt.Errorf("get followed by username: %w", err)
+	}
+
+	followers, err := u.followRepo.GetFollowers(ctx, followed.ID, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("get followers: %w", err)
 	}

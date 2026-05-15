@@ -3,7 +3,6 @@ package handler
 import (
 	"errors"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -54,17 +53,17 @@ func NewUserHandler(
 //	@Security		BearerAuth
 //	@Router			/users/me [get]
 func (h *UserHandler) Me(c echo.Context) error {
-	userID, ok := c.Get("userID").(int)
+	username, ok := c.Get("username").(string)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 	}
 
-	user, err := h.userUseCase.GetCurrentUser(c.Request().Context(), userID)
+	user, err := h.userUseCase.GetCurrentUser(c.Request().Context(), username)
 	if err != nil {
 		if errors.Is(err, domain.ErrUserNotFound) || errors.Is(err, domain.ErrUnauthorized) {
 			return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 		}
-		h.log.Error(c.Request().Context(), "failed to get current user", "userID", userID, "error", err)
+		h.log.Error(c.Request().Context(), "failed to get current user", "username", username, "error", err)
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Internal Server Error"})
 	}
 
@@ -135,13 +134,13 @@ func (h *UserHandler) HandleLogin(c echo.Context) error {
 //	@Security		BearerAuth
 //	@Router			/users/logout [post]
 func (h *UserHandler) HandleLogout(c echo.Context) error {
-	userID, ok := c.Get("userID").(int)
+	username, ok := c.Get("username").(string)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 	}
 
-	if err := h.loginUseCase.Logout(c.Request().Context(), userID); err != nil {
-		h.log.Error(c.Request().Context(), "logout failed", "userID", userID, "error", err)
+	if err := h.loginUseCase.Logout(c.Request().Context(), username); err != nil {
+		h.log.Error(c.Request().Context(), "logout failed", "username", username, "error", err)
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Internal server error"})
 	}
 
@@ -199,32 +198,32 @@ func (h *UserHandler) HandleRegister(c echo.Context) error {
 	})
 }
 
-// HandleFollow handles the POST /users/{userId}/follow endpoint.
+// HandleFollow handles the POST /users/{username}/follow endpoint.
 //
 //	@Summary		Follow a user
 //	@Description	Allows an authenticated user to follow another user.
 //	@Tags			users
 //	@Accept			json
 //	@Produce		json
-//	@Param			userId	path		int	true	"User ID to follow"
+//	@Param			username	path		string	true	"Username to follow"
 //	@Success		200		{object}	dto.FollowResponse
 //	@Failure		400		{object}	dto.ErrorResponse
 //	@Failure		401		{object}	dto.ErrorResponse
 //	@Failure		500		{object}	dto.ErrorResponse
 //	@Security		BearerAuth
-//	@Router			/users/{userId}/follow [post]
+//	@Router			/users/{username}/follow [post]
 func (h *UserHandler) HandleFollow(c echo.Context) error {
-	followerID, ok := c.Get("userID").(int)
+	followerUsername, ok := c.Get("username").(string)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 	}
 
-	followedID, err := strconv.Atoi(c.Param("userId"))
-	if err != nil || followedID <= 0 {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid user ID"})
+	followedUsername := c.Param("username")
+	if followedUsername == "" {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid username"})
 	}
 
-	follow, err := h.followUseCase.Follow(c.Request().Context(), followerID, followedID)
+	follow, err := h.followUseCase.Follow(c.Request().Context(), followerUsername, followedUsername)
 	if err != nil {
 		if errors.Is(err, domain.ErrCannotFollowSelf) {
 			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: domain.ErrCannotFollowSelf.Error()})
@@ -235,7 +234,7 @@ func (h *UserHandler) HandleFollow(c echo.Context) error {
 		if errors.Is(err, domain.ErrUserNotFound) {
 			return c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "User not found"})
 		}
-		h.log.Error(c.Request().Context(), "follow failed", "followerID", followerID, "followedID", followedID, "error", err)
+		h.log.Error(c.Request().Context(), "follow failed", "followerUsername", followerUsername, "followedUsername", followedUsername, "error", err)
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
 	}
 
@@ -248,32 +247,32 @@ func (h *UserHandler) HandleFollow(c echo.Context) error {
 	})
 }
 
-// HandleUnfollow handles the DELETE /users/{userId}/follow endpoint.
+// HandleUnfollow handles the DELETE /users/{username}/follow endpoint.
 //
 //	@Summary		Unfollow a user
 //	@Description	Allows an authenticated user to unfollow another user.
 //	@Tags			users
 //	@Accept			json
 //	@Produce		json
-//	@Param			userId	path		int	true	"User ID to unfollow"
+//	@Param			username	path		string	true	"Username to unfollow"
 //	@Success		200		{object}	dto.UnfollowResponse
 //	@Failure		400		{object}	dto.ErrorResponse
 //	@Failure		401		{object}	dto.ErrorResponse
 //	@Failure		500		{object}	dto.ErrorResponse
 //	@Security		BearerAuth
-//	@Router			/users/{userId}/follow [delete]
+//	@Router			/users/{username}/follow [delete]
 func (h *UserHandler) HandleUnfollow(c echo.Context) error {
-	followerID, ok := c.Get("userID").(int)
+	followerUsername, ok := c.Get("username").(string)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 	}
 
-	followedID, err := strconv.Atoi(c.Param("userId"))
-	if err != nil || followedID <= 0 {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid user ID"})
+	followedUsername := c.Param("username")
+	if followedUsername == "" {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid username"})
 	}
 
-	err = h.followUseCase.Unfollow(c.Request().Context(), followerID, followedID)
+	err := h.followUseCase.Unfollow(c.Request().Context(), followerUsername, followedUsername)
 	if err != nil {
 		if errors.Is(err, domain.ErrCannotUnfollowSelf) {
 			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: domain.ErrCannotUnfollowSelf.Error()})
@@ -281,7 +280,7 @@ func (h *UserHandler) HandleUnfollow(c echo.Context) error {
 		if errors.Is(err, domain.ErrNotFollowing) {
 			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: domain.ErrNotFollowing.Error()})
 		}
-		h.log.Error(c.Request().Context(), "unfollow failed", "followerID", followerID, "followedID", followedID, "error", err)
+		h.log.Error(c.Request().Context(), "unfollow failed", "followerUsername", followerUsername, "followedUsername", followedUsername, "error", err)
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
 	}
 
@@ -306,7 +305,7 @@ func (h *UserHandler) HandleUnfollow(c echo.Context) error {
 //	@Security		BearerAuth
 //	@Router			/users/me/following [get]
 func (h *UserHandler) GetFollowing(c echo.Context) error {
-	followerID, ok := c.Get("userID").(int)
+	followerUsername, ok := c.Get("username").(string)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 	}
@@ -320,9 +319,9 @@ func (h *UserHandler) GetFollowing(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
 	}
 
-	following, err := h.followUseCase.GetFollowing(c.Request().Context(), followerID, req.Limit, req.Offset)
+	following, err := h.followUseCase.GetFollowing(c.Request().Context(), followerUsername, req.Limit, req.Offset)
 	if err != nil {
-		h.log.Error(c.Request().Context(), "get following failed", "followerID", followerID, "error", err)
+		h.log.Error(c.Request().Context(), "get following failed", "followerUsername", followerUsername, "error", err)
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
 	}
 
@@ -350,7 +349,7 @@ func (h *UserHandler) GetFollowing(c echo.Context) error {
 //	@Security		BearerAuth
 //	@Router			/users/me/followers [get]
 func (h *UserHandler) GetFollowers(c echo.Context) error {
-	followedID, ok := c.Get("userID").(int)
+	followedUsername, ok := c.Get("username").(string)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 	}
@@ -364,9 +363,9 @@ func (h *UserHandler) GetFollowers(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
 	}
 
-	followers, err := h.followUseCase.GetFollowers(c.Request().Context(), followedID, req.Limit, req.Offset)
+	followers, err := h.followUseCase.GetFollowers(c.Request().Context(), followedUsername, req.Limit, req.Offset)
 	if err != nil {
-		h.log.Error(c.Request().Context(), "get followers failed", "followedID", followedID, "error", err)
+		h.log.Error(c.Request().Context(), "get followers failed", "followedUsername", followedUsername, "error", err)
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
 	}
 

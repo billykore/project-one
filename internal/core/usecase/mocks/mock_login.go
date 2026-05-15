@@ -57,10 +57,10 @@ func (mr *MockTokenServiceMockRecorder) GenerateTokens(ctx, user any) *gomock.Ca
 }
 
 // ValidateToken mocks base method.
-func (m *MockTokenService) ValidateToken(ctx context.Context, token string) (int, error) {
+func (m *MockTokenService) ValidateToken(ctx context.Context, token string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ValidateToken", ctx, token)
-	ret0, _ := ret[0].(int)
+	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -111,15 +111,15 @@ func (mr *MockLoginUseCaseMockRecorder) Login(ctx, email, password any) *gomock.
 }
 
 // Logout mocks base method.
-func (m *MockLoginUseCase) Logout(ctx context.Context, userID int) error {
+func (m *MockLoginUseCase) Logout(ctx context.Context, username string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Logout", ctx, userID)
+	ret := m.ctrl.Call(m, "Logout", ctx, username)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Logout indicates an expected call of Logout.
-func (mr *MockLoginUseCaseMockRecorder) Logout(ctx, userID any) *gomock.Call {
+func (mr *MockLoginUseCaseMockRecorder) Logout(ctx, username any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logout", reflect.TypeOf((*MockLoginUseCase)(nil).Logout), ctx, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logout", reflect.TypeOf((*MockLoginUseCase)(nil).Logout), ctx, username)
 }
