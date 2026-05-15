@@ -65,16 +65,10 @@ func (h *UserHandler) Me(c echo.Context) error {
 			return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 		}
 		h.log.Error(c.Request().Context(), "failed to get current user", "username", username, "error", err)
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Internal Server Error"})
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Internal server error"})
 	}
 
-	res := dto.UserResponse{
-		Username: user.Username,
-		Email:    user.Email,
-		Name:     user.FirstName + " " + user.LastName,
-	}
-
-	return c.JSON(http.StatusOK, res)
+	return c.JSON(http.StatusOK, toUserResponse(user))
 }
 
 // GetProfile handles the GET /users/:username endpoint.
@@ -102,16 +96,10 @@ func (h *UserHandler) GetProfile(c echo.Context) error {
 			return c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: fmt.Sprintf("User %s not found", username)})
 		}
 		h.log.Error(c.Request().Context(), "failed to get user profile", "username", username, "error", err)
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Internal server error"})
 	}
 
-	res := dto.UserResponse{
-		Username: user.Username,
-		Email:    user.Email,
-		Name:     user.FirstName + " " + user.LastName,
-	}
-
-	return c.JSON(http.StatusOK, res)
+	return c.JSON(http.StatusOK, toUserResponse(user))
 }
 
 // HandleLogin handles the POST /users/login endpoint.
@@ -430,5 +418,13 @@ func toFollowerResponse(f domain.Follower) dto.FollowerResponse {
 		Name:       f.FirstName + " " + f.LastName,
 		FollowedAt: f.FollowedAt.Format(time.RFC3339),
 		IsMutual:   f.IsMutual,
+	}
+}
+
+func toUserResponse(user *domain.User) dto.UserResponse {
+	return dto.UserResponse{
+		Username: user.Username,
+		Email:    user.Email,
+		Name:     user.FirstName + " " + user.LastName,
 	}
 }

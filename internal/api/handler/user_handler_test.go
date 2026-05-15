@@ -114,7 +114,7 @@ func TestUserHandler_GetProfile(t *testing.T) {
 			var res dto.ErrorResponse
 			err := json.Unmarshal(rec.Body.Bytes(), &res)
 			require.NoError(t, err)
-			assert.Equal(t, "Something went wrong", res.Error)
+			assert.Equal(t, "Internal server error", res.Error)
 		}
 	})
 }
