@@ -7,8 +7,39 @@ import (
 
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/usecase/mocks"
+	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
+
+func TestUserUseCase_GetUserProfile(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mocks.NewMockUserRepository(ctrl)
+	mockTokenRepo := mocks.NewMockTokenRepository(ctrl)
+	mockHasher := mocks.NewMockHasher(ctrl)
+	svc := NewUserUseCase(mockRepo, mockTokenRepo, mockHasher)
+
+	ctx := context.Background()
+	username := "testuser"
+
+	t.Run("success", func(t *testing.T) {
+		expectedUser := &domain.User{Username: username}
+		mockRepo.EXPECT().GetUserByUsername(ctx, username).Return(expectedUser, nil)
+
+		user, err := svc.GetUserProfile(ctx, username)
+		assert.NoError(t, err)
+		assert.Equal(t, expectedUser, user)
+	})
+
+	t.Run("not found", func(t *testing.T) {
+		mockRepo.EXPECT().GetUserByUsername(ctx, username).Return(nil, domain.ErrUserNotFound)
+
+		user, err := svc.GetUserProfile(ctx, username)
+		assert.ErrorIs(t, err, domain.ErrUserNotFound)
+		assert.Nil(t, user)
+	})
+}
 
 func TestUserUseCase_GetCurrentUser(t *testing.T) {
 	ctrl := gomock.NewController(t)

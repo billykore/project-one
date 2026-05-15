@@ -41,6 +41,14 @@ func (s *userUseCase) GetCurrentUser(ctx context.Context, username string) (*dom
 	return user, nil
 }
 
+func (s *userUseCase) GetUserProfile(ctx context.Context, username string) (*domain.User, error) {
+	user, err := s.userRepo.GetUserByUsername(ctx, username)
+	if err != nil {
+		return nil, fmt.Errorf("get user by username: %w", err)
+	}
+	return user, nil
+}
+
 func (s *userUseCase) Register(ctx context.Context, user *domain.User) error {
 	existingUser, err := s.userRepo.GetUserByEmail(ctx, user.Email)
 	if err == nil && existingUser != nil {
