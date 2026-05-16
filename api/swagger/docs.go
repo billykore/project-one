@@ -778,6 +778,62 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/users/{username}/posts": {
+            "get": {
+                "description": "Retrieve all posts for a specific user by username.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "posts"
+                ],
+                "summary": "Get user posts by username",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Username",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.PostResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -913,6 +969,9 @@ const docTemplate = `{
         "github_com_billykore_project-one_internal_api_dto.PostResponse": {
             "type": "object",
             "properties": {
+                "author": {
+                    "type": "string"
+                },
                 "content": {
                     "type": "string"
                 },

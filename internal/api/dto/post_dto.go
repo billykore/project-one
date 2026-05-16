@@ -19,6 +19,7 @@ type PostResponse struct {
 	Title     string    `json:"title,omitempty"`
 	Content   string    `json:"content,omitempty"`
 	Tags      []string  `json:"tags,omitempty"`
+	Author    string    `json:"author,omitempty"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

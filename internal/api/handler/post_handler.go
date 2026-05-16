@@ -45,7 +45,7 @@ func NewPostHandler(postUseCase ports.PostUseCase, validator ports.Validator) *P
 //	@Security		BearerAuth
 //	@Router			/posts [post]
 func (h *PostHandler) CreatePost(c echo.Context) error {
-	userID, ok := c.Get("userID").(int)
+	username, ok := c.Get("username").(string)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 	}
@@ -72,7 +72,7 @@ func (h *PostHandler) CreatePost(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Validation failed"})
 	}
 
-	post, err := h.postUseCase.CreatePost(c.Request().Context(), userID, req.Title, req.Content, req.Tags)
+	post, err := h.postUseCase.CreatePost(c.Request().Context(), username, req.Title, req.Content, req.Tags)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
 	}
@@ -98,7 +98,7 @@ func (h *PostHandler) CreatePost(c echo.Context) error {
 //	@Failure		500	{object}	dto.ErrorResponse
 //	@Router			/posts/{id} [get]
 func (h *PostHandler) GetPostByID(c echo.Context) error {
-	userID, ok := c.Get("userID").(int)
+	username, ok := c.Get("username").(string)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 	}
@@ -109,7 +109,7 @@ func (h *PostHandler) GetPostByID(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Post ID must be a number"})
 	}
 
-	post, err := h.postUseCase.GetPostByID(c.Request().Context(), userID, id)
+	post, err := h.postUseCase.GetPostByID(c.Request().Context(), username, id)
 	if err != nil {
 		if errors.Is(err, domain.ErrPostNotFound) {
 			return c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "Post not found"})
@@ -147,7 +147,7 @@ func (h *PostHandler) GetPostByID(c echo.Context) error {
 //	@Security		BearerAuth
 //	@Router			/posts [get]
 func (h *PostHandler) GetPosts(c echo.Context) error {
-	userID, ok := c.Get("userID").(int)
+	username, ok := c.Get("username").(string)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 	}
@@ -159,7 +159,7 @@ func (h *PostHandler) GetPosts(c echo.Context) error {
 		limit = 10 // default limit
 	}
 
-	posts, err := h.postUseCase.GetPosts(c.Request().Context(), userID, limit, offset)
+	posts, err := h.postUseCase.GetPosts(c.Request().Context(), username, limit, offset)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
 	}
@@ -197,7 +197,7 @@ func (h *PostHandler) GetPosts(c echo.Context) error {
 //	@Security		BearerAuth
 //	@Router			/posts/{id} [put]
 func (h *PostHandler) UpdatePost(c echo.Context) error {
-	userID, ok := c.Get("userID").(int)
+	username, ok := c.Get("username").(string)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 	}
@@ -213,7 +213,7 @@ func (h *PostHandler) UpdatePost(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid request body"})
 	}
 
-	post, err := h.postUseCase.UpdatePost(c.Request().Context(), userID, id, req.Title, req.Content)
+	post, err := h.postUseCase.UpdatePost(c.Request().Context(), username, id, req.Title, req.Content)
 	if err != nil {
 		if errors.Is(err, domain.ErrPostNotFound) {
 			return c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "Post not found"})
@@ -248,7 +248,7 @@ func (h *PostHandler) UpdatePost(c echo.Context) error {
 //	@Security		BearerAuth
 //	@Router			/posts/{id} [delete]
 func (h *PostHandler) DeletePost(c echo.Context) error {
-	userID, ok := c.Get("userID").(int)
+	username, ok := c.Get("username").(string)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 	}
@@ -259,7 +259,7 @@ func (h *PostHandler) DeletePost(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Post ID must be a number"})
 	}
 
-	err = h.postUseCase.DeletePost(c.Request().Context(), userID, id)
+	err = h.postUseCase.DeletePost(c.Request().Context(), username, id)
 	if err != nil {
 		if errors.Is(err, domain.ErrPostNotFound) {
 			return c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "Post not found"})
@@ -277,4 +277,51 @@ func (h *PostHandler) DeletePost(c echo.Context) error {
 		ID:      id,
 		Message: "Post deleted successfully",
 	})
+}
+
+// GetUserPosts handles the GET /users/:username/posts endpoint.
+//
+//	@Summary		Get user posts by username
+//	@Description	Retrieve all posts for a specific user by username.
+//	@Tags			posts
+//	@Produce		json
+//	@Param			username	path		string	true	"Username"
+//	@Param			limit		query		int		false	"Limit"
+//	@Param			offset		query		int		false	"Offset"
+//	@Success		200			{array}		dto.PostResponse
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Router			/users/{username}/posts [get]
+func (h *PostHandler) GetUserPosts(c echo.Context) error {
+	username := c.Param("username")
+
+	limit, _ := strconv.Atoi(c.QueryParam("limit"))
+	offset, _ := strconv.Atoi(c.QueryParam("offset"))
+
+	if limit == 0 {
+		limit = 10 // default limit
+	}
+
+	posts, err := h.postUseCase.GetPosts(c.Request().Context(), username, limit, offset)
+	if err != nil {
+		if errors.Is(err, domain.ErrUserNotFound) || errors.Is(err, domain.ErrValidationFailed) {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "User not found"})
+		}
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
+	}
+
+	response := make([]dto.PostResponse, 0, len(posts))
+	for _, p := range posts {
+		response = append(response, dto.PostResponse{
+			ID:        p.ID,
+			Title:     p.Title,
+			Content:   p.Content,
+			Tags:      p.Tags,
+			Author:    username,
+			CreatedAt: p.CreatedAt,
+			UpdatedAt: p.UpdatedAt,
+		})
+	}
+
+	return c.JSON(http.StatusOK, response)
 }
