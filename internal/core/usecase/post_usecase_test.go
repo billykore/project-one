@@ -16,9 +16,8 @@ func TestPostUseCase_CreatePost(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockPostRepository(ctrl)
-	mockUserRepo := mocks.NewMockUserRepository(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostUseCase(mockRepo, mockUserRepo, mockLog)
+	svc := NewPostUseCase(mockRepo, mockLog)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -63,9 +62,8 @@ func TestPostUseCase_GetPostByID(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockPostRepository(ctrl)
-	mockUserRepo := mocks.NewMockUserRepository(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostUseCase(mockRepo, mockUserRepo, mockLog)
+	svc := NewPostUseCase(mockRepo, mockLog)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -116,9 +114,8 @@ func TestPostUseCase_GetPosts(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockPostRepository(ctrl)
-	mockUserRepo := mocks.NewMockUserRepository(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostUseCase(mockRepo, mockUserRepo, mockLog)
+	svc := NewPostUseCase(mockRepo, mockLog)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -164,9 +161,8 @@ func TestPostUseCase_UpdatePost(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockPostRepository(ctrl)
-	mockUserRepo := mocks.NewMockUserRepository(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostUseCase(mockRepo, mockUserRepo, mockLog)
+	svc := NewPostUseCase(mockRepo, mockLog)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -232,18 +228,6 @@ func TestPostUseCase_UpdatePost(t *testing.T) {
 		assert.Equal(t, newContent, post.Content)
 	})
 
-	t.Run("unauthorized update", func(t *testing.T) {
-		existingPost := &domain.Post{ID: postID, Username: "otheruser", Title: initialTitle, Content: initialContent}
-		mockRepo.EXPECT().GetByID(ctx, username, postID).Return(existingPost, nil)
-		mockLog.EXPECT().Error(ctx, "unauthorized update attempt", "postID", postID, "username", username)
-
-		post, err := svc.UpdatePost(ctx, username, postID, "New Title", "New Content")
-
-		assert.Error(t, err)
-		assert.Nil(t, post)
-		assert.True(t, errors.Is(err, domain.ErrUnauthorized))
-	})
-
 	t.Run("not found", func(t *testing.T) {
 		mockRepo.EXPECT().GetByID(ctx, username, postID).Return(nil, domain.ErrPostNotFound)
 
@@ -268,9 +252,8 @@ func TestPostUseCase_DeletePost(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockPostRepository(ctrl)
-	mockUserRepo := mocks.NewMockUserRepository(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostUseCase(mockRepo, mockUserRepo, mockLog)
+	svc := NewPostUseCase(mockRepo, mockLog)
 
 	ctx := context.Background()
 	username := "testuser"

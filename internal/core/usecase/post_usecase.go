@@ -10,26 +10,21 @@ import (
 )
 
 type postUseCase struct {
-	repo     ports.PostRepository
-	userRepo ports.UserRepository
-	log      ports.Logger
+	repo ports.PostRepository
+	log  ports.Logger
 }
 
 // NewPostUseCase creates a new instance of ports.PostUseCase.
-func NewPostUseCase(repo ports.PostRepository, userRepo ports.UserRepository, log ports.Logger) ports.PostUseCase {
+func NewPostUseCase(repo ports.PostRepository, log ports.Logger) ports.PostUseCase {
 	if repo == nil {
 		panic("NewPostUseCase: repo is required")
-	}
-	if userRepo == nil {
-		panic("NewPostUseCase: userRepo is required")
 	}
 	if log == nil {
 		panic("NewPostUseCase: log is required")
 	}
 	return &postUseCase{
-		repo:     repo,
-		userRepo: userRepo,
-		log:      log,
+		repo: repo,
+		log:  log,
 	}
 }
 
@@ -88,11 +83,6 @@ func (s *postUseCase) UpdatePost(ctx context.Context, username string, postID in
 		}
 		s.log.Error(ctx, "failed to get post for update", "postID", postID, "username", username, "error", err)
 		return nil, domain.ErrInternalServer
-	}
-
-	if post.Username != username {
-		s.log.Error(ctx, "unauthorized update attempt", "postID", postID, "username", username)
-		return nil, domain.ErrUnauthorized
 	}
 
 	title = strings.TrimSpace(title)

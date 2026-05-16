@@ -68,7 +68,7 @@ func main() {
 	// 4. Initialize UseCase
 	loginUc := usecase.NewLoginUseCase(userRepo, tokenSvc, userTokenRepo, hasher, lgr)
 	userUc := usecase.NewUserUseCase(userRepo, userTokenRepo, hasher)
-	postUc := usecase.NewPostUseCase(postRepo, userRepo, lgr)
+	postUc := usecase.NewPostUseCase(postRepo, lgr)
 	followUc := usecase.NewFollowUseCase(followRepo, userRepo)
 
 	// 5. Initialize Handler
