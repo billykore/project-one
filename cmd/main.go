@@ -94,6 +94,7 @@ func main() {
 	e.GET("/users/:username", userHdl.GetProfile)
 	e.POST("/users/:username/follow", userHdl.HandleFollow, middleware.Authorize(tokenSvc))
 	e.DELETE("/users/:username/follow", userHdl.HandleUnfollow, middleware.Authorize(tokenSvc))
+	e.GET("/users/:username/posts", postHdl.GetUserPosts)
 	e.POST("/posts", postHdl.CreatePost, middleware.Authorize(tokenSvc))
 	e.GET("/posts", postHdl.GetPosts, middleware.Authorize(tokenSvc))
 	e.GET("/posts/:id", postHdl.GetPostByID, middleware.Authorize(tokenSvc))
