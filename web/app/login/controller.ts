@@ -56,10 +56,13 @@ export const useLogin = () => {
     setErrors({});
 
     try {
-      await api.post<LoginResponse>("/users/login", {
+      const response = await api.post<LoginResponse>("/users/login", {
         email: formData.email.trim(),
         password: formData.password,
       });
+
+      // Store username in localStorage for profile fetching
+      localStorage.setItem("username", response.username);
 
       // Redirect to home page (cookies are set by backend)
       router.push("/home");

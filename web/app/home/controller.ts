@@ -16,7 +16,13 @@ export const useHome = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const userData = await api.get<UserResponse>("/users/me");
+        const username = localStorage.getItem("username");
+        if (!username) {
+          router.push("/login");
+          return;
+        }
+
+        const userData = await api.get<UserResponse>(`/users/${username}`);
         setState({
           user: userData,
           isLoading: false,
@@ -44,9 +50,11 @@ export const useHome = () => {
     setIsLoggingOut(true);
     try {
       await api.post("/users/logout", {});
+      localStorage.removeItem("username");
       router.push("/login");
     } catch (err) {
       console.error("Logout failed:", err);
+      localStorage.removeItem("username");
       // Even if logout fails on server, we might want to redirect
       router.push("/login");
     } finally {

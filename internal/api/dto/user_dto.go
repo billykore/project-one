@@ -8,7 +8,8 @@ type LoginRequest struct {
 
 // LoginResponse is the response body for a successful login.
 type LoginResponse struct {
-	Message string `json:"message"`
+	Message  string `json:"message"`
+	Username string `json:"username"`
 }
 
 // LogoutResponse is the response body for a successful logout.

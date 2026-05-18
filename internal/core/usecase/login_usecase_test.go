@@ -24,12 +24,13 @@ func TestLoginUseCase_Login_WithMocks(t *testing.T) {
 	svc := NewLoginUseCase(mockRepo, mockTokens, mockUserTokens, mockHasher, mockLogger)
 
 	tests := []struct {
-		name       string
-		email      string
-		password   string
-		setup      func()
-		wantErr    error
-		wantAccess string
+		name         string
+		email        string
+		password     string
+		setup        func()
+		wantErr      error
+		wantAccess   string
+		wantUsername string
 	}{
 		{
 			name:     "successful login",
@@ -50,8 +51,9 @@ func TestLoginUseCase_Login_WithMocks(t *testing.T) {
 				}).Return(nil)
 				mockLogger.EXPECT().Info(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 			},
-			wantAccess: "access",
-			wantErr:    nil,
+			wantAccess:   "access",
+			wantUsername: "user1",
+			wantErr:      nil,
 		},
 		{
 			name:     "user not found",
@@ -93,7 +95,7 @@ func TestLoginUseCase_Login_WithMocks(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			access, err := svc.Login(context.Background(), tt.email, tt.password)
+			access, username, err := svc.Login(context.Background(), tt.email, tt.password)
 
 			if tt.wantErr != nil {
 				if !errors.Is(err, tt.wantErr) && err.Error() != tt.wantErr.Error() {
@@ -112,6 +114,9 @@ func TestLoginUseCase_Login_WithMocks(t *testing.T) {
 
 			if access != tt.wantAccess {
 				t.Errorf("Login() access = %v, want %v", access, tt.wantAccess)
+			}
+			if username != tt.wantUsername {
+				t.Errorf("Login() username = %v, want %v", username, tt.wantUsername)
 			}
 		})
 	}

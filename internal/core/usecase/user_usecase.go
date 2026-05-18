@@ -33,15 +33,7 @@ func NewUserUseCase(userRepo ports.UserRepository, tokenRepo ports.TokenReposito
 	}
 }
 
-func (s *userUseCase) GetCurrentUser(ctx context.Context, username string) (*domain.User, error) {
-	user, err := s.userRepo.GetUserByUsername(ctx, username)
-	if err != nil {
-		return nil, fmt.Errorf("get user by username: %w", err)
-	}
-	return user, nil
-}
-
-func (s *userUseCase) GetUserProfile(ctx context.Context, username string) (*domain.User, error) {
+func (s *userUseCase) GetUser(ctx context.Context, username string) (*domain.User, error) {
 	user, err := s.userRepo.GetUserByUsername(ctx, username)
 	if err != nil {
 		return nil, fmt.Errorf("get user by username: %w", err)

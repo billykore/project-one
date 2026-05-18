@@ -18,6 +18,7 @@ export interface LoginErrors {
 
 export interface LoginResponse {
   message: string;
+  username: string;
 }
 
 export interface ApiErrorResponse {

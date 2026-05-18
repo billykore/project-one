@@ -32,7 +32,7 @@ func TestUserUseCase_GetUserProfile(t *testing.T) {
 		}
 		mockRepo.EXPECT().GetUserByUsername(ctx, username).Return(expectedUser, nil)
 
-		user, err := svc.GetUserProfile(ctx, username)
+		user, err := svc.GetUser(ctx, username)
 		assert.NoError(t, err)
 		assert.Equal(t, expectedUser, user)
 	})
@@ -40,41 +40,7 @@ func TestUserUseCase_GetUserProfile(t *testing.T) {
 	t.Run("not found", func(t *testing.T) {
 		mockRepo.EXPECT().GetUserByUsername(ctx, username).Return(nil, domain.ErrUserNotFound)
 
-		user, err := svc.GetUserProfile(ctx, username)
-		assert.ErrorIs(t, err, domain.ErrUserNotFound)
-		assert.Nil(t, user)
-	})
-}
-
-func TestUserUseCase_GetCurrentUser(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockRepo := mocks.NewMockUserRepository(ctrl)
-	mockTokenRepo := mocks.NewMockTokenRepository(ctrl)
-	mockHasher := mocks.NewMockHasher(ctrl)
-	svc := NewUserUseCase(mockRepo, mockTokenRepo, mockHasher)
-
-	ctx := context.Background()
-
-	t.Run("success", func(t *testing.T) {
-		username := "testuser"
-		expectedUser := &domain.User{ID: 1, Username: username, Email: "test@example.com"}
-
-		mockRepo.EXPECT().GetUserByUsername(ctx, username).Return(expectedUser, nil)
-		user, err := svc.GetCurrentUser(ctx, username)
-
-		assert.NoError(t, err)
-		assert.Equal(t, expectedUser, user)
-	})
-
-	t.Run("user not found", func(t *testing.T) {
-		username := "notfound"
-
-		mockRepo.EXPECT().GetUserByUsername(ctx, username).Return(nil, domain.ErrUserNotFound)
-
-		user, err := svc.GetCurrentUser(ctx, username)
-
+		user, err := svc.GetUser(ctx, username)
 		assert.ErrorIs(t, err, domain.ErrUserNotFound)
 		assert.Nil(t, user)
 	})

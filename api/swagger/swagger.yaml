@@ -458,6 +458,87 @@ paths:
       summary: Follow a user
       tags:
       - users
+  /users/{username}/followers:
+    get:
+      consumes:
+      - application/json
+      description: Get the list of users following the currently authenticated user.
+      parameters:
+      - description: Limit for pagination
+        in: query
+        name: limit
+        type: integer
+      - description: Offset for pagination
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.FollowerResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get followers list
+      tags:
+      - users
+  /users/{username}/following:
+    get:
+      consumes:
+      - application/json
+      description: Get the list of users being followed by the currently authenticated
+        user.
+      parameters:
+      - description: Limit for pagination
+        in: query
+        name: limit
+        type: integer
+      - description: Offset for pagination
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.FollowingResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get following list
+      tags:
+      - users
   /users/{username}/posts:
     get:
       description: Retrieve all posts for a specific user by username.
@@ -553,112 +634,6 @@ paths:
       security:
       - BearerAuth: []
       summary: Logout
-      tags:
-      - users
-  /users/me:
-    get:
-      consumes:
-      - application/json
-      description: Get the profile of the currently authenticated user.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.UserResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Get current user
-      tags:
-      - users
-  /users/me/followers:
-    get:
-      consumes:
-      - application/json
-      description: Get the list of users following the currently authenticated user.
-      parameters:
-      - description: Limit for pagination
-        in: query
-        name: limit
-        type: integer
-      - description: Offset for pagination
-        in: query
-        name: offset
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.FollowerResponse'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Get followers list
-      tags:
-      - users
-  /users/me/following:
-    get:
-      consumes:
-      - application/json
-      description: Get the list of users being followed by the currently authenticated
-        user.
-      parameters:
-      - description: Limit for pagination
-        in: query
-        name: limit
-        type: integer
-      - description: Offset for pagination
-        in: query
-        name: offset
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.FollowingResponse'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Get following list
       tags:
       - users
   /users/register:

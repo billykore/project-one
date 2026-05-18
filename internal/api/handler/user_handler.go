@@ -41,40 +41,10 @@ func NewUserHandler(
 	}
 }
 
-// Me handles the GET /users/me endpoint.
+// GetUser handles the GET /users/:username endpoint.
 //
-//	@Summary		Get current user
-//	@Description	Get the profile of the currently authenticated user.
-//	@Tags			users
-//	@Accept			json
-//	@Produce		json
-//	@Success		200	{object}	dto.UserResponse
-//	@Failure		401	{object}	dto.ErrorResponse
-//	@Failure		500	{object}	dto.ErrorResponse
-//	@Security		BearerAuth
-//	@Router			/users/me [get]
-func (h *UserHandler) Me(c echo.Context) error {
-	username, ok := c.Get("username").(string)
-	if !ok {
-		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
-	}
-
-	user, err := h.userUseCase.GetCurrentUser(c.Request().Context(), username)
-	if err != nil {
-		if errors.Is(err, domain.ErrUserNotFound) || errors.Is(err, domain.ErrUnauthorized) {
-			return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
-		}
-		h.log.Error(c.Request().Context(), "failed to get current user", "username", username, "error", err)
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Internal server error"})
-	}
-
-	return c.JSON(http.StatusOK, toUserResponse(user))
-}
-
-// GetProfile handles the GET /users/:username endpoint.
-//
-//	@Summary		Get user profile
-//	@Description	Get the profile of a user by their username.
+//	@Summary		Get user
+//	@Description	Get a user by their username.
 //	@Tags			users
 //	@Accept			json
 //	@Produce		json
@@ -84,13 +54,13 @@ func (h *UserHandler) Me(c echo.Context) error {
 //	@Failure		404			{object}	dto.ErrorResponse
 //	@Failure		500			{object}	dto.ErrorResponse
 //	@Router			/users/{username} [get]
-func (h *UserHandler) GetProfile(c echo.Context) error {
+func (h *UserHandler) GetUser(c echo.Context) error {
 	username := c.Param("username")
 	if username == "" {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid username"})
 	}
 
-	user, err := h.userUseCase.GetUserProfile(c.Request().Context(), username)
+	user, err := h.userUseCase.GetUser(c.Request().Context(), username)
 	if err != nil {
 		if errors.Is(err, domain.ErrUserNotFound) {
 			return c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: fmt.Sprintf("User %s not found", username)})
@@ -125,7 +95,7 @@ func (h *UserHandler) HandleLogin(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
 	}
 
-	accessToken, err := h.loginUseCase.Login(c.Request().Context(), req.Email, req.Password)
+	accessToken, username, err := h.loginUseCase.Login(c.Request().Context(), req.Email, req.Password)
 	if err != nil {
 		if errors.Is(err, domain.ErrInvalidCredentials) {
 			return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Invalid email or password"})
@@ -144,7 +114,10 @@ func (h *UserHandler) HandleLogin(c echo.Context) error {
 		SameSite: http.SameSiteLaxMode,
 	})
 
-	return c.JSON(http.StatusOK, dto.LoginResponse{Message: "Login successful"})
+	return c.JSON(http.StatusOK, dto.LoginResponse{
+		Message:  "Login successful",
+		Username: username,
+	})
 }
 
 // HandleLogout handles the POST /users/logout endpoint.
@@ -316,7 +289,7 @@ func (h *UserHandler) HandleUnfollow(c echo.Context) error {
 	})
 }
 
-// GetFollowing handles the GET /users/me/following endpoint.
+// GetFollowing handles the GET /users/:username/following endpoint.
 //
 //	@Summary		Get following list
 //	@Description	Get the list of users being followed by the currently authenticated user.
@@ -330,12 +303,9 @@ func (h *UserHandler) HandleUnfollow(c echo.Context) error {
 //	@Failure		401		{object}	dto.ErrorResponse
 //	@Failure		500		{object}	dto.ErrorResponse
 //	@Security		BearerAuth
-//	@Router			/users/me/following [get]
+//	@Router			/users/{username}/following [get]
 func (h *UserHandler) GetFollowing(c echo.Context) error {
-	followerUsername, ok := c.Get("username").(string)
-	if !ok {
-		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
-	}
+	followerUsername := c.Param("username")
 
 	var req dto.GetFollowingRequest
 	if err := c.Bind(&req); err != nil {
@@ -360,7 +330,7 @@ func (h *UserHandler) GetFollowing(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// GetFollowers handles the GET /users/me/followers endpoint.
+// GetFollowers handles the GET /users/:username/followers endpoint.
 //
 //	@Summary		Get followers list
 //	@Description	Get the list of users following the currently authenticated user.
@@ -374,12 +344,9 @@ func (h *UserHandler) GetFollowing(c echo.Context) error {
 //	@Failure		401		{object}	dto.ErrorResponse
 //	@Failure		500		{object}	dto.ErrorResponse
 //	@Security		BearerAuth
-//	@Router			/users/me/followers [get]
+//	@Router			/users/{username}/followers [get]
 func (h *UserHandler) GetFollowers(c echo.Context) error {
-	followedUsername, ok := c.Get("username").(string)
-	if !ok {
-		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
-	}
+	followedUsername := c.Param("username")
 
 	var req dto.GetFollowersRequest
 	if err := c.Bind(&req); err != nil {
