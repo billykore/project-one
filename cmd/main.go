@@ -3,6 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/billykore/project-one/api/swagger"
 	"github.com/billykore/project-one/internal/adapters/hasher"
@@ -102,7 +107,39 @@ func main() {
 
 	// Start server
 	lgr.Info(ctx, "starting server", "port", cfg.App.Port)
-	if err := e.Start(fmt.Sprintf(":%d", cfg.App.Port)); err != nil {
-		lgr.Fatal(ctx, "failed to start server", "error", err)
+
+	go func() {
+		if err := e.Start(fmt.Sprintf(":%d", cfg.App.Port)); err != nil && err != http.ErrServerClosed {
+			lgr.Fatal(ctx, "failed to start server", "error", err)
+		}
+	}()
+
+	// Wait for interrupt signal to gracefully shut down the server with a timeout of 10 seconds.
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	<-quit
+
+	lgr.Info(ctx, "shutting down server...")
+
+	ctxShutdown, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	if err := e.Shutdown(ctxShutdown); err != nil {
+		lgr.Fatal(ctx, "server forced to shutdown", "error", err)
 	}
+
+	if err := closeDB(ctx, db, lgr); err != nil {
+		lgr.Error(ctx, "failed to close database connection", "error", err)
+	}
+
+	lgr.Info(ctx, "server exited gracefully")
+}
+
+func closeDB(ctx context.Context, db *gorm.DB, lgr *logger.Logger) error {
+	sqlDB, err := db.DB()
+	if err != nil {
+		lgr.Error(ctx, "failed to get database", "error", err)
+		return err
+	}
+	return sqlDB.Close()
 }
