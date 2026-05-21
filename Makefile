@@ -1,4 +1,9 @@
-.PHONY: build run test mock vet lint clean docs help migrate-create migrate-up migrate-down check
+.PHONY: build run test mock vet lint clean docs help migrate-create migrate-up migrate-down check githooks
+
+## githooks: Configure git to use local githooks directory
+githooks:
+	git config core.hooksPath githooks
+	chmod +x githooks/pre-commit githooks/pre-push
 
 BUILD_DIR := ./bin
 

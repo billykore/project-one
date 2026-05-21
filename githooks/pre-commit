@@ -1,0 +1,112 @@
+#!/bin/bash
+
+# Exit on setup failure
+set -e
+
+# Get list of staged files
+STAGED_FILES=$(git diff --cached --name-only)
+
+if [ -z "$STAGED_FILES" ]; then
+    exit 0
+fi
+
+# Flags to determine what to run
+RUN_GO=false
+RUN_WEB=false
+
+# Check each staged file
+while read -r file; do
+    if [ -z "$file" ]; then
+        continue
+    fi
+    if [[ "$file" == *.go || "$file" == "go.mod" || "$file" == "go.sum" || "$file" == "Makefile" || "$file" == scripts/* ]]; then
+        RUN_GO=true
+    fi
+    if [[ "$file" == web/* ]]; then
+        RUN_WEB=true
+    fi
+done <<< "$STAGED_FILES"
+
+EXIT_CODE=0
+
+if [ "$RUN_GO" = true ]; then
+    echo "🔍 Running Go Backend Checks..."
+
+    # 1. Formatting
+    echo "⚡ Running 'go fmt ./...'..."
+    if ! go fmt ./...; then
+        echo "❌ 'go fmt' failed!"
+        EXIT_CODE=1
+    fi
+
+    # 2. Mod Tidy
+    if [ $EXIT_CODE -eq 0 ]; then
+        echo "⚡ Running 'go mod tidy'..."
+        if ! go mod tidy; then
+            echo "❌ 'go mod tidy' failed!"
+            EXIT_CODE=1
+        fi
+    fi
+
+    # 3. Auto-stage formatted/tidied files
+    if [ $EXIT_CODE -eq 0 ]; then
+        # Re-stage any files that were staged and got modified by go fmt
+        while read -r file; do
+            if [ -z "$file" ]; then
+                continue
+            fi
+            # Check if this staged file has unstaged modifications now
+            if git diff --name-only | grep -q "^${file}$"; then
+                echo "📝 Re-staging formatted/tidied file: $file"
+                git add "$file"
+            fi
+        done <<< "$STAGED_FILES"
+
+        # Also stage go.mod and go.sum if they were modified by tidy
+        for mod_file in go.mod go.sum; do
+            if git diff --name-only | grep -q "^${mod_file}$"; then
+                echo "📝 Re-staging modified dependency file: $mod_file"
+                git add "$mod_file"
+            fi
+        done
+    fi
+
+    # 4. Vetting
+    if [ $EXIT_CODE -eq 0 ]; then
+        echo "⚡ Running 'make vet'..."
+        if ! make vet; then
+            echo "❌ 'make vet' failed!"
+            EXIT_CODE=1
+        fi
+    fi
+
+    # 5. Linting
+    if [ $EXIT_CODE -eq 0 ]; then
+        echo "⚡ Running 'make lint'..."
+        if ! make lint; then
+            echo "❌ 'make lint' failed!"
+            EXIT_CODE=1
+        fi
+    fi
+fi
+
+if [ "$RUN_WEB" = true ] && [ $EXIT_CODE -eq 0 ]; then
+    echo "🔍 Running Frontend Checks (web)..."
+    
+    ROOT_DIR=$(pwd)
+    cd web
+    echo "⚡ Running 'npm run lint'..."
+    if ! npm run lint; then
+        echo "❌ Frontend linting failed!"
+        EXIT_CODE=1
+    fi
+    cd "$ROOT_DIR"
+fi
+
+if [ $EXIT_CODE -ne 0 ]; then
+    echo "❌ Commit aborted: Checks failed."
+    exit 1
+else
+    echo "✅ All checks passed! Proceeding with commit."
+    exit 0
+fi

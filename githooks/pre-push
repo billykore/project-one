@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Exit on setup failure
+set -e
+
+echo "🚀 Running Pre-push Unit Tests..."
+
+if ! make test; then
+    echo "❌ Unit tests failed! Push aborted."
+    exit 1
+fi
+
+echo "✅ All unit tests passed! Proceeding with push."
+exit 0
