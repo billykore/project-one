@@ -30,7 +30,7 @@ func setupTestEnvironment(t *testing.T) (string, func()) {
 	return tempDir, cleanup
 }
 
-func TestLoadConfig_SuccessFromFile(t *testing.T) {
+func TestLoad_SuccessFromFile(t *testing.T) {
 	tempDir, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
@@ -52,7 +52,7 @@ app:
 	err := os.WriteFile(filepath.Join(tempDir, "config.yaml"), yamlContent, 0644)
 	assert.NoError(t, err)
 
-	cfg, err := config.LoadConfig(tempDir)
+	cfg, err := config.Load(tempDir)
 	assert.NoError(t, err)
 	assert.NotNil(t, cfg)
 
@@ -67,7 +67,7 @@ app:
 	assert.Equal(t, 8080, cfg.App.Port)
 }
 
-func TestLoadConfig_SuccessFromEnv(t *testing.T) {
+func TestLoad_SuccessFromEnv(t *testing.T) {
 	tempDir, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
@@ -85,7 +85,7 @@ func TestLoadConfig_SuccessFromEnv(t *testing.T) {
 	// Debugging: Print environment variable to verify t.Setenv
 	fmt.Printf("DEBUG: JWT_SECRET_KEY from env: %s\n", os.Getenv("JWT_SECRET_KEY"))
 
-	cfg, err := config.LoadConfig(tempDir) // No user_config.yaml file, should rely on env
+	cfg, err := config.Load(tempDir) // No user_config.yaml file, should rely on env
 	assert.NoError(t, err)
 	assert.NotNil(t, cfg)
 
@@ -127,7 +127,7 @@ app:
 	t.Setenv("JWT_SECRET_KEY", "env_override_secret")
 	t.Setenv("APP_PORT", "9001")
 
-	cfg, err := config.LoadConfig(tempDir)
+	cfg, err := config.Load(tempDir)
 	assert.NoError(t, err)
 	assert.NotNil(t, cfg)
 
@@ -155,13 +155,13 @@ jwt:
 	err := os.WriteFile(filepath.Join(tempDir, "config.yaml"), yamlContent, 0644)
 	assert.NoError(t, err)
 
-	cfg, err := config.LoadConfig(tempDir)
+	cfg, err := config.Load(tempDir)
 	assert.Error(t, err)
 	assert.Nil(t, cfg)
 	assert.Contains(t, err.Error(), "JWT secret key cannot be empty")
 }
 
-func TestLoadConfig_MissingDatabaseConfig(t *testing.T) {
+func TestLoad_Success_MissingDatabaseConfig(t *testing.T) {
 	tempDir, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
@@ -178,13 +178,13 @@ jwt:
 	err := os.WriteFile(filepath.Join(tempDir, "config.yaml"), yamlContent, 0644)
 	assert.NoError(t, err)
 
-	cfg, err := config.LoadConfig(tempDir)
+	cfg, err := config.Load(tempDir)
 	assert.Error(t, err)
 	assert.Nil(t, cfg)
 	assert.Contains(t, err.Error(), "database host, user, and dbname cannot be empty")
 }
 
-func TestLoadConfig_InvalidYaml(t *testing.T) {
+func TestLoad_Success_InvalidYaml(t *testing.T) {
 	tempDir, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
@@ -199,18 +199,18 @@ jwt:
 	err := os.WriteFile(filepath.Join(tempDir, "config.yaml"), yamlContent, 0644)
 	assert.NoError(t, err)
 
-	cfg, err := config.LoadConfig(tempDir)
+	cfg, err := config.Load(tempDir)
 	assert.Error(t, err)
 	assert.Nil(t, cfg)
 	assert.Contains(t, err.Error(), "failed to unmarshal config")
 }
 
-func TestLoadConfig_ConfigFileNotFoundAndNoEnvFallback(t *testing.T) {
+func TestLoad_Success_ConfigFileNotFoundAndNoEnvFallback(t *testing.T) {
 	tempDir, cleanup := setupTestEnvironment(t)
 	defer cleanup()
 
 	// No user_config.yaml file and no relevant env vars
-	cfg, err := config.LoadConfig(tempDir)
+	cfg, err := config.Load(tempDir)
 	assert.Error(t, err)
 	assert.Nil(t, cfg)
 	// Now it can fail for JWT secret or database config

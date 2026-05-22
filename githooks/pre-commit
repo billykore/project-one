@@ -88,15 +88,6 @@ if [ "$RUN_GO" = true ]; then
             EXIT_CODE=1
         fi
     fi
-
-    # 6. Generate API Docs
-    if [ $EXIT_CODE -eq 0 ]; then
-        echo "⚡ Running 'make docs'..."
-        if ! make docs; then
-            echo "❌ 'make docs' failed!"
-            EXIT_CODE=1
-        fi
-    fi
 fi
 
 if [ "$RUN_WEB" = true ] && [ $EXIT_CODE -eq 0 ]; then

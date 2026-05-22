@@ -451,7 +451,7 @@ const docTemplate = `{
         },
         "/users/{username}": {
             "get": {
-                "description": "Get the profile of a user by their username.",
+                "description": "Get a user by their username.",
                 "consumes": [
                     "application/json"
                 ],
@@ -461,7 +461,7 @@ const docTemplate = `{
                 "tags": [
                     "users"
                 ],
-                "summary": "Get user profile",
+                "summary": "Get user",
                 "parameters": [
                     {
                         "type": "string",
@@ -914,6 +914,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "message": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }

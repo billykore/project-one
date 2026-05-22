@@ -40,7 +40,7 @@ func main() {
 	lgr := logger.New()
 
 	// Load configuration
-	cfg, err := config.LoadConfig("./configs")
+	cfg, err := config.Load("./configs")
 	if err != nil {
 		lgr.Fatal(ctx, "failed to load config", "error", err)
 	}

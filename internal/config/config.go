@@ -37,8 +37,8 @@ type JWTConfig struct {
 	ExpirationTime time.Duration `mapstructure:"expiration_time"`
 }
 
-// LoadConfig reads configuration from file or environment variables.
-func LoadConfig(path string) (cfg *Config, err error) { // Changed named return to cfg
+// Load reads configuration from file or environment variables.
+func Load(path string) (cfg *Config, err error) { // Changed named return to cfg
 	v := viper.New() // Use a new Viper instance for each call
 	v.AddConfigPath(path)
 	v.AddConfigPath(fmt.Sprintf("../%s", path))
