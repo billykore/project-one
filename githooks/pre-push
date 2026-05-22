@@ -1,7 +1,13 @@
 #!/bin/bash
 
-# Exit on setup failure
-set -e
+# Exit immediately if a command exits with a non-zero status.
+# -e: exit on error
+# -u: exit on unset variables
+# -o pipefail: exit if any command in a pipe fails
+set -euo pipefail
+
+# Directory Independence
+cd "$(dirname "$0")/.."
 
 echo "🚀 Running Pre-push Unit Tests..."
 

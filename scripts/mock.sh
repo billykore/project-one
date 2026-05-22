@@ -6,6 +6,9 @@
 # -o pipefail: exit if any command in a pipe fails
 set -euo pipefail
 
+# Directory Independence
+cd "$(dirname "$0")/.."
+
 # Configuration
 # PORTS_DIR: Source directory for interfaces
 # MOCKS_DEST: Destination directory for generated mocks
@@ -15,7 +18,8 @@ MOCKS_DEST="internal/core/usecase/mocks"
 # Command to run mockgen.
 # Using 'go run' ensures we use the version pinned in go.mod.
 # For better performance, install it locally: go install go.uber.org/mock/mockgen@latest
-MOCKGEN="go run go.uber.org/mock/mockgen"
+# Using an array to handle spaces and quoting properly.
+MOCKGEN=(go run go.uber.org/mock/mockgen)
 
 echo "Mock Generation"
 
@@ -39,11 +43,11 @@ fi
 # Find all .go files in the ports directory
 # Using a glob is fine here since we checked the directory exists
 files=("$PORTS_DIR"/*.go)
-total_files=${#files[@]}
+total_files="${#files[@]}"
 current=0
 
 # Check if the glob found anything (handles the case where the directory is empty)
-if [ "$total_files" -eq 0 ] || [ ! -e "${files[0]}" ]; then
+if [ "$total_files" -eq 0 ] || [ ! -e "${files[0]:-}" ]; then
     echo "No Go files found in $PORTS_DIR."
     exit 0
 fi
@@ -61,7 +65,7 @@ for file in "${files[@]}"; do
     # -package: the package name for the generated mock
     printf " [%d/%d] %s -> %s\n" "$current" "$total_files" "$filename" "$mockname"
     
-    if ! $MOCKGEN -source="$file" -destination="$MOCKS_DEST/$mockname" -package=mocks; then
+    if ! "${MOCKGEN[@]}" -source="$file" -destination="$MOCKS_DEST/$mockname" -package=mocks; then
         echo "Error: Failed to generate mock for $file"
         exit 1
     fi
