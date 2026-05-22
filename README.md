@@ -43,7 +43,7 @@ The backend follows **Clean Architecture** principles to ensure separation of co
 * **Adapters**: Concrete implementations of ports (GORM repositories, JWT service, Bcrypt hasher, etc.).
 * **API**: Echo handlers, DTOs (Data Transfer Objects), and Middleware.
 
-The frontend uses the **Next.js App Router** with a clean separation of models, controllers, and views in the `web/app` directory.
+The frontend uses the **Next.js App Router** with layouts, pages, and components in the `web/app` directory, and API clients / utilities in `web/lib`.
 
 ---
 
@@ -51,9 +51,13 @@ The frontend uses the **Next.js App Router** with a clean separation of models, 
 
 ### Prerequisites
 
-* Go 1.26+
-* PostgreSQL
-* Node.js & npm (for frontend)
+* **Go**: 1.26+
+* **PostgreSQL**: For database storage
+* **Node.js & npm**: For running the Next.js frontend
+* **Additional Tooling** (Required for development commands):
+  * [golang-migrate CLI](https://github.com/golang-migrate/migrate): For database migrations (`make migrate-*`)
+  * [swag CLI](https://github.com/swaggo/swag): For generating Swagger API docs (`make docs`)
+  * [golangci-lint](https://golangci-lint.run/): For static analysis (`make lint`)
 
 ### Backend Setup
 
@@ -80,11 +84,19 @@ The frontend uses the **Next.js App Router** with a clean separation of models, 
 
 | Command | Description |
 | :--- | :--- |
+| `make build` | Compile the backend application binary to `bin/main` |
+| `make run` | Compile and run the backend API server |
 | `make test` | Run all unit tests |
-| `make mock` | Regenerate GoMock interfaces |
-| `make lint` | Run golangci-lint |
-| `make docs` | Regenerate Swagger documentation |
+| `make mock` | Regenerate GoMock interfaces in `internal/core/usecase/mocks/` |
+| `make vet` | Run `go vet` |
+| `make lint` | Run static analysis via `golangci-lint` |
+| `make docs` | Regenerate Swagger API documentation |
+| `make migrate-create name=...` | Create a new SQL migration file |
+| `make migrate-up dsn=...` | Run database migrations up |
+| `make migrate-down dsn=...` | Run database migrations down |
+| `make githooks` | Configure git to use local pre-commit and pre-push hooks |
 | `make check` | Run docs, vet, lint, and test in one go |
+| `make clean` | Remove backend build artifacts from `bin/` |
 
 ---
 
@@ -92,9 +104,13 @@ The frontend uses the **Next.js App Router** with a clean separation of models, 
 
 ```text
 ├── api/swagger/          # Auto-generated Swagger documentation
+├── bin/                  # Directory containing compiled backend binary
 ├── cmd/main.go           # Application entry point
-├── configs/              # Configuration files
+├── configs/              # Configuration files (config.yaml)
 ├── db/migrations/        # SQL migration files
+├── deployments/          # Deployment configurations and templates
+├── docs/                 # Documentation (plans, specifications, and tasks)
+├── githooks/             # Local Git hooks (pre-commit, pre-push)
 ├── internal/
 │   ├── api/              # Handlers, DTOs, and Middlewares
 │   ├── core/
@@ -103,6 +119,6 @@ The frontend uses the **Next.js App Router** with a clean separation of models, 
 │   │   └── usecase/      # Business logic implementation
 │   ├── adapters/         # Implementation of ports (DB, services)
 │   └── config/           # Application configuration logic
-├── scripts/              # Helper shell scripts
+├── scripts/              # Helper shell scripts for make commands
 └── web/                  # Next.js frontend application
 ```
