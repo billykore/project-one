@@ -15,5 +15,5 @@ type CommentRepository interface {
 // CommentUseCase is a driving port for comment-related application logic.
 type CommentUseCase interface {
 	// AddComment creates a new comment on a post.
-	AddComment(ctx context.Context, postID int, username string, content string) error
+	AddComment(ctx context.Context, postID int64, username string, content string) error
 }

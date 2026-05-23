@@ -42,8 +42,8 @@ func NewCommentHandler(commentUseCase ports.CommentUseCase, validator ports.Vali
 //	@Tags			comments
 //	@Accept			json
 //	@Produce		json
-//	@Param			id		path		int							true	"Post ID"
-//	@Param			request	body		dto.CreateCommentRequest	true	"Comment details"
+//	@Param			id		path	int							true	"Post ID"
+//	@Param			request	body	dto.CreateCommentRequest	true	"Comment details"
 //	@Success		201		"Created"
 //	@Failure		400		{object}	dto.ErrorResponse
 //	@Failure		401		{object}	dto.ErrorResponse
@@ -58,7 +58,7 @@ func (h *CommentHandler) CreateComment(c echo.Context) error {
 	}
 
 	idStr := c.Param("id")
-	postID, err := strconv.Atoi(idStr)
+	postID, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Post ID must be a number"})
 	}
@@ -86,9 +86,6 @@ func (h *CommentHandler) CreateComment(c echo.Context) error {
 	if err != nil {
 		if errors.Is(err, domain.ErrPostNotFound) {
 			return c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "Post not found"})
-		}
-		if errors.Is(err, domain.ErrUserNotFound) {
-			return c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "User not found"})
 		}
 		if errors.Is(err, domain.ErrValidationFailed) {
 			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Comment must be at least 1 character"})

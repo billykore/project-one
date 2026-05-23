@@ -5,6 +5,9 @@ database:
   password: "password"
   dbname: "postgres"
   sslmode: "disable"
+  max_idle_conns: 10
+  max_open_conns: 100
+  conn_max_lifetime: "1h"
 jwt:
   secret_key: "supersecretjwtkey"
   expiration_time: 24h

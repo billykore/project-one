@@ -1,5 +1,13 @@
 basePath: /
 definitions:
+  github_com_billykore_project-one_internal_api_dto.CreateCommentRequest:
+    properties:
+      content:
+        minLength: 1
+        type: string
+    required:
+    - content
+    type: object
   github_com_billykore_project-one_internal_api_dto.CreatePostRequest:
     properties:
       content:
@@ -444,6 +452,49 @@ paths:
       summary: Update post
       tags:
       - posts
+  /api/v1/posts/{id}/comments:
+    post:
+      consumes:
+      - application/json
+      description: Create a new comment on a post.
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Comment details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.CreateCommentRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create comment
+      tags:
+      - comments
   /api/v1/users/{username}:
     get:
       consumes:

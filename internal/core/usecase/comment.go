@@ -42,30 +42,20 @@ func NewCommentUseCase(
 	}
 }
 
-func (u *commentUseCase) AddComment(ctx context.Context, postID int, username string, content string) error {
-	// 1. Get user by username to retrieve their ID
-	user, err := u.userRepo.GetUserByUsername(ctx, username)
-	if err != nil {
-		if errors.Is(err, domain.ErrUserNotFound) {
-			return err
-		}
-		u.log.Error(ctx, "failed to get user for comment creation", "username", username, "error", err)
-		return domain.ErrInternalServer
-	}
-
+func (u *commentUseCase) AddComment(ctx context.Context, postID int64, username string, content string) error {
 	comment := &domain.Comment{
-		PostID:  postID,
-		UserID:  user.ID,
-		Content: content,
+		PostID:   postID,
+		Username: username,
+		Content:  content,
 	}
 
-	// 2. Validate domain entity
+	// 1. Validate domain entity
 	if err := comment.Validate(); err != nil {
 		return err
 	}
 
-	// 3. Verify post exists
-	_, err = u.postRepo.GetByIDOnly(ctx, postID)
+	// 2. Verify post exists
+	_, err := u.postRepo.GetByIDOnly(ctx, int(postID))
 	if err != nil {
 		if errors.Is(err, domain.ErrPostNotFound) {
 			return err
@@ -74,12 +64,12 @@ func (u *commentUseCase) AddComment(ctx context.Context, postID int, username st
 		return domain.ErrInternalServer
 	}
 
-	// 4. Create comment
+	// 3. Create comment
 	if err := u.commentRepo.Create(ctx, comment); err != nil {
-		u.log.Error(ctx, "failed to create comment", "postID", postID, "userID", user.ID, "error", err)
+		u.log.Error(ctx, "failed to create comment", "postID", postID, "username", username, "error", err)
 		return domain.ErrInternalServer
 	}
 
-	u.log.Info(ctx, "comment created successfully", "commentID", comment.ID, "postID", postID, "userID", user.ID)
+	u.log.Info(ctx, "comment created successfully", "commentID", comment.ID, "postID", postID, "username", username)
 	return nil
 }

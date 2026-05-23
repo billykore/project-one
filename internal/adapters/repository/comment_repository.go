@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
@@ -9,10 +10,13 @@ import (
 )
 
 type commentModel struct {
-	gorm.Model
-	PostID  uint   `gorm:"notNull"`
-	UserID  uint   `gorm:"notNull"`
-	Content string `gorm:"type:text;notNull"`
+	ID        uint64 `gorm:"primaryKey;autoIncrement"`
+	PostID    uint64 `gorm:"notNull"`
+	Username  string `gorm:"size:255;notNull"`
+	Content   string `gorm:"type:text;notNull"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
 
 func (m *commentModel) TableName() string {
@@ -20,10 +24,22 @@ func (m *commentModel) TableName() string {
 }
 
 func (m *commentModel) fromDomain(c *domain.Comment) {
-	m.ID = uint(c.ID)
-	m.PostID = uint(c.PostID)
-	m.UserID = uint(c.UserID)
+	m.ID = uint64(c.ID)
+	m.PostID = uint64(c.PostID)
+	m.Username = c.Username
 	m.Content = c.Content
+}
+
+func (m *commentModel) toDomain() *domain.Comment {
+	return &domain.Comment{
+		ID:        int64(m.ID),
+		PostID:    int64(m.PostID),
+		Username:  m.Username,
+		Content:   m.Content,
+		CreatedAt: m.CreatedAt,
+		UpdatedAt: m.UpdatedAt,
+		DeletedAt: m.DeletedAt.Time,
+	}
 }
 
 type commentRepository struct {
@@ -41,8 +57,6 @@ func (r *commentRepository) Create(ctx context.Context, comment *domain.Comment)
 	if err := r.db.WithContext(ctx).Create(&m).Error; err != nil {
 		return err
 	}
-	comment.ID = int(m.ID)
-	comment.CreatedAt = m.CreatedAt
-	comment.UpdatedAt = m.UpdatedAt
+	*comment = *m.toDomain()
 	return nil
 }

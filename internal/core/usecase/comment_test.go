@@ -23,19 +23,14 @@ func TestCommentUseCase_AddComment(t *testing.T) {
 	svc := NewCommentUseCase(mockCommentRepo, mockPostRepo, mockUserRepo, mockLog)
 
 	ctx := context.Background()
-	postID := 1
+	var postID int64 = 1
 	username := "testuser"
-	userID := 42
 	content := "This is a comment"
 
 	t.Run("success", func(t *testing.T) {
-		mockUserRepo.EXPECT().
-			GetUserByUsername(ctx, username).
-			Return(&domain.User{ID: userID, Username: username}, nil)
-
 		mockPostRepo.EXPECT().
-			GetByIDOnly(ctx, postID).
-			Return(&domain.Post{ID: postID}, nil)
+			GetByIDOnly(ctx, int(postID)).
+			Return(&domain.Post{ID: int(postID)}, nil)
 
 		mockCommentRepo.EXPECT().
 			Create(ctx, gomock.Any()).
@@ -44,39 +39,27 @@ func TestCommentUseCase_AddComment(t *testing.T) {
 				return nil
 			})
 
-		mockLog.EXPECT().Info(ctx, "comment created successfully", "commentID", 100, "postID", postID, "userID", userID)
+		mockLog.EXPECT().Info(ctx, "comment created successfully", "commentID", int64(100), "postID", postID, "username", username)
 
 		err := svc.AddComment(ctx, postID, username, content)
 		assert.NoError(t, err)
 	})
 
-	t.Run("user not found", func(t *testing.T) {
-		mockUserRepo.EXPECT().
-			GetUserByUsername(ctx, username).
-			Return(nil, domain.ErrUserNotFound)
-
-		err := svc.AddComment(ctx, postID, username, content)
-		assert.Error(t, err)
-		assert.True(t, errors.Is(err, domain.ErrUserNotFound))
-	})
-
 	t.Run("validation failure - empty content", func(t *testing.T) {
-		mockUserRepo.EXPECT().
-			GetUserByUsername(ctx, username).
-			Return(&domain.User{ID: userID, Username: username}, nil)
-
 		err := svc.AddComment(ctx, postID, username, "")
 		assert.Error(t, err)
 		assert.True(t, errors.Is(err, domain.ErrValidationFailed))
 	})
 
-	t.Run("post not found", func(t *testing.T) {
-		mockUserRepo.EXPECT().
-			GetUserByUsername(ctx, username).
-			Return(&domain.User{ID: userID, Username: username}, nil)
+	t.Run("validation failure - whitespace content", func(t *testing.T) {
+		err := svc.AddComment(ctx, postID, username, "   ")
+		assert.Error(t, err)
+		assert.True(t, errors.Is(err, domain.ErrValidationFailed))
+	})
 
+	t.Run("post not found", func(t *testing.T) {
 		mockPostRepo.EXPECT().
-			GetByIDOnly(ctx, postID).
+			GetByIDOnly(ctx, int(postID)).
 			Return(nil, domain.ErrPostNotFound)
 
 		err := svc.AddComment(ctx, postID, username, content)
@@ -85,19 +68,15 @@ func TestCommentUseCase_AddComment(t *testing.T) {
 	})
 
 	t.Run("repository error on create", func(t *testing.T) {
-		mockUserRepo.EXPECT().
-			GetUserByUsername(ctx, username).
-			Return(&domain.User{ID: userID, Username: username}, nil)
-
 		mockPostRepo.EXPECT().
-			GetByIDOnly(ctx, postID).
-			Return(&domain.Post{ID: postID}, nil)
+			GetByIDOnly(ctx, int(postID)).
+			Return(&domain.Post{ID: int(postID)}, nil)
 
 		mockCommentRepo.EXPECT().
 			Create(ctx, gomock.Any()).
 			Return(errors.New("db error"))
 
-		mockLog.EXPECT().Error(ctx, "failed to create comment", "postID", postID, "userID", userID, "error", gomock.Any())
+		mockLog.EXPECT().Error(ctx, "failed to create comment", "postID", postID, "username", username, "error", gomock.Any())
 
 		err := svc.AddComment(ctx, postID, username, content)
 		assert.Error(t, err)
