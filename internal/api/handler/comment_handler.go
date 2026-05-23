@@ -49,7 +49,7 @@ func NewCommentHandler(commentUseCase ports.CommentUseCase, validator ports.Vali
 //	@Failure		404		{object}	dto.ErrorResponse
 //	@Failure		500		{object}	dto.ErrorResponse
 //	@Security		BearerAuth
-//	@Router			/api/v1/posts/{id}/comments [post]
+//	@Router			/posts/{id}/comments [post]
 func (h *CommentHandler) CreateComment(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {

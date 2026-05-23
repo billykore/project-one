@@ -78,8 +78,8 @@ func main() {
 	commentUc := usecase.NewCommentUseCase(commentRepo, postRepo, userRepo, lgr)
 
 	// 5. Initialize Handler.
-	userHdl := handler.NewUserHandler(userUc, loginUc, followUc, val, lgr)
-	postHdl := handler.NewPostHandler(postUc, val)
+	userHdl := handler.NewUserHandler(userUc, loginUc, followUc, postUc, val, lgr)
+	postHdl := handler.NewPostHandler(postUc, commentUc, val)
 	commentHdl := handler.NewCommentHandler(commentUc, val, lgr)
 
 	// 6. Set up Echo.
@@ -146,7 +146,7 @@ func main() {
 		users.DELETE("/:username/followers", userHdl.HandleUnfollow, middleware.Authorize(tokenSvc))
 
 		// User's posts.
-		users.GET("/:username/posts", postHdl.GetUserPosts)
+		users.GET("/:username/posts", userHdl.GetUserPosts)
 	}
 
 	// Posts Group

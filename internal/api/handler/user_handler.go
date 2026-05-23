@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -17,6 +18,7 @@ type UserHandler struct {
 	userUseCase   ports.UserUseCase
 	loginUseCase  ports.LoginUseCase
 	followUseCase ports.FollowUseCase
+	postUseCase   ports.PostUseCase
 	validator     ports.Validator
 	log           ports.Logger
 }
@@ -26,6 +28,7 @@ func NewUserHandler(
 	userUseCase ports.UserUseCase,
 	loginUseCase ports.LoginUseCase,
 	followUseCase ports.FollowUseCase,
+	postUseCase ports.PostUseCase,
 	validator ports.Validator,
 	log ports.Logger,
 ) *UserHandler {
@@ -36,6 +39,7 @@ func NewUserHandler(
 		userUseCase:   userUseCase,
 		loginUseCase:  loginUseCase,
 		followUseCase: followUseCase,
+		postUseCase:   postUseCase,
 		validator:     validator,
 		log:           log,
 	}
@@ -53,7 +57,7 @@ func NewUserHandler(
 //	@Failure		400			{object}	dto.ErrorResponse
 //	@Failure		404			{object}	dto.ErrorResponse
 //	@Failure		500			{object}	dto.ErrorResponse
-//	@Router			/api/v1/users/{username} [get]
+//	@Router			/users/{username} [get]
 func (h *UserHandler) GetUser(c echo.Context) error {
 	username := c.Param("username")
 	if username == "" {
@@ -84,7 +88,7 @@ func (h *UserHandler) GetUser(c echo.Context) error {
 //	@Failure		400				{object}	dto.ErrorResponse
 //	@Failure		401				{object}	dto.ErrorResponse
 //	@Failure		500				{object}	dto.ErrorResponse
-//	@Router			/api/v1/auth/login [post]
+//	@Router			/auth/login [post]
 func (h *UserHandler) HandleLogin(c echo.Context) error {
 	var req dto.LoginRequest
 	if err := c.Bind(&req); err != nil {
@@ -131,7 +135,7 @@ func (h *UserHandler) HandleLogin(c echo.Context) error {
 //	@Failure		401	{object}	dto.ErrorResponse
 //	@Failure		500	{object}	dto.ErrorResponse
 //	@Security		BearerAuth
-//	@Router			/api/v1/auth/logout [post]
+//	@Router			/auth/logout [post]
 func (h *UserHandler) HandleLogout(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
@@ -159,7 +163,7 @@ func (h *UserHandler) HandleLogout(c echo.Context) error {
 //	@Success		201		{object}	dto.RegisterResponse
 //	@Failure		400		{object}	dto.ErrorResponse
 //	@Failure		500		{object}	dto.ErrorResponse
-//	@Router			/api/v1/auth/register [post]
+//	@Router			/auth/register [post]
 func (h *UserHandler) HandleRegister(c echo.Context) error {
 	var req dto.RegisterRequest
 	if err := c.Bind(&req); err != nil {
@@ -211,7 +215,7 @@ func (h *UserHandler) HandleRegister(c echo.Context) error {
 //	@Failure		404			{object}	dto.ErrorResponse
 //	@Failure		500			{object}	dto.ErrorResponse
 //	@Security		BearerAuth
-//	@Router			/api/v1/users/{username}/followers [post]
+//	@Router			/users/{username}/followers [post]
 func (h *UserHandler) HandleFollow(c echo.Context) error {
 	followerUsername, ok := c.Get("username").(string)
 	if !ok {
@@ -260,7 +264,7 @@ func (h *UserHandler) HandleFollow(c echo.Context) error {
 //	@Failure		401			{object}	dto.ErrorResponse
 //	@Failure		500			{object}	dto.ErrorResponse
 //	@Security		BearerAuth
-//	@Router			/api/v1/users/{username}/followers [delete]
+//	@Router			/users/{username}/followers [delete]
 func (h *UserHandler) HandleUnfollow(c echo.Context) error {
 	followerUsername, ok := c.Get("username").(string)
 	if !ok {
@@ -303,7 +307,7 @@ func (h *UserHandler) HandleUnfollow(c echo.Context) error {
 //	@Failure		401		{object}	dto.ErrorResponse
 //	@Failure		500		{object}	dto.ErrorResponse
 //	@Security		BearerAuth
-//	@Router			/api/v1/users/{username}/following [get]
+//	@Router			/users/{username}/following [get]
 func (h *UserHandler) GetFollowing(c echo.Context) error {
 	followerUsername := c.Param("username")
 
@@ -344,7 +348,7 @@ func (h *UserHandler) GetFollowing(c echo.Context) error {
 //	@Failure		401		{object}	dto.ErrorResponse
 //	@Failure		500		{object}	dto.ErrorResponse
 //	@Security		BearerAuth
-//	@Router			/api/v1/users/{username}/followers [get]
+//	@Router			/users/{username}/followers [get]
 func (h *UserHandler) GetFollowers(c echo.Context) error {
 	followedUsername := c.Param("username")
 
@@ -395,4 +399,51 @@ func toUserResponse(user *domain.User) dto.UserResponse {
 		Email:    user.Email,
 		Name:     user.FirstName + " " + user.LastName,
 	}
+}
+
+// GetUserPosts handles the GET /users/:username/posts endpoint.
+//
+//	@Summary		Get user posts by username
+//	@Description	Retrieve all posts for a specific user by username.
+//	@Tags			users
+//	@Produce		json
+//	@Param			username	path		string	true	"Username"
+//	@Param			limit		query		int		false	"Limit"
+//	@Param			offset		query		int		false	"Offset"
+//	@Success		200			{array}		dto.PostResponse
+//	@Failure		400			{object}	dto.ErrorResponse
+//	@Failure		500			{object}	dto.ErrorResponse
+//	@Router			/users/{username}/posts [get]
+func (h *UserHandler) GetUserPosts(c echo.Context) error {
+	username := c.Param("username")
+
+	limit, _ := strconv.Atoi(c.QueryParam("limit"))
+	offset, _ := strconv.Atoi(c.QueryParam("offset"))
+
+	if limit == 0 {
+		limit = 10 // default limit
+	}
+
+	posts, err := h.postUseCase.GetPosts(c.Request().Context(), username, limit, offset)
+	if err != nil {
+		if errors.Is(err, domain.ErrUserNotFound) || errors.Is(err, domain.ErrValidationFailed) {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "User not found"})
+		}
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
+	}
+
+	response := make([]dto.PostResponse, 0, len(posts))
+	for _, p := range posts {
+		response = append(response, dto.PostResponse{
+			ID:        p.ID,
+			Title:     p.Title,
+			Content:   p.Content,
+			Tags:      p.Tags,
+			Author:    username,
+			CreatedAt: p.CreatedAt,
+			UpdatedAt: p.UpdatedAt,
+		})
+	}
+
+	return c.JSON(http.StatusOK, response)
 }

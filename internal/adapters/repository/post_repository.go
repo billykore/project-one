@@ -38,7 +38,6 @@ func (m *postModel) toDomain() *domain.Post {
 		Tags:      []string(m.Tags),
 		CreatedAt: m.CreatedAt,
 		UpdatedAt: m.UpdatedAt,
-		DeletedAt: m.DeletedAt.Time,
 	}
 }
 

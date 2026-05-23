@@ -34,7 +34,6 @@ func (m *commentModel) toDomain() *domain.Comment {
 		Content:   m.Content,
 		CreatedAt: m.CreatedAt,
 		UpdatedAt: m.UpdatedAt,
-		DeletedAt: m.DeletedAt.Time,
 	}
 }
 
@@ -55,4 +54,21 @@ func (r *commentRepository) Create(ctx context.Context, comment *domain.Comment)
 	}
 	*comment = *m.toDomain()
 	return nil
+}
+
+func (r *commentRepository) GetByPostID(ctx context.Context, postID int) ([]*domain.Comment, error) {
+	var models []commentModel
+	err := r.db.WithContext(ctx).
+		Where("post_id = ?", postID).
+		Order("created_at ASC").
+		Find(&models).Error
+	if err != nil {
+		return nil, err
+	}
+
+	comments := make([]*domain.Comment, 0, len(models))
+	for _, m := range models {
+		comments = append(comments, m.toDomain())
+	}
+	return comments, nil
 }

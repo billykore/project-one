@@ -83,3 +83,40 @@ func TestCommentUseCase_AddComment(t *testing.T) {
 		assert.True(t, errors.Is(err, domain.ErrInternalServer))
 	})
 }
+
+func TestCommentUseCase_GetCommentsByPostID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockCommentRepo := mocks.NewMockCommentRepository(ctrl)
+	mockPostRepo := mocks.NewMockPostRepository(ctrl)
+	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockLog := mocks.NewMockLogger(ctrl)
+
+	svc := NewCommentUseCase(mockCommentRepo, mockPostRepo, mockUserRepo, mockLog)
+
+	ctx := context.Background()
+	postID := 1
+
+	t.Run("success", func(t *testing.T) {
+		expectedComments := []*domain.Comment{
+			{ID: 1, PostID: postID, Username: "commenter1", Content: "First comment"},
+			{ID: 2, PostID: postID, Username: "commenter2", Content: "Second comment"},
+		}
+		mockCommentRepo.EXPECT().GetByPostID(ctx, postID).Return(expectedComments, nil)
+
+		comments, err := svc.GetCommentsByPostID(ctx, postID)
+		assert.NoError(t, err)
+		assert.Equal(t, expectedComments, comments)
+	})
+
+	t.Run("repository error", func(t *testing.T) {
+		mockCommentRepo.EXPECT().GetByPostID(ctx, postID).Return(nil, errors.New("db error"))
+		mockLog.EXPECT().Error(ctx, "failed to get comments for post", "postID", postID, "error", gomock.Any())
+
+		comments, err := svc.GetCommentsByPostID(ctx, postID)
+		assert.Error(t, err)
+		assert.Nil(t, comments)
+		assert.True(t, errors.Is(err, domain.ErrInternalServer))
+	})
+}
