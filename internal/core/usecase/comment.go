@@ -42,7 +42,7 @@ func NewCommentUseCase(
 	}
 }
 
-func (u *commentUseCase) AddComment(ctx context.Context, postID int64, username string, content string) error {
+func (u *commentUseCase) AddComment(ctx context.Context, postID int, username string, content string) error {
 	comment := &domain.Comment{
 		PostID:   postID,
 		Username: username,

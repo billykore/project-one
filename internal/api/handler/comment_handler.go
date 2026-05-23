@@ -3,7 +3,6 @@ package handler
 import (
 	"errors"
 	"net/http"
-	"strconv"
 
 	"github.com/billykore/project-one/internal/api/dto"
 	"github.com/billykore/project-one/internal/core/domain"
@@ -57,12 +56,6 @@ func (h *CommentHandler) CreateComment(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 	}
 
-	idStr := c.Param("id")
-	postID, err := strconv.ParseInt(idStr, 10, 64)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Post ID must be a number"})
-	}
-
 	var req dto.CreateCommentRequest
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid request body"})
@@ -82,7 +75,7 @@ func (h *CommentHandler) CreateComment(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Validation failed"})
 	}
 
-	err = h.commentUseCase.AddComment(c.Request().Context(), postID, username, req.Content)
+	err := h.commentUseCase.AddComment(c.Request().Context(), req.ID, username, req.Content)
 	if err != nil {
 		if errors.Is(err, domain.ErrPostNotFound) {
 			return c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "Post not found"})

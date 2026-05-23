@@ -8,8 +8,8 @@ import (
 
 // Comment is the core domain entity representing a comment on a post.
 type Comment struct {
-	ID        int64
-	PostID    int64
+	ID        int
+	PostID    int
 	Username  string
 	Content   string
 	CreatedAt time.Time

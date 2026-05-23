@@ -120,16 +120,13 @@ func main() {
 		},
 	}))
 
-	// Create API V1 Group
-	v1 := e.Group("/api/v1")
-
 	// Only expose Swagger UI in non-production environments.
 	if cfg.App.Env != "production" {
-		v1.GET("/swagger/*", echoSwagger.WrapHandler)
+		e.GET("/swagger/*", echoSwagger.WrapHandler)
 	}
 
 	// Authentication Group
-	auth := v1.Group("/auth")
+	auth := e.Group("/auth")
 	{
 		auth.POST("/register", userHdl.HandleRegister)
 		auth.POST("/login", userHdl.HandleLogin)
@@ -137,7 +134,7 @@ func main() {
 	}
 
 	// Users Group
-	users := v1.Group("/users")
+	users := e.Group("/users")
 	{
 		// User profile endpoints.
 		users.GET("/:username", userHdl.GetUser)
@@ -153,7 +150,7 @@ func main() {
 	}
 
 	// Posts Group
-	posts := v1.Group("/posts", middleware.Authorize(tokenSvc))
+	posts := e.Group("/posts", middleware.Authorize(tokenSvc))
 	{
 		posts.POST("", postHdl.CreatePost)
 		posts.GET("", postHdl.GetPosts)

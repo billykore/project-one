@@ -23,7 +23,7 @@ func TestCommentUseCase_AddComment(t *testing.T) {
 	svc := NewCommentUseCase(mockCommentRepo, mockPostRepo, mockUserRepo, mockLog)
 
 	ctx := context.Background()
-	var postID int64 = 1
+	postID := 1
 	username := "testuser"
 	content := "This is a comment"
 
@@ -39,7 +39,7 @@ func TestCommentUseCase_AddComment(t *testing.T) {
 				return nil
 			})
 
-		mockLog.EXPECT().Info(ctx, "comment created successfully", "commentID", int64(100), "postID", postID, "username", username)
+		mockLog.EXPECT().Info(ctx, "comment created successfully", "commentID", 100, "postID", postID, "username", username)
 
 		err := svc.AddComment(ctx, postID, username, content)
 		assert.NoError(t, err)

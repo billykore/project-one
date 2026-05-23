@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"time"
 
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
@@ -10,13 +9,10 @@ import (
 )
 
 type commentModel struct {
-	ID        uint64 `gorm:"primaryKey;autoIncrement"`
-	PostID    uint64 `gorm:"notNull"`
-	Username  string `gorm:"size:255;notNull"`
-	Content   string `gorm:"type:text;notNull"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
+	gorm.Model
+	PostID   uint64 `gorm:"notNull"`
+	Username string `gorm:"size:255;notNull"`
+	Content  string `gorm:"type:text;notNull"`
 }
 
 func (m *commentModel) TableName() string {
@@ -24,7 +20,7 @@ func (m *commentModel) TableName() string {
 }
 
 func (m *commentModel) fromDomain(c *domain.Comment) {
-	m.ID = uint64(c.ID)
+	m.ID = uint(c.ID)
 	m.PostID = uint64(c.PostID)
 	m.Username = c.Username
 	m.Content = c.Content
@@ -32,8 +28,8 @@ func (m *commentModel) fromDomain(c *domain.Comment) {
 
 func (m *commentModel) toDomain() *domain.Comment {
 	return &domain.Comment{
-		ID:        int64(m.ID),
-		PostID:    int64(m.PostID),
+		ID:        int(m.ID),
+		PostID:    int(m.PostID),
 		Username:  m.Username,
 		Content:   m.Content,
 		CreatedAt: m.CreatedAt,
