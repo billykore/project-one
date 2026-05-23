@@ -14,7 +14,6 @@ type Comment struct {
 	Content   string
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	DeletedAt time.Time
 }
 
 // Validate performs domain-level validation on the Comment entity.

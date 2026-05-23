@@ -13,20 +13,25 @@ import (
 )
 
 type PostHandler struct {
-	postUseCase ports.PostUseCase
-	validator   ports.Validator
+	postUseCase    ports.PostUseCase
+	commentUseCase ports.CommentUseCase
+	validator      ports.Validator
 }
 
-func NewPostHandler(postUseCase ports.PostUseCase, validator ports.Validator) *PostHandler {
+func NewPostHandler(postUseCase ports.PostUseCase, commentUseCase ports.CommentUseCase, validator ports.Validator) *PostHandler {
 	if postUseCase == nil {
 		panic("postUseCase is required")
+	}
+	if commentUseCase == nil {
+		panic("commentUseCase is required")
 	}
 	if validator == nil {
 		panic("validator is required")
 	}
 	return &PostHandler{
-		postUseCase: postUseCase,
-		validator:   validator,
+		postUseCase:    postUseCase,
+		commentUseCase: commentUseCase,
+		validator:      validator,
 	}
 }
 
@@ -123,8 +128,13 @@ func (h *PostHandler) GetPostByID(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
 	}
 
+	comments, err := h.commentUseCase.GetCommentsByPostID(c.Request().Context(), id)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
+	}
+
 	commentsResp := make([]*dto.CommentResponse, 0)
-	for _, comment := range post.Comments {
+	for _, comment := range comments {
 		commentsResp = append(commentsResp, &dto.CommentResponse{
 			ID:        comment.ID,
 			Username:  comment.Username,

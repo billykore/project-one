@@ -73,3 +73,12 @@ func (u *commentUseCase) AddComment(ctx context.Context, postID int, username st
 	u.log.Info(ctx, "comment created successfully", "commentID", comment.ID, "postID", postID, "username", username)
 	return nil
 }
+
+func (u *commentUseCase) GetCommentsByPostID(ctx context.Context, postID int) ([]*domain.Comment, error) {
+	comments, err := u.commentRepo.GetByPostID(ctx, postID)
+	if err != nil {
+		u.log.Error(ctx, "failed to get comments for post", "postID", postID, "error", err)
+		return nil, domain.ErrInternalServer
+	}
+	return comments, nil
+}

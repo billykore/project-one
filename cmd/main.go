@@ -73,13 +73,13 @@ func main() {
 	// 4. Initialize UseCase.
 	loginUc := usecase.NewLoginUseCase(userRepo, tokenSvc, userTokenRepo, hasher, lgr)
 	userUc := usecase.NewUserUseCase(userRepo, userTokenRepo, hasher)
-	postUc := usecase.NewPostUseCase(postRepo, commentRepo, lgr)
+	postUc := usecase.NewPostUseCase(postRepo, lgr)
 	followUc := usecase.NewFollowUseCase(followRepo, userRepo)
 	commentUc := usecase.NewCommentUseCase(commentRepo, postRepo, userRepo, lgr)
 
 	// 5. Initialize Handler.
 	userHdl := handler.NewUserHandler(userUc, loginUc, followUc, postUc, val, lgr)
-	postHdl := handler.NewPostHandler(postUc, val)
+	postHdl := handler.NewPostHandler(postUc, commentUc, val)
 	commentHdl := handler.NewCommentHandler(commentUc, val, lgr)
 
 	// 6. Set up Echo.

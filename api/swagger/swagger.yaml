@@ -1,6 +1,6 @@
 basePath: /
 definitions:
-  github_com_billykore_project-one_internal_api_dto.CommentResponse:
+  dto.CommentResponse:
     properties:
       content:
         type: string
@@ -11,7 +11,7 @@ definitions:
       username:
         type: string
     type: object
-  github_com_billykore_project-one_internal_api_dto.CreateCommentRequest:
+  dto.CreateCommentRequest:
     properties:
       content:
         minLength: 1
@@ -23,7 +23,7 @@ definitions:
     - content
     - id
     type: object
-  github_com_billykore_project-one_internal_api_dto.CreatePostRequest:
+  dto.CreatePostRequest:
     properties:
       content:
         minLength: 10
@@ -38,33 +38,33 @@ definitions:
     - content
     - title
     type: object
-  github_com_billykore_project-one_internal_api_dto.CreatePostResponse:
+  dto.CreatePostResponse:
     properties:
       id:
         type: integer
       message:
         type: string
     type: object
-  github_com_billykore_project-one_internal_api_dto.ErrorResponse:
+  dto.ErrorResponse:
     properties:
       error:
         type: string
     type: object
-  github_com_billykore_project-one_internal_api_dto.FollowData:
+  dto.FollowData:
     properties:
       followed_at:
         type: string
       followed_username:
         type: string
     type: object
-  github_com_billykore_project-one_internal_api_dto.FollowResponse:
+  dto.FollowResponse:
     properties:
       data:
-        $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.FollowData'
+        $ref: '#/definitions/dto.FollowData'
       message:
         type: string
     type: object
-  github_com_billykore_project-one_internal_api_dto.FollowerResponse:
+  dto.FollowerResponse:
     properties:
       followed_at:
         type: string
@@ -75,7 +75,7 @@ definitions:
       username:
         type: string
     type: object
-  github_com_billykore_project-one_internal_api_dto.FollowingResponse:
+  dto.FollowingResponse:
     properties:
       followed_at:
         type: string
@@ -86,7 +86,7 @@ definitions:
       username:
         type: string
     type: object
-  github_com_billykore_project-one_internal_api_dto.LoginRequest:
+  dto.LoginRequest:
     properties:
       email:
         type: string
@@ -97,25 +97,25 @@ definitions:
     - email
     - password
     type: object
-  github_com_billykore_project-one_internal_api_dto.LoginResponse:
+  dto.LoginResponse:
     properties:
       message:
         type: string
       username:
         type: string
     type: object
-  github_com_billykore_project-one_internal_api_dto.LogoutResponse:
+  dto.LogoutResponse:
     properties:
       message:
         type: string
     type: object
-  github_com_billykore_project-one_internal_api_dto.PostResponse:
+  dto.PostResponse:
     properties:
       author:
         type: string
       comments:
         items:
-          $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.CommentResponse'
+          $ref: '#/definitions/dto.CommentResponse'
         type: array
       content:
         type: string
@@ -134,7 +134,7 @@ definitions:
       updated_at:
         type: string
     type: object
-  github_com_billykore_project-one_internal_api_dto.RegisterRequest:
+  dto.RegisterRequest:
     properties:
       email:
         type: string
@@ -157,24 +157,24 @@ definitions:
     - password
     - username
     type: object
-  github_com_billykore_project-one_internal_api_dto.RegisterResponse:
+  dto.RegisterResponse:
     properties:
       message:
         type: string
     type: object
-  github_com_billykore_project-one_internal_api_dto.UnfollowResponse:
+  dto.UnfollowResponse:
     properties:
       message:
         type: string
     type: object
-  github_com_billykore_project-one_internal_api_dto.UpdatePostRequest:
+  dto.UpdatePostRequest:
     properties:
       content:
         type: string
       title:
         type: string
     type: object
-  github_com_billykore_project-one_internal_api_dto.UserResponse:
+  dto.UserResponse:
     properties:
       email:
         type: string
@@ -202,26 +202,26 @@ paths:
         name: LoginRequest
         required: true
         schema:
-          $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.LoginRequest'
+          $ref: '#/definitions/dto.LoginRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.LoginResponse'
+            $ref: '#/definitions/dto.LoginResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       summary: Login
       tags:
       - users
@@ -236,15 +236,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.LogoutResponse'
+            $ref: '#/definitions/dto.LogoutResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Logout
@@ -261,22 +261,22 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.RegisterRequest'
+          $ref: '#/definitions/dto.RegisterRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.RegisterResponse'
+            $ref: '#/definitions/dto.RegisterResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       summary: Register
       tags:
       - users
@@ -299,16 +299,16 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.PostResponse'
+              $ref: '#/definitions/dto.PostResponse'
             type: array
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Get user posts
@@ -324,26 +324,26 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.CreatePostRequest'
+          $ref: '#/definitions/dto.CreatePostRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.CreatePostResponse'
+            $ref: '#/definitions/dto.CreatePostResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Create post
@@ -367,19 +367,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Delete post
@@ -399,27 +399,27 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.PostResponse'
+            $ref: '#/definitions/dto.PostResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       summary: Get post by ID
       tags:
       - posts
@@ -438,34 +438,34 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.UpdatePostRequest'
+          $ref: '#/definitions/dto.UpdatePostRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.PostResponse'
+            $ref: '#/definitions/dto.PostResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Update post
@@ -487,7 +487,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.CreateCommentRequest'
+          $ref: '#/definitions/dto.CreateCommentRequest'
       produces:
       - application/json
       responses:
@@ -496,19 +496,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Create comment
@@ -531,19 +531,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.UserResponse'
+            $ref: '#/definitions/dto.UserResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       summary: Get user
       tags:
       - users
@@ -564,19 +564,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.UnfollowResponse'
+            $ref: '#/definitions/dto.UnfollowResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Unfollow a user
@@ -602,20 +602,20 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.FollowerResponse'
+              $ref: '#/definitions/dto.FollowerResponse'
             type: array
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Get followers list
@@ -637,23 +637,23 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.FollowResponse'
+            $ref: '#/definitions/dto.FollowResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Follow a user
@@ -681,20 +681,20 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.FollowingResponse'
+              $ref: '#/definitions/dto.FollowingResponse'
             type: array
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Get following list
@@ -724,16 +724,16 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.PostResponse'
+              $ref: '#/definitions/dto.PostResponse'
             type: array
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+            $ref: '#/definitions/dto.ErrorResponse'
       summary: Get user posts by username
       tags:
       - users

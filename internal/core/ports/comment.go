@@ -18,4 +18,6 @@ type CommentRepository interface {
 type CommentUseCase interface {
 	// AddComment creates a new comment on a post.
 	AddComment(ctx context.Context, postID int, username string, content string) error
+	// GetCommentsByPostID retrieves all comments for a specific post.
+	GetCommentsByPostID(ctx context.Context, postID int) ([]*domain.Comment, error)
 }

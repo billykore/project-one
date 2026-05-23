@@ -34,7 +34,6 @@ func (m *commentModel) toDomain() *domain.Comment {
 		Content:   m.Content,
 		CreatedAt: m.CreatedAt,
 		UpdatedAt: m.UpdatedAt,
-		DeletedAt: m.DeletedAt.Time,
 	}
 }
 

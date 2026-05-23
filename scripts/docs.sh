@@ -12,4 +12,4 @@ if ! command -v swag &> /dev/null; then
 fi
 
 swag fmt
-swag init -g cmd/main.go -o api/swagger --parseDependency --parseInternal
+swag init -g cmd/main.go -o api/swagger

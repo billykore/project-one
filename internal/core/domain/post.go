@@ -19,8 +19,6 @@ type Post struct {
 	Title     string
 	Content   string
 	Tags      []string
-	Comments  []*Comment
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	DeletedAt time.Time
 }
