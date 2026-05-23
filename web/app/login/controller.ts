@@ -56,7 +56,7 @@ export const useLogin = () => {
     setErrors({});
 
     try {
-      const response = await api.post<LoginResponse>("/users/login", {
+      const response = await api.post<LoginResponse>("/api/v1/auth/login", {
         email: formData.email.trim(),
         password: formData.password,
       });

@@ -1,5 +1,13 @@
 basePath: /
 definitions:
+  github_com_billykore_project-one_internal_api_dto.CreateCommentRequest:
+    properties:
+      content:
+        minLength: 1
+        type: string
+    required:
+    - content
+    type: object
   github_com_billykore_project-one_internal_api_dto.CreatePostRequest:
     properties:
       content:
@@ -163,7 +171,97 @@ info:
   title: User Service API
   version: "1.0"
 paths:
-  /posts:
+  /api/v1/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate a user and return access and refresh tokens via HttpOnly
+        cookies.
+      parameters:
+      - description: Login credentials
+        in: body
+        name: LoginRequest
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+      summary: Login
+      tags:
+      - users
+  /api/v1/auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Invalidate the current user's session.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.LogoutResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Logout
+      tags:
+      - users
+  /api/v1/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account.
+      parameters:
+      - description: User registration details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.RegisterResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+      summary: Register
+      tags:
+      - users
+  /api/v1/posts:
     get:
       description: Retrieve all posts for the authenticated user.
       parameters:
@@ -232,7 +330,7 @@ paths:
       summary: Create post
       tags:
       - posts
-  /posts/{id}:
+  /api/v1/posts/{id}:
     delete:
       description: Soft delete a post for the authenticated user.
       parameters:
@@ -354,7 +452,50 @@ paths:
       summary: Update post
       tags:
       - posts
-  /users/{username}:
+  /api/v1/posts/{id}/comments:
+    post:
+      consumes:
+      - application/json
+      description: Create a new comment on a post.
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Comment details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.CreateCommentRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create comment
+      tags:
+      - comments
+  /api/v1/users/{username}:
     get:
       consumes:
       - application/json
@@ -387,7 +528,7 @@ paths:
       summary: Get user
       tags:
       - users
-  /users/{username}/follow:
+  /api/v1/users/{username}/followers:
     delete:
       consumes:
       - application/json
@@ -420,6 +561,45 @@ paths:
       security:
       - BearerAuth: []
       summary: Unfollow a user
+      tags:
+      - users
+    get:
+      consumes:
+      - application/json
+      description: Get the list of users following the currently authenticated user.
+      parameters:
+      - description: Limit for pagination
+        in: query
+        name: limit
+        type: integer
+      - description: Offset for pagination
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.FollowerResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get followers list
       tags:
       - users
     post:
@@ -460,47 +640,7 @@ paths:
       summary: Follow a user
       tags:
       - users
-  /users/{username}/followers:
-    get:
-      consumes:
-      - application/json
-      description: Get the list of users following the currently authenticated user.
-      parameters:
-      - description: Limit for pagination
-        in: query
-        name: limit
-        type: integer
-      - description: Offset for pagination
-        in: query
-        name: offset
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.FollowerResponse'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Get followers list
-      tags:
-      - users
-  /users/{username}/following:
+  /api/v1/users/{username}/following:
     get:
       consumes:
       - application/json
@@ -541,7 +681,7 @@ paths:
       summary: Get following list
       tags:
       - users
-  /users/{username}/posts:
+  /api/v1/users/{username}/posts:
     get:
       description: Retrieve all posts for a specific user by username.
       parameters:
@@ -578,96 +718,6 @@ paths:
       summary: Get user posts by username
       tags:
       - posts
-  /users/login:
-    post:
-      consumes:
-      - application/json
-      description: Authenticate a user and return access and refresh tokens via HttpOnly
-        cookies.
-      parameters:
-      - description: Login credentials
-        in: body
-        name: LoginRequest
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.LoginRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.LoginResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
-      summary: Login
-      tags:
-      - users
-  /users/logout:
-    post:
-      consumes:
-      - application/json
-      description: Invalidate the current user's session.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.LogoutResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Logout
-      tags:
-      - users
-  /users/register:
-    post:
-      consumes:
-      - application/json
-      description: Create a new user account.
-      parameters:
-      - description: User registration details
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.RegisterRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.RegisterResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
-      summary: Register
-      tags:
-      - users
 securityDefinitions:
   BearerAuth:
     in: header

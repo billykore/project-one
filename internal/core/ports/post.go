@@ -12,6 +12,8 @@ type PostRepository interface {
 	Create(ctx context.Context, post *domain.Post) error
 	// GetByID retrieves a post by its ID.
 	GetByID(ctx context.Context, username string, id int) (*domain.Post, error)
+	// GetByIDOnly retrieves a post by its ID without checking owner.
+	GetByIDOnly(ctx context.Context, id int) (*domain.Post, error)
 	// GetUserPosts retrieves all posts for a specific user.
 	GetUserPosts(ctx context.Context, username string, limit, offset int) ([]*domain.Post, error)
 	// Update updates an existing post in the repository.

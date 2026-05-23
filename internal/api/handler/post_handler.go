@@ -43,7 +43,7 @@ func NewPostHandler(postUseCase ports.PostUseCase, validator ports.Validator) *P
 //	@Failure		401		{object}	dto.ErrorResponse
 //	@Failure		500		{object}	dto.ErrorResponse
 //	@Security		BearerAuth
-//	@Router			/posts [post]
+//	@Router			/api/v1/posts [post]
 func (h *PostHandler) CreatePost(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
@@ -96,7 +96,7 @@ func (h *PostHandler) CreatePost(c echo.Context) error {
 //	@Failure		403	{object}	dto.ErrorResponse
 //	@Failure		404	{object}	dto.ErrorResponse
 //	@Failure		500	{object}	dto.ErrorResponse
-//	@Router			/posts/{id} [get]
+//	@Router			/api/v1/posts/{id} [get]
 func (h *PostHandler) GetPostByID(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
@@ -145,7 +145,7 @@ func (h *PostHandler) GetPostByID(c echo.Context) error {
 //	@Failure		401		{object}	dto.ErrorResponse
 //	@Failure		500		{object}	dto.ErrorResponse
 //	@Security		BearerAuth
-//	@Router			/posts [get]
+//	@Router			/api/v1/posts [get]
 func (h *PostHandler) GetPosts(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
@@ -195,7 +195,7 @@ func (h *PostHandler) GetPosts(c echo.Context) error {
 //	@Failure		404		{object}	dto.ErrorResponse
 //	@Failure		500		{object}	dto.ErrorResponse
 //	@Security		BearerAuth
-//	@Router			/posts/{id} [put]
+//	@Router			/api/v1/posts/{id} [put]
 func (h *PostHandler) UpdatePost(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
@@ -246,7 +246,7 @@ func (h *PostHandler) UpdatePost(c echo.Context) error {
 //	@Failure		404	{object}	dto.ErrorResponse
 //	@Failure		500	{object}	dto.ErrorResponse
 //	@Security		BearerAuth
-//	@Router			/posts/{id} [delete]
+//	@Router			/api/v1/posts/{id} [delete]
 func (h *PostHandler) DeletePost(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
@@ -291,7 +291,7 @@ func (h *PostHandler) DeletePost(c echo.Context) error {
 //	@Success		200			{array}		dto.PostResponse
 //	@Failure		400			{object}	dto.ErrorResponse
 //	@Failure		500			{object}	dto.ErrorResponse
-//	@Router			/users/{username}/posts [get]
+//	@Router			/api/v1/users/{username}/posts [get]
 func (h *PostHandler) GetUserPosts(c echo.Context) error {
 	username := c.Param("username")
 

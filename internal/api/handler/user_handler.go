@@ -53,7 +53,7 @@ func NewUserHandler(
 //	@Failure		400			{object}	dto.ErrorResponse
 //	@Failure		404			{object}	dto.ErrorResponse
 //	@Failure		500			{object}	dto.ErrorResponse
-//	@Router			/users/{username} [get]
+//	@Router			/api/v1/users/{username} [get]
 func (h *UserHandler) GetUser(c echo.Context) error {
 	username := c.Param("username")
 	if username == "" {
@@ -84,7 +84,7 @@ func (h *UserHandler) GetUser(c echo.Context) error {
 //	@Failure		400				{object}	dto.ErrorResponse
 //	@Failure		401				{object}	dto.ErrorResponse
 //	@Failure		500				{object}	dto.ErrorResponse
-//	@Router			/users/login [post]
+//	@Router			/api/v1/auth/login [post]
 func (h *UserHandler) HandleLogin(c echo.Context) error {
 	var req dto.LoginRequest
 	if err := c.Bind(&req); err != nil {
@@ -131,7 +131,7 @@ func (h *UserHandler) HandleLogin(c echo.Context) error {
 //	@Failure		401	{object}	dto.ErrorResponse
 //	@Failure		500	{object}	dto.ErrorResponse
 //	@Security		BearerAuth
-//	@Router			/users/logout [post]
+//	@Router			/api/v1/auth/logout [post]
 func (h *UserHandler) HandleLogout(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
@@ -159,7 +159,7 @@ func (h *UserHandler) HandleLogout(c echo.Context) error {
 //	@Success		201		{object}	dto.RegisterResponse
 //	@Failure		400		{object}	dto.ErrorResponse
 //	@Failure		500		{object}	dto.ErrorResponse
-//	@Router			/users/register [post]
+//	@Router			/api/v1/auth/register [post]
 func (h *UserHandler) HandleRegister(c echo.Context) error {
 	var req dto.RegisterRequest
 	if err := c.Bind(&req); err != nil {
@@ -211,7 +211,7 @@ func (h *UserHandler) HandleRegister(c echo.Context) error {
 //	@Failure		404			{object}	dto.ErrorResponse
 //	@Failure		500			{object}	dto.ErrorResponse
 //	@Security		BearerAuth
-//	@Router			/users/{username}/follow [post]
+//	@Router			/api/v1/users/{username}/followers [post]
 func (h *UserHandler) HandleFollow(c echo.Context) error {
 	followerUsername, ok := c.Get("username").(string)
 	if !ok {
@@ -260,7 +260,7 @@ func (h *UserHandler) HandleFollow(c echo.Context) error {
 //	@Failure		401			{object}	dto.ErrorResponse
 //	@Failure		500			{object}	dto.ErrorResponse
 //	@Security		BearerAuth
-//	@Router			/users/{username}/follow [delete]
+//	@Router			/api/v1/users/{username}/followers [delete]
 func (h *UserHandler) HandleUnfollow(c echo.Context) error {
 	followerUsername, ok := c.Get("username").(string)
 	if !ok {
@@ -303,7 +303,7 @@ func (h *UserHandler) HandleUnfollow(c echo.Context) error {
 //	@Failure		401		{object}	dto.ErrorResponse
 //	@Failure		500		{object}	dto.ErrorResponse
 //	@Security		BearerAuth
-//	@Router			/users/{username}/following [get]
+//	@Router			/api/v1/users/{username}/following [get]
 func (h *UserHandler) GetFollowing(c echo.Context) error {
 	followerUsername := c.Param("username")
 
@@ -344,7 +344,7 @@ func (h *UserHandler) GetFollowing(c echo.Context) error {
 //	@Failure		401		{object}	dto.ErrorResponse
 //	@Failure		500		{object}	dto.ErrorResponse
 //	@Security		BearerAuth
-//	@Router			/users/{username}/followers [get]
+//	@Router			/api/v1/users/{username}/followers [get]
 func (h *UserHandler) GetFollowers(c echo.Context) error {
 	followedUsername := c.Param("username")
 

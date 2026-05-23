@@ -124,34 +124,19 @@ func (m *MockUserUseCase) EXPECT() *MockUserUseCaseMockRecorder {
 	return m.recorder
 }
 
-// GetCurrentUser mocks base method.
-func (m *MockUserUseCase) GetCurrentUser(ctx context.Context, username string) (*domain.User, error) {
+// GetUser mocks base method.
+func (m *MockUserUseCase) GetUser(ctx context.Context, username string) (*domain.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCurrentUser", ctx, username)
+	ret := m.ctrl.Call(m, "GetUser", ctx, username)
 	ret0, _ := ret[0].(*domain.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetCurrentUser indicates an expected call of GetCurrentUser.
-func (mr *MockUserUseCaseMockRecorder) GetCurrentUser(ctx, username any) *gomock.Call {
+// GetUser indicates an expected call of GetUser.
+func (mr *MockUserUseCaseMockRecorder) GetUser(ctx, username any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentUser", reflect.TypeOf((*MockUserUseCase)(nil).GetCurrentUser), ctx, username)
-}
-
-// GetUserProfile mocks base method.
-func (m *MockUserUseCase) GetUserProfile(ctx context.Context, username string) (*domain.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserProfile", ctx, username)
-	ret0, _ := ret[0].(*domain.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetUserProfile indicates an expected call of GetUserProfile.
-func (mr *MockUserUseCaseMockRecorder) GetUserProfile(ctx, username any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserProfile", reflect.TypeOf((*MockUserUseCase)(nil).GetUserProfile), ctx, username)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockUserUseCase)(nil).GetUser), ctx, username)
 }
 
 // Register mocks base method.

@@ -84,6 +84,21 @@ func (mr *MockPostRepositoryMockRecorder) GetByID(ctx, username, id any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockPostRepository)(nil).GetByID), ctx, username, id)
 }
 
+// GetByIDOnly mocks base method.
+func (m *MockPostRepository) GetByIDOnly(ctx context.Context, id int) (*domain.Post, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByIDOnly", ctx, id)
+	ret0, _ := ret[0].(*domain.Post)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByIDOnly indicates an expected call of GetByIDOnly.
+func (mr *MockPostRepositoryMockRecorder) GetByIDOnly(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByIDOnly", reflect.TypeOf((*MockPostRepository)(nil).GetByIDOnly), ctx, id)
+}
+
 // GetUserPosts mocks base method.
 func (m *MockPostRepository) GetUserPosts(ctx context.Context, username string, limit, offset int) ([]*domain.Post, error) {
 	m.ctrl.T.Helper()

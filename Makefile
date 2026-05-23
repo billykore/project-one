@@ -11,9 +11,14 @@ BUILD_DIR := ./bin
 build:
 	./scripts/build.sh $(BUILD_DIR)
 
-## run: Build and run the application
+# Default config path
+config ?= ./configs
+
+CONFIG_ARG = -config $(config)
+
+## run: Build and run the application (e.g., make run config="./configs" or make run args="-config ./configs")
 run: build
-	./scripts/run.sh $(BUILD_DIR)
+	./scripts/run.sh $(BUILD_DIR) $(CONFIG_ARG) $(args)
 
 ## test: Run all tests
 test:

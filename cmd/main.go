@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"net/http"
 	"os"
@@ -36,80 +37,138 @@ import (
 // @in							header
 // @name						Authorization
 func main() {
+	configPath := flag.String("config", "./configs", "path to config directory")
+	flag.Parse()
+
 	ctx := context.Background()
 	lgr := logger.New()
 
-	// Load configuration
-	cfg, err := config.Load("./configs")
+	// Load configuration.
+	cfg, err := config.Load(*configPath)
 	if err != nil {
 		lgr.Fatal(ctx, "failed to load config", "error", err)
 	}
 
-	// Set dynamic Swagger host
+	// Set dynamic Swagger host.
 	swagger.SwaggerInfo.Host = fmt.Sprintf("localhost:%d", cfg.App.Port)
 
-	// Construct DSN from config
-	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
-		cfg.Database.Host, cfg.Database.Port, cfg.Database.User,
-		cfg.Database.Password, cfg.Database.DBName, cfg.Database.SSLMode)
-
-	// 1. Initialize DB
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	// 1. Initialize DB.
+	db, err := setupDB(cfg.Database)
 	if err != nil {
 		lgr.Fatal(ctx, "failed to connect to database", "error", err)
 	}
 
-	// 2. Initialize Validator
+	// 2. Initialize Validator.
 	val := validator.New()
 
-	// 3. Initialize Adapters
+	// 3. Initialize Adapters.
 	userRepo := repository.NewUserRepository(db)
 	userTokenRepo := repository.NewUserTokenRepository(db)
 	postRepo := repository.NewPostRepository(db)
 	followRepo := repository.NewFollowRepository(db)
+	commentRepo := repository.NewCommentRepository(db)
 	tokenSvc := token.NewJWTTokenService(cfg.JWT.SecretKey, cfg.JWT.ExpirationTime)
 	hasher := hasher.NewBcryptHasher()
 
-	// 4. Initialize UseCase
+	// 4. Initialize UseCase.
 	loginUc := usecase.NewLoginUseCase(userRepo, tokenSvc, userTokenRepo, hasher, lgr)
 	userUc := usecase.NewUserUseCase(userRepo, userTokenRepo, hasher)
 	postUc := usecase.NewPostUseCase(postRepo, lgr)
 	followUc := usecase.NewFollowUseCase(followRepo, userRepo)
+	commentUc := usecase.NewCommentUseCase(commentRepo, postRepo, userRepo, lgr)
 
-	// 5. Initialize Handler
+	// 5. Initialize Handler.
 	userHdl := handler.NewUserHandler(userUc, loginUc, followUc, val, lgr)
 	postHdl := handler.NewPostHandler(postUc, val)
+	commentHdl := handler.NewCommentHandler(commentUc, val, lgr)
 
-	// 6. Set up Echo
+	// 6. Set up Echo.
 	e := echo.New()
-	e.Use(echomiddleware.RequestLogger())
+	// Add recovery middleware to handle panics gracefully.
 	e.Use(echomiddleware.Recover())
+	// Add CORS middleware.
+	e.Use(echomiddleware.CORSWithConfig(echomiddleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodOptions},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
+	}))
+	// Add unified Zerolog structured request logger middleware.
+	e.Use(echomiddleware.RequestLoggerWithConfig(echomiddleware.RequestLoggerConfig{
+		LogURI:     true,
+		LogStatus:  true,
+		LogLatency: true,
+		LogMethod:  true,
+		LogError:   true,
+		LogValuesFunc: func(c echo.Context, v echomiddleware.RequestLoggerValues) error {
+			if v.Error != nil {
+				lgr.Error(c.Request().Context(), "request error",
+					"uri", v.URI,
+					"status", v.Status,
+					"method", v.Method,
+					"latency", v.Latency,
+					"error", v.Error,
+				)
+			} else {
+				lgr.Info(c.Request().Context(), "request details",
+					"uri", v.URI,
+					"status", v.Status,
+					"method", v.Method,
+					"latency", v.Latency,
+				)
+			}
+			return nil
+		},
+	}))
 
-	// Only expose Swagger UI in non-production environments
+	// Create API V1 Group
+	v1 := e.Group("/api/v1")
+
+	// Only expose Swagger UI in non-production environments.
 	if cfg.App.Env != "production" {
-		e.GET("/swagger/*", echoSwagger.WrapHandler)
+		v1.GET("/swagger/*", echoSwagger.WrapHandler)
 	}
 
-	e.POST("/users/register", userHdl.HandleRegister)
-	e.POST("/users/login", userHdl.HandleLogin)
-	e.POST("/users/logout", userHdl.HandleLogout, middleware.Authorize(tokenSvc))
-	e.GET("/users/:username/following", userHdl.GetFollowing, middleware.Authorize(tokenSvc))
-	e.GET("/users/:username/followers", userHdl.GetFollowers, middleware.Authorize(tokenSvc))
-	e.GET("/users/:username", userHdl.GetUser)
-	e.POST("/users/:username/follow", userHdl.HandleFollow, middleware.Authorize(tokenSvc))
-	e.DELETE("/users/:username/follow", userHdl.HandleUnfollow, middleware.Authorize(tokenSvc))
-	e.GET("/users/:username/posts", postHdl.GetUserPosts)
-	e.POST("/posts", postHdl.CreatePost, middleware.Authorize(tokenSvc))
-	e.GET("/posts", postHdl.GetPosts, middleware.Authorize(tokenSvc))
-	e.GET("/posts/:id", postHdl.GetPostByID, middleware.Authorize(tokenSvc))
-	e.PUT("/posts/:id", postHdl.UpdatePost, middleware.Authorize(tokenSvc))
-	e.DELETE("/posts/:id", postHdl.DeletePost, middleware.Authorize(tokenSvc))
+	// Authentication Group
+	auth := v1.Group("/auth")
+	{
+		auth.POST("/register", userHdl.HandleRegister)
+		auth.POST("/login", userHdl.HandleLogin)
+		auth.POST("/logout", userHdl.HandleLogout, middleware.Authorize(tokenSvc))
+	}
 
-	// Start server
+	// Users Group
+	users := v1.Group("/users")
+	{
+		// User profile endpoints.
+		users.GET("/:username", userHdl.GetUser)
+
+		// Social sub-resources.
+		users.GET("/:username/following", userHdl.GetFollowing, middleware.Authorize(tokenSvc))
+		users.GET("/:username/followers", userHdl.GetFollowers, middleware.Authorize(tokenSvc))
+		users.POST("/:username/followers", userHdl.HandleFollow, middleware.Authorize(tokenSvc))
+		users.DELETE("/:username/followers", userHdl.HandleUnfollow, middleware.Authorize(tokenSvc))
+
+		// User's posts.
+		users.GET("/:username/posts", postHdl.GetUserPosts)
+	}
+
+	// Posts Group
+	posts := v1.Group("/posts", middleware.Authorize(tokenSvc))
+	{
+		posts.POST("", postHdl.CreatePost)
+		posts.GET("", postHdl.GetPosts)
+		posts.GET("/:id", postHdl.GetPostByID)
+		posts.PUT("/:id", postHdl.UpdatePost)
+		posts.DELETE("/:id", postHdl.DeletePost)
+		posts.POST("/:id/comments", commentHdl.CreateComment)
+	}
+
+	// Start server.
 	lgr.Info(ctx, "starting server", "port", cfg.App.Port)
 
 	go func() {
-		if err := e.Start(fmt.Sprintf(":%d", cfg.App.Port)); err != nil && err != http.ErrServerClosed {
+		err := e.Start(fmt.Sprintf(":%d", cfg.App.Port))
+		if err != nil && err != http.ErrServerClosed {
 			lgr.Fatal(ctx, "failed to start server", "error", err)
 		}
 	}()
@@ -128,17 +187,50 @@ func main() {
 		lgr.Fatal(ctx, "server forced to shutdown", "error", err)
 	}
 
-	if err := closeDB(ctx, db, lgr); err != nil {
+	if err := closeDB(db); err != nil {
 		lgr.Error(ctx, "failed to close database connection", "error", err)
 	}
 
 	lgr.Info(ctx, "server exited gracefully")
 }
 
-func closeDB(ctx context.Context, db *gorm.DB, lgr *logger.Logger) error {
+// setupDB initializes the database connection using GORM and configures connection pooling.
+func setupDB(dbConfig config.DatabaseConfig) (*gorm.DB, error) {
+	// Construct DSN from config.
+	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+		dbConfig.Host, dbConfig.Port, dbConfig.User,
+		dbConfig.Password, dbConfig.DBName, dbConfig.SSLMode)
+
+	// Open the database connection using GORM.
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
+	}
+
+	// Configure DB connection pool tuning.
 	sqlDB, err := db.DB()
 	if err != nil {
-		lgr.Error(ctx, "failed to get database", "error", err)
+		return nil, fmt.Errorf("failed to configure connection pool: %w", err)
+	}
+
+	// Set reasonable defaults for connection pooling.
+	// These can be further tuned based on load testing.
+	sqlDB.SetMaxIdleConns(dbConfig.MaxIdleConns)
+	sqlDB.SetMaxOpenConns(dbConfig.MaxOpenConns)
+	sqlDB.SetConnMaxLifetime(dbConfig.ConnMaxLifetime)
+
+	// Verify the database connection is alive.
+	if err := sqlDB.Ping(); err != nil {
+		return nil, fmt.Errorf("failed to ping database: %w", err)
+	}
+
+	return db, nil
+}
+
+// closeDB gracefully closes the database connection.
+func closeDB(db *gorm.DB) error {
+	sqlDB, err := db.DB()
+	if err != nil {
 		return err
 	}
 	return sqlDB.Close()

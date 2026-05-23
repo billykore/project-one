@@ -7,7 +7,7 @@ import { Post } from "./model";
 
 async function getPosts() {
   try {
-    const posts = await apiServer.get<Post[]>("/posts");
+    const posts = await apiServer.get<Post[]>("/api/v1/posts");
     return Array.isArray(posts) ? posts : [];
   } catch (err) {
     if (err instanceof ApiError && err.status === 401) {

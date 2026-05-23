@@ -7,7 +7,7 @@ import { Post } from "../model";
 
 async function getPost(id: string) {
   try {
-    const post = await apiServer.get<Post>(`/posts/${id}`);
+    const post = await apiServer.get<Post>(`/api/v1/posts/${id}`);
     if (!post) {
       notFound();
     }
