@@ -10,6 +10,8 @@ import (
 type CommentRepository interface {
 	// Create saves a new comment to the repository.
 	Create(ctx context.Context, comment *domain.Comment) error
+	// GetByPostID retrieves all comments for a specific post.
+	GetByPostID(ctx context.Context, postID int) ([]*domain.Comment, error)
 }
 
 // CommentUseCase is a driving port for comment-related application logic.

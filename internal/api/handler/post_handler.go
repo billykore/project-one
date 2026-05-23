@@ -43,7 +43,7 @@ func NewPostHandler(postUseCase ports.PostUseCase, validator ports.Validator) *P
 //	@Failure		401		{object}	dto.ErrorResponse
 //	@Failure		500		{object}	dto.ErrorResponse
 //	@Security		BearerAuth
-//	@Router			/api/v1/posts [post]
+//	@Router			/posts [post]
 func (h *PostHandler) CreatePost(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
@@ -96,7 +96,7 @@ func (h *PostHandler) CreatePost(c echo.Context) error {
 //	@Failure		403	{object}	dto.ErrorResponse
 //	@Failure		404	{object}	dto.ErrorResponse
 //	@Failure		500	{object}	dto.ErrorResponse
-//	@Router			/api/v1/posts/{id} [get]
+//	@Router			/posts/{id} [get]
 func (h *PostHandler) GetPostByID(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
@@ -123,11 +123,22 @@ func (h *PostHandler) GetPostByID(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
 	}
 
+	commentsResp := make([]*dto.CommentResponse, 0)
+	for _, comment := range post.Comments {
+		commentsResp = append(commentsResp, &dto.CommentResponse{
+			ID:        comment.ID,
+			Username:  comment.Username,
+			Content:   comment.Content,
+			CreatedAt: comment.CreatedAt,
+		})
+	}
+
 	return c.JSON(http.StatusOK, dto.PostResponse{
 		ID:        post.ID,
 		Title:     post.Title,
 		Content:   post.Content,
 		Tags:      post.Tags,
+		Comments:  commentsResp,
 		CreatedAt: post.CreatedAt,
 		UpdatedAt: post.UpdatedAt,
 	})
@@ -145,7 +156,7 @@ func (h *PostHandler) GetPostByID(c echo.Context) error {
 //	@Failure		401		{object}	dto.ErrorResponse
 //	@Failure		500		{object}	dto.ErrorResponse
 //	@Security		BearerAuth
-//	@Router			/api/v1/posts [get]
+//	@Router			/posts [get]
 func (h *PostHandler) GetPosts(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
@@ -195,7 +206,7 @@ func (h *PostHandler) GetPosts(c echo.Context) error {
 //	@Failure		404		{object}	dto.ErrorResponse
 //	@Failure		500		{object}	dto.ErrorResponse
 //	@Security		BearerAuth
-//	@Router			/api/v1/posts/{id} [put]
+//	@Router			/posts/{id} [put]
 func (h *PostHandler) UpdatePost(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
@@ -246,7 +257,7 @@ func (h *PostHandler) UpdatePost(c echo.Context) error {
 //	@Failure		404	{object}	dto.ErrorResponse
 //	@Failure		500	{object}	dto.ErrorResponse
 //	@Security		BearerAuth
-//	@Router			/api/v1/posts/{id} [delete]
+//	@Router			/posts/{id} [delete]
 func (h *PostHandler) DeletePost(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
@@ -277,51 +288,4 @@ func (h *PostHandler) DeletePost(c echo.Context) error {
 		ID:      id,
 		Message: "Post deleted successfully",
 	})
-}
-
-// GetUserPosts handles the GET /users/:username/posts endpoint.
-//
-//	@Summary		Get user posts by username
-//	@Description	Retrieve all posts for a specific user by username.
-//	@Tags			posts
-//	@Produce		json
-//	@Param			username	path		string	true	"Username"
-//	@Param			limit		query		int		false	"Limit"
-//	@Param			offset		query		int		false	"Offset"
-//	@Success		200			{array}		dto.PostResponse
-//	@Failure		400			{object}	dto.ErrorResponse
-//	@Failure		500			{object}	dto.ErrorResponse
-//	@Router			/api/v1/users/{username}/posts [get]
-func (h *PostHandler) GetUserPosts(c echo.Context) error {
-	username := c.Param("username")
-
-	limit, _ := strconv.Atoi(c.QueryParam("limit"))
-	offset, _ := strconv.Atoi(c.QueryParam("offset"))
-
-	if limit == 0 {
-		limit = 10 // default limit
-	}
-
-	posts, err := h.postUseCase.GetPosts(c.Request().Context(), username, limit, offset)
-	if err != nil {
-		if errors.Is(err, domain.ErrUserNotFound) || errors.Is(err, domain.ErrValidationFailed) {
-			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "User not found"})
-		}
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
-	}
-
-	response := make([]dto.PostResponse, 0, len(posts))
-	for _, p := range posts {
-		response = append(response, dto.PostResponse{
-			ID:        p.ID,
-			Title:     p.Title,
-			Content:   p.Content,
-			Tags:      p.Tags,
-			Author:    username,
-			CreatedAt: p.CreatedAt,
-			UpdatedAt: p.UpdatedAt,
-		})
-	}
-
-	return c.JSON(http.StatusOK, response)
 }

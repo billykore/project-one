@@ -10,21 +10,26 @@ import (
 )
 
 type postUseCase struct {
-	repo ports.PostRepository
-	log  ports.Logger
+	repo        ports.PostRepository
+	commentRepo ports.CommentRepository
+	log         ports.Logger
 }
 
 // NewPostUseCase creates a new instance of ports.PostUseCase.
-func NewPostUseCase(repo ports.PostRepository, log ports.Logger) ports.PostUseCase {
+func NewPostUseCase(repo ports.PostRepository, commentRepo ports.CommentRepository, log ports.Logger) ports.PostUseCase {
 	if repo == nil {
 		panic("NewPostUseCase: repo is required")
+	}
+	if commentRepo == nil {
+		panic("NewPostUseCase: commentRepo is required")
 	}
 	if log == nil {
 		panic("NewPostUseCase: log is required")
 	}
 	return &postUseCase{
-		repo: repo,
-		log:  log,
+		repo:        repo,
+		commentRepo: commentRepo,
+		log:         log,
 	}
 }
 
@@ -58,6 +63,14 @@ func (s *postUseCase) GetPostByID(ctx context.Context, username string, id int) 
 		s.log.Error(ctx, "failed to get post by id", "postID", id, "username", username, "error", err)
 		return nil, domain.ErrInternalServer
 	}
+
+	comments, err := s.commentRepo.GetByPostID(ctx, id)
+	if err != nil {
+		s.log.Error(ctx, "failed to get comments for post", "postID", id, "error", err)
+		return nil, domain.ErrInternalServer
+	}
+
+	post.Comments = comments
 
 	return post, nil
 }

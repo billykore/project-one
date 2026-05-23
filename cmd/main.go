@@ -73,12 +73,12 @@ func main() {
 	// 4. Initialize UseCase.
 	loginUc := usecase.NewLoginUseCase(userRepo, tokenSvc, userTokenRepo, hasher, lgr)
 	userUc := usecase.NewUserUseCase(userRepo, userTokenRepo, hasher)
-	postUc := usecase.NewPostUseCase(postRepo, lgr)
+	postUc := usecase.NewPostUseCase(postRepo, commentRepo, lgr)
 	followUc := usecase.NewFollowUseCase(followRepo, userRepo)
 	commentUc := usecase.NewCommentUseCase(commentRepo, postRepo, userRepo, lgr)
 
 	// 5. Initialize Handler.
-	userHdl := handler.NewUserHandler(userUc, loginUc, followUc, val, lgr)
+	userHdl := handler.NewUserHandler(userUc, loginUc, followUc, postUc, val, lgr)
 	postHdl := handler.NewPostHandler(postUc, val)
 	commentHdl := handler.NewCommentHandler(commentUc, val, lgr)
 
@@ -146,7 +146,7 @@ func main() {
 		users.DELETE("/:username/followers", userHdl.HandleUnfollow, middleware.Authorize(tokenSvc))
 
 		// User's posts.
-		users.GET("/:username/posts", postHdl.GetUserPosts)
+		users.GET("/:username/posts", userHdl.GetUserPosts)
 	}
 
 	// Posts Group

@@ -14,14 +14,15 @@ type CreatePostResponse struct {
 }
 
 type PostResponse struct {
-	ID        int       `json:"id"`
-	Message   string    `json:"message,omitempty"`
-	Title     string    `json:"title,omitempty"`
-	Content   string    `json:"content,omitempty"`
-	Tags      []string  `json:"tags,omitempty"`
-	Author    string    `json:"author,omitempty"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        int                `json:"id"`
+	Message   string             `json:"message,omitempty"`
+	Title     string             `json:"title,omitempty"`
+	Content   string             `json:"content,omitempty"`
+	Tags      []string           `json:"tags,omitempty"`
+	Author    string             `json:"author,omitempty"`
+	Comments  []*CommentResponse `json:"comments,omitempty"`
+	CreatedAt time.Time          `json:"created_at"`
+	UpdatedAt time.Time          `json:"updated_at"`
 }
 
 type UpdatePostRequest struct {

@@ -16,8 +16,9 @@ func TestPostUseCase_CreatePost(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockPostRepository(ctrl)
+	mockCommentRepo := mocks.NewMockCommentRepository(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostUseCase(mockRepo, mockLog)
+	svc := NewPostUseCase(mockRepo, mockCommentRepo, mockLog)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -62,8 +63,9 @@ func TestPostUseCase_GetPostByID(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockPostRepository(ctrl)
+	mockCommentRepo := mocks.NewMockCommentRepository(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostUseCase(mockRepo, mockLog)
+	svc := NewPostUseCase(mockRepo, mockCommentRepo, mockLog)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -71,12 +73,17 @@ func TestPostUseCase_GetPostByID(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		expectedPost := &domain.Post{ID: postID, Username: username, Title: "Test Title"}
+		expectedComments := []*domain.Comment{
+			{ID: 1, PostID: postID, Username: "commenter", Content: "Nice post"},
+		}
 		mockRepo.EXPECT().GetByID(ctx, username, postID).Return(expectedPost, nil)
+		mockCommentRepo.EXPECT().GetByPostID(ctx, postID).Return(expectedComments, nil)
 
 		post, err := svc.GetPostByID(ctx, username, postID)
 
 		assert.NoError(t, err)
 		assert.Equal(t, expectedPost, post)
+		assert.Equal(t, expectedComments, post.Comments)
 	})
 
 	t.Run("not found", func(t *testing.T) {
@@ -100,6 +107,19 @@ func TestPostUseCase_GetPostByID(t *testing.T) {
 		assert.True(t, errors.Is(err, domain.ErrInternalServer))
 	})
 
+	t.Run("comment repository error", func(t *testing.T) {
+		expectedPost := &domain.Post{ID: postID, Username: username, Title: "Test Title"}
+		mockRepo.EXPECT().GetByID(ctx, username, postID).Return(expectedPost, nil)
+		mockCommentRepo.EXPECT().GetByPostID(ctx, postID).Return(nil, errors.New("db error"))
+		mockLog.EXPECT().Error(ctx, "failed to get comments for post", "postID", postID, "error", gomock.Any())
+
+		post, err := svc.GetPostByID(ctx, username, postID)
+
+		assert.Error(t, err)
+		assert.Nil(t, post)
+		assert.True(t, errors.Is(err, domain.ErrInternalServer))
+	})
+
 	t.Run("invalid id", func(t *testing.T) {
 		post, err := svc.GetPostByID(ctx, username, 0)
 
@@ -114,8 +134,9 @@ func TestPostUseCase_GetPosts(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockPostRepository(ctrl)
+	mockCommentRepo := mocks.NewMockCommentRepository(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostUseCase(mockRepo, mockLog)
+	svc := NewPostUseCase(mockRepo, mockCommentRepo, mockLog)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -161,8 +182,9 @@ func TestPostUseCase_UpdatePost(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockPostRepository(ctrl)
+	mockCommentRepo := mocks.NewMockCommentRepository(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostUseCase(mockRepo, mockLog)
+	svc := NewPostUseCase(mockRepo, mockCommentRepo, mockLog)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -252,8 +274,9 @@ func TestPostUseCase_DeletePost(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockPostRepository(ctrl)
+	mockCommentRepo := mocks.NewMockCommentRepository(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostUseCase(mockRepo, mockLog)
+	svc := NewPostUseCase(mockRepo, mockCommentRepo, mockLog)
 
 	ctx := context.Background()
 	username := "testuser"

@@ -1,12 +1,27 @@
 basePath: /
 definitions:
+  github_com_billykore_project-one_internal_api_dto.CommentResponse:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      username:
+        type: string
+    type: object
   github_com_billykore_project-one_internal_api_dto.CreateCommentRequest:
     properties:
       content:
         minLength: 1
         type: string
+      id:
+        minimum: 1
+        type: integer
     required:
     - content
+    - id
     type: object
   github_com_billykore_project-one_internal_api_dto.CreatePostRequest:
     properties:
@@ -98,6 +113,10 @@ definitions:
     properties:
       author:
         type: string
+      comments:
+        items:
+          $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.CommentResponse'
+        type: array
       content:
         type: string
       created_at:
@@ -171,7 +190,7 @@ info:
   title: User Service API
   version: "1.0"
 paths:
-  /api/v1/auth/login:
+  /auth/login:
     post:
       consumes:
       - application/json
@@ -206,7 +225,7 @@ paths:
       summary: Login
       tags:
       - users
-  /api/v1/auth/logout:
+  /auth/logout:
     post:
       consumes:
       - application/json
@@ -231,7 +250,7 @@ paths:
       summary: Logout
       tags:
       - users
-  /api/v1/auth/register:
+  /auth/register:
     post:
       consumes:
       - application/json
@@ -261,7 +280,7 @@ paths:
       summary: Register
       tags:
       - users
-  /api/v1/posts:
+  /posts:
     get:
       description: Retrieve all posts for the authenticated user.
       parameters:
@@ -330,7 +349,7 @@ paths:
       summary: Create post
       tags:
       - posts
-  /api/v1/posts/{id}:
+  /posts/{id}:
     delete:
       description: Soft delete a post for the authenticated user.
       parameters:
@@ -452,7 +471,7 @@ paths:
       summary: Update post
       tags:
       - posts
-  /api/v1/posts/{id}/comments:
+  /posts/{id}/comments:
     post:
       consumes:
       - application/json
@@ -495,7 +514,7 @@ paths:
       summary: Create comment
       tags:
       - comments
-  /api/v1/users/{username}:
+  /users/{username}:
     get:
       consumes:
       - application/json
@@ -528,7 +547,7 @@ paths:
       summary: Get user
       tags:
       - users
-  /api/v1/users/{username}/followers:
+  /users/{username}/followers:
     delete:
       consumes:
       - application/json
@@ -640,7 +659,7 @@ paths:
       summary: Follow a user
       tags:
       - users
-  /api/v1/users/{username}/following:
+  /users/{username}/following:
     get:
       consumes:
       - application/json
@@ -681,7 +700,7 @@ paths:
       summary: Get following list
       tags:
       - users
-  /api/v1/users/{username}/posts:
+  /users/{username}/posts:
     get:
       description: Retrieve all posts for a specific user by username.
       parameters:
@@ -717,7 +736,7 @@ paths:
             $ref: '#/definitions/github_com_billykore_project-one_internal_api_dto.ErrorResponse'
       summary: Get user posts by username
       tags:
-      - posts
+      - users
 securityDefinitions:
   BearerAuth:
     in: header

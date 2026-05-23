@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/auth/login": {
+        "/auth/login": {
             "post": {
                 "description": "Authenticate a user and return access and refresh tokens via HttpOnly cookies.",
                 "consumes": [
@@ -67,7 +67,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/auth/logout": {
+        "/auth/logout": {
             "post": {
                 "security": [
                     {
@@ -107,7 +107,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/auth/register": {
+        "/auth/register": {
             "post": {
                 "description": "Create a new user account.",
                 "consumes": [
@@ -153,7 +153,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/posts": {
+        "/posts": {
             "get": {
                 "security": [
                     {
@@ -262,7 +262,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/posts/{id}": {
+        "/posts/{id}": {
             "get": {
                 "description": "Retrieve a specific post by its ID.",
                 "produces": [
@@ -449,7 +449,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/posts/{id}/comments": {
+        "/posts/{id}/comments": {
             "post": {
                 "security": [
                     {
@@ -516,7 +516,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/users/{username}": {
+        "/users/{username}": {
             "get": {
                 "description": "Get a user by their username.",
                 "consumes": [
@@ -566,7 +566,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/users/{username}/followers": {
+        "/users/{username}/followers": {
             "get": {
                 "security": [
                     {
@@ -741,7 +741,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/users/{username}/following": {
+        "/users/{username}/following": {
             "get": {
                 "security": [
                     {
@@ -804,14 +804,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/users/{username}/posts": {
+        "/users/{username}/posts": {
             "get": {
                 "description": "Retrieve all posts for a specific user by username.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "posts"
+                    "users"
                 ],
                 "summary": "Get user posts by username",
                 "parameters": [
@@ -862,15 +862,37 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "github_com_billykore_project-one_internal_api_dto.CommentResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "github_com_billykore_project-one_internal_api_dto.CreateCommentRequest": {
             "type": "object",
             "required": [
-                "content"
+                "content",
+                "id"
             ],
             "properties": {
                 "content": {
                     "type": "string",
                     "minLength": 1
+                },
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
                 }
             }
         },
@@ -1011,6 +1033,12 @@ const docTemplate = `{
             "properties": {
                 "author": {
                     "type": "string"
+                },
+                "comments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_billykore_project-one_internal_api_dto.CommentResponse"
+                    }
                 },
                 "content": {
                     "type": "string"
