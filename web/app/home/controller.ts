@@ -22,7 +22,7 @@ export const useHome = () => {
           return;
         }
 
-        const userData = await api.get<UserResponse>(`/users/${username}`);
+        const userData = await api.get<UserResponse>(`/api/v1/users/${username}`);
         setState({
           user: userData,
           isLoading: false,
@@ -49,7 +49,7 @@ export const useHome = () => {
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
-      await api.post("/users/logout", {});
+      await api.post("/api/v1/auth/logout", {});
       localStorage.removeItem("username");
       router.push("/login");
     } catch (err) {

@@ -34,7 +34,7 @@ export async function createPostAction(
     : [];
 
   try {
-    await apiServer.post<CreatePostResponse>("/posts", {
+    await apiServer.post<CreatePostResponse>("/api/v1/posts", {
       title,
       content,
       tags: tagArray,

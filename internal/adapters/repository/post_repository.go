@@ -77,6 +77,18 @@ func (r *postRepository) GetByID(ctx context.Context, username string, id int) (
 	return m.toDomain(), nil
 }
 
+func (r *postRepository) GetByIDOnly(ctx context.Context, id int) (*domain.Post, error) {
+	var m postModel
+	err := r.db.WithContext(ctx).First(&m, id).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, domain.ErrPostNotFound
+		}
+		return nil, err
+	}
+	return m.toDomain(), nil
+}
+
 func (r *postRepository) GetUserPosts(ctx context.Context, username string, limit, offset int) ([]*domain.Post, error) {
 	var models []postModel
 	query := r.db.WithContext(ctx).Where("username = ?", username)
