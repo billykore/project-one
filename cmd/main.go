@@ -84,41 +84,9 @@ func main() {
 
 	// 6. Set up Echo.
 	e := echo.New()
-	// Add recovery middleware to handle panics gracefully.
 	e.Use(echomiddleware.Recover())
-	// Add CORS middleware.
-	e.Use(echomiddleware.CORSWithConfig(echomiddleware.CORSConfig{
-		AllowOrigins: []string{"*"},
-		AllowMethods: []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodOptions},
-		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
-	}))
-	// Add unified Zerolog structured request logger middleware.
-	e.Use(echomiddleware.RequestLoggerWithConfig(echomiddleware.RequestLoggerConfig{
-		LogURI:     true,
-		LogStatus:  true,
-		LogLatency: true,
-		LogMethod:  true,
-		LogError:   true,
-		LogValuesFunc: func(c echo.Context, v echomiddleware.RequestLoggerValues) error {
-			if v.Error != nil {
-				lgr.Error(c.Request().Context(), "request error",
-					"uri", v.URI,
-					"status", v.Status,
-					"method", v.Method,
-					"latency", v.Latency,
-					"error", v.Error,
-				)
-			} else {
-				lgr.Info(c.Request().Context(), "request details",
-					"uri", v.URI,
-					"status", v.Status,
-					"method", v.Method,
-					"latency", v.Latency,
-				)
-			}
-			return nil
-		},
-	}))
+	e.Use(echomiddleware.RequestID())
+	e.Use(echomiddleware.RequestLogger())
 
 	// Only expose Swagger UI in non-production environments.
 	if cfg.App.Env != "production" {
