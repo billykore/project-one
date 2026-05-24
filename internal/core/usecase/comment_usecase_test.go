@@ -120,3 +120,133 @@ func TestCommentUseCase_GetCommentsByPostID(t *testing.T) {
 		assert.True(t, errors.Is(err, domain.ErrInternalServer))
 	})
 }
+
+func TestCommentUseCase_EditComment(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockCommentRepo := mocks.NewMockCommentRepository(ctrl)
+	mockPostRepo := mocks.NewMockPostRepository(ctrl)
+	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockLog := mocks.NewMockLogger(ctrl)
+
+	svc := NewCommentUseCase(mockCommentRepo, mockPostRepo, mockUserRepo, mockLog)
+
+	ctx := context.Background()
+	commentID := 1
+	authorUsername := "author"
+	nonAuthorUsername := "hacker"
+	originalContent := "original content"
+	newContent := "updated content"
+
+	t.Run("success", func(t *testing.T) {
+		existingComment := &domain.Comment{
+			ID:       commentID,
+			Username: authorUsername,
+			Content:  originalContent,
+		}
+		mockCommentRepo.EXPECT().
+			GetByID(ctx, commentID).
+			Return(existingComment, nil)
+
+		mockCommentRepo.EXPECT().
+			Update(ctx, gomock.Any()).
+			DoAndReturn(func(ctx context.Context, comment *domain.Comment) error {
+				assert.Equal(t, newContent, comment.Content)
+				return nil
+			})
+
+		mockLog.EXPECT().Info(ctx, "comment updated successfully", "commentID", commentID, "username", authorUsername)
+
+		err := svc.EditComment(ctx, commentID, authorUsername, newContent)
+		assert.NoError(t, err)
+	})
+
+	t.Run("comment not found", func(t *testing.T) {
+		mockCommentRepo.EXPECT().
+			GetByID(ctx, commentID).
+			Return(nil, domain.ErrCommentNotFound)
+
+		err := svc.EditComment(ctx, commentID, authorUsername, newContent)
+		assert.Error(t, err)
+		assert.True(t, errors.Is(err, domain.ErrCommentNotFound))
+	})
+
+	t.Run("comment is nil", func(t *testing.T) {
+		mockCommentRepo.EXPECT().
+			GetByID(ctx, commentID).
+			Return(nil, nil)
+
+		err := svc.EditComment(ctx, commentID, authorUsername, newContent)
+		assert.Error(t, err)
+		assert.True(t, errors.Is(err, domain.ErrCommentNotFound))
+	})
+
+	t.Run("unauthorized", func(t *testing.T) {
+		existingComment := &domain.Comment{
+			ID:       commentID,
+			Username: authorUsername,
+			Content:  originalContent,
+		}
+		mockCommentRepo.EXPECT().
+			GetByID(ctx, commentID).
+			Return(existingComment, nil)
+
+		mockLog.EXPECT().Warn(ctx, "unauthorized attempt to edit comment", "commentID", commentID, "attemptedBy", nonAuthorUsername, "actualAuthor", authorUsername)
+
+		err := svc.EditComment(ctx, commentID, nonAuthorUsername, newContent)
+		assert.Error(t, err)
+		assert.True(t, errors.Is(err, domain.ErrUnauthorized))
+	})
+
+	t.Run("validation failure - empty content", func(t *testing.T) {
+		existingComment := &domain.Comment{
+			ID:       commentID,
+			Username: authorUsername,
+			Content:  originalContent,
+		}
+		mockCommentRepo.EXPECT().
+			GetByID(ctx, commentID).
+			Return(existingComment, nil)
+
+		err := svc.EditComment(ctx, commentID, authorUsername, "")
+		assert.Error(t, err)
+		assert.True(t, errors.Is(err, domain.ErrValidationFailed))
+	})
+
+	t.Run("validation failure - whitespace content", func(t *testing.T) {
+		existingComment := &domain.Comment{
+			ID:       commentID,
+			Username: authorUsername,
+			Content:  originalContent,
+		}
+		mockCommentRepo.EXPECT().
+			GetByID(ctx, commentID).
+			Return(existingComment, nil)
+
+		err := svc.EditComment(ctx, commentID, authorUsername, "   ")
+		assert.Error(t, err)
+		assert.True(t, errors.Is(err, domain.ErrValidationFailed))
+	})
+
+	t.Run("repository update error", func(t *testing.T) {
+		existingComment := &domain.Comment{
+			ID:       commentID,
+			Username: authorUsername,
+			Content:  originalContent,
+		}
+		mockCommentRepo.EXPECT().
+			GetByID(ctx, commentID).
+			Return(existingComment, nil)
+
+		mockCommentRepo.EXPECT().
+			Update(ctx, gomock.Any()).
+			Return(errors.New("db update error"))
+
+		mockLog.EXPECT().Error(ctx, "failed to update comment in repository", "commentID", commentID, "error", gomock.Any())
+
+		err := svc.EditComment(ctx, commentID, authorUsername, newContent)
+		assert.Error(t, err)
+		assert.True(t, errors.Is(err, domain.ErrInternalServer))
+	})
+}

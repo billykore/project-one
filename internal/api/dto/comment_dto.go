@@ -13,3 +13,11 @@ type CommentResponse struct {
 	Content   string    `json:"content"`
 	CreatedAt time.Time `json:"created_at"`
 }
+
+type EditCommentRequest struct {
+	Content string `json:"content" validate:"required,min=1"`
+}
+
+type MessageResponse struct {
+	Message string `json:"message"`
+}

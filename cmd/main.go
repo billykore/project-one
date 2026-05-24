@@ -107,14 +107,17 @@ func main() {
 		// User profile endpoints.
 		users.GET("/:username", userHdl.GetUser)
 
-		// Social sub-resources.
-		users.GET("/:username/following", userHdl.GetFollowing, middleware.Authorize(tokenSvc))
-		users.GET("/:username/followers", userHdl.GetFollowers, middleware.Authorize(tokenSvc))
-		users.POST("/:username/followers", userHdl.HandleFollow, middleware.Authorize(tokenSvc))
-		users.DELETE("/:username/followers", userHdl.HandleUnfollow, middleware.Authorize(tokenSvc))
-
 		// User's posts.
 		users.GET("/:username/posts", userHdl.GetUserPosts)
+
+		// Social sub-resources (authorized).
+		usersAuth := users.Group("", middleware.Authorize(tokenSvc))
+		{
+			usersAuth.GET("/:username/following", userHdl.GetFollowing)
+			usersAuth.GET("/:username/followers", userHdl.GetFollowers)
+			usersAuth.POST("/:username/followers", userHdl.HandleFollow)
+			usersAuth.DELETE("/:username/followers", userHdl.HandleUnfollow)
+		}
 	}
 
 	// Posts Group
@@ -125,7 +128,15 @@ func main() {
 		posts.GET("/:id", postHdl.GetPostByID)
 		posts.PUT("/:id", postHdl.UpdatePost)
 		posts.DELETE("/:id", postHdl.DeletePost)
+
+		// Comments on posts.
 		posts.POST("/:id/comments", commentHdl.CreateComment)
+	}
+
+	// Comments Group
+	comments := e.Group("/comments", middleware.Authorize(tokenSvc))
+	{
+		comments.PUT("/:id", commentHdl.EditComment)
 	}
 
 	// Start server.

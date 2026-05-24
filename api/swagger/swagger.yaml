@@ -45,6 +45,14 @@ definitions:
       message:
         type: string
     type: object
+  dto.EditCommentRequest:
+    properties:
+      content:
+        minLength: 1
+        type: string
+    required:
+    - content
+    type: object
   dto.ErrorResponse:
     properties:
       error:
@@ -105,6 +113,11 @@ definitions:
         type: string
     type: object
   dto.LogoutResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  dto.MessageResponse:
     properties:
       message:
         type: string
@@ -280,6 +293,51 @@ paths:
       summary: Register
       tags:
       - users
+  /comments/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Edit an existing comment by the author.
+      parameters:
+      - description: Comment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Comment update content
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.EditCommentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.MessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Edit comment
+      tags:
+      - comments
   /posts:
     get:
       description: Retrieve all posts for the authenticated user.

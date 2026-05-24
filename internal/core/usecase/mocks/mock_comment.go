@@ -55,6 +55,21 @@ func (mr *MockCommentRepositoryMockRecorder) Create(ctx, comment any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockCommentRepository)(nil).Create), ctx, comment)
 }
 
+// GetByID mocks base method.
+func (m *MockCommentRepository) GetByID(ctx context.Context, id int) (*domain.Comment, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByID", ctx, id)
+	ret0, _ := ret[0].(*domain.Comment)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByID indicates an expected call of GetByID.
+func (mr *MockCommentRepositoryMockRecorder) GetByID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockCommentRepository)(nil).GetByID), ctx, id)
+}
+
 // GetByPostID mocks base method.
 func (m *MockCommentRepository) GetByPostID(ctx context.Context, postID int) ([]*domain.Comment, error) {
 	m.ctrl.T.Helper()
@@ -68,6 +83,20 @@ func (m *MockCommentRepository) GetByPostID(ctx context.Context, postID int) ([]
 func (mr *MockCommentRepositoryMockRecorder) GetByPostID(ctx, postID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByPostID", reflect.TypeOf((*MockCommentRepository)(nil).GetByPostID), ctx, postID)
+}
+
+// Update mocks base method.
+func (m *MockCommentRepository) Update(ctx context.Context, comment *domain.Comment) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, comment)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockCommentRepositoryMockRecorder) Update(ctx, comment any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockCommentRepository)(nil).Update), ctx, comment)
 }
 
 // MockCommentUseCase is a mock of CommentUseCase interface.
@@ -106,6 +135,20 @@ func (m *MockCommentUseCase) AddComment(ctx context.Context, postID int, usernam
 func (mr *MockCommentUseCaseMockRecorder) AddComment(ctx, postID, username, content any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddComment", reflect.TypeOf((*MockCommentUseCase)(nil).AddComment), ctx, postID, username, content)
+}
+
+// EditComment mocks base method.
+func (m *MockCommentUseCase) EditComment(ctx context.Context, id int, username, content string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EditComment", ctx, id, username, content)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EditComment indicates an expected call of EditComment.
+func (mr *MockCommentUseCaseMockRecorder) EditComment(ctx, id, username, content any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EditComment", reflect.TypeOf((*MockCommentUseCase)(nil).EditComment), ctx, id, username, content)
 }
 
 // GetCommentsByPostID mocks base method.

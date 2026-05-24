@@ -117,7 +117,7 @@ func (r *postRepository) Update(ctx context.Context, username string, post *doma
 	if err := r.db.WithContext(ctx).Model(&m).
 		Select("Title", "Content", "Tags").
 		Where("username = ? AND id = ?", username, post.ID).
-		Updates(m).Error; err != nil {
+		Updates(&m).Error; err != nil {
 		return err
 	}
 	post.UpdatedAt = m.UpdatedAt

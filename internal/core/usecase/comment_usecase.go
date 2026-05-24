@@ -82,3 +82,39 @@ func (u *commentUseCase) GetCommentsByPostID(ctx context.Context, postID int) ([
 	}
 	return comments, nil
 }
+
+func (u *commentUseCase) EditComment(ctx context.Context, id int, username string, content string) error {
+	// 1. Fetch current comment
+	comment, err := u.commentRepo.GetByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, domain.ErrCommentNotFound) {
+			return err
+		}
+		u.log.Error(ctx, "failed to fetch comment for edit", "commentID", id, "error", err)
+		return domain.ErrInternalServer
+	}
+	if comment == nil {
+		return domain.ErrCommentNotFound
+	}
+
+	// 2. Authorize: only author can edit
+	if comment.Username != username {
+		u.log.Warn(ctx, "unauthorized attempt to edit comment", "commentID", id, "attemptedBy", username, "actualAuthor", comment.Username)
+		return domain.ErrUnauthorized
+	}
+
+	// 3. Update fields & Validate
+	comment.Content = content
+	if err := comment.Validate(); err != nil {
+		return err
+	}
+
+	// 4. Persist changes
+	if err := u.commentRepo.Update(ctx, comment); err != nil {
+		u.log.Error(ctx, "failed to update comment in repository", "commentID", id, "error", err)
+		return domain.ErrInternalServer
+	}
+
+	u.log.Info(ctx, "comment updated successfully", "commentID", id, "username", username)
+	return nil
+}
