@@ -67,6 +67,7 @@ func main() {
 	postRepo := repository.NewPostRepository(db)
 	followRepo := repository.NewFollowRepository(db)
 	commentRepo := repository.NewCommentRepository(db)
+	likeRepo := repository.NewLikeRepository(db)
 	tokenSvc := token.NewJWTTokenService(cfg.JWT.SecretKey, cfg.JWT.ExpirationTime)
 	hasher := hasher.NewBcryptHasher()
 
@@ -76,11 +77,13 @@ func main() {
 	postUc := usecase.NewPostUseCase(postRepo, lgr)
 	followUc := usecase.NewFollowUseCase(followRepo, userRepo)
 	commentUc := usecase.NewCommentUseCase(commentRepo, postRepo, userRepo, lgr)
+	likeUc := usecase.NewLikeUseCase(likeRepo, postRepo, lgr)
 
 	// 5. Initialize Handler.
 	userHdl := handler.NewUserHandler(userUc, loginUc, followUc, postUc, val, lgr)
 	postHdl := handler.NewPostHandler(postUc, commentUc, val)
 	commentHdl := handler.NewCommentHandler(commentUc, val, lgr)
+	likeHdl := handler.NewLikeHandler(likeUc)
 
 	// 6. Set up Echo.
 	e := echo.New()
@@ -131,6 +134,10 @@ func main() {
 
 		// Comments on posts.
 		posts.POST("/:id/comments", commentHdl.CreateComment)
+
+		// Likes on posts.
+		posts.POST("/:id/likes", likeHdl.ToggleLike)
+		posts.GET("/:id/likes", likeHdl.GetLikeStatus)
 	}
 
 	// Comments Group
