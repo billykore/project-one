@@ -16,6 +16,8 @@ type CommentRepository interface {
 	GetByID(ctx context.Context, id int) (*domain.Comment, error)
 	// Update updates a comment's details.
 	Update(ctx context.Context, comment *domain.Comment) error
+	// Delete removes a comment by its ID from the repository.
+	Delete(ctx context.Context, id int) error
 }
 
 // CommentUseCase is a driving port for comment-related application logic.
@@ -26,4 +28,6 @@ type CommentUseCase interface {
 	GetCommentsByPostID(ctx context.Context, postID int) ([]*domain.Comment, error)
 	// EditComment updates an existing comment's content.
 	EditComment(ctx context.Context, id int, username string, content string) error
+	// DeleteComment deletes a comment if it belongs to the user.
+	DeleteComment(ctx context.Context, id int, username string) error
 }
