@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
@@ -71,4 +72,33 @@ func (r *commentRepository) GetByPostID(ctx context.Context, postID int) ([]*dom
 		comments = append(comments, m.toDomain())
 	}
 	return comments, nil
+}
+
+func (r *commentRepository) GetByID(ctx context.Context, id int) (*domain.Comment, error) {
+	var m commentModel
+	err := r.db.WithContext(ctx).First(&m, id).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, domain.ErrCommentNotFound
+		}
+		return nil, err
+	}
+	return m.toDomain(), nil
+}
+
+func (r *commentRepository) Update(ctx context.Context, comment *domain.Comment) error {
+	var m commentModel
+	m.fromDomain(comment)
+	m.ID = uint(comment.ID)
+
+	// Select only content to avoid side updates (e.g. author changes)
+	err := r.db.WithContext(ctx).Model(&m).
+		Select("Content").
+		Updates(m).Error
+	if err != nil {
+		return err
+	}
+
+	comment.UpdatedAt = m.UpdatedAt
+	return nil
 }

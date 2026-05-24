@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/billykore/project-one/internal/api/dto"
 	"github.com/billykore/project-one/internal/core/domain"
@@ -87,4 +88,58 @@ func (h *CommentHandler) CreateComment(c echo.Context) error {
 	}
 
 	return c.NoContent(http.StatusCreated)
+}
+
+// EditComment handles the PUT /comments/:id endpoint.
+//
+//	@Summary		Edit comment
+//	@Description	Edit an existing comment by the author.
+//	@Tags			comments
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		int						true	"Comment ID"
+//	@Param			request	body		dto.EditCommentRequest	true	"Comment update content"
+//	@Success		200		{object}	dto.MessageResponse
+//	@Failure		400		{object}	dto.ErrorResponse
+//	@Failure		401		{object}	dto.ErrorResponse
+//	@Failure		404		{object}	dto.ErrorResponse
+//	@Failure		500		{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/comments/{id} [put]
+func (h *CommentHandler) EditComment(c echo.Context) error {
+	username, ok := c.Get("username").(string)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
+	}
+
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid request body"})
+	}
+
+	var req dto.EditCommentRequest
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid request body"})
+	}
+
+	if err := h.validator.Validate(req); err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid request body"})
+	}
+
+	err = h.commentUseCase.EditComment(c.Request().Context(), id, username, req.Content)
+	if err != nil {
+		if errors.Is(err, domain.ErrCommentNotFound) {
+			return c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "Comment not found"})
+		}
+		if errors.Is(err, domain.ErrUnauthorized) {
+			return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
+		}
+		if errors.Is(err, domain.ErrValidationFailed) {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid request body"})
+		}
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{"message": "Comment updated succesfully"})
 }

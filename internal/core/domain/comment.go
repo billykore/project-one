@@ -1,10 +1,13 @@
 package domain
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 )
+
+var ErrCommentNotFound = errors.New("comment not found")
 
 // Comment is the core domain entity representing a comment on a post.
 type Comment struct {
