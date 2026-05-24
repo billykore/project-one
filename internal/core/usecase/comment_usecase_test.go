@@ -172,6 +172,16 @@ func TestCommentUseCase_EditComment(t *testing.T) {
 		assert.True(t, errors.Is(err, domain.ErrCommentNotFound))
 	})
 
+	t.Run("comment is nil", func(t *testing.T) {
+		mockCommentRepo.EXPECT().
+			GetByID(ctx, commentID).
+			Return(nil, nil)
+
+		err := svc.EditComment(ctx, commentID, authorUsername, newContent)
+		assert.Error(t, err)
+		assert.True(t, errors.Is(err, domain.ErrCommentNotFound))
+	})
+
 	t.Run("unauthorized", func(t *testing.T) {
 		existingComment := &domain.Comment{
 			ID:       commentID,

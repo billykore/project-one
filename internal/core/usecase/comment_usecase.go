@@ -93,6 +93,9 @@ func (u *commentUseCase) EditComment(ctx context.Context, id int, username strin
 		u.log.Error(ctx, "failed to fetch comment for edit", "commentID", id, "error", err)
 		return domain.ErrInternalServer
 	}
+	if comment == nil {
+		return domain.ErrCommentNotFound
+	}
 
 	// 2. Authorize: only author can edit
 	if comment.Username != username {
