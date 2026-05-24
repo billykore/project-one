@@ -102,19 +102,22 @@ func main() {
 	}
 
 	// Users Group
-	users := e.Group("/users", middleware.Authorize(tokenSvc))
+	users := e.Group("/users")
 	{
 		// User profile endpoints.
 		users.GET("/:username", userHdl.GetUser)
 
-		// Social sub-resources.
-		users.GET("/:username/following", userHdl.GetFollowing)
-		users.GET("/:username/followers", userHdl.GetFollowers)
-		users.POST("/:username/followers", userHdl.HandleFollow)
-		users.DELETE("/:username/followers", userHdl.HandleUnfollow)
-
 		// User's posts.
 		users.GET("/:username/posts", userHdl.GetUserPosts)
+
+		// Social sub-resources (authorized).
+		usersAuth := users.Group("", middleware.Authorize(tokenSvc))
+		{
+			usersAuth.GET("/:username/following", userHdl.GetFollowing)
+			usersAuth.GET("/:username/followers", userHdl.GetFollowers)
+			usersAuth.POST("/:username/followers", userHdl.HandleFollow)
+			usersAuth.DELETE("/:username/followers", userHdl.HandleUnfollow)
+		}
 	}
 
 	// Posts Group

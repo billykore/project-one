@@ -141,5 +141,5 @@ func (h *CommentHandler) EditComment(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
 	}
 
-	return c.JSON(http.StatusOK, map[string]string{"message": "Comment updated succesfully"})
+	return c.JSON(http.StatusOK, dto.MessageResponse{Message: "Comment updated succesfully"})
 }

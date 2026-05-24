@@ -94,7 +94,7 @@ func (r *commentRepository) Update(ctx context.Context, comment *domain.Comment)
 	// Select only content to avoid side updates (e.g. author changes)
 	err := r.db.WithContext(ctx).Model(&m).
 		Select("Content").
-		Updates(m).Error
+		Updates(&m).Error
 	if err != nil {
 		return err
 	}
