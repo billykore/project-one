@@ -250,3 +250,107 @@ func TestCommentUseCase_EditComment(t *testing.T) {
 		assert.True(t, errors.Is(err, domain.ErrInternalServer))
 	})
 }
+
+func TestCommentUseCase_DeleteComment(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockCommentRepo := mocks.NewMockCommentRepository(ctrl)
+	mockPostRepo := mocks.NewMockPostRepository(ctrl)
+	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockLog := mocks.NewMockLogger(ctrl)
+
+	svc := NewCommentUseCase(mockCommentRepo, mockPostRepo, mockUserRepo, mockLog)
+
+	ctx := context.Background()
+	commentID := 1
+	authorUsername := "author"
+	nonAuthorUsername := "hacker"
+
+	t.Run("success", func(t *testing.T) {
+		existingComment := &domain.Comment{
+			ID:       commentID,
+			Username: authorUsername,
+		}
+		mockCommentRepo.EXPECT().
+			GetByID(ctx, commentID).
+			Return(existingComment, nil)
+
+		mockCommentRepo.EXPECT().
+			Delete(ctx, commentID).
+			Return(nil)
+
+		mockLog.EXPECT().Info(ctx, "comment deleted successfully", "commentID", commentID, "username", authorUsername)
+
+		err := svc.DeleteComment(ctx, commentID, authorUsername)
+		assert.NoError(t, err)
+	})
+
+	t.Run("comment not found - error", func(t *testing.T) {
+		mockCommentRepo.EXPECT().
+			GetByID(ctx, commentID).
+			Return(nil, domain.ErrCommentNotFound)
+
+		err := svc.DeleteComment(ctx, commentID, authorUsername)
+		assert.Error(t, err)
+		assert.True(t, errors.Is(err, domain.ErrCommentNotFound))
+	})
+
+	t.Run("comment not found - other repo error", func(t *testing.T) {
+		mockCommentRepo.EXPECT().
+			GetByID(ctx, commentID).
+			Return(nil, errors.New("db error"))
+
+		mockLog.EXPECT().Error(ctx, "failed to fetch comment for delete", "commentID", commentID, "error", gomock.Any())
+
+		err := svc.DeleteComment(ctx, commentID, authorUsername)
+		assert.Error(t, err)
+		assert.True(t, errors.Is(err, domain.ErrInternalServer))
+	})
+
+	t.Run("comment is nil", func(t *testing.T) {
+		mockCommentRepo.EXPECT().
+			GetByID(ctx, commentID).
+			Return(nil, nil)
+
+		err := svc.DeleteComment(ctx, commentID, authorUsername)
+		assert.Error(t, err)
+		assert.True(t, errors.Is(err, domain.ErrCommentNotFound))
+	})
+
+	t.Run("unauthorized", func(t *testing.T) {
+		existingComment := &domain.Comment{
+			ID:       commentID,
+			Username: authorUsername,
+		}
+		mockCommentRepo.EXPECT().
+			GetByID(ctx, commentID).
+			Return(existingComment, nil)
+
+		mockLog.EXPECT().Warn(ctx, "unauthorized attempt to delete comment", "commentID", commentID, "attemptedBy", nonAuthorUsername, "actualAuthor", authorUsername)
+
+		err := svc.DeleteComment(ctx, commentID, nonAuthorUsername)
+		assert.Error(t, err)
+		assert.True(t, errors.Is(err, domain.ErrUnauthorized))
+	})
+
+	t.Run("repository delete error", func(t *testing.T) {
+		existingComment := &domain.Comment{
+			ID:       commentID,
+			Username: authorUsername,
+		}
+		mockCommentRepo.EXPECT().
+			GetByID(ctx, commentID).
+			Return(existingComment, nil)
+
+		mockCommentRepo.EXPECT().
+			Delete(ctx, commentID).
+			Return(errors.New("db delete error"))
+
+		mockLog.EXPECT().Error(ctx, "failed to delete comment in repository", "commentID", commentID, "error", gomock.Any())
+
+		err := svc.DeleteComment(ctx, commentID, authorUsername)
+		assert.Error(t, err)
+		assert.True(t, errors.Is(err, domain.ErrInternalServer))
+	})
+}

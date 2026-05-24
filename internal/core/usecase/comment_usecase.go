@@ -118,3 +118,33 @@ func (u *commentUseCase) EditComment(ctx context.Context, id int, username strin
 	u.log.Info(ctx, "comment updated successfully", "commentID", id, "username", username)
 	return nil
 }
+
+func (u *commentUseCase) DeleteComment(ctx context.Context, id int, username string) error {
+	// 1. Fetch current comment
+	comment, err := u.commentRepo.GetByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, domain.ErrCommentNotFound) {
+			return err
+		}
+		u.log.Error(ctx, "failed to fetch comment for delete", "commentID", id, "error", err)
+		return domain.ErrInternalServer
+	}
+	if comment == nil {
+		return domain.ErrCommentNotFound
+	}
+
+	// 2. Authorize: only author can delete
+	if comment.Username != username {
+		u.log.Warn(ctx, "unauthorized attempt to delete comment", "commentID", id, "attemptedBy", username, "actualAuthor", comment.Username)
+		return domain.ErrUnauthorized
+	}
+
+	// 3. Persist deletion
+	if err := u.commentRepo.Delete(ctx, id); err != nil {
+		u.log.Error(ctx, "failed to delete comment in repository", "commentID", id, "error", err)
+		return domain.ErrInternalServer
+	}
+
+	u.log.Info(ctx, "comment deleted successfully", "commentID", id, "username", username)
+	return nil
+}

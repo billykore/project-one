@@ -55,6 +55,20 @@ func (mr *MockCommentRepositoryMockRecorder) Create(ctx, comment any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockCommentRepository)(nil).Create), ctx, comment)
 }
 
+// Delete mocks base method.
+func (m *MockCommentRepository) Delete(ctx context.Context, id int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockCommentRepositoryMockRecorder) Delete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockCommentRepository)(nil).Delete), ctx, id)
+}
+
 // GetByID mocks base method.
 func (m *MockCommentRepository) GetByID(ctx context.Context, id int) (*domain.Comment, error) {
 	m.ctrl.T.Helper()
@@ -135,6 +149,20 @@ func (m *MockCommentUseCase) AddComment(ctx context.Context, postID int, usernam
 func (mr *MockCommentUseCaseMockRecorder) AddComment(ctx, postID, username, content any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddComment", reflect.TypeOf((*MockCommentUseCase)(nil).AddComment), ctx, postID, username, content)
+}
+
+// DeleteComment mocks base method.
+func (m *MockCommentUseCase) DeleteComment(ctx context.Context, id int, username string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteComment", ctx, id, username)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteComment indicates an expected call of DeleteComment.
+func (mr *MockCommentUseCaseMockRecorder) DeleteComment(ctx, id, username any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteComment", reflect.TypeOf((*MockCommentUseCase)(nil).DeleteComment), ctx, id, username)
 }
 
 // EditComment mocks base method.
