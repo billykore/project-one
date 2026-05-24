@@ -151,6 +151,7 @@ func (h *CommentHandler) EditComment(c echo.Context) error {
 //	@Tags			comments
 //	@Param			id	path		int	true	"Comment ID"
 //	@Success		200	{object}	dto.MessageResponse
+//	@Failure		400	{object}	dto.ErrorResponse
 //	@Failure		401	{object}	dto.ErrorResponse
 //	@Failure		404	{object}	dto.ErrorResponse
 //	@Failure		500	{object}	dto.ErrorResponse
@@ -164,8 +165,8 @@ func (h *CommentHandler) DeleteComment(c echo.Context) error {
 
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid request body"})
+	if err != nil || id <= 0 {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid comment ID"})
 	}
 
 	err = h.commentUseCase.DeleteComment(c.Request().Context(), id, username)
@@ -179,5 +180,5 @@ func (h *CommentHandler) DeleteComment(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
 	}
 
-	return c.JSON(http.StatusOK, dto.MessageResponse{Message: "Comment deleted succesfuly"})
+	return c.JSON(http.StatusOK, dto.MessageResponse{Message: "Comment deleted successfully"})
 }
