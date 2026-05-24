@@ -102,3 +102,11 @@ func (r *commentRepository) Update(ctx context.Context, comment *domain.Comment)
 	comment.UpdatedAt = m.UpdatedAt
 	return nil
 }
+
+func (r *commentRepository) Delete(ctx context.Context, id int) error {
+	err := r.db.WithContext(ctx).Delete(&commentModel{}, id).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}

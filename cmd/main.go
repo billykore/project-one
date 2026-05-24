@@ -137,6 +137,7 @@ func main() {
 	comments := e.Group("/comments", middleware.Authorize(tokenSvc))
 	{
 		comments.PUT("/:id", commentHdl.EditComment)
+		comments.DELETE("/:id", commentHdl.DeleteComment)
 	}
 
 	// Start server.
