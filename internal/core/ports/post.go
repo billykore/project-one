@@ -20,6 +20,8 @@ type PostRepository interface {
 	Update(ctx context.Context, username string, post *domain.Post) error
 	// Delete removes a post from the repository.
 	Delete(ctx context.Context, username string, id int) error
+	// IncrementLikeCount increments or decrements the like count for a post.
+	IncrementLikeCount(ctx context.Context, id int, increment int) error
 }
 
 // PostUseCase is a driving port for post-related application logic.

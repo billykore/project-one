@@ -128,6 +128,20 @@ func (mr *MockPostRepositoryMockRecorder) Update(ctx, username, post any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockPostRepository)(nil).Update), ctx, username, post)
 }
 
+// IncrementLikeCount mocks base method.
+func (m *MockPostRepository) IncrementLikeCount(ctx context.Context, id int, increment int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IncrementLikeCount", ctx, id, increment)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// IncrementLikeCount indicates an expected call of IncrementLikeCount.
+func (mr *MockPostRepositoryMockRecorder) IncrementLikeCount(ctx, id, increment any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IncrementLikeCount", reflect.TypeOf((*MockPostRepository)(nil).IncrementLikeCount), ctx, id, increment)
+}
+
 // MockPostUseCase is a mock of PostUseCase interface.
 type MockPostUseCase struct {
 	ctrl     *gomock.Controller

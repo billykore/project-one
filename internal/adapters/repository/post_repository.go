@@ -12,10 +12,11 @@ import (
 
 type postModel struct {
 	gorm.Model
-	Username string         `gorm:"size:255;notNull"`
-	Title    string         `gorm:"size:255;notNull"`
-	Content  string         `gorm:"type:text;notNull"`
-	Tags     pq.StringArray `gorm:"type:text[]"`
+	Username  string         `gorm:"size:255;notNull"`
+	Title     string         `gorm:"size:255;notNull"`
+	Content   string         `gorm:"type:text;notNull"`
+	Tags      pq.StringArray `gorm:"type:text[]"`
+	LikeCount int            `gorm:"default:0"`
 }
 
 func (m *postModel) TableName() string {
@@ -27,6 +28,7 @@ func (m *postModel) fromDomain(p *domain.Post) {
 	m.Title = p.Title
 	m.Content = p.Content
 	m.Tags = pq.StringArray(p.Tags)
+	m.LikeCount = p.LikeCount
 }
 
 func (m *postModel) toDomain() *domain.Post {
@@ -36,6 +38,7 @@ func (m *postModel) toDomain() *domain.Post {
 		Title:     m.Title,
 		Content:   m.Content,
 		Tags:      []string(m.Tags),
+		LikeCount: m.LikeCount,
 		CreatedAt: m.CreatedAt,
 		UpdatedAt: m.UpdatedAt,
 	}
@@ -129,4 +132,11 @@ func (r *postRepository) Delete(ctx context.Context, username string, id int) er
 		return err
 	}
 	return nil
+}
+
+func (r *postRepository) IncrementLikeCount(ctx context.Context, id int, increment int) error {
+	return r.db.WithContext(ctx).
+		Model(&postModel{}).
+		Where("id = ?", id).
+		UpdateColumn("like_count", gorm.Expr("like_count + ?", increment)).Error
 }

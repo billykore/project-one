@@ -186,7 +186,9 @@ func setupDB(dbConfig config.DatabaseConfig) (*gorm.DB, error) {
 		dbConfig.Password, dbConfig.DBName, dbConfig.SSLMode)
 
 	// Open the database connection using GORM.
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		TranslateError: true,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
