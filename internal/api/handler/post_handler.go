@@ -355,10 +355,10 @@ func (h *PostHandler) CreateComment(c echo.Context) error {
 	return c.NoContent(http.StatusCreated)
 }
 
-// ToggleLike handles the POST /posts/:id/likes endpoint.
+// LikePost handles the POST /posts/:id/likes endpoint.
 //
-//	@Summary		Toggle like
-//	@Description	Toggle like status on a post. Like if not yet liked, unlike if already liked.
+//	@Summary		Like post
+//	@Description	Like a post idempotently.
 //	@Tags			posts,likes
 //	@Produce		json
 //	@Param			id	path		int	true	"Post ID"
@@ -369,7 +369,7 @@ func (h *PostHandler) CreateComment(c echo.Context) error {
 //	@Failure		500	{object}	dto.ErrorResponse
 //	@Security		BearerAuth
 //	@Router			/posts/{id}/likes [post]
-func (h *PostHandler) ToggleLike(c echo.Context) error {
+func (h *PostHandler) LikePost(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
 		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
@@ -381,7 +381,7 @@ func (h *PostHandler) ToggleLike(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Post ID must be a number"})
 	}
 
-	liked, likeCount, err := h.postUseCase.ToggleLike(c.Request().Context(), id, username)
+	likeCount, err := h.postUseCase.LikePost(c.Request().Context(), id, username)
 	if err != nil {
 		if errors.Is(err, domain.ErrPostNotFound) {
 			return c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "Post not found"})
@@ -393,7 +393,50 @@ func (h *PostHandler) ToggleLike(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, dto.LikeResponse{
-		Liked:     liked,
+		Liked:     true,
+		LikeCount: likeCount,
+	})
+}
+
+// UnlikePost handles the DELETE /posts/:id/likes endpoint.
+//
+//	@Summary		Unlike post
+//	@Description	Unlike a post idempotently.
+//	@Tags			posts,likes
+//	@Produce		json
+//	@Param			id	path		int	true	"Post ID"
+//	@Success		200	{object}	dto.LikeResponse
+//	@Failure		400	{object}	dto.ErrorResponse
+//	@Failure		401	{object}	dto.ErrorResponse
+//	@Failure		404	{object}	dto.ErrorResponse
+//	@Failure		500	{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/posts/{id}/likes [delete]
+func (h *PostHandler) UnlikePost(c echo.Context) error {
+	username, ok := c.Get("username").(string)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
+	}
+
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Post ID must be a number"})
+	}
+
+	likeCount, err := h.postUseCase.UnlikePost(c.Request().Context(), id, username)
+	if err != nil {
+		if errors.Is(err, domain.ErrPostNotFound) {
+			return c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "Post not found"})
+		}
+		if errors.Is(err, domain.ErrInvalidPost) {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Post ID must be integer and not 0"})
+		}
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
+	}
+
+	return c.JSON(http.StatusOK, dto.LikeResponse{
+		Liked:     false,
 		LikeCount: likeCount,
 	})
 }

@@ -615,6 +615,43 @@ paths:
       - posts
       - comments
   /posts/{id}/likes:
+    delete:
+      description: Unlike a post idempotently.
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.LikeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Unlike post
+      tags:
+      - posts
+      - likes
     get:
       description: Get the like count and the current user's like status for a post.
       parameters:
@@ -653,8 +690,7 @@ paths:
       - posts
       - likes
     post:
-      description: Toggle like status on a post. Like if not yet liked, unlike if
-        already liked.
+      description: Like a post idempotently.
       parameters:
       - description: Post ID
         in: path
@@ -686,7 +722,7 @@ paths:
             $ref: '#/definitions/dto.ErrorResponse'
       security:
       - BearerAuth: []
-      summary: Toggle like
+      summary: Like post
       tags:
       - posts
       - likes

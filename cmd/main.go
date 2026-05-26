@@ -134,7 +134,8 @@ func main() {
 		posts.POST("/:id/comments", postHdl.CreateComment)
 
 		// Likes on posts.
-		posts.POST("/:id/likes", postHdl.ToggleLike)
+		posts.POST("/:id/likes", postHdl.LikePost)
+		posts.DELETE("/:id/likes", postHdl.UnlikePost)
 		posts.GET("/:id/likes", postHdl.GetLikeStatus)
 	}
 

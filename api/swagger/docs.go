@@ -704,7 +704,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Toggle like status on a post. Like if not yet liked, unlike if already liked.",
+                "description": "Like a post idempotently.",
                 "produces": [
                     "application/json"
                 ],
@@ -712,7 +712,64 @@ const docTemplate = `{
                     "posts",
                     "likes"
                 ],
-                "summary": "Toggle like",
+                "summary": "Like post",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.LikeResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Unlike a post idempotently.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "posts",
+                    "likes"
+                ],
+                "summary": "Unlike post",
                 "parameters": [
                     {
                         "type": "integer",
