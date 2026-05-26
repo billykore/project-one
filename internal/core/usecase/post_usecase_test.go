@@ -17,7 +17,8 @@ func TestPostUseCase_CreatePost(t *testing.T) {
 
 	mockRepo := mocks.NewMockPostRepository(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostUseCase(mockRepo, mockLog)
+	mockLikeRepo := mocks.NewMockLikeRepository(ctrl)
+	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockLog)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -62,8 +63,9 @@ func TestPostUseCase_GetPostByID(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockPostRepository(ctrl)
+	mockLikeRepo := mocks.NewMockLikeRepository(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostUseCase(mockRepo, mockLog)
+	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockLog)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -114,8 +116,9 @@ func TestPostUseCase_GetPosts(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockPostRepository(ctrl)
+	mockLikeRepo := mocks.NewMockLikeRepository(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostUseCase(mockRepo, mockLog)
+	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockLog)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -161,8 +164,9 @@ func TestPostUseCase_UpdatePost(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockPostRepository(ctrl)
+	mockLikeRepo := mocks.NewMockLikeRepository(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostUseCase(mockRepo, mockLog)
+	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockLog)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -252,8 +256,9 @@ func TestPostUseCase_DeletePost(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockPostRepository(ctrl)
+	mockLikeRepo := mocks.NewMockLikeRepository(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostUseCase(mockRepo, mockLog)
+	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockLog)
 
 	ctx := context.Background()
 	username := "testuser"

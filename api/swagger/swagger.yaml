@@ -612,6 +612,7 @@ paths:
       - BearerAuth: []
       summary: Create comment
       tags:
+      - posts
       - comments
   /posts/{id}/likes:
     get:
@@ -649,6 +650,7 @@ paths:
       - BearerAuth: []
       summary: Get like status
       tags:
+      - posts
       - likes
     post:
       description: Toggle like status on a post. Like if not yet liked, unlike if
@@ -686,6 +688,7 @@ paths:
       - BearerAuth: []
       summary: Toggle like
       tags:
+      - posts
       - likes
   /users/{username}:
     get:

@@ -581,6 +581,7 @@
                     "application/json"
                 ],
                 "tags": [
+                    "posts",
                     "comments"
                 ],
                 "summary": "Create comment",
@@ -645,6 +646,7 @@
                     "application/json"
                 ],
                 "tags": [
+                    "posts",
                     "likes"
                 ],
                 "summary": "Get like status",
@@ -701,6 +703,7 @@
                     "application/json"
                 ],
                 "tags": [
+                    "posts",
                     "likes"
                 ],
                 "summary": "Toggle like",

@@ -74,16 +74,14 @@ func main() {
 	// 4. Initialize UseCase.
 	loginUc := usecase.NewLoginUseCase(userRepo, tokenSvc, userTokenRepo, hasher, lgr)
 	userUc := usecase.NewUserUseCase(userRepo, userTokenRepo, hasher)
-	postUc := usecase.NewPostUseCase(postRepo, lgr)
+	postUc := usecase.NewPostUseCase(postRepo, likeRepo, lgr)
 	followUc := usecase.NewFollowUseCase(followRepo, userRepo)
 	commentUc := usecase.NewCommentUseCase(commentRepo, postRepo, userRepo, lgr)
-	likeUc := usecase.NewLikeUseCase(likeRepo, postRepo, lgr)
 
 	// 5. Initialize Handler.
 	userHdl := handler.NewUserHandler(userUc, loginUc, followUc, postUc, val, lgr)
 	postHdl := handler.NewPostHandler(postUc, commentUc, val)
 	commentHdl := handler.NewCommentHandler(commentUc, val, lgr)
-	likeHdl := handler.NewLikeHandler(likeUc)
 
 	// 6. Set up Echo.
 	e := echo.New()
@@ -133,11 +131,11 @@ func main() {
 		posts.DELETE("/:id", postHdl.DeletePost)
 
 		// Comments on posts.
-		posts.POST("/:id/comments", commentHdl.CreateComment)
+		posts.POST("/:id/comments", postHdl.CreateComment)
 
 		// Likes on posts.
-		posts.POST("/:id/likes", likeHdl.ToggleLike)
-		posts.GET("/:id/likes", likeHdl.GetLikeStatus)
+		posts.POST("/:id/likes", postHdl.ToggleLike)
+		posts.GET("/:id/likes", postHdl.GetLikeStatus)
 	}
 
 	// Comments Group

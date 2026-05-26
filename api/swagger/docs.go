@@ -587,6 +587,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
+                    "posts",
                     "comments"
                 ],
                 "summary": "Create comment",
@@ -651,6 +652,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
+                    "posts",
                     "likes"
                 ],
                 "summary": "Get like status",
@@ -707,6 +709,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
+                    "posts",
                     "likes"
                 ],
                 "summary": "Toggle like",
