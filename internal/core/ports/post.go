@@ -36,4 +36,10 @@ type PostUseCase interface {
 	UpdatePost(ctx context.Context, username string, postID int, title, content string) (*domain.Post, error)
 	// DeletePost removes a post for a specific user.
 	DeletePost(ctx context.Context, username string, postID int) error
+	// LikePost likes a post by the given username. If already liked, it behaves idempotently.
+	LikePost(ctx context.Context, postID int, username string) (likeCount int, err error)
+	// UnlikePost unlikes a post by the given username. If not liked, it behaves idempotently.
+	UnlikePost(ctx context.Context, postID int, username string) (likeCount int, err error)
+	// GetLikeStatus retrieves the like status and total like count for a given post ID and username.
+	GetLikeStatus(ctx context.Context, postID int, username string) (liked bool, likeCount int, err error)
 }

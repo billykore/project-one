@@ -114,6 +114,20 @@ func (mr *MockPostRepositoryMockRecorder) GetUserPosts(ctx, username, limit, off
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserPosts", reflect.TypeOf((*MockPostRepository)(nil).GetUserPosts), ctx, username, limit, offset)
 }
 
+// IncrementLikeCount mocks base method.
+func (m *MockPostRepository) IncrementLikeCount(ctx context.Context, id, increment int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IncrementLikeCount", ctx, id, increment)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// IncrementLikeCount indicates an expected call of IncrementLikeCount.
+func (mr *MockPostRepositoryMockRecorder) IncrementLikeCount(ctx, id, increment any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IncrementLikeCount", reflect.TypeOf((*MockPostRepository)(nil).IncrementLikeCount), ctx, id, increment)
+}
+
 // Update mocks base method.
 func (m *MockPostRepository) Update(ctx context.Context, username string, post *domain.Post) error {
 	m.ctrl.T.Helper()
@@ -126,20 +140,6 @@ func (m *MockPostRepository) Update(ctx context.Context, username string, post *
 func (mr *MockPostRepositoryMockRecorder) Update(ctx, username, post any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockPostRepository)(nil).Update), ctx, username, post)
-}
-
-// IncrementLikeCount mocks base method.
-func (m *MockPostRepository) IncrementLikeCount(ctx context.Context, id int, increment int) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IncrementLikeCount", ctx, id, increment)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// IncrementLikeCount indicates an expected call of IncrementLikeCount.
-func (mr *MockPostRepositoryMockRecorder) IncrementLikeCount(ctx, id, increment any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IncrementLikeCount", reflect.TypeOf((*MockPostRepository)(nil).IncrementLikeCount), ctx, id, increment)
 }
 
 // MockPostUseCase is a mock of PostUseCase interface.
@@ -195,6 +195,22 @@ func (mr *MockPostUseCaseMockRecorder) DeletePost(ctx, username, postID any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePost", reflect.TypeOf((*MockPostUseCase)(nil).DeletePost), ctx, username, postID)
 }
 
+// GetLikeStatus mocks base method.
+func (m *MockPostUseCase) GetLikeStatus(ctx context.Context, postID int, username string) (bool, int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLikeStatus", ctx, postID, username)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(int)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetLikeStatus indicates an expected call of GetLikeStatus.
+func (mr *MockPostUseCaseMockRecorder) GetLikeStatus(ctx, postID, username any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLikeStatus", reflect.TypeOf((*MockPostUseCase)(nil).GetLikeStatus), ctx, postID, username)
+}
+
 // GetPostByID mocks base method.
 func (m *MockPostUseCase) GetPostByID(ctx context.Context, username string, postID int) (*domain.Post, error) {
 	m.ctrl.T.Helper()
@@ -223,6 +239,36 @@ func (m *MockPostUseCase) GetPosts(ctx context.Context, username string, limit, 
 func (mr *MockPostUseCaseMockRecorder) GetPosts(ctx, username, limit, offset any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPosts", reflect.TypeOf((*MockPostUseCase)(nil).GetPosts), ctx, username, limit, offset)
+}
+
+// LikePost mocks base method.
+func (m *MockPostUseCase) LikePost(ctx context.Context, postID int, username string) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LikePost", ctx, postID, username)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// LikePost indicates an expected call of LikePost.
+func (mr *MockPostUseCaseMockRecorder) LikePost(ctx, postID, username any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LikePost", reflect.TypeOf((*MockPostUseCase)(nil).LikePost), ctx, postID, username)
+}
+
+// UnlikePost mocks base method.
+func (m *MockPostUseCase) UnlikePost(ctx context.Context, postID int, username string) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UnlikePost", ctx, postID, username)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UnlikePost indicates an expected call of UnlikePost.
+func (mr *MockPostUseCaseMockRecorder) UnlikePost(ctx, postID, username any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnlikePost", reflect.TypeOf((*MockPostUseCase)(nil).UnlikePost), ctx, postID, username)
 }
 
 // UpdatePost mocks base method.
