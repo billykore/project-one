@@ -290,3 +290,48 @@ func TestPostUseCase_DeletePost(t *testing.T) {
 		assert.True(t, errors.Is(err, domain.ErrInvalidPost))
 	})
 }
+
+func TestPostUseCase_LikePost(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mocks.NewMockPostRepository(ctrl)
+	mockLikeRepo := mocks.NewMockLikeRepository(ctrl)
+	mockLog := mocks.NewMockLogger(ctrl)
+	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockLog)
+
+	ctx := context.Background()
+	username := "testuser"
+	postID := 1
+
+	t.Run("success - new like", func(t *testing.T) {
+		mockLikeRepo.EXPECT().Exists(ctx, postID, username).Return(false, nil)
+		mockLikeRepo.EXPECT().Create(ctx, gomock.Any()).Return(nil)
+		mockRepo.EXPECT().IncrementLikeCount(ctx, postID, 1).Return(nil)
+		mockRepo.EXPECT().GetByIDOnly(ctx, postID).Return(&domain.Post{ID: postID, LikeCount: 5}, nil)
+		mockLog.EXPECT().Info(ctx, "post liked successfully", "postID", postID, "username", username)
+
+		count, err := svc.LikePost(ctx, postID, username)
+		assert.NoError(t, err)
+		assert.Equal(t, 5, count)
+	})
+
+	t.Run("success idempotent - already liked", func(t *testing.T) {
+		mockLikeRepo.EXPECT().Exists(ctx, postID, username).Return(true, nil)
+		mockRepo.EXPECT().GetByIDOnly(ctx, postID).Return(&domain.Post{ID: postID, LikeCount: 4}, nil)
+
+		count, err := svc.LikePost(ctx, postID, username)
+		assert.NoError(t, err)
+		assert.Equal(t, 4, count)
+	})
+
+	t.Run("post not found", func(t *testing.T) {
+		mockLikeRepo.EXPECT().Exists(ctx, postID, username).Return(false, nil)
+		mockLikeRepo.EXPECT().Create(ctx, gomock.Any()).Return(domain.ErrPostNotFound)
+
+		count, err := svc.LikePost(ctx, postID, username)
+		assert.Error(t, err)
+		assert.True(t, errors.Is(err, domain.ErrPostNotFound))
+		assert.Equal(t, 0, count)
+	})
+}

@@ -123,60 +123,66 @@ func (uc *postUseCase) DeletePost(ctx context.Context, username string, postID i
 	return nil
 }
 
-func (uc *postUseCase) ToggleLike(ctx context.Context, postID int, username string) (bool, int, error) {
-	// 1. Validate input.
+func (uc *postUseCase) LikePost(ctx context.Context, postID int, username string) (int, error) {
 	if postID <= 0 {
-		return false, 0, domain.ErrInvalidPost
+		return 0, domain.ErrInvalidPost
 	}
 	if username == "" {
-		return false, 0, domain.ErrValidationFailed
+		return 0, domain.ErrValidationFailed
 	}
 
-	// 2. Try to create the like.
-	var liked bool
+	exists, err := uc.likeRepo.Exists(ctx, postID, username)
+	if err != nil {
+		uc.log.Error(ctx, "failed to check if like exists", "postID", postID, "username", username, "error", err)
+		return 0, domain.ErrInternalServer
+	}
+
+	if exists {
+		post, err := uc.postRepo.GetByIDOnly(ctx, postID)
+		if err != nil {
+			uc.log.Error(ctx, "failed to get post for like count", "postID", postID, "error", err)
+			return 0, domain.ErrInternalServer
+		}
+		return post.LikeCount, nil
+	}
+
 	like := &domain.Like{
 		PostID:   postID,
 		Username: username,
 	}
 	if err := uc.likeRepo.Create(ctx, like); err != nil {
+		if errors.Is(err, domain.ErrPostNotFound) {
+			return 0, err
+		}
 		if errors.Is(err, domain.ErrAlreadyLiked) {
-			// Already liked, so unlike
-			if err := uc.likeRepo.Delete(ctx, postID, username); err != nil {
-				if errors.Is(err, domain.ErrNotLiked) {
-					return false, 0, err
-				}
-				uc.log.Error(ctx, "failed to delete like", "postID", postID, "username", username, "error", err)
-				return false, 0, domain.ErrInternalServer
+			post, err := uc.postRepo.GetByIDOnly(ctx, postID)
+			if err != nil {
+				return 0, domain.ErrInternalServer
 			}
-			liked = false
-			// Decrement count
-			if err := uc.postRepo.IncrementLikeCount(ctx, postID, -1); err != nil {
-				uc.log.Error(ctx, "failed to decrement like count", "postID", postID, "error", err)
-			}
-			uc.log.Info(ctx, "post unliked successfully", "postID", postID, "username", username)
-		} else if errors.Is(err, domain.ErrPostNotFound) {
-			return false, 0, err
-		} else {
-			uc.log.Error(ctx, "failed to create like", "postID", postID, "username", username, "error", err)
-			return false, 0, domain.ErrInternalServer
+			return post.LikeCount, nil
 		}
-	} else {
-		// Like created successfully
-		liked = true
-		if err := uc.postRepo.IncrementLikeCount(ctx, postID, 1); err != nil {
-			uc.log.Error(ctx, "failed to increment like count", "postID", postID, "error", err)
-		}
-		uc.log.Info(ctx, "post liked successfully", "postID", postID, "username", username)
+		uc.log.Error(ctx, "failed to create like", "postID", postID, "username", username, "error", err)
+		return 0, domain.ErrInternalServer
 	}
 
-	// 3. Get updated count from post.
+	if err := uc.postRepo.IncrementLikeCount(ctx, postID, 1); err != nil {
+		uc.log.Error(ctx, "failed to increment like count", "postID", postID, "error", err)
+		return 0, domain.ErrInternalServer
+	}
+
+	uc.log.Info(ctx, "post liked successfully", "postID", postID, "username", username)
+
 	post, err := uc.postRepo.GetByIDOnly(ctx, postID)
 	if err != nil {
 		uc.log.Error(ctx, "failed to get post for like count", "postID", postID, "error", err)
-		return false, 0, domain.ErrInternalServer
+		return 0, domain.ErrInternalServer
 	}
 
-	return liked, post.LikeCount, nil
+	return post.LikeCount, nil
+}
+
+func (uc *postUseCase) UnlikePost(ctx context.Context, postID int, username string) (int, error) {
+	return 0, nil
 }
 
 func (uc *postUseCase) GetLikeStatus(ctx context.Context, postID int, username string) (bool, int, error) {
