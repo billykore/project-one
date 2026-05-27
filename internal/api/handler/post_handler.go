@@ -148,6 +148,7 @@ func (h *PostHandler) GetPostByID(c echo.Context) error {
 		Title:     post.Title,
 		Content:   post.Content,
 		Tags:      post.Tags,
+		Author:    post.Username,
 		LikeCount: post.LikeCount,
 		Comments:  commentsResp,
 		CreatedAt: post.CreatedAt,
@@ -193,6 +194,7 @@ func (h *PostHandler) GetPosts(c echo.Context) error {
 			Title:     p.Title,
 			Content:   p.Content,
 			Tags:      p.Tags,
+			Author:    p.Username,
 			CreatedAt: p.CreatedAt,
 			UpdatedAt: p.UpdatedAt,
 		})

@@ -4,6 +4,8 @@ import { redirect, notFound } from "next/navigation";
 import { apiServer } from "@/lib/api-server";
 import { ApiError } from "@/lib/api";
 import { Post } from "../model";
+import PostInteractionSection from "@/components/posts/PostInteractionSection";
+import DeletePostButton from "@/components/posts/DeletePostButton";
 
 async function getPost(id: string) {
   try {
@@ -50,6 +52,7 @@ export default async function PostDetailPage({ params }: PageProps) {
           <span className="text-xl font-bold text-gray-900 dark:text-zinc-50">Post Details</span>
         </div>
         <div className="flex items-center gap-4">
+          <DeletePostButton postId={post.id} postAuthor={post.author} />
           <Link
             href="/posts"
             className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
@@ -98,6 +101,8 @@ export default async function PostDetailPage({ params }: PageProps) {
               {post.content}
             </p>
           </div>
+
+          <PostInteractionSection postId={post.id} initialComments={post.comments} />
         </article>
       </main>
 

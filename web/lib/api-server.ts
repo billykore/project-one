@@ -30,8 +30,9 @@ export const apiServer = {
   get: async <T>(endpoint: string): Promise<T> => {
     const cookieStore = await cookies();
     const cookieString = cookieStore.toString();
+    const cleanEndpoint = endpoint.replace(/^\/api\/v1/, "");
 
-    const response = await fetch(`${BASE_URL}${endpoint}`, {
+    const response = await fetch(`${BASE_URL}${cleanEndpoint}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -45,8 +46,9 @@ export const apiServer = {
   post: async <T>(endpoint: string, data: unknown): Promise<T> => {
     const cookieStore = await cookies();
     const cookieString = cookieStore.toString();
+    const cleanEndpoint = endpoint.replace(/^\/api\/v1/, "");
 
-    const response = await fetch(`${BASE_URL}${endpoint}`, {
+    const response = await fetch(`${BASE_URL}${cleanEndpoint}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
