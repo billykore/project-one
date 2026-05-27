@@ -1,17 +1,21 @@
 "use client";
 
+/* eslint-disable react-hooks/set-state-in-effect */
+
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { api, ApiError } from "@/lib/api";
 
 interface DeletePostButtonProps {
   postId: number;
+  postAuthor?: string;
   redirectPath?: string;
   onSuccess?: () => void;
 }
 
 export default function DeletePostButton({
   postId,
+  postAuthor,
   redirectPath = "/posts",
   onSuccess,
 }: DeletePostButtonProps) {
@@ -19,6 +23,14 @@ export default function DeletePostButton({
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<string | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    const username = localStorage.getItem("username");
+    setCurrentUser(username);
+    setIsLoaded(true);
+  }, []);
 
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const cancelBtnRef = useRef<HTMLButtonElement | null>(null);
@@ -71,6 +83,11 @@ export default function DeletePostButton({
       setIsDeleting(false);
     }
   };
+
+  if (postAuthor) {
+    if (!isLoaded) return null;
+    if (currentUser !== postAuthor) return null;
+  }
 
   return (
     <>
