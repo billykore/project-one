@@ -20,6 +20,7 @@ type PostResponse struct {
 	Content   string             `json:"content,omitempty"`
 	Tags      []string           `json:"tags,omitempty"`
 	Author    string             `json:"author,omitempty"`
+	LikeCount int                `json:"like_count"`
 	Comments  []*CommentResponse `json:"comments,omitempty"`
 	CreatedAt time.Time          `json:"created_at"`
 	UpdatedAt time.Time          `json:"updated_at"`
