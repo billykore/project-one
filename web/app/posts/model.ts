@@ -6,4 +6,13 @@ export interface Post {
   created_at: string;
   updated_at: string;
   message?: string;
+  comments?: Comment[];
 }
+
+export interface Comment {
+  id: number;
+  username: string;
+  content: string;
+  created_at: string;
+}
+

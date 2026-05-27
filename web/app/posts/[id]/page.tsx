@@ -4,6 +4,7 @@ import { redirect, notFound } from "next/navigation";
 import { apiServer } from "@/lib/api-server";
 import { ApiError } from "@/lib/api";
 import { Post } from "../model";
+import PostInteractionSection from "@/components/posts/PostInteractionSection";
 
 async function getPost(id: string) {
   try {
@@ -98,6 +99,8 @@ export default async function PostDetailPage({ params }: PageProps) {
               {post.content}
             </p>
           </div>
+
+          <PostInteractionSection postId={post.id} initialComments={post.comments} />
         </article>
       </main>
 
