@@ -58,4 +58,29 @@ export const api = {
 
     return handleResponse<T>(response);
   },
+
+  put: async <T>(endpoint: string, data: unknown): Promise<T> => {
+    const response = await fetch(`${BASE_URL}${endpoint}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+      credentials: "include",
+    });
+
+    return handleResponse<T>(response);
+  },
+
+  delete: async <T>(endpoint: string): Promise<T> => {
+    const response = await fetch(`${BASE_URL}${endpoint}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    });
+
+    return handleResponse<T>(response);
+  },
 };
