@@ -52,7 +52,7 @@ export default async function PostDetailPage({ params }: PageProps) {
           <span className="text-xl font-bold text-gray-900 dark:text-zinc-50">Post Details</span>
         </div>
         <div className="flex items-center gap-4">
-          <DeletePostButton postId={post.id} />
+          <DeletePostButton postId={post.id} postAuthor={post.author} />
           <Link
             href="/posts"
             className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
