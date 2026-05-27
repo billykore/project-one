@@ -10,11 +10,13 @@ export async function createPostAction(
   prevState: FormState,
   formData: FormData
 ): Promise<FormState> {
+  console.log("createPostAction FormData Entries:", Array.from(formData.entries()));
   const validatedFields = createPostSchema.safeParse({
     title: formData.get("title"),
     content: formData.get("content"),
     tags: formData.get("tags"),
   });
+  console.log("createPostAction validation:", validatedFields);
 
   if (!validatedFields.success) {
     return {

@@ -64,24 +64,33 @@ export default function PostInteractionSection({
     }
   };
 
+  const fetchComments = async () => {
+    try {
+      const res = await api.get<{ comments?: Comment[] }>(`/api/v1/posts/${postId}`);
+      if (res && res.comments) {
+        setComments(res.comments);
+      }
+    } catch (e) {
+      console.error("Failed to fetch comments", e);
+    }
+  };
+
   const handleAddComment = async (content: string) => {
-    const response = await api.post<Comment>(`/api/v1/posts/${postId}/comments`, {
+    await api.post(`/api/v1/posts/${postId}/comments`, {
       content,
       id: postId,
     });
-    setComments((prev) => [...prev, response]);
+    await fetchComments();
   };
 
   const handleEditComment = async (commentId: number, content: string) => {
     await api.put(`/api/v1/comments/${commentId}`, { content });
-    setComments((prev) =>
-      prev.map((c) => (c.id === commentId ? { ...c, content } : c))
-    );
+    await fetchComments();
   };
 
   const handleDeleteComment = async (commentId: number) => {
     await api.delete(`/api/v1/comments/${commentId}`);
-    setComments((prev) => prev.filter((c) => c.id !== commentId));
+    await fetchComments();
   };
 
   return (
