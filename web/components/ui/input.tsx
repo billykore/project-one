@@ -37,7 +37,7 @@ export const InputField: React.FC<InputFieldProps> = ({
           error ? "border-red-500" : "border-gray-300"
         } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
         placeholder={placeholder}
-        defaultValue={value}
+        value={value}
         onChange={onChange}
         aria-invalid={error ? "true" : "false"}
         aria-describedby={error ? `${id}-error` : undefined}
