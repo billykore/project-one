@@ -54,7 +54,7 @@ export default function FollowListModal({ isOpen, onClose, title, users }: Follo
               <div key={u.username} className="flex justify-between items-center py-3">
                 <div>
                   <Link
-                    href={`/users/${u.username}`}
+                    href={`/${u.username}`}
                     onClick={onClose}
                     className="font-medium text-indigo-600 hover:underline dark:text-indigo-400 transition-colors"
                   >
