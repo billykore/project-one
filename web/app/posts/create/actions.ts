@@ -20,7 +20,6 @@ export async function createPostAction(
 
   if (!validatedFields.success) {
     return {
-      errors: validatedFields.error.flatten().fieldErrors,
       message: "Missing Fields. Failed to Create Post.",
     };
   }
