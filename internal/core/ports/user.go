@@ -16,6 +16,8 @@ type UserRepository interface {
 	GetUserByID(ctx context.Context, id int) (*domain.User, error)
 	// CreateUser saves a new user to the repository.
 	CreateUser(ctx context.Context, user *domain.User) error
+	// UpdateUser updates user details, including password if changed.
+	UpdateUser(ctx context.Context, user *domain.User) error
 }
 
 // UserUseCase is a driving port for user-related application logic.
@@ -24,4 +26,6 @@ type UserUseCase interface {
 	Register(ctx context.Context, user *domain.User) error
 	// GetUser retrieves a user by their username.
 	GetUser(ctx context.Context, username string) (*domain.User, error)
+	// ChangePassword verifies the old password and sets the new password.
+	ChangePassword(ctx context.Context, username, oldPassword, newPassword string) error
 }
