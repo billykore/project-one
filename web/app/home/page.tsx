@@ -5,6 +5,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useHome } from "./controller";
 
+function getInitials(name: string): string {
+  if (!name) return "?";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
 export default function HomePage() {
   const { 
     user, 
@@ -58,9 +65,10 @@ export default function HomePage() {
           {user?.username && (
             <Link
               href={`/${user.username}`}
-              className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-700 transition-colors"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-xs font-extrabold uppercase tracking-wider text-white shadow-sm hover:opacity-90 hover:scale-105 active:scale-95 transition-all duration-150 border border-white/20 dark:border-zinc-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              title="View Profile"
             >
-              My Profile
+              {getInitials(user.name)}
             </Link>
           )}
           <Link
