@@ -114,6 +114,7 @@ func main() {
 		// Social sub-resources (authorized).
 		usersAuth := users.Group("", middleware.Authorize(tokenSvc))
 		{
+			usersAuth.PUT("/password", userHdl.HandleChangePassword)
 			usersAuth.GET("/:username/following", userHdl.GetFollowing)
 			usersAuth.GET("/:username/followers", userHdl.GetFollowers)
 			usersAuth.POST("/:username/followers", userHdl.HandleFollow)

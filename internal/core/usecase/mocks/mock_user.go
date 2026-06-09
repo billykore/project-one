@@ -100,6 +100,20 @@ func (mr *MockUserRepositoryMockRecorder) GetUserByUsername(ctx, username any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByUsername", reflect.TypeOf((*MockUserRepository)(nil).GetUserByUsername), ctx, username)
 }
 
+// UpdateUser mocks base method.
+func (m *MockUserRepository) UpdateUser(ctx context.Context, user *domain.User) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUser", ctx, user)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateUser indicates an expected call of UpdateUser.
+func (mr *MockUserRepositoryMockRecorder) UpdateUser(ctx, user any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockUserRepository)(nil).UpdateUser), ctx, user)
+}
+
 // MockUserUseCase is a mock of UserUseCase interface.
 type MockUserUseCase struct {
 	ctrl     *gomock.Controller
@@ -122,6 +136,20 @@ func NewMockUserUseCase(ctrl *gomock.Controller) *MockUserUseCase {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockUserUseCase) EXPECT() *MockUserUseCaseMockRecorder {
 	return m.recorder
+}
+
+// ChangePassword mocks base method.
+func (m *MockUserUseCase) ChangePassword(ctx context.Context, username, oldPassword, newPassword string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChangePassword", ctx, username, oldPassword, newPassword)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChangePassword indicates an expected call of ChangePassword.
+func (mr *MockUserUseCaseMockRecorder) ChangePassword(ctx, username, oldPassword, newPassword any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangePassword", reflect.TypeOf((*MockUserUseCase)(nil).ChangePassword), ctx, username, oldPassword, newPassword)
 }
 
 // GetUser mocks base method.

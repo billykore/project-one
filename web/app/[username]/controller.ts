@@ -1,0 +1,129 @@
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { api, ApiError } from "@/lib/api";
+import { changePasswordSchema, ChangePasswordFormData, FollowerInfo } from "./model";
+
+export function useProfileController(profileUsername: string, initialFollowers: FollowerInfo[], initialFollowing: FollowerInfo[]) {
+  const router = useRouter();
+  const [loggedInUsername, setLoggedInUsername] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("username");
+      if (stored) {
+        const timer = setTimeout(() => {
+          setLoggedInUsername(stored);
+        }, 0);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, []);
+
+  const isOwner = loggedInUsername === profileUsername;
+
+  // Follow states
+  const [followers, setFollowers] = useState<FollowerInfo[]>(initialFollowers);
+  const [following] = useState<FollowerInfo[]>(initialFollowing);
+  const [isFollowingPending, setIsFollowingPending] = useState(false);
+
+  const isFollowing = followers.some((f) => f.username === loggedInUsername);
+
+  // Form states
+  const [pwdForm, setPwdForm] = useState<ChangePasswordFormData>({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmittingPwd, setIsSubmittingPwd] = useState(false);
+  const [pwdSuccess, setPwdSuccess] = useState<string | null>(null);
+
+  const handleFollowToggle = async () => {
+    if (!loggedInUsername) {
+      router.push("/login");
+      return;
+    }
+    setIsFollowingPending(true);
+    try {
+      if (isFollowing) {
+        await api.delete(`/api/v1/users/${profileUsername}/followers`);
+        setFollowers((prev) => prev.filter((f) => f.username !== loggedInUsername));
+      } else {
+        await api.post(`/api/v1/users/${profileUsername}/followers`, {});
+        setFollowers((prev) => [
+          ...prev,
+          {
+            username: loggedInUsername,
+            name: "You",
+            followed_at: new Date().toISOString(),
+            is_mutual: false,
+          },
+        ]);
+      }
+      router.refresh();
+    } catch (err) {
+      console.error("Failed to toggle follow status:", err);
+    } finally {
+      setIsFollowingPending(false);
+    }
+  };
+
+  const handlePwdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setPwdForm((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  const submitPasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPwdSuccess(null);
+
+    // Client-side Zod validation
+    const result = changePasswordSchema.safeParse(pwdForm);
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.issues.forEach((issue) => {
+        const path = issue.path[0] as string;
+        fieldErrors[path] = issue.message;
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+
+    setIsSubmittingPwd(true);
+    try {
+      await api.put("/api/v1/users/password", {
+        old_password: pwdForm.oldPassword,
+        new_password: pwdForm.newPassword,
+      });
+      setPwdSuccess("Password updated successfully!");
+      setPwdForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
+      setErrors({});
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setErrors({ general: err.message });
+      } else {
+        setErrors({ general: "An unexpected error occurred" });
+      }
+    } finally {
+      setIsSubmittingPwd(false);
+    }
+  };
+
+  return {
+    isOwner,
+    isFollowing,
+    isFollowingPending,
+    handleFollowToggle,
+    pwdForm,
+    errors,
+    isSubmittingPwd,
+    pwdSuccess,
+    handlePwdChange,
+    submitPasswordChange,
+    followers,
+    following,
+  };
+}

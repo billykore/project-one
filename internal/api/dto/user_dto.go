@@ -82,3 +82,9 @@ type FollowData struct {
 	FollowedUsername string `json:"followed_username"`
 	FollowedAt       string `json:"followed_at"`
 }
+
+// ChangePasswordRequest is the request body for updating the password.
+type ChangePasswordRequest struct {
+	OldPassword string `json:"old_password" validate:"required,min=8"`
+	NewPassword string `json:"new_password" validate:"required,min=8"`
+}

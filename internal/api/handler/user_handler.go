@@ -447,3 +447,47 @@ func (h *UserHandler) GetUserPosts(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response)
 }
+
+// HandleChangePassword handles the PUT /users/password endpoint.
+//
+//	@Summary		Change password
+//	@Description	Verify old password and update to new password.
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		dto.ChangePasswordRequest	true	"Change password request details"
+//	@Success		200		{object}	dto.MessageResponse
+//	@Failure		400		{object}	dto.ErrorResponse
+//	@Failure		401		{object}	dto.ErrorResponse
+//	@Failure		500		{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/users/password [put]
+func (h *UserHandler) HandleChangePassword(c echo.Context) error {
+	username, ok := c.Get("username").(string)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
+	}
+
+	var req dto.ChangePasswordRequest
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid request body"})
+	}
+
+	if err := h.validator.Validate(req); err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+	}
+
+	err := h.userUseCase.ChangePassword(c.Request().Context(), username, req.OldPassword, req.NewPassword)
+	if err != nil {
+		if errors.Is(err, domain.ErrInvalidCredentials) {
+			return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Invalid current password"})
+		}
+		if errors.Is(err, domain.ErrValidationFailed) {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+		}
+		h.log.Error(c.Request().Context(), "failed to change password", "username", username, "error", err)
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Internal server error"})
+	}
+
+	return c.JSON(http.StatusOK, dto.MessageResponse{Message: "Password updated successfully"})
+}

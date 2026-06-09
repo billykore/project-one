@@ -73,3 +73,36 @@ func (s *userUseCase) Register(ctx context.Context, user *domain.User) error {
 	}
 	return nil
 }
+
+func (s *userUseCase) ChangePassword(ctx context.Context, username, oldPassword, newPassword string) error {
+	// 1. Retrieve user
+	user, err := s.userRepo.GetUserByUsername(ctx, username)
+	if err != nil {
+		return fmt.Errorf("get user by username: %w", err)
+	}
+
+	// 2. Validate current password
+	if err := s.hasher.Compare(ctx, oldPassword, user.Password); err != nil {
+		return domain.ErrInvalidCredentials
+	}
+
+	// 3. Validate new password length (minimum 8 characters)
+	if len(newPassword) < 8 {
+		return fmt.Errorf("%w: password must be at least 8 characters", domain.ErrValidationFailed)
+	}
+
+	// 4. Hash new password
+	hashedPassword, err := s.hasher.Hash(ctx, newPassword)
+	if err != nil {
+		return fmt.Errorf("hash password: %w", err)
+	}
+
+	user.Password = hashedPassword
+
+	// 5. Save to repository
+	if err := s.userRepo.UpdateUser(ctx, user); err != nil {
+		return fmt.Errorf("update user: %w", err)
+	}
+
+	return nil
+}

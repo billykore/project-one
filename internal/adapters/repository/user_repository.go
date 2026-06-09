@@ -101,3 +101,18 @@ func (r *userRepository) CreateUser(ctx context.Context, user *domain.User) erro
 	user.ID = m.ID
 	return nil
 }
+
+func (r *userRepository) UpdateUser(ctx context.Context, user *domain.User) error {
+	m := userModel{
+		ID:        user.ID,
+		Email:     user.Email,
+		Username:  user.Username,
+		Password:  user.Password,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: time.Now(),
+	}
+	// Save updates all fields by primary key
+	return r.db.WithContext(ctx).Save(&m).Error
+}

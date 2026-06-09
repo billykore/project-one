@@ -5,6 +5,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useHome } from "./controller";
 
+function getInitials(name: string): string {
+  if (!name) return "?";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
 export default function HomePage() {
   const { 
     user, 
@@ -55,6 +62,15 @@ export default function HomePage() {
           priority
         />
         <div className="flex items-center gap-4">
+          {user?.username && (
+            <Link
+              href={`/${user.username}`}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-xs font-extrabold uppercase tracking-wider text-white shadow-sm hover:opacity-90 hover:scale-105 active:scale-95 transition-all duration-150 border border-white/20 dark:border-zinc-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              title="View Profile"
+            >
+              {getInitials(user.name)}
+            </Link>
+          )}
           <Link
             href="/posts/create"
             className="rounded-md border border-indigo-600 px-4 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-indigo-400 dark:hover:bg-indigo-950"
@@ -63,7 +79,7 @@ export default function HomePage() {
           </Link>
           <button
             onClick={openLogoutModal}
-            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 cursor-pointer"
           >
             Logout
           </button>
@@ -89,6 +105,14 @@ export default function HomePage() {
                 This is your personal dashboard. From here you can manage your account and access all the features of our platform.
               </p>
               <div className="mt-6 flex flex-wrap gap-4 justify-center sm:justify-start">
+                {user?.username && (
+                  <Link
+                    href={`/${user.username}`}
+                    className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+                  >
+                    View Your Profile
+                  </Link>
+                )}
                 <Link
                   href="/posts"
                   className="rounded-md bg-white border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-700 transition-colors"
@@ -97,7 +121,7 @@ export default function HomePage() {
                 </Link>
                 <Link
                   href="/posts/create"
-                  className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+                  className={user?.username ? "rounded-md bg-white border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-700 transition-colors" : "rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"}
                 >
                   Create a New Post
                 </Link>
