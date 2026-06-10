@@ -4,7 +4,9 @@ import "time"
 
 // Follow represents a follower-followed relationship between users.
 type Follow struct {
+	FollowerID       int
 	FollowerUsername string
+	FollowedID       int
 	FollowedUsername string
 	CreatedAt        time.Time
 }
