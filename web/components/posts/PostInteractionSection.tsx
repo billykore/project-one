@@ -10,15 +10,19 @@ import { Comment } from "@/app/posts/model";
 interface PostInteractionSectionProps {
   postId: number;
   initialComments?: Comment[];
+  isGuest?: boolean;
+  initialLikeCount?: number;
 }
 
 export default function PostInteractionSection({
   postId,
   initialComments = [],
+  isGuest = false,
+  initialLikeCount = 0,
 }: PostInteractionSectionProps) {
   const [comments, setComments] = useState<Comment[]>(initialComments);
   const [isLiked, setIsLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(0);
+  const [likeCount, setLikeCount] = useState(initialLikeCount);
   const [loadingLike, setLoadingLike] = useState(true);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
 
@@ -26,6 +30,13 @@ export default function PostInteractionSection({
     async function init() {
       const stored = localStorage.getItem("username");
       setCurrentUser(stored);
+
+      if (isGuest) {
+        setIsLiked(false);
+        setLikeCount(initialLikeCount);
+        setLoadingLike(false);
+        return;
+      }
 
       try {
         const res = await api.get<{ liked: boolean; like_count: number }>(
@@ -40,7 +51,7 @@ export default function PostInteractionSection({
       }
     }
     init();
-  }, [postId]);
+  }, [postId, isGuest, initialLikeCount]);
 
   const handleLikeToggle = async () => {
     const originalIsLiked = isLiked;
@@ -101,6 +112,7 @@ export default function PostInteractionSection({
           likeCount={likeCount}
           isLoading={loadingLike}
           onToggle={handleLikeToggle}
+          isGuest={isGuest}
         />
       </div>
 
