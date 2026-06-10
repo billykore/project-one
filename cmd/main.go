@@ -122,12 +122,14 @@ func main() {
 		}
 	}
 
+	// Public Post Routes
+	e.GET("/posts/:id", postHdl.GetPostByID)
+
 	// Posts Group
 	posts := e.Group("/posts", middleware.Authorize(tokenSvc))
 	{
 		posts.POST("", postHdl.CreatePost)
 		posts.GET("", postHdl.GetPosts)
-		posts.GET("/:id", postHdl.GetPostByID)
 		posts.PUT("/:id", postHdl.UpdatePost)
 		posts.DELETE("/:id", postHdl.DeletePost)
 

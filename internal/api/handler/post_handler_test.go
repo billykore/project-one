@@ -162,4 +162,25 @@ func TestPostHandler_GetPostByID(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusInternalServerError, rec.Code)
 	})
+
+	t.Run("bad request - invalid post error from usecase", func(t *testing.T) {
+		e := echo.New()
+		req := httptest.NewRequest(http.MethodGet, "/posts/1", nil)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+		c.SetPath("/posts/:id")
+		c.SetParamNames("id")
+		c.SetParamValues("1")
+
+		mockPostUC.EXPECT().GetPostByID(gomock.Any(), postID).Return(nil, domain.ErrInvalidPost)
+
+		err := h.GetPostByID(c)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+
+		var resp dto.ErrorResponse
+		err = json.Unmarshal(rec.Body.Bytes(), &resp)
+		assert.NoError(t, err)
+		assert.Equal(t, "Post ID must be integer and not 0", resp.Error)
+	})
 }
