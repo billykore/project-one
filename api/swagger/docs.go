@@ -417,18 +417,6 @@ const docTemplate = `{
                             "$ref": "#/definitions/dto.ErrorResponse"
                         }
                     },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/dto.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/dto.ErrorResponse"
-                        }
-                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
