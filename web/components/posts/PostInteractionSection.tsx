@@ -54,6 +54,7 @@ export default function PostInteractionSection({
   }, [postId, isGuest, initialLikeCount]);
 
   const handleLikeToggle = async () => {
+    if (isGuest) return;
     const originalIsLiked = isLiked;
     const originalLikeCount = likeCount;
 
@@ -87,6 +88,7 @@ export default function PostInteractionSection({
   };
 
   const handleAddComment = async (content: string) => {
+    if (isGuest) return;
     await api.post(`/api/v1/posts/${postId}/comments`, {
       content,
       id: postId,
@@ -95,11 +97,13 @@ export default function PostInteractionSection({
   };
 
   const handleEditComment = async (commentId: number, content: string) => {
+    if (isGuest) return;
     await api.put(`/api/v1/comments/${commentId}`, { content });
     await fetchComments();
   };
 
   const handleDeleteComment = async (commentId: number) => {
+    if (isGuest) return;
     await api.delete(`/api/v1/comments/${commentId}`);
     await fetchComments();
   };
