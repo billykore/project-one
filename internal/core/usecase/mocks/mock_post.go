@@ -212,18 +212,18 @@ func (mr *MockPostUseCaseMockRecorder) GetLikeStatus(ctx, postID, username any) 
 }
 
 // GetPostByID mocks base method.
-func (m *MockPostUseCase) GetPostByID(ctx context.Context, username string, postID int) (*domain.Post, error) {
+func (m *MockPostUseCase) GetPostByID(ctx context.Context, postID int) (*domain.Post, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPostByID", ctx, username, postID)
+	ret := m.ctrl.Call(m, "GetPostByID", ctx, postID)
 	ret0, _ := ret[0].(*domain.Post)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetPostByID indicates an expected call of GetPostByID.
-func (mr *MockPostUseCaseMockRecorder) GetPostByID(ctx, username, postID any) *gomock.Call {
+func (mr *MockPostUseCaseMockRecorder) GetPostByID(ctx, postID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPostByID", reflect.TypeOf((*MockPostUseCase)(nil).GetPostByID), ctx, username, postID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPostByID", reflect.TypeOf((*MockPostUseCase)(nil).GetPostByID), ctx, postID)
 }
 
 // GetPosts mocks base method.
