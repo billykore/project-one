@@ -28,7 +28,7 @@ export default function PostInteractionSection({
 
   useEffect(() => {
     async function init() {
-      const stored = localStorage.getItem("username");
+      const stored = isGuest ? null : localStorage.getItem("username");
       setCurrentUser(stored);
 
       if (isGuest) {

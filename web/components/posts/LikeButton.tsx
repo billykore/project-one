@@ -74,7 +74,7 @@ export function LikeButton({
         <button
           disabled
           aria-label={isLiked ? "Unlike post" : "Like post"}
-          className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 pointer-events-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 select-none"
+          className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 pointer-events-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 select-none opacity-50"
         >
           {buttonContent}
         </button>
