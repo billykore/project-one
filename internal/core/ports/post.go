@@ -28,8 +28,8 @@ type PostRepository interface {
 type PostUseCase interface {
 	// CreatePost creates a new post with the given details.
 	CreatePost(ctx context.Context, username string, title, content string, tags []string) (*domain.Post, error)
-	// GetPostByID retrieves a post by its ID for a specific user.
-	GetPostByID(ctx context.Context, username string, postID int) (*domain.Post, error)
+	// GetPostByID retrieves a post by its ID.
+	GetPostByID(ctx context.Context, postID int) (*domain.Post, error)
 	// GetPosts retrieves all posts for a specific user.
 	GetPosts(ctx context.Context, username string, limit, offset int) ([]*domain.Post, error)
 	// UpdatePost updates an existing post for a specific user.
