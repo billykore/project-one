@@ -5,6 +5,7 @@ export interface LikeButtonProps {
   likeCount: number;
   isLoading: boolean;
   onToggle: () => void;
+  isGuest?: boolean;
 }
 
 export function LikeButton({
@@ -12,14 +13,10 @@ export function LikeButton({
   likeCount,
   isLoading,
   onToggle,
+  isGuest = false,
 }: LikeButtonProps) {
-  return (
-    <button
-      onClick={onToggle}
-      disabled={isLoading}
-      aria-label={isLiked ? "Unlike post" : "Like post"}
-      className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:scale-95 duration-200 transition-transform dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed select-none"
-    >
+  const buttonContent = (
+    <>
       {isLoading ? (
         <svg
           className="animate-spin h-5 w-5 text-gray-500 dark:text-zinc-400"
@@ -68,6 +65,31 @@ export function LikeButton({
       <span className={isLiked ? "text-red-600 dark:text-red-400 font-semibold" : ""}>
         {likeCount}
       </span>
+    </>
+  );
+
+  if (isGuest) {
+    return (
+      <span title="Please log in to like this post" className="inline-block cursor-not-allowed">
+        <button
+          disabled
+          aria-label={isLiked ? "Unlike post" : "Like post"}
+          className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 pointer-events-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 select-none opacity-50"
+        >
+          {buttonContent}
+        </button>
+      </span>
+    );
+  }
+
+  return (
+    <button
+      onClick={onToggle}
+      disabled={isLoading}
+      aria-label={isLiked ? "Unlike post" : "Like post"}
+      className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:scale-95 duration-200 transition-transform dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed select-none"
+    >
+      {buttonContent}
     </button>
   );
 }

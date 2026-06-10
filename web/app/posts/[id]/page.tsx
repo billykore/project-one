@@ -1,11 +1,12 @@
 import Link from "next/link";
 import Image from "next/image";
-import { redirect, notFound } from "next/navigation";
+import { notFound } from "next/navigation";
 import { apiServer } from "@/lib/api-server";
 import { ApiError } from "@/lib/api";
 import { Post } from "../model";
 import PostInteractionSection from "@/components/posts/PostInteractionSection";
 import DeletePostButton from "@/components/posts/DeletePostButton";
+import { cookies } from "next/headers";
 
 async function getPost(id: string) {
   try {
@@ -16,9 +17,6 @@ async function getPost(id: string) {
     return post;
   } catch (err) {
     if (err instanceof ApiError) {
-      if (err.status === 401) {
-        redirect("/login");
-      }
       if (err.status === 404) {
         notFound();
       }
@@ -34,12 +32,14 @@ interface PageProps {
 export default async function PostDetailPage({ params }: PageProps) {
   const { id } = await params;
   const post = await getPost(id);
+  const cookieStore = await cookies();
+  const isAuthenticated = cookieStore.has("access_token");
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50 font-sans dark:bg-black">
       <nav className="flex items-center justify-between bg-white px-8 py-4 shadow-sm dark:bg-zinc-900">
         <div className="flex items-center gap-4">
-          <Link href="/home">
+          <Link href={isAuthenticated ? "/home" : "/login"}>
             <Image
               className="dark:invert"
               src="/next.svg"
@@ -52,13 +52,24 @@ export default async function PostDetailPage({ params }: PageProps) {
           <span className="text-xl font-bold text-gray-900 dark:text-zinc-50">Post Details</span>
         </div>
         <div className="flex items-center gap-4">
-          <DeletePostButton postId={post.id} postAuthor={post.author} />
-          <Link
-            href="/posts"
-            className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-          >
-            Back to Posts
-          </Link>
+          {isAuthenticated ? (
+            <>
+              <DeletePostButton postId={post.id} postAuthor={post.author} />
+              <Link
+                href="/posts"
+                className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+              >
+                Back to Posts
+              </Link>
+            </>
+          ) : (
+            <Link
+              href="/login"
+              className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+            >
+              Log In
+            </Link>
+          )}
         </div>
       </nav>
 
@@ -102,7 +113,12 @@ export default async function PostDetailPage({ params }: PageProps) {
             </p>
           </div>
 
-          <PostInteractionSection postId={post.id} initialComments={post.comments} />
+          <PostInteractionSection 
+            postId={post.id} 
+            initialComments={post.comments} 
+            isGuest={!isAuthenticated}
+            initialLikeCount={post.like_count}
+          />
         </article>
       </main>
 
