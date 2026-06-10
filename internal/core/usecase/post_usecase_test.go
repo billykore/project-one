@@ -73,18 +73,18 @@ func TestPostUseCase_GetPostByID(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		expectedPost := &domain.Post{ID: postID, Username: username, Title: "Test Title"}
-		mockRepo.EXPECT().GetByID(ctx, username, postID).Return(expectedPost, nil)
+		mockRepo.EXPECT().GetByIDOnly(ctx, postID).Return(expectedPost, nil)
 
-		post, err := svc.GetPostByID(ctx, username, postID)
+		post, err := svc.GetPostByID(ctx, postID)
 
 		assert.NoError(t, err)
 		assert.Equal(t, expectedPost, post)
 	})
 
 	t.Run("not found", func(t *testing.T) {
-		mockRepo.EXPECT().GetByID(ctx, username, postID).Return(nil, domain.ErrPostNotFound)
+		mockRepo.EXPECT().GetByIDOnly(ctx, postID).Return(nil, domain.ErrPostNotFound)
 
-		post, err := svc.GetPostByID(ctx, username, postID)
+		post, err := svc.GetPostByID(ctx, postID)
 
 		assert.Error(t, err)
 		assert.Nil(t, post)
@@ -92,10 +92,10 @@ func TestPostUseCase_GetPostByID(t *testing.T) {
 	})
 
 	t.Run("repository error", func(t *testing.T) {
-		mockRepo.EXPECT().GetByID(ctx, username, postID).Return(nil, errors.New("db error"))
-		mockLog.EXPECT().Error(ctx, "failed to get post by id", "postID", postID, "username", username, "error", gomock.Any())
+		mockRepo.EXPECT().GetByIDOnly(ctx, postID).Return(nil, errors.New("db error"))
+		mockLog.EXPECT().Error(ctx, "failed to get post by id", "postID", postID, "error", gomock.Any())
 
-		post, err := svc.GetPostByID(ctx, username, postID)
+		post, err := svc.GetPostByID(ctx, postID)
 
 		assert.Error(t, err)
 		assert.Nil(t, post)
@@ -103,7 +103,7 @@ func TestPostUseCase_GetPostByID(t *testing.T) {
 	})
 
 	t.Run("invalid id", func(t *testing.T) {
-		post, err := svc.GetPostByID(ctx, username, 0)
+		post, err := svc.GetPostByID(ctx, 0)
 
 		assert.Error(t, err)
 		assert.Nil(t, post)

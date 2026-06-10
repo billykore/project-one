@@ -50,17 +50,17 @@ func (uc *postUseCase) CreatePost(ctx context.Context, username string, title, c
 	return post, nil
 }
 
-func (uc *postUseCase) GetPostByID(ctx context.Context, username string, id int) (*domain.Post, error) {
+func (uc *postUseCase) GetPostByID(ctx context.Context, id int) (*domain.Post, error) {
 	if id <= 0 {
 		return nil, domain.ErrInvalidPost
 	}
 
-	post, err := uc.postRepo.GetByID(ctx, username, id)
+	post, err := uc.postRepo.GetByIDOnly(ctx, id)
 	if err != nil {
 		if errors.Is(err, domain.ErrPostNotFound) {
 			return nil, err
 		}
-		uc.log.Error(ctx, "failed to get post by id", "postID", id, "username", username, "error", err)
+		uc.log.Error(ctx, "failed to get post by id", "postID", id, "error", err)
 		return nil, domain.ErrInternalServer
 	}
 
