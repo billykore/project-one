@@ -40,7 +40,9 @@ func (u *followUseCase) Follow(ctx context.Context, followerUsername, followedUs
 	}
 
 	follow := &domain.Follow{
+		FollowerID:       follower.ID,
 		FollowerUsername: follower.Username,
+		FollowedID:       followed.ID,
 		FollowedUsername: followed.Username,
 	}
 

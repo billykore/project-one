@@ -11,10 +11,10 @@ import (
 )
 
 type followModel struct {
-	FollowerID       int       `gorm:"primaryKey"`
-	FollowerUsername string    `gorm:"primaryKey"`
-	FollowedID       int       `gorm:"primaryKey"`
-	FollowedUsername string    `gorm:"primaryKey"`
+	FollowerID       int
+	FollowerUsername string
+	FollowedID       int
+	FollowedUsername string
 	CreatedAt        time.Time `gorm:"default:CURRENT_TIMESTAMP"`
 }
 
@@ -33,7 +33,9 @@ func NewFollowRepository(db *gorm.DB) ports.FollowRepository {
 
 func (r *followRepository) Create(ctx context.Context, follow *domain.Follow) error {
 	m := followModel{
+		FollowerID:       follow.FollowerID,
 		FollowerUsername: follow.FollowerUsername,
+		FollowedID:       follow.FollowedID,
 		FollowedUsername: follow.FollowedUsername,
 	}
 	if err := r.db.WithContext(ctx).Create(&m).Error; err != nil {
