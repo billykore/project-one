@@ -46,11 +46,16 @@ func (uc *notificationUseCase) GetNotifications(ctx context.Context, username st
 			if err != nil {
 				if errors.Is(err, domain.ErrUserNotFound) {
 					actorUsername = ""
+					actorMap[n.ActorID] = ""
 				} else {
 					return nil, fmt.Errorf("get actor by id: %w", err)
 				}
 			} else {
-				actorUsername = actor.Username
+				if actor != nil {
+					actorUsername = actor.Username
+				} else {
+					actorUsername = ""
+				}
 				actorMap[n.ActorID] = actorUsername
 			}
 		}
@@ -70,6 +75,9 @@ func (uc *notificationUseCase) MarkAsRead(ctx context.Context, id int, username 
 	notification, err := uc.repo.GetByID(ctx, id)
 	if err != nil {
 		return fmt.Errorf("get notification by id: %w", err)
+	}
+	if notification == nil {
+		return domain.ErrNotificationNotFound
 	}
 	if notification.UserID != user.ID {
 		return domain.ErrUnauthorized

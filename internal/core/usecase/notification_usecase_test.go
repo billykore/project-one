@@ -62,6 +62,7 @@ func TestNotificationUseCase_GetNotifications(t *testing.T) {
 			{ID: 102, UserID: 1, ActorID: 2, Type: domain.NotificationTypeLike},
 			{ID: 103, UserID: 1, ActorID: 3, Type: domain.NotificationTypeComment},
 			{ID: 104, UserID: 1, ActorID: 4, Type: domain.NotificationTypeComment},
+			{ID: 105, UserID: 1, ActorID: 4, Type: domain.NotificationTypeComment}, // Second notification from the same missing actor ID 4
 		}
 		mockRepo.EXPECT().GetByUserID(ctx, user.ID, limit, offset).Return(notifications, nil)
 
@@ -73,17 +74,18 @@ func TestNotificationUseCase_GetNotifications(t *testing.T) {
 		actor3 := &domain.User{ID: 3, Username: "actor3"}
 		mockUserRepo.EXPECT().GetUserByID(ctx, 3).Return(actor3, nil)
 
-		// Actor 4: lookup fails with ErrUserNotFound
-		mockUserRepo.EXPECT().GetUserByID(ctx, 4).Return(nil, domain.ErrUserNotFound)
+		// Actor 4: lookup fails with ErrUserNotFound, should only be called once due to caching of soft failure
+		mockUserRepo.EXPECT().GetUserByID(ctx, 4).Return(nil, domain.ErrUserNotFound).Times(1)
 
 		results, err := uc.GetNotifications(ctx, username, limit, offset)
 		assert.NoError(t, err)
-		assert.Len(t, results, 4)
+		assert.Len(t, results, 5)
 
 		assert.Equal(t, "actor2", results[0].ActorUsername)
 		assert.Equal(t, "actor2", results[1].ActorUsername)
 		assert.Equal(t, "actor3", results[2].ActorUsername)
 		assert.Equal(t, "", results[3].ActorUsername)
+		assert.Equal(t, "", results[4].ActorUsername)
 	})
 
 	t.Run("user repo error", func(t *testing.T) {
@@ -164,6 +166,14 @@ func TestNotificationUseCase_MarkAsRead(t *testing.T) {
 
 		err := uc.MarkAsRead(ctx, notificationID, username)
 		assert.ErrorIs(t, err, expectedErr)
+	})
+
+	t.Run("notification nil check", func(t *testing.T) {
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, username).Return(user, nil)
+		mockRepo.EXPECT().GetByID(ctx, notificationID).Return(nil, nil)
+
+		err := uc.MarkAsRead(ctx, notificationID, username)
+		assert.ErrorIs(t, err, domain.ErrNotificationNotFound)
 	})
 
 	t.Run("unauthorized owner mismatch", func(t *testing.T) {
