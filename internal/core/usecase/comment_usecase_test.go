@@ -18,9 +18,10 @@ func TestCommentUseCase_AddComment(t *testing.T) {
 	mockCommentRepo := mocks.NewMockCommentRepository(ctrl)
 	mockPostRepo := mocks.NewMockPostRepository(ctrl)
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockPublisher := mocks.NewMockNotificationPublisher(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
 
-	svc := NewCommentUseCase(mockCommentRepo, mockPostRepo, mockUserRepo, mockLog)
+	svc := NewCommentUseCase(mockCommentRepo, mockPostRepo, mockUserRepo, mockPublisher, mockLog)
 
 	ctx := context.Background()
 	postID := 1
@@ -30,7 +31,7 @@ func TestCommentUseCase_AddComment(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		mockPostRepo.EXPECT().
 			GetByIDOnly(ctx, int(postID)).
-			Return(&domain.Post{ID: int(postID)}, nil)
+			Return(&domain.Post{ID: int(postID), Username: "postowner"}, nil)
 
 		mockCommentRepo.EXPECT().
 			Create(ctx, gomock.Any()).
@@ -38,6 +39,17 @@ func TestCommentUseCase_AddComment(t *testing.T) {
 				comment.ID = 100
 				return nil
 			})
+
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, "postowner").Return(&domain.User{ID: 2, Username: "postowner"}, nil)
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, username).Return(&domain.User{ID: 1, Username: username}, nil)
+		commentIDVal := 100
+		mockPublisher.EXPECT().Publish(ctx, &domain.Notification{
+			UserID:    2,
+			ActorID:   1,
+			Type:      domain.NotificationTypeComment,
+			PostID:    &postID,
+			CommentID: &commentIDVal,
+		}).Return(nil)
 
 		mockLog.EXPECT().Info(ctx, "comment created successfully", "commentID", 100, "postID", postID, "username", username)
 
@@ -91,9 +103,10 @@ func TestCommentUseCase_GetCommentsByPostID(t *testing.T) {
 	mockCommentRepo := mocks.NewMockCommentRepository(ctrl)
 	mockPostRepo := mocks.NewMockPostRepository(ctrl)
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockPublisher := mocks.NewMockNotificationPublisher(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
 
-	svc := NewCommentUseCase(mockCommentRepo, mockPostRepo, mockUserRepo, mockLog)
+	svc := NewCommentUseCase(mockCommentRepo, mockPostRepo, mockUserRepo, mockPublisher, mockLog)
 
 	ctx := context.Background()
 	postID := 1
@@ -128,9 +141,10 @@ func TestCommentUseCase_EditComment(t *testing.T) {
 	mockCommentRepo := mocks.NewMockCommentRepository(ctrl)
 	mockPostRepo := mocks.NewMockPostRepository(ctrl)
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockPublisher := mocks.NewMockNotificationPublisher(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
 
-	svc := NewCommentUseCase(mockCommentRepo, mockPostRepo, mockUserRepo, mockLog)
+	svc := NewCommentUseCase(mockCommentRepo, mockPostRepo, mockUserRepo, mockPublisher, mockLog)
 
 	ctx := context.Background()
 	commentID := 1
@@ -258,9 +272,10 @@ func TestCommentUseCase_DeleteComment(t *testing.T) {
 	mockCommentRepo := mocks.NewMockCommentRepository(ctrl)
 	mockPostRepo := mocks.NewMockPostRepository(ctrl)
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockPublisher := mocks.NewMockNotificationPublisher(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
 
-	svc := NewCommentUseCase(mockCommentRepo, mockPostRepo, mockUserRepo, mockLog)
+	svc := NewCommentUseCase(mockCommentRepo, mockPostRepo, mockUserRepo, mockPublisher, mockLog)
 
 	ctx := context.Background()
 	commentID := 1

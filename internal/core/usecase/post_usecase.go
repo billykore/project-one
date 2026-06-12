@@ -10,26 +10,42 @@ import (
 )
 
 type postUseCase struct {
-	postRepo ports.PostRepository
-	likeRepo ports.LikeRepository
-	log      ports.Logger
+	postRepo  ports.PostRepository
+	likeRepo  ports.LikeRepository
+	userRepo  ports.UserRepository
+	publisher ports.NotificationPublisher
+	log       ports.Logger
 }
 
 // NewPostUseCase creates a new instance of ports.PostUseCase.
-func NewPostUseCase(postRepo ports.PostRepository, likeRepo ports.LikeRepository, log ports.Logger) ports.PostUseCase {
+func NewPostUseCase(
+	postRepo ports.PostRepository,
+	likeRepo ports.LikeRepository,
+	userRepo ports.UserRepository,
+	publisher ports.NotificationPublisher,
+	log ports.Logger,
+) ports.PostUseCase {
 	if postRepo == nil {
 		panic("NewPostUseCase: postRepo is required")
 	}
 	if likeRepo == nil {
 		panic("NewPostUseCase: likeRepo is required")
 	}
+	if userRepo == nil {
+		panic("NewPostUseCase: userRepo is required")
+	}
+	if publisher == nil {
+		panic("NewPostUseCase: publisher is required")
+	}
 	if log == nil {
 		panic("NewPostUseCase: log is required")
 	}
 	return &postUseCase{
-		postRepo: postRepo,
-		likeRepo: likeRepo,
-		log:      log,
+		postRepo:  postRepo,
+		likeRepo:  likeRepo,
+		userRepo:  userRepo,
+		publisher: publisher,
+		log:       log,
 	}
 }
 
@@ -176,6 +192,22 @@ func (uc *postUseCase) LikePost(ctx context.Context, postID int, username string
 	if err != nil {
 		uc.log.Error(ctx, "failed to get post for like count", "postID", postID, "error", err)
 		return 0, domain.ErrInternalServer
+	}
+
+	postOwner, err := uc.userRepo.GetUserByUsername(ctx, post.Username)
+	if err == nil {
+		liker, err := uc.userRepo.GetUserByUsername(ctx, username)
+		if err == nil && postOwner.ID != liker.ID {
+			notification := &domain.Notification{
+				UserID:  postOwner.ID,
+				ActorID: liker.ID,
+				Type:    domain.NotificationTypeLike,
+				PostID:  &post.ID,
+			}
+			if pErr := uc.publisher.Publish(ctx, notification); pErr != nil {
+				uc.log.Error(ctx, "failed to publish like notification", "error", pErr)
+			}
+		}
 	}
 
 	return post.LikeCount, nil

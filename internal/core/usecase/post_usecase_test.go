@@ -16,9 +16,11 @@ func TestPostUseCase_CreatePost(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockPostRepository(ctrl)
-	mockLog := mocks.NewMockLogger(ctrl)
 	mockLikeRepo := mocks.NewMockLikeRepository(ctrl)
-	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockLog)
+	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockPublisher := mocks.NewMockNotificationPublisher(ctrl)
+	mockLog := mocks.NewMockLogger(ctrl)
+	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockUserRepo, mockPublisher, mockLog)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -64,8 +66,10 @@ func TestPostUseCase_GetPostByID(t *testing.T) {
 
 	mockRepo := mocks.NewMockPostRepository(ctrl)
 	mockLikeRepo := mocks.NewMockLikeRepository(ctrl)
+	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockPublisher := mocks.NewMockNotificationPublisher(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockLog)
+	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockUserRepo, mockPublisher, mockLog)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -117,8 +121,10 @@ func TestPostUseCase_GetPosts(t *testing.T) {
 
 	mockRepo := mocks.NewMockPostRepository(ctrl)
 	mockLikeRepo := mocks.NewMockLikeRepository(ctrl)
+	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockPublisher := mocks.NewMockNotificationPublisher(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockLog)
+	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockUserRepo, mockPublisher, mockLog)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -165,8 +171,10 @@ func TestPostUseCase_UpdatePost(t *testing.T) {
 
 	mockRepo := mocks.NewMockPostRepository(ctrl)
 	mockLikeRepo := mocks.NewMockLikeRepository(ctrl)
+	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockPublisher := mocks.NewMockNotificationPublisher(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockLog)
+	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockUserRepo, mockPublisher, mockLog)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -257,8 +265,10 @@ func TestPostUseCase_DeletePost(t *testing.T) {
 
 	mockRepo := mocks.NewMockPostRepository(ctrl)
 	mockLikeRepo := mocks.NewMockLikeRepository(ctrl)
+	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockPublisher := mocks.NewMockNotificationPublisher(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockLog)
+	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockUserRepo, mockPublisher, mockLog)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -297,8 +307,10 @@ func TestPostUseCase_LikePost(t *testing.T) {
 
 	mockRepo := mocks.NewMockPostRepository(ctrl)
 	mockLikeRepo := mocks.NewMockLikeRepository(ctrl)
+	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockPublisher := mocks.NewMockNotificationPublisher(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockLog)
+	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockUserRepo, mockPublisher, mockLog)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -308,7 +320,15 @@ func TestPostUseCase_LikePost(t *testing.T) {
 		mockLikeRepo.EXPECT().Exists(ctx, postID, username).Return(false, nil)
 		mockLikeRepo.EXPECT().Create(ctx, gomock.Any()).Return(nil)
 		mockRepo.EXPECT().IncrementLikeCount(ctx, postID, 1).Return(nil)
-		mockRepo.EXPECT().GetByIDOnly(ctx, postID).Return(&domain.Post{ID: postID, LikeCount: 5}, nil)
+		mockRepo.EXPECT().GetByIDOnly(ctx, postID).Return(&domain.Post{ID: postID, Username: "postowner", LikeCount: 5}, nil)
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, "postowner").Return(&domain.User{ID: 2, Username: "postowner"}, nil)
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, username).Return(&domain.User{ID: 1, Username: username}, nil)
+		mockPublisher.EXPECT().Publish(ctx, &domain.Notification{
+			UserID:  2,
+			ActorID: 1,
+			Type:    domain.NotificationTypeLike,
+			PostID:  &postID,
+		}).Return(nil)
 		mockLog.EXPECT().Info(ctx, "post liked successfully", "postID", postID, "username", username)
 
 		count, err := svc.LikePost(ctx, postID, username)
@@ -342,8 +362,10 @@ func TestPostUseCase_UnlikePost(t *testing.T) {
 
 	mockRepo := mocks.NewMockPostRepository(ctrl)
 	mockLikeRepo := mocks.NewMockLikeRepository(ctrl)
+	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockPublisher := mocks.NewMockNotificationPublisher(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockLog)
+	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockUserRepo, mockPublisher, mockLog)
 
 	ctx := context.Background()
 	username := "testuser"

@@ -11,16 +11,25 @@ import (
 type followUseCase struct {
 	followRepo ports.FollowRepository
 	userRepo   ports.UserRepository
+	publisher  ports.NotificationPublisher
+	log        ports.Logger
 }
 
 // NewFollowUseCase creates a new instance of FollowUseCase.
-func NewFollowUseCase(followRepo ports.FollowRepository, userRepo ports.UserRepository) ports.FollowUseCase {
-	if followRepo == nil || userRepo == nil {
+func NewFollowUseCase(
+	followRepo ports.FollowRepository,
+	userRepo ports.UserRepository,
+	publisher ports.NotificationPublisher,
+	log ports.Logger,
+) ports.FollowUseCase {
+	if followRepo == nil || userRepo == nil || publisher == nil || log == nil {
 		panic("NewFollowUseCase: dependencies must not be nil")
 	}
 	return &followUseCase{
 		followRepo: followRepo,
 		userRepo:   userRepo,
+		publisher:  publisher,
+		log:        log,
 	}
 }
 
@@ -48,6 +57,15 @@ func (u *followUseCase) Follow(ctx context.Context, followerUsername, followedUs
 
 	if err := u.followRepo.Create(ctx, follow); err != nil {
 		return nil, fmt.Errorf("create follow: %w", err)
+	}
+
+	notification := &domain.Notification{
+		UserID:  followed.ID,
+		ActorID: follower.ID,
+		Type:    domain.NotificationTypeFollow,
+	}
+	if err := u.publisher.Publish(ctx, notification); err != nil {
+		u.log.Error(ctx, "failed to publish follow notification", "error", err)
 	}
 
 	return follow, nil

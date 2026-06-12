@@ -12,6 +12,7 @@ type commentUseCase struct {
 	commentRepo ports.CommentRepository
 	postRepo    ports.PostRepository
 	userRepo    ports.UserRepository
+	publisher   ports.NotificationPublisher
 	log         ports.Logger
 }
 
@@ -20,6 +21,7 @@ func NewCommentUseCase(
 	commentRepo ports.CommentRepository,
 	postRepo ports.PostRepository,
 	userRepo ports.UserRepository,
+	publisher ports.NotificationPublisher,
 	log ports.Logger,
 ) ports.CommentUseCase {
 	if commentRepo == nil {
@@ -31,6 +33,9 @@ func NewCommentUseCase(
 	if userRepo == nil {
 		panic("NewCommentUseCase: userRepo is required")
 	}
+	if publisher == nil {
+		panic("NewCommentUseCase: publisher is required")
+	}
 	if log == nil {
 		panic("NewCommentUseCase: log is required")
 	}
@@ -38,6 +43,7 @@ func NewCommentUseCase(
 		commentRepo: commentRepo,
 		postRepo:    postRepo,
 		userRepo:    userRepo,
+		publisher:   publisher,
 		log:         log,
 	}
 }
@@ -55,7 +61,7 @@ func (u *commentUseCase) AddComment(ctx context.Context, postID int, username st
 	}
 
 	// 2. Verify post exists
-	_, err := u.postRepo.GetByIDOnly(ctx, int(postID))
+	post, err := u.postRepo.GetByIDOnly(ctx, int(postID))
 	if err != nil {
 		if errors.Is(err, domain.ErrPostNotFound) {
 			return err
@@ -71,6 +77,24 @@ func (u *commentUseCase) AddComment(ctx context.Context, postID int, username st
 	}
 
 	u.log.Info(ctx, "comment created successfully", "commentID", comment.ID, "postID", postID, "username", username)
+
+	postOwner, err := u.userRepo.GetUserByUsername(ctx, post.Username)
+	if err == nil {
+		commenter, err := u.userRepo.GetUserByUsername(ctx, username)
+		if err == nil && postOwner.ID != commenter.ID {
+			notification := &domain.Notification{
+				UserID:    postOwner.ID,
+				ActorID:   commenter.ID,
+				Type:      domain.NotificationTypeComment,
+				PostID:    &post.ID,
+				CommentID: &comment.ID,
+			}
+			if pErr := u.publisher.Publish(ctx, notification); pErr != nil {
+				u.log.Error(ctx, "failed to publish comment notification", "error", pErr)
+			}
+		}
+	}
+
 	return nil
 }
 
