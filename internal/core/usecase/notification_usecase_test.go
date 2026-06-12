@@ -54,7 +54,7 @@ func TestNotificationUseCase_GetNotifications(t *testing.T) {
 		Username: username,
 	}
 
-	t.Run("success with caching and failed actor lookups", func(t *testing.T) {
+	t.Run("success with caching and ignored not found actor lookups", func(t *testing.T) {
 		mockUserRepo.EXPECT().GetUserByUsername(ctx, username).Return(user, nil)
 
 		notifications := []*domain.Notification{
@@ -73,8 +73,8 @@ func TestNotificationUseCase_GetNotifications(t *testing.T) {
 		actor3 := &domain.User{ID: 3, Username: "actor3"}
 		mockUserRepo.EXPECT().GetUserByID(ctx, 3).Return(actor3, nil)
 
-		// Actor 4: lookup fails
-		mockUserRepo.EXPECT().GetUserByID(ctx, 4).Return(nil, errors.New("not found"))
+		// Actor 4: lookup fails with ErrUserNotFound
+		mockUserRepo.EXPECT().GetUserByID(ctx, 4).Return(nil, domain.ErrUserNotFound)
 
 		results, err := uc.GetNotifications(ctx, username, limit, offset)
 		assert.NoError(t, err)
@@ -99,6 +99,22 @@ func TestNotificationUseCase_GetNotifications(t *testing.T) {
 		expectedErr := errors.New("db error")
 		mockUserRepo.EXPECT().GetUserByUsername(ctx, username).Return(user, nil)
 		mockRepo.EXPECT().GetByUserID(ctx, user.ID, limit, offset).Return(nil, expectedErr)
+
+		results, err := uc.GetNotifications(ctx, username, limit, offset)
+		assert.ErrorIs(t, err, expectedErr)
+		assert.Nil(t, results)
+	})
+
+	t.Run("actor lookup generic error", func(t *testing.T) {
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, username).Return(user, nil)
+
+		notifications := []*domain.Notification{
+			{ID: 101, UserID: 1, ActorID: 5, Type: domain.NotificationTypeFollow},
+		}
+		mockRepo.EXPECT().GetByUserID(ctx, user.ID, limit, offset).Return(notifications, nil)
+
+		expectedErr := errors.New("connection failed")
+		mockUserRepo.EXPECT().GetUserByID(ctx, 5).Return(nil, expectedErr)
 
 		results, err := uc.GetNotifications(ctx, username, limit, offset)
 		assert.ErrorIs(t, err, expectedErr)

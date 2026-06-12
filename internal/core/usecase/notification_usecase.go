@@ -2,6 +2,8 @@ package usecase
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
@@ -28,11 +30,11 @@ func NewNotificationUseCase(repo ports.NotificationRepository, userRepo ports.Us
 func (uc *notificationUseCase) GetNotifications(ctx context.Context, username string, limit, offset int) ([]*domain.NotificationDetail, error) {
 	user, err := uc.userRepo.GetUserByUsername(ctx, username)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get user by username: %w", err)
 	}
 	notifications, err := uc.repo.GetByUserID(ctx, user.ID, limit, offset)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get notifications by user id: %w", err)
 	}
 
 	actorMap := make(map[int]string)
@@ -41,7 +43,13 @@ func (uc *notificationUseCase) GetNotifications(ctx context.Context, username st
 		actorUsername, exists := actorMap[n.ActorID]
 		if !exists {
 			actor, err := uc.userRepo.GetUserByID(ctx, n.ActorID)
-			if err == nil {
+			if err != nil {
+				if errors.Is(err, domain.ErrUserNotFound) {
+					actorUsername = ""
+				} else {
+					return nil, fmt.Errorf("get actor by id: %w", err)
+				}
+			} else {
 				actorUsername = actor.Username
 				actorMap[n.ActorID] = actorUsername
 			}
@@ -57,22 +65,30 @@ func (uc *notificationUseCase) GetNotifications(ctx context.Context, username st
 func (uc *notificationUseCase) MarkAsRead(ctx context.Context, id int, username string) error {
 	user, err := uc.userRepo.GetUserByUsername(ctx, username)
 	if err != nil {
-		return err
+		return fmt.Errorf("get user by username: %w", err)
 	}
 	notification, err := uc.repo.GetByID(ctx, id)
 	if err != nil {
-		return err
+		return fmt.Errorf("get notification by id: %w", err)
 	}
 	if notification.UserID != user.ID {
 		return domain.ErrUnauthorized
 	}
-	return uc.repo.MarkAsRead(ctx, id)
+	err = uc.repo.MarkAsRead(ctx, id)
+	if err != nil {
+		return fmt.Errorf("mark notification as read: %w", err)
+	}
+	return nil
 }
 
 func (uc *notificationUseCase) MarkAllAsRead(ctx context.Context, username string) error {
 	user, err := uc.userRepo.GetUserByUsername(ctx, username)
 	if err != nil {
-		return err
+		return fmt.Errorf("get user by username: %w", err)
 	}
-	return uc.repo.MarkAllAsRead(ctx, user.ID)
+	err = uc.repo.MarkAllAsRead(ctx, user.ID)
+	if err != nil {
+		return fmt.Errorf("mark all notifications as read: %w", err)
+	}
+	return nil
 }
