@@ -84,6 +84,16 @@ func (uc *postUseCase) GetPostByID(ctx context.Context, id int) (*domain.Post, e
 }
 
 func (uc *postUseCase) GetPosts(ctx context.Context, username string, limit, offset int) ([]*domain.Post, error) {
+	if limit <= 0 {
+		limit = 10
+	}
+	if limit > 100 {
+		limit = 100
+	}
+	if offset < 0 {
+		offset = 0
+	}
+
 	posts, err := uc.postRepo.GetUserPosts(ctx, username, limit, offset)
 	if err != nil {
 		uc.log.Error(ctx, "failed to get posts for user", "username", username, "error", err)
@@ -145,6 +155,16 @@ func (uc *postUseCase) LikePost(ctx context.Context, postID int, username string
 	}
 	if username == "" {
 		return 0, domain.ErrValidationFailed
+	}
+
+	// Check if post exists
+	_, err := uc.postRepo.GetByIDOnly(ctx, postID)
+	if err != nil {
+		if errors.Is(err, domain.ErrPostNotFound) {
+			return 0, err
+		}
+		uc.log.Error(ctx, "failed to verify post existence for like", "postID", postID, "error", err)
+		return 0, domain.ErrInternalServer
 	}
 
 	exists, err := uc.likeRepo.Exists(ctx, postID, username)

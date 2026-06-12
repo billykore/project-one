@@ -180,10 +180,10 @@ func main() {
 		lgr.Fatal(ctx, "server forced to shutdown", "error", err)
 	}
 
+	broker.Close()
 	if err := worker.Stop(ctxShutdown); err != nil {
 		lgr.Error(ctxShutdown, "failed to stop background worker gracefully", "error", err)
 	}
-	broker.Close()
 
 	if err := closeDB(db); err != nil {
 		lgr.Error(ctx, "failed to close database connection", "error", err)
