@@ -47,9 +47,7 @@ func (w *BackgroundWorker) Start(ctx context.Context) error {
 	}
 	w.started = true
 
-	w.wg.Add(1)
-	go func() {
-		defer w.wg.Done()
+	w.wg.Go(func() {
 		w.log.Info(ctx, "background notification worker started")
 		for {
 			select {
@@ -83,7 +81,7 @@ func (w *BackgroundWorker) Start(ctx context.Context) error {
 				}
 			}
 		}
-	}()
+	})
 	return nil
 }
 
