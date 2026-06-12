@@ -2,6 +2,7 @@ package domain
 
 import (
 	"errors"
+	"fmt"
 	"time"
 )
 
@@ -19,30 +20,64 @@ const (
 )
 
 type Notification struct {
-	ID        int              `json:"id"`
-	UserID    int              `json:"user_id"`
-	ActorID   int              `json:"actor_id"`
-	Type      NotificationType `json:"type"`
-	PostID    *int             `json:"post_id,omitempty"`
-	CommentID *int             `json:"comment_id,omitempty"`
-	IsRead    bool             `json:"is_read"`
-	CreatedAt time.Time        `json:"created_at"`
+	ID        int
+	UserID    int
+	ActorID   int
+	Type      NotificationType
+	PostID    *int
+	CommentID *int
+	IsRead    bool
+	CreatedAt time.Time
 }
 
 type NotificationDetail struct {
 	Notification
-	ActorUsername string `json:"actor_username"`
+	ActorUsername string
 }
 
 func (n *Notification) Validate() error {
 	if n.UserID <= 0 {
-		return ErrInvalidNotification
+		return fmt.Errorf("%w: user id is required", ErrValidationFailed)
 	}
 	if n.ActorID <= 0 {
-		return ErrInvalidNotification
+		return fmt.Errorf("%w: actor id is required", ErrValidationFailed)
 	}
 	if n.Type != NotificationTypeFollow && n.Type != NotificationTypeLike && n.Type != NotificationTypeComment {
-		return ErrInvalidNotification
+		return fmt.Errorf("%w: invalid notification type", ErrValidationFailed)
 	}
+
+	switch n.Type {
+	case NotificationTypeFollow:
+		if n.PostID != nil {
+			return fmt.Errorf("%w: post id must be nil for follow type", ErrValidationFailed)
+		}
+		if n.CommentID != nil {
+			return fmt.Errorf("%w: comment id must be nil for follow type", ErrValidationFailed)
+		}
+	case NotificationTypeLike:
+		if n.PostID == nil {
+			return fmt.Errorf("%w: post id is required for like type", ErrValidationFailed)
+		}
+		if *n.PostID <= 0 {
+			return fmt.Errorf("%w: invalid post id for like type", ErrValidationFailed)
+		}
+		if n.CommentID != nil {
+			return fmt.Errorf("%w: comment id must be nil for like type", ErrValidationFailed)
+		}
+	case NotificationTypeComment:
+		if n.PostID == nil {
+			return fmt.Errorf("%w: post id is required for comment type", ErrValidationFailed)
+		}
+		if *n.PostID <= 0 {
+			return fmt.Errorf("%w: invalid post id for comment type", ErrValidationFailed)
+		}
+		if n.CommentID == nil {
+			return fmt.Errorf("%w: comment id is required for comment type", ErrValidationFailed)
+		}
+		if *n.CommentID <= 0 {
+			return fmt.Errorf("%w: invalid comment id for comment type", ErrValidationFailed)
+		}
+	}
+
 	return nil
 }
