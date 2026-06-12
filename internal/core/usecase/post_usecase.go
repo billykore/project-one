@@ -196,9 +196,13 @@ func (uc *postUseCase) LikePost(ctx context.Context, postID int, username string
 
 	if post.Username != username {
 		postOwner, err := uc.userRepo.GetUserByUsername(ctx, post.Username)
-		if err == nil && postOwner != nil {
+		if err != nil {
+			uc.log.Error(ctx, "failed to resolve post owner username for like notification", "username", post.Username, "error", err)
+		} else if postOwner != nil {
 			liker, err := uc.userRepo.GetUserByUsername(ctx, username)
-			if err == nil && liker != nil && postOwner.ID != liker.ID {
+			if err != nil {
+				uc.log.Error(ctx, "failed to resolve liker username for like notification", "username", username, "error", err)
+			} else if liker != nil && postOwner.ID != liker.ID {
 				notification := &domain.Notification{
 					UserID:  postOwner.ID,
 					ActorID: liker.ID,

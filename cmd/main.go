@@ -72,6 +72,11 @@ func main() {
 	tokenSvc := token.NewJWTTokenService(cfg.JWT.SecretKey, cfg.JWT.ExpirationTime)
 	hasher := hasher.NewBcryptHasher()
 	broker := notificationBroker.NewMemoryBroker(100)
+	notificationRepo := repository.NewNotificationRepository(db)
+	worker := notificationBroker.NewBackgroundWorker(notificationRepo, broker.Channel(), lgr)
+	if err := worker.Start(ctx); err != nil {
+		lgr.Fatal(ctx, "failed to start background notification worker", "error", err)
+	}
 
 	// 4. Initialize UseCase.
 	loginUc := usecase.NewLoginUseCase(userRepo, tokenSvc, userTokenRepo, hasher, lgr)
@@ -174,6 +179,11 @@ func main() {
 	if err := e.Shutdown(ctxShutdown); err != nil {
 		lgr.Fatal(ctx, "server forced to shutdown", "error", err)
 	}
+
+	if err := worker.Stop(ctxShutdown); err != nil {
+		lgr.Error(ctxShutdown, "failed to stop background worker gracefully", "error", err)
+	}
+	broker.Close()
 
 	if err := closeDB(db); err != nil {
 		lgr.Error(ctx, "failed to close database connection", "error", err)

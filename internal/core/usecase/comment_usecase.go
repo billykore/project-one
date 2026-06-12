@@ -80,9 +80,13 @@ func (u *commentUseCase) AddComment(ctx context.Context, postID int, username st
 
 	if post.Username != username {
 		postOwner, err := u.userRepo.GetUserByUsername(ctx, post.Username)
-		if err == nil && postOwner != nil {
+		if err != nil {
+			u.log.Error(ctx, "failed to resolve post owner username for comment notification", "username", post.Username, "error", err)
+		} else if postOwner != nil {
 			commenter, err := u.userRepo.GetUserByUsername(ctx, username)
-			if err == nil && commenter != nil && postOwner.ID != commenter.ID {
+			if err != nil {
+				u.log.Error(ctx, "failed to resolve commenter username for comment notification", "username", username, "error", err)
+			} else if commenter != nil && postOwner.ID != commenter.ID {
 				notification := &domain.Notification{
 					UserID:    postOwner.ID,
 					ActorID:   commenter.ID,
