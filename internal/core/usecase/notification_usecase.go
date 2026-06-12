@@ -32,14 +32,22 @@ func (uc *notificationUseCase) GetNotifications(ctx context.Context, username st
 	if err != nil {
 		return nil, fmt.Errorf("get user by username: %w", err)
 	}
+	if user == nil {
+		return nil, fmt.Errorf("get user by username: %w", domain.ErrUserNotFound)
+	}
 	notifications, err := uc.repo.GetByUserID(ctx, user.ID, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("get notifications by user id: %w", err)
 	}
 
-	actorMap := make(map[int]string)
-	details := make([]*domain.NotificationDetail, len(notifications))
-	for i, n := range notifications {
+	actorMap := map[int]string{
+		user.ID: user.Username,
+	}
+	details := make([]*domain.NotificationDetail, 0, len(notifications))
+	for _, n := range notifications {
+		if n == nil {
+			continue
+		}
 		actorUsername, exists := actorMap[n.ActorID]
 		if !exists {
 			actor, err := uc.userRepo.GetUserByID(ctx, n.ActorID)
@@ -59,10 +67,10 @@ func (uc *notificationUseCase) GetNotifications(ctx context.Context, username st
 				actorMap[n.ActorID] = actorUsername
 			}
 		}
-		details[i] = &domain.NotificationDetail{
+		details = append(details, &domain.NotificationDetail{
 			Notification:  *n,
 			ActorUsername: actorUsername,
-		}
+		})
 	}
 	return details, nil
 }
@@ -71,6 +79,9 @@ func (uc *notificationUseCase) MarkAsRead(ctx context.Context, id int, username 
 	user, err := uc.userRepo.GetUserByUsername(ctx, username)
 	if err != nil {
 		return fmt.Errorf("get user by username: %w", err)
+	}
+	if user == nil {
+		return fmt.Errorf("get user by username: %w", domain.ErrUserNotFound)
 	}
 	notification, err := uc.repo.GetByID(ctx, id)
 	if err != nil {
@@ -93,6 +104,9 @@ func (uc *notificationUseCase) MarkAllAsRead(ctx context.Context, username strin
 	user, err := uc.userRepo.GetUserByUsername(ctx, username)
 	if err != nil {
 		return fmt.Errorf("get user by username: %w", err)
+	}
+	if user == nil {
+		return fmt.Errorf("get user by username: %w", domain.ErrUserNotFound)
 	}
 	err = uc.repo.MarkAllAsRead(ctx, user.ID)
 	if err != nil {

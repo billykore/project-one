@@ -63,6 +63,8 @@ func TestNotificationUseCase_GetNotifications(t *testing.T) {
 			{ID: 103, UserID: 1, ActorID: 3, Type: domain.NotificationTypeComment},
 			{ID: 104, UserID: 1, ActorID: 4, Type: domain.NotificationTypeComment},
 			{ID: 105, UserID: 1, ActorID: 4, Type: domain.NotificationTypeComment}, // Second notification from the same missing actor ID 4
+			nil, // Nil notification to test skipping without dereferencing/panicking
+			{ID: 106, UserID: 1, ActorID: 1, Type: domain.NotificationTypeComment}, // Notification where actor is the current user (ID 1), should use pre-populated cache
 		}
 		mockRepo.EXPECT().GetByUserID(ctx, user.ID, limit, offset).Return(notifications, nil)
 
@@ -77,15 +79,18 @@ func TestNotificationUseCase_GetNotifications(t *testing.T) {
 		// Actor 4: lookup fails with ErrUserNotFound, should only be called once due to caching of soft failure
 		mockUserRepo.EXPECT().GetUserByID(ctx, 4).Return(nil, domain.ErrUserNotFound).Times(1)
 
+		// Actor 1: user themselves, should not trigger GetUserByID
+
 		results, err := uc.GetNotifications(ctx, username, limit, offset)
 		assert.NoError(t, err)
-		assert.Len(t, results, 5)
+		assert.Len(t, results, 6) // nil was skipped, so 7 inputs - 1 nil = 6 outputs
 
 		assert.Equal(t, "actor2", results[0].ActorUsername)
 		assert.Equal(t, "actor2", results[1].ActorUsername)
 		assert.Equal(t, "actor3", results[2].ActorUsername)
 		assert.Equal(t, "", results[3].ActorUsername)
 		assert.Equal(t, "", results[4].ActorUsername)
+		assert.Equal(t, username, results[5].ActorUsername) // actor is the user itself
 	})
 
 	t.Run("user repo error", func(t *testing.T) {
@@ -94,6 +99,14 @@ func TestNotificationUseCase_GetNotifications(t *testing.T) {
 
 		results, err := uc.GetNotifications(ctx, username, limit, offset)
 		assert.ErrorIs(t, err, expectedErr)
+		assert.Nil(t, results)
+	})
+
+	t.Run("nil user from repo", func(t *testing.T) {
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, username).Return(nil, nil)
+
+		results, err := uc.GetNotifications(ctx, username, limit, offset)
+		assert.ErrorIs(t, err, domain.ErrUserNotFound)
 		assert.Nil(t, results)
 	})
 
@@ -157,6 +170,13 @@ func TestNotificationUseCase_MarkAsRead(t *testing.T) {
 
 		err := uc.MarkAsRead(ctx, notificationID, username)
 		assert.ErrorIs(t, err, expectedErr)
+	})
+
+	t.Run("nil user from repo", func(t *testing.T) {
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, username).Return(nil, nil)
+
+		err := uc.MarkAsRead(ctx, notificationID, username)
+		assert.ErrorIs(t, err, domain.ErrUserNotFound)
 	})
 
 	t.Run("notification repo get error", func(t *testing.T) {
@@ -227,6 +247,13 @@ func TestNotificationUseCase_MarkAllAsRead(t *testing.T) {
 
 		err := uc.MarkAllAsRead(ctx, username)
 		assert.ErrorIs(t, err, expectedErr)
+	})
+
+	t.Run("nil user from repo", func(t *testing.T) {
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, username).Return(nil, nil)
+
+		err := uc.MarkAllAsRead(ctx, username)
+		assert.ErrorIs(t, err, domain.ErrUserNotFound)
 	})
 
 	t.Run("mark all as read repository error", func(t *testing.T) {
