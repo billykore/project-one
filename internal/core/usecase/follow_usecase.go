@@ -42,10 +42,16 @@ func (u *followUseCase) Follow(ctx context.Context, followerUsername, followedUs
 	if err != nil {
 		return nil, fmt.Errorf("get follower by username: %w", err)
 	}
+	if follower == nil {
+		return nil, fmt.Errorf("follower user is nil")
+	}
 
 	followed, err := u.userRepo.GetUserByUsername(ctx, followedUsername)
 	if err != nil {
 		return nil, fmt.Errorf("get followed by username: %w", err)
+	}
+	if followed == nil {
+		return nil, fmt.Errorf("followed user is nil")
 	}
 
 	follow := &domain.Follow{
@@ -64,8 +70,12 @@ func (u *followUseCase) Follow(ctx context.Context, followerUsername, followedUs
 		ActorID: follower.ID,
 		Type:    domain.NotificationTypeFollow,
 	}
-	if err := u.publisher.Publish(ctx, notification); err != nil {
-		u.log.Error(ctx, "failed to publish follow notification", "error", err)
+	if err := notification.Validate(); err != nil {
+		u.log.Error(ctx, "invalid follow notification", "error", err)
+	} else {
+		if err := u.publisher.Publish(ctx, notification); err != nil {
+			u.log.Error(ctx, "failed to publish follow notification", "error", err)
+		}
 	}
 
 	return follow, nil

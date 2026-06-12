@@ -13,6 +13,7 @@ import (
 	"github.com/billykore/project-one/api/swagger"
 	"github.com/billykore/project-one/internal/adapters/hasher"
 	"github.com/billykore/project-one/internal/adapters/logger"
+	notificationBroker "github.com/billykore/project-one/internal/adapters/notification"
 	"github.com/billykore/project-one/internal/adapters/repository"
 	"github.com/billykore/project-one/internal/adapters/token"
 	"github.com/billykore/project-one/internal/adapters/validator"
@@ -70,13 +71,14 @@ func main() {
 	likeRepo := repository.NewLikeRepository(db)
 	tokenSvc := token.NewJWTTokenService(cfg.JWT.SecretKey, cfg.JWT.ExpirationTime)
 	hasher := hasher.NewBcryptHasher()
+	broker := notificationBroker.NewMemoryBroker(100)
 
 	// 4. Initialize UseCase.
 	loginUc := usecase.NewLoginUseCase(userRepo, tokenSvc, userTokenRepo, hasher, lgr)
 	userUc := usecase.NewUserUseCase(userRepo, userTokenRepo, hasher)
-	postUc := usecase.NewPostUseCase(postRepo, likeRepo, lgr)
-	followUc := usecase.NewFollowUseCase(followRepo, userRepo)
-	commentUc := usecase.NewCommentUseCase(commentRepo, postRepo, userRepo, lgr)
+	postUc := usecase.NewPostUseCase(postRepo, likeRepo, userRepo, broker, lgr)
+	followUc := usecase.NewFollowUseCase(followRepo, userRepo, broker, lgr)
+	commentUc := usecase.NewCommentUseCase(commentRepo, postRepo, userRepo, broker, lgr)
 
 	// 5. Initialize Handler.
 	userHdl := handler.NewUserHandler(userUc, loginUc, followUc, postUc, val, lgr)

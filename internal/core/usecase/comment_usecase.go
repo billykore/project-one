@@ -78,19 +78,25 @@ func (u *commentUseCase) AddComment(ctx context.Context, postID int, username st
 
 	u.log.Info(ctx, "comment created successfully", "commentID", comment.ID, "postID", postID, "username", username)
 
-	postOwner, err := u.userRepo.GetUserByUsername(ctx, post.Username)
-	if err == nil {
-		commenter, err := u.userRepo.GetUserByUsername(ctx, username)
-		if err == nil && postOwner.ID != commenter.ID {
-			notification := &domain.Notification{
-				UserID:    postOwner.ID,
-				ActorID:   commenter.ID,
-				Type:      domain.NotificationTypeComment,
-				PostID:    &post.ID,
-				CommentID: &comment.ID,
-			}
-			if pErr := u.publisher.Publish(ctx, notification); pErr != nil {
-				u.log.Error(ctx, "failed to publish comment notification", "error", pErr)
+	if post.Username != username {
+		postOwner, err := u.userRepo.GetUserByUsername(ctx, post.Username)
+		if err == nil && postOwner != nil {
+			commenter, err := u.userRepo.GetUserByUsername(ctx, username)
+			if err == nil && commenter != nil && postOwner.ID != commenter.ID {
+				notification := &domain.Notification{
+					UserID:    postOwner.ID,
+					ActorID:   commenter.ID,
+					Type:      domain.NotificationTypeComment,
+					PostID:    &post.ID,
+					CommentID: &comment.ID,
+				}
+				if err := notification.Validate(); err != nil {
+					u.log.Error(ctx, "invalid comment notification", "error", err)
+				} else {
+					if pErr := u.publisher.Publish(ctx, notification); pErr != nil {
+						u.log.Error(ctx, "failed to publish comment notification", "error", pErr)
+					}
+				}
 			}
 		}
 	}

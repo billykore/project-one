@@ -194,18 +194,24 @@ func (uc *postUseCase) LikePost(ctx context.Context, postID int, username string
 		return 0, domain.ErrInternalServer
 	}
 
-	postOwner, err := uc.userRepo.GetUserByUsername(ctx, post.Username)
-	if err == nil {
-		liker, err := uc.userRepo.GetUserByUsername(ctx, username)
-		if err == nil && postOwner.ID != liker.ID {
-			notification := &domain.Notification{
-				UserID:  postOwner.ID,
-				ActorID: liker.ID,
-				Type:    domain.NotificationTypeLike,
-				PostID:  &post.ID,
-			}
-			if pErr := uc.publisher.Publish(ctx, notification); pErr != nil {
-				uc.log.Error(ctx, "failed to publish like notification", "error", pErr)
+	if post.Username != username {
+		postOwner, err := uc.userRepo.GetUserByUsername(ctx, post.Username)
+		if err == nil && postOwner != nil {
+			liker, err := uc.userRepo.GetUserByUsername(ctx, username)
+			if err == nil && liker != nil && postOwner.ID != liker.ID {
+				notification := &domain.Notification{
+					UserID:  postOwner.ID,
+					ActorID: liker.ID,
+					Type:    domain.NotificationTypeLike,
+					PostID:  &post.ID,
+				}
+				if err := notification.Validate(); err != nil {
+					uc.log.Error(ctx, "invalid like notification", "error", err)
+				} else {
+					if pErr := uc.publisher.Publish(ctx, notification); pErr != nil {
+						uc.log.Error(ctx, "failed to publish like notification", "error", pErr)
+					}
+				}
 			}
 		}
 	}
