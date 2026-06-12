@@ -22,14 +22,23 @@ func NewMemoryBroker(bufferSize int) *MemoryBroker {
 	}
 }
 
-func (b *MemoryBroker) Publish(ctx context.Context, notification *domain.Notification) error {
+func (b *MemoryBroker) Publish(ctx context.Context, notification *domain.Notification) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = context.Canceled
+		}
+	}()
+
 	b.mu.Lock()
-	defer b.mu.Unlock()
 	if b.done {
+		b.mu.Unlock()
 		return context.Canceled
 	}
+	ch := b.ch
+	b.mu.Unlock()
+
 	select {
-	case b.ch <- notification:
+	case ch <- notification:
 		return nil
 	case <-ctx.Done():
 		return ctx.Err()

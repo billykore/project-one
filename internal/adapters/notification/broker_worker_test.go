@@ -2,6 +2,7 @@ package notification
 
 import (
 	"context"
+	"sync"
 	"testing"
 	"time"
 
@@ -10,19 +11,25 @@ import (
 )
 
 type mockRepo struct {
+	mu            sync.Mutex
 	notifications []*domain.Notification
 }
 
 func (r *mockRepo) Create(ctx context.Context, n *domain.Notification) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	r.notifications = append(r.notifications, n)
 	return nil
 }
+
 func (r *mockRepo) GetByID(ctx context.Context, id int) (*domain.Notification, error) {
 	return nil, nil
 }
+
 func (r *mockRepo) GetByUserID(ctx context.Context, u int, l, o int) ([]*domain.Notification, error) {
 	return nil, nil
 }
+
 func (r *mockRepo) MarkAsRead(ctx context.Context, id int) error   { return nil }
 func (r *mockRepo) MarkAllAsRead(ctx context.Context, u int) error { return nil }
 
@@ -49,7 +56,10 @@ func TestBrokerAndWorker(t *testing.T) {
 
 	time.Sleep(50 * time.Millisecond)
 
-	assert.Len(t, repo.notifications, 1)
+	repo.mu.Lock()
+	count := len(repo.notifications)
+	repo.mu.Unlock()
+	assert.Equal(t, 1, count)
 
 	err = worker.Stop(ctx)
 	assert.NoError(t, err)
