@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"testing"
-	"time"
 
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/usecase/mocks"
@@ -59,7 +58,7 @@ func TestNewNotificationUseCase(t *testing.T) {
 	})
 }
 
-func TestNotificationUseCase_Lifecycle(t *testing.T) {
+func TestNotificationUseCase_SaveNotification(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -70,24 +69,17 @@ func TestNotificationUseCase_Lifecycle(t *testing.T) {
 	uc := NewNotificationUseCase(mockRepo, mockUserRepo, mockConsumer, lgr)
 
 	ctx := context.Background()
+	notification := &domain.Notification{ID: 101, UserID: 1, Type: domain.NotificationTypeFollow}
 
-	t.Run("Start success and consume", func(t *testing.T) {
-		ch := make(chan *domain.Notification, 1)
-		mockConsumer.EXPECT().Start(ctx).Return(ch, nil)
-
-		notification := &domain.Notification{ID: 101, UserID: 1}
-		mockRepo.EXPECT().Create(gomock.Any(), notification).Return(nil)
-
-		err := uc.Start(ctx)
+	t.Run("success", func(t *testing.T) {
+		mockRepo.EXPECT().Create(ctx, notification).Return(nil)
+		err := uc.SaveNotification(ctx, notification)
 		assert.NoError(t, err)
-
-		ch <- notification
-		time.Sleep(50 * time.Millisecond) // yield to allow the goroutine to run
 	})
 
-	t.Run("Stop success", func(t *testing.T) {
-		mockConsumer.EXPECT().Stop(ctx).Return(nil)
-		err := uc.Stop(ctx)
+	t.Run("repository error", func(t *testing.T) {
+		mockRepo.EXPECT().Create(ctx, notification).Return(errors.New("db error"))
+		err := uc.SaveNotification(ctx, notification)
 		assert.NoError(t, err)
 	})
 }
@@ -325,4 +317,3 @@ func TestNotificationUseCase_MarkAllAsRead(t *testing.T) {
 		assert.ErrorIs(t, err, expectedErr)
 	})
 }
-
