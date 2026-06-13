@@ -28,6 +28,11 @@ type NotificationUseCase interface {
 	MarkAsRead(ctx context.Context, id int, username string) error
 	// MarkAllAsRead marks all notifications as read for the authenticated user.
 	MarkAllAsRead(ctx context.Context, username string) error
+
+	// Start begins the background consumption and database persistence of notifications.
+	Start(ctx context.Context) error
+	// Stop gracefully shuts down the background consumption.
+	Stop(ctx context.Context) error
 }
 
 // NotificationPublisher is a driven port for publishing notifications to an event broker asynchronously.
@@ -39,7 +44,7 @@ type NotificationPublisher interface {
 // NotificationConsumer is a driver port representing a background worker that consumes notification events.
 type NotificationConsumer interface {
 	// Start begins the asynchronous consumption of events from the broker.
-	Start(ctx context.Context) error
+	Start(ctx context.Context) (<-chan *domain.Notification, error)
 	// Stop gracefully terminates the background worker process.
 	Stop(ctx context.Context) error
 }
