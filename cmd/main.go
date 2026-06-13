@@ -73,10 +73,7 @@ func main() {
 	hasher := hasher.NewBcryptHasher()
 	broker := notificationBroker.NewMemoryBroker(100)
 	notificationRepo := repository.NewNotificationRepository(db)
-	worker := notificationBroker.NewBackgroundWorker(notificationRepo, broker.Channel(), lgr)
-	if err := worker.Start(ctx); err != nil {
-		lgr.Fatal(ctx, "failed to start background notification worker", "error", err)
-	}
+	worker := notificationBroker.NewBackgroundWorker(broker.Channel(), lgr)
 
 	// 4. Initialize UseCase.
 	loginUc := usecase.NewLoginUseCase(userRepo, tokenSvc, userTokenRepo, hasher, lgr)
@@ -84,6 +81,11 @@ func main() {
 	postUc := usecase.NewPostUseCase(postRepo, likeRepo, userRepo, broker, lgr)
 	followUc := usecase.NewFollowUseCase(followRepo, userRepo, broker, lgr)
 	commentUc := usecase.NewCommentUseCase(commentRepo, postRepo, userRepo, broker, lgr)
+	notificationUc := usecase.NewNotificationUseCase(notificationRepo, userRepo, worker, lgr)
+
+	if err := notificationUc.Start(ctx); err != nil {
+		lgr.Fatal(ctx, "failed to start background notification usecase", "error", err)
+	}
 
 	// 5. Initialize Handler.
 	userHdl := handler.NewUserHandler(userUc, loginUc, followUc, postUc, val, lgr)
@@ -181,8 +183,8 @@ func main() {
 	}
 
 	broker.Close()
-	if err := worker.Stop(ctxShutdown); err != nil {
-		lgr.Error(ctxShutdown, "failed to stop background worker gracefully", "error", err)
+	if err := notificationUc.Stop(ctxShutdown); err != nil {
+		lgr.Error(ctxShutdown, "failed to stop background notification usecase gracefully", "error", err)
 	}
 
 	if err := closeDB(db); err != nil {
