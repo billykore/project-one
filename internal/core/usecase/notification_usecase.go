@@ -12,19 +12,61 @@ import (
 type notificationUseCase struct {
 	repo     ports.NotificationRepository
 	userRepo ports.UserRepository
+	consumer ports.NotificationConsumer
+	log      ports.Logger
 }
 
-func NewNotificationUseCase(repo ports.NotificationRepository, userRepo ports.UserRepository) ports.NotificationUseCase {
+func NewNotificationUseCase(
+	repo ports.NotificationRepository,
+	userRepo ports.UserRepository,
+	consumer ports.NotificationConsumer,
+	log ports.Logger,
+) ports.NotificationUseCase {
 	if repo == nil {
 		panic("NewNotificationUseCase: repo is required")
 	}
 	if userRepo == nil {
 		panic("NewNotificationUseCase: userRepo is required")
 	}
+	if consumer == nil {
+		panic("NewNotificationUseCase: consumer is required")
+	}
+	if log == nil {
+		panic("NewNotificationUseCase: log is required")
+	}
 	return &notificationUseCase{
 		repo:     repo,
 		userRepo: userRepo,
+		consumer: consumer,
+		log:      log,
 	}
+}
+
+func (uc *notificationUseCase) Start(ctx context.Context) error {
+	outCh, err := uc.consumer.Start(ctx)
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		for n := range outCh {
+			if n == nil {
+				continue
+			}
+			bgCtx := context.Background()
+			if err := uc.repo.Create(bgCtx, n); err != nil {
+				uc.log.Error(bgCtx, "failed to persist notification", "userID", n.UserID, "type", n.Type, "error", err)
+			} else {
+				uc.log.Info(bgCtx, "notification persisted successfully", "id", n.ID, "userID", n.UserID)
+			}
+		}
+	}()
+
+	return nil
+}
+
+func (uc *notificationUseCase) Stop(ctx context.Context) error {
+	return uc.consumer.Stop(ctx)
 }
 
 func (uc *notificationUseCase) GetNotifications(ctx context.Context, username string, limit, offset int) ([]*domain.NotificationDetail, error) {
@@ -114,3 +156,4 @@ func (uc *notificationUseCase) MarkAllAsRead(ctx context.Context, username strin
 	}
 	return nil
 }
+

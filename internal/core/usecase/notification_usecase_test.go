@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/usecase/mocks"
@@ -11,28 +12,83 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
+type mockUseCaseLogger struct{}
+
+func (mockUseCaseLogger) Debug(ctx context.Context, msg string, fields ...any) {}
+func (mockUseCaseLogger) Info(ctx context.Context, msg string, fields ...any)  {}
+func (mockUseCaseLogger) Warn(ctx context.Context, msg string, fields ...any)  {}
+func (mockUseCaseLogger) Error(ctx context.Context, msg string, fields ...any) {}
+func (mockUseCaseLogger) Fatal(ctx context.Context, msg string, fields ...any) {}
+
 func TestNewNotificationUseCase(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockNotificationRepository(ctrl)
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockConsumer := mocks.NewMockNotificationConsumer(ctrl)
+	lgr := mockUseCaseLogger{}
 
 	t.Run("success", func(t *testing.T) {
-		uc := NewNotificationUseCase(mockRepo, mockUserRepo)
+		uc := NewNotificationUseCase(mockRepo, mockUserRepo, mockConsumer, lgr)
 		assert.NotNil(t, uc)
 	})
 
 	t.Run("nil repo", func(t *testing.T) {
 		assert.PanicsWithValue(t, "NewNotificationUseCase: repo is required", func() {
-			NewNotificationUseCase(nil, mockUserRepo)
+			NewNotificationUseCase(nil, mockUserRepo, mockConsumer, lgr)
 		})
 	})
 
 	t.Run("nil userRepo", func(t *testing.T) {
 		assert.PanicsWithValue(t, "NewNotificationUseCase: userRepo is required", func() {
-			NewNotificationUseCase(mockRepo, nil)
+			NewNotificationUseCase(mockRepo, nil, mockConsumer, lgr)
 		})
+	})
+
+	t.Run("nil consumer", func(t *testing.T) {
+		assert.PanicsWithValue(t, "NewNotificationUseCase: consumer is required", func() {
+			NewNotificationUseCase(mockRepo, mockUserRepo, nil, lgr)
+		})
+	})
+
+	t.Run("nil logger", func(t *testing.T) {
+		assert.PanicsWithValue(t, "NewNotificationUseCase: log is required", func() {
+			NewNotificationUseCase(mockRepo, mockUserRepo, mockConsumer, nil)
+		})
+	})
+}
+
+func TestNotificationUseCase_Lifecycle(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mocks.NewMockNotificationRepository(ctrl)
+	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockConsumer := mocks.NewMockNotificationConsumer(ctrl)
+	lgr := mockUseCaseLogger{}
+	uc := NewNotificationUseCase(mockRepo, mockUserRepo, mockConsumer, lgr)
+
+	ctx := context.Background()
+
+	t.Run("Start success and consume", func(t *testing.T) {
+		ch := make(chan *domain.Notification, 1)
+		mockConsumer.EXPECT().Start(ctx).Return(ch, nil)
+
+		notification := &domain.Notification{ID: 101, UserID: 1}
+		mockRepo.EXPECT().Create(gomock.Any(), notification).Return(nil)
+
+		err := uc.Start(ctx)
+		assert.NoError(t, err)
+
+		ch <- notification
+		time.Sleep(50 * time.Millisecond) // yield to allow the goroutine to run
+	})
+
+	t.Run("Stop success", func(t *testing.T) {
+		mockConsumer.EXPECT().Stop(ctx).Return(nil)
+		err := uc.Stop(ctx)
+		assert.NoError(t, err)
 	})
 }
 
@@ -42,7 +98,9 @@ func TestNotificationUseCase_GetNotifications(t *testing.T) {
 
 	mockRepo := mocks.NewMockNotificationRepository(ctrl)
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
-	uc := NewNotificationUseCase(mockRepo, mockUserRepo)
+	mockConsumer := mocks.NewMockNotificationConsumer(ctrl)
+	lgr := mockUseCaseLogger{}
+	uc := NewNotificationUseCase(mockRepo, mockUserRepo, mockConsumer, lgr)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -79,18 +137,16 @@ func TestNotificationUseCase_GetNotifications(t *testing.T) {
 		// Actor 4: lookup fails with ErrUserNotFound, should only be called once due to caching of soft failure
 		mockUserRepo.EXPECT().GetUserByID(ctx, 4).Return(nil, domain.ErrUserNotFound).Times(1)
 
-		// Actor 1: user themselves, should not trigger GetUserByID
-
 		results, err := uc.GetNotifications(ctx, username, limit, offset)
 		assert.NoError(t, err)
-		assert.Len(t, results, 6) // nil was skipped, so 7 inputs - 1 nil = 6 outputs
+		assert.Len(t, results, 6)
 
 		assert.Equal(t, "actor2", results[0].ActorUsername)
 		assert.Equal(t, "actor2", results[1].ActorUsername)
 		assert.Equal(t, "actor3", results[2].ActorUsername)
 		assert.Equal(t, "", results[3].ActorUsername)
 		assert.Equal(t, "", results[4].ActorUsername)
-		assert.Equal(t, username, results[5].ActorUsername) // actor is the user itself
+		assert.Equal(t, username, results[5].ActorUsername)
 	})
 
 	t.Run("user repo error", func(t *testing.T) {
@@ -143,7 +199,9 @@ func TestNotificationUseCase_MarkAsRead(t *testing.T) {
 
 	mockRepo := mocks.NewMockNotificationRepository(ctrl)
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
-	uc := NewNotificationUseCase(mockRepo, mockUserRepo)
+	mockConsumer := mocks.NewMockNotificationConsumer(ctrl)
+	lgr := mockUseCaseLogger{}
+	uc := NewNotificationUseCase(mockRepo, mockUserRepo, mockConsumer, lgr)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -223,7 +281,9 @@ func TestNotificationUseCase_MarkAllAsRead(t *testing.T) {
 
 	mockRepo := mocks.NewMockNotificationRepository(ctrl)
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
-	uc := NewNotificationUseCase(mockRepo, mockUserRepo)
+	mockConsumer := mocks.NewMockNotificationConsumer(ctrl)
+	lgr := mockUseCaseLogger{}
+	uc := NewNotificationUseCase(mockRepo, mockUserRepo, mockConsumer, lgr)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -265,3 +325,4 @@ func TestNotificationUseCase_MarkAllAsRead(t *testing.T) {
 		assert.ErrorIs(t, err, expectedErr)
 	})
 }
+
