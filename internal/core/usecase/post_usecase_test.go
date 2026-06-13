@@ -329,7 +329,6 @@ func TestPostUseCase_LikePost(t *testing.T) {
 		mockLikeRepo.EXPECT().Exists(ctx, postID, username).Return(false, nil)
 		mockLikeRepo.EXPECT().Create(ctx, gomock.Any()).Return(nil)
 		mockRepo.EXPECT().IncrementLikeCount(ctx, postID, 1).Return(nil)
-		mockRepo.EXPECT().GetByIDOnly(ctx, postID).Return(&domain.Post{ID: postID, Username: "postowner", LikeCount: 5}, nil)
 		mockUserRepo.EXPECT().GetUserByUsername(ctx, "postowner").Return(&domain.User{ID: 2, Username: "postowner"}, nil)
 		mockUserRepo.EXPECT().GetUserByUsername(ctx, username).Return(&domain.User{ID: 1, Username: username}, nil)
 		mockPublisher.EXPECT().Publish(ctx, &domain.Notification{
@@ -348,7 +347,6 @@ func TestPostUseCase_LikePost(t *testing.T) {
 	t.Run("success idempotent - already liked", func(t *testing.T) {
 		mockRepo.EXPECT().GetByIDOnly(ctx, postID).Return(&domain.Post{ID: postID, LikeCount: 4}, nil)
 		mockLikeRepo.EXPECT().Exists(ctx, postID, username).Return(true, nil)
-		mockRepo.EXPECT().GetByIDOnly(ctx, postID).Return(&domain.Post{ID: postID, LikeCount: 4}, nil)
 
 		count, err := svc.LikePost(ctx, postID, username)
 		assert.NoError(t, err)

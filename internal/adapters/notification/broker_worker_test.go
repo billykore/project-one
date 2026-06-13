@@ -61,7 +61,7 @@ func TestBrokerAndWorker(t *testing.T) {
 	repo.mu.Unlock()
 	assert.Equal(t, 1, count)
 
+	broker.Close()
 	err = worker.Stop(ctx)
 	assert.NoError(t, err)
-	broker.Close()
 }

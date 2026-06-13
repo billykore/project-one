@@ -158,7 +158,7 @@ func (uc *postUseCase) LikePost(ctx context.Context, postID int, username string
 	}
 
 	// Check if post exists
-	_, err := uc.postRepo.GetByIDOnly(ctx, postID)
+	post, err := uc.postRepo.GetByIDOnly(ctx, postID)
 	if err != nil {
 		if errors.Is(err, domain.ErrPostNotFound) {
 			return 0, err
@@ -174,11 +174,6 @@ func (uc *postUseCase) LikePost(ctx context.Context, postID int, username string
 	}
 
 	if exists {
-		post, err := uc.postRepo.GetByIDOnly(ctx, postID)
-		if err != nil {
-			uc.log.Error(ctx, "failed to get post for like count", "postID", postID, "error", err)
-			return 0, domain.ErrInternalServer
-		}
 		return post.LikeCount, nil
 	}
 
@@ -191,10 +186,6 @@ func (uc *postUseCase) LikePost(ctx context.Context, postID int, username string
 			return 0, err
 		}
 		if errors.Is(err, domain.ErrAlreadyLiked) {
-			post, err := uc.postRepo.GetByIDOnly(ctx, postID)
-			if err != nil {
-				return 0, domain.ErrInternalServer
-			}
 			return post.LikeCount, nil
 		}
 		uc.log.Error(ctx, "failed to create like", "postID", postID, "username", username, "error", err)
@@ -207,12 +198,6 @@ func (uc *postUseCase) LikePost(ctx context.Context, postID int, username string
 	}
 
 	uc.log.Info(ctx, "post liked successfully", "postID", postID, "username", username)
-
-	post, err := uc.postRepo.GetByIDOnly(ctx, postID)
-	if err != nil {
-		uc.log.Error(ctx, "failed to get post for like count", "postID", postID, "error", err)
-		return 0, domain.ErrInternalServer
-	}
 
 	if post.Username != username {
 		postOwner, err := uc.userRepo.GetUserByUsername(ctx, post.Username)
@@ -240,7 +225,7 @@ func (uc *postUseCase) LikePost(ctx context.Context, postID int, username string
 		}
 	}
 
-	return post.LikeCount, nil
+	return post.LikeCount + 1, nil
 }
 
 func (uc *postUseCase) UnlikePost(ctx context.Context, postID int, username string) (int, error) {
