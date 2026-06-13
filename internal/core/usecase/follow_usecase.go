@@ -72,11 +72,11 @@ func (u *followUseCase) Follow(ctx context.Context, followerUsername, followedUs
 	err = notification.Validate()
 	if err != nil {
 		u.log.Error(ctx, "invalid follow notification", "error", err)
-	}
-
-	err = u.publisher.Publish(ctx, notification)
-	if err != nil {
-		u.log.Error(ctx, "failed to publish follow notification", "error", err)
+	} else {
+		err = u.publisher.Publish(ctx, notification)
+		if err != nil {
+			u.log.Error(ctx, "failed to publish follow notification", "error", err)
+		}
 	}
 
 	return follow, nil

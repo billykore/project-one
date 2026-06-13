@@ -78,6 +78,21 @@ func TestFollowUseCase_Follow(t *testing.T) {
 		assert.Error(t, err)
 		assert.Nil(t, follow)
 	})
+
+	t.Run("validation failure does not publish", func(t *testing.T) {
+		followerUsername := "user1"
+		followedUsername := "user2"
+
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{ID: 1, Username: "user1"}, nil)
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, followedUsername).Return(&domain.User{ID: 0, Username: "user2"}, nil)
+		mockFollowRepo.EXPECT().Create(ctx, gomock.Any()).Return(nil)
+		mockLogger.EXPECT().Error(ctx, "invalid follow notification", "error", gomock.Any())
+
+		follow, err := svc.Follow(ctx, followerUsername, followedUsername)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, follow)
+	})
 }
 
 func TestFollowUseCase_Unfollow(t *testing.T) {
