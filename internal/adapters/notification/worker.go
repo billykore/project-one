@@ -17,7 +17,6 @@ var ErrWorkerAlreadyStarted = errors.New("background worker already started")
 // BackgroundWorker is a consumer of notification events that processes and persists
 // incoming notifications in the database in the background.
 type BackgroundWorker struct {
-	repo    ports.NotificationRepository
 	ch      <-chan *domain.Notification
 	log     ports.Logger
 	wg      sync.WaitGroup
@@ -26,23 +25,24 @@ type BackgroundWorker struct {
 }
 
 // NewBackgroundWorker creates a new BackgroundWorker instance.
-func NewBackgroundWorker(repo ports.NotificationRepository, ch <-chan *domain.Notification, log ports.Logger) *BackgroundWorker {
+func NewBackgroundWorker(ch <-chan *domain.Notification, log ports.Logger) *BackgroundWorker {
 	return &BackgroundWorker{
-		repo: repo,
-		ch:   ch,
-		log:  log,
+		ch:  ch,
+		log: log,
 	}
 }
 
 // Start spawns the background worker goroutine to consume events.
 // It returns ErrWorkerAlreadyStarted if the worker is already active.
-func (w *BackgroundWorker) Start(ctx context.Context) error {
+func (w *BackgroundWorker) Start(ctx context.Context) (<-chan *domain.Notification, error) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	if w.started {
-		return ErrWorkerAlreadyStarted
+		return nil, ErrWorkerAlreadyStarted
 	}
 	w.started = true
+
+	outCh := make(chan *domain.Notification, cap(w.ch))
 
 	w.wg.Go(func() {
 		w.log.Info(ctx, "background notification worker started")
@@ -50,16 +50,12 @@ func (w *BackgroundWorker) Start(ctx context.Context) error {
 			if notification == nil {
 				continue
 			}
-			bgCtx := context.Background()
-			if err := w.repo.Create(bgCtx, notification); err != nil {
-				w.log.Error(bgCtx, "failed to persist notification", "userID", notification.UserID, "type", notification.Type, "error", err)
-			} else {
-				w.log.Info(bgCtx, "notification persisted successfully", "id", notification.ID, "userID", notification.UserID)
-			}
+			outCh <- notification
 		}
+		close(outCh)
 		w.log.Info(ctx, "notification channel closed, worker stopped cleanly")
 	})
-	return nil
+	return outCh, nil
 }
 
 // Stop gracefully shuts down the background worker.
@@ -79,3 +75,4 @@ func (w *BackgroundWorker) Stop(ctx context.Context) error {
 		return ctx.Err()
 	}
 }
+

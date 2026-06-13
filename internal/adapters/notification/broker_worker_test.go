@@ -44,15 +44,22 @@ func (mockLogger) Fatal(ctx context.Context, msg string, fields ...any) {}
 func TestBrokerAndWorker(t *testing.T) {
 	broker := NewMemoryBroker(10)
 	repo := &mockRepo{}
-	worker := NewBackgroundWorker(repo, broker.Channel(), mockLogger{})
+	worker := NewBackgroundWorker(broker.Channel(), mockLogger{})
 
 	ctx := context.Background()
-	err := worker.Start(ctx)
+	outCh, err := worker.Start(ctx)
 	assert.NoError(t, err)
 
 	n := &domain.Notification{UserID: 1, ActorID: 2, Type: domain.NotificationTypeFollow}
 	err = broker.Publish(ctx, n)
 	assert.NoError(t, err)
+
+	// Consume and save notifications in a mock consumer routine
+	go func() {
+		for notification := range outCh {
+			_ = repo.Create(ctx, notification)
+		}
+	}()
 
 	time.Sleep(50 * time.Millisecond)
 
@@ -65,3 +72,4 @@ func TestBrokerAndWorker(t *testing.T) {
 	err = worker.Stop(ctx)
 	assert.NoError(t, err)
 }
+
