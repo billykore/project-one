@@ -180,6 +180,34 @@ func (mr *MockNotificationUseCaseMockRecorder) MarkAsRead(ctx, id, username any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarkAsRead", reflect.TypeOf((*MockNotificationUseCase)(nil).MarkAsRead), ctx, id, username)
 }
 
+// Start mocks base method.
+func (m *MockNotificationUseCase) Start(ctx context.Context) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Start", ctx)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Start indicates an expected call of Start.
+func (mr *MockNotificationUseCaseMockRecorder) Start(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockNotificationUseCase)(nil).Start), ctx)
+}
+
+// Stop mocks base method.
+func (m *MockNotificationUseCase) Stop(ctx context.Context) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Stop", ctx)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Stop indicates an expected call of Stop.
+func (mr *MockNotificationUseCaseMockRecorder) Stop(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stop", reflect.TypeOf((*MockNotificationUseCase)(nil).Stop), ctx)
+}
+
 // MockNotificationPublisher is a mock of NotificationPublisher interface.
 type MockNotificationPublisher struct {
 	ctrl     *gomock.Controller
@@ -243,11 +271,12 @@ func (m *MockNotificationConsumer) EXPECT() *MockNotificationConsumerMockRecorde
 }
 
 // Start mocks base method.
-func (m *MockNotificationConsumer) Start(ctx context.Context) error {
+func (m *MockNotificationConsumer) Start(ctx context.Context) (<-chan *domain.Notification, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Start", ctx)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(<-chan *domain.Notification)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Start indicates an expected call of Start.
