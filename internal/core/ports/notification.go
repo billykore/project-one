@@ -28,11 +28,8 @@ type NotificationUseCase interface {
 	MarkAsRead(ctx context.Context, id int, username string) error
 	// MarkAllAsRead marks all notifications as read for the authenticated user.
 	MarkAllAsRead(ctx context.Context, username string) error
-
-	// Start begins the background consumption and database persistence of notifications.
-	Start(ctx context.Context) error
-	// Stop gracefully shuts down the background consumption.
-	Stop(ctx context.Context) error
+	// SaveNotification saves a notification to the database.
+	SaveNotification(ctx context.Context, notification *domain.Notification) error
 }
 
 // NotificationPublisher is a driven port for publishing notifications to an event broker asynchronously.

@@ -75,4 +75,3 @@ func (w *BackgroundWorker) Stop(ctx context.Context) error {
 		return ctx.Err()
 	}
 }
-

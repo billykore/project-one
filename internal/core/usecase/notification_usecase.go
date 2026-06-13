@@ -42,33 +42,6 @@ func NewNotificationUseCase(
 	}
 }
 
-func (uc *notificationUseCase) Start(ctx context.Context) error {
-	outCh, err := uc.consumer.Start(ctx)
-	if err != nil {
-		return err
-	}
-
-	go func() {
-		for n := range outCh {
-			if n == nil {
-				continue
-			}
-			bgCtx := context.Background()
-			if err := uc.repo.Create(bgCtx, n); err != nil {
-				uc.log.Error(bgCtx, "failed to persist notification", "userID", n.UserID, "type", n.Type, "error", err)
-			} else {
-				uc.log.Info(bgCtx, "notification persisted successfully", "id", n.ID, "userID", n.UserID)
-			}
-		}
-	}()
-
-	return nil
-}
-
-func (uc *notificationUseCase) Stop(ctx context.Context) error {
-	return uc.consumer.Stop(ctx)
-}
-
 func (uc *notificationUseCase) GetNotifications(ctx context.Context, username string, limit, offset int) ([]*domain.NotificationDetail, error) {
 	user, err := uc.userRepo.GetUserByUsername(ctx, username)
 	if err != nil {
@@ -157,3 +130,11 @@ func (uc *notificationUseCase) MarkAllAsRead(ctx context.Context, username strin
 	return nil
 }
 
+func (uc *notificationUseCase) SaveNotification(ctx context.Context, notification *domain.Notification) error {
+	if err := uc.repo.Create(ctx, notification); err != nil {
+		uc.log.Error(ctx, "failed to persist notification", "userID", notification.UserID, "type", notification.Type, "error", err)
+	} else {
+		uc.log.Info(ctx, "notification persisted successfully", "id", notification.ID, "userID", notification.UserID)
+	}
+	return nil
+}

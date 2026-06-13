@@ -83,14 +83,11 @@ func main() {
 	commentUc := usecase.NewCommentUseCase(commentRepo, postRepo, userRepo, broker, lgr)
 	notificationUc := usecase.NewNotificationUseCase(notificationRepo, userRepo, worker, lgr)
 
-	if err := notificationUc.Start(ctx); err != nil {
-		lgr.Fatal(ctx, "failed to start background notification usecase", "error", err)
-	}
-
 	// 5. Initialize Handler.
 	userHdl := handler.NewUserHandler(userUc, loginUc, followUc, postUc, val, lgr)
 	postHdl := handler.NewPostHandler(postUc, commentUc, val)
 	commentHdl := handler.NewCommentHandler(commentUc, val, lgr)
+	notificationHdl := handler.NewNotificationHandler(lgr, worker, notificationUc, val)
 
 	// 6. Set up Echo.
 	e := echo.New()
@@ -168,6 +165,12 @@ func main() {
 		}
 	}()
 
+	go func() {
+		if err := notificationHdl.Consume(ctx); err != nil {
+			lgr.Error(ctx, "failed to start notification consumer", "error", err)
+		}
+	}()
+
 	// Wait for interrupt signal to gracefully shut down the server with a timeout of 10 seconds.
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
@@ -183,9 +186,6 @@ func main() {
 	}
 
 	broker.Close()
-	if err := notificationUc.Stop(ctxShutdown); err != nil {
-		lgr.Error(ctxShutdown, "failed to stop background notification usecase gracefully", "error", err)
-	}
 
 	if err := closeDB(db); err != nil {
 		lgr.Error(ctx, "failed to close database connection", "error", err)
