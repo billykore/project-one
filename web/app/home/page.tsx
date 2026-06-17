@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useHome } from "./controller";
+import NotificationDropdown from "../../components/notification/NotificationDropdown";
 
 function getInitials(name: string): string {
   if (!name) return "?";
@@ -62,6 +63,7 @@ export default function HomePage() {
           priority
         />
         <div className="flex items-center gap-4">
+          <NotificationDropdown />
           {user?.username && (
             <Link
               href={`/${user.username}`}
