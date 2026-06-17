@@ -13,7 +13,7 @@ import (
 	"github.com/billykore/project-one/api/swagger"
 	"github.com/billykore/project-one/internal/adapters/hasher"
 	"github.com/billykore/project-one/internal/adapters/logger"
-	notificationBroker "github.com/billykore/project-one/internal/adapters/notification"
+	"github.com/billykore/project-one/internal/adapters/pubsub"
 	"github.com/billykore/project-one/internal/adapters/repository"
 	"github.com/billykore/project-one/internal/adapters/token"
 	"github.com/billykore/project-one/internal/adapters/validator"
@@ -71,23 +71,24 @@ func main() {
 	likeRepo := repository.NewLikeRepository(db)
 	tokenSvc := token.NewJWTTokenService(cfg.JWT.SecretKey, cfg.JWT.ExpirationTime)
 	hasher := hasher.NewBcryptHasher()
-	broker := notificationBroker.NewMemoryBroker(100)
+	inMemoryPubSub := pubsub.NewInMemoryPubSub()
+	publisher := pubsub.NewInMemoryPublisher(inMemoryPubSub)
+	subcriber := pubsub.NewInMemorySubscriber(inMemoryPubSub)
 	notificationRepo := repository.NewNotificationRepository(db)
-	worker := notificationBroker.NewBackgroundWorker(broker.Channel(), lgr)
 
 	// 4. Initialize UseCase.
 	loginUc := usecase.NewLoginUseCase(userRepo, tokenSvc, userTokenRepo, hasher, lgr)
 	userUc := usecase.NewUserUseCase(userRepo, userTokenRepo, hasher)
-	postUc := usecase.NewPostUseCase(postRepo, likeRepo, userRepo, broker, lgr)
-	followUc := usecase.NewFollowUseCase(followRepo, userRepo, broker, lgr)
-	commentUc := usecase.NewCommentUseCase(commentRepo, postRepo, userRepo, broker, lgr)
-	notificationUc := usecase.NewNotificationUseCase(notificationRepo, userRepo, worker, lgr)
+	postUc := usecase.NewPostUseCase(postRepo, likeRepo, userRepo, publisher, lgr)
+	followUc := usecase.NewFollowUseCase(followRepo, userRepo, publisher, lgr)
+	commentUc := usecase.NewCommentUseCase(commentRepo, postRepo, userRepo, publisher, lgr)
+	notificationUc := usecase.NewNotificationUseCase(notificationRepo, userRepo, lgr)
 
 	// 5. Initialize Handler.
 	userHdl := handler.NewUserHandler(userUc, loginUc, followUc, postUc, val, lgr)
 	postHdl := handler.NewPostHandler(postUc, commentUc, val)
 	commentHdl := handler.NewCommentHandler(commentUc, val, lgr)
-	notificationHdl := handler.NewNotificationHandler(lgr, worker, notificationUc, val)
+	notificationHdl := handler.NewNotificationHandler(lgr, subcriber, notificationUc, val)
 
 	// 6. Set up Echo.
 	e := echo.New()
@@ -155,19 +156,27 @@ func main() {
 		comments.DELETE("/:id", commentHdl.DeleteComment)
 	}
 
+	// Notifications Group
+	notifications := e.Group("/notifications", middleware.Authorize(tokenSvc))
+	{
+		notifications.GET("", notificationHdl.GetNotifications)
+		notifications.PUT("/:id/read", notificationHdl.MarkAsRead)
+		notifications.PUT("/read-all", notificationHdl.MarkAllAsRead)
+	}
+
 	// Start server.
 	lgr.Info(ctx, "starting server", "port", cfg.App.Port)
+
+	go func(ctx context.Context) {
+		if err := notificationHdl.Listen(ctx); err != nil {
+			lgr.Fatal(ctx, "failed to start notification consumer", "error", err)
+		}
+	}(ctx)
 
 	go func() {
 		err := e.Start(fmt.Sprintf(":%d", cfg.App.Port))
 		if err != nil && err != http.ErrServerClosed {
 			lgr.Fatal(ctx, "failed to start server", "error", err)
-		}
-	}()
-
-	go func() {
-		if err := notificationHdl.Consume(ctx); err != nil {
-			lgr.Error(ctx, "failed to start notification consumer", "error", err)
 		}
 	}()
 
@@ -181,14 +190,20 @@ func main() {
 	ctxShutdown, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	if err := e.Shutdown(ctxShutdown); err != nil {
-		lgr.Fatal(ctx, "server forced to shutdown", "error", err)
-	}
-
-	broker.Close()
-
 	if err := closeDB(db); err != nil {
 		lgr.Error(ctx, "failed to close database connection", "error", err)
+	}
+
+	if err := subcriber.Close(); err != nil {
+		lgr.Error(ctx, "failed to close subscriber", "error", err)
+	}
+
+	if err := publisher.Close(); err != nil {
+		lgr.Error(ctx, "failed to close publisher", "error", err)
+	}
+
+	if err := e.Shutdown(ctxShutdown); err != nil {
+		lgr.Fatal(ctx, "server forced to shutdown", "error", err)
 	}
 
 	lgr.Info(ctx, "server exited gracefully")

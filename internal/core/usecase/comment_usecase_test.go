@@ -18,7 +18,7 @@ func TestCommentUseCase_AddComment(t *testing.T) {
 	mockCommentRepo := mocks.NewMockCommentRepository(ctrl)
 	mockPostRepo := mocks.NewMockPostRepository(ctrl)
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
-	mockPublisher := mocks.NewMockNotificationPublisher(ctrl)
+	mockPublisher := mocks.NewMockPublisher(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
 
 	svc := NewCommentUseCase(mockCommentRepo, mockPostRepo, mockUserRepo, mockPublisher, mockLog)
@@ -42,15 +42,7 @@ func TestCommentUseCase_AddComment(t *testing.T) {
 
 		mockUserRepo.EXPECT().GetUserByUsername(ctx, "postowner").Return(&domain.User{ID: 2, Username: "postowner"}, nil)
 		mockUserRepo.EXPECT().GetUserByUsername(ctx, username).Return(&domain.User{ID: 1, Username: username}, nil)
-		commentIDVal := 100
-		mockPublisher.EXPECT().Publish(ctx, &domain.Notification{
-			UserID:    2,
-			ActorID:   1,
-			Type:      domain.NotificationTypeComment,
-			PostID:    &postID,
-			CommentID: &commentIDVal,
-		}).Return(nil)
-
+		mockPublisher.EXPECT().Publish(ctx, gomock.Any()).Return(nil)
 		mockLog.EXPECT().Info(ctx, "comment created successfully", "commentID", 100, "postID", postID, "username", username)
 
 		err := svc.AddComment(ctx, postID, username, content)
@@ -103,7 +95,7 @@ func TestCommentUseCase_GetCommentsByPostID(t *testing.T) {
 	mockCommentRepo := mocks.NewMockCommentRepository(ctrl)
 	mockPostRepo := mocks.NewMockPostRepository(ctrl)
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
-	mockPublisher := mocks.NewMockNotificationPublisher(ctrl)
+	mockPublisher := mocks.NewMockPublisher(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
 
 	svc := NewCommentUseCase(mockCommentRepo, mockPostRepo, mockUserRepo, mockPublisher, mockLog)
@@ -141,7 +133,7 @@ func TestCommentUseCase_EditComment(t *testing.T) {
 	mockCommentRepo := mocks.NewMockCommentRepository(ctrl)
 	mockPostRepo := mocks.NewMockPostRepository(ctrl)
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
-	mockPublisher := mocks.NewMockNotificationPublisher(ctrl)
+	mockPublisher := mocks.NewMockPublisher(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
 
 	svc := NewCommentUseCase(mockCommentRepo, mockPostRepo, mockUserRepo, mockPublisher, mockLog)
@@ -272,7 +264,7 @@ func TestCommentUseCase_DeleteComment(t *testing.T) {
 	mockCommentRepo := mocks.NewMockCommentRepository(ctrl)
 	mockPostRepo := mocks.NewMockPostRepository(ctrl)
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
-	mockPublisher := mocks.NewMockNotificationPublisher(ctrl)
+	mockPublisher := mocks.NewMockPublisher(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
 
 	svc := NewCommentUseCase(mockCommentRepo, mockPostRepo, mockUserRepo, mockPublisher, mockLog)

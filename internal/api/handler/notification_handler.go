@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
@@ -12,24 +13,26 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+const notificationTopic = "notifications"
+
 type NotificationHandler struct {
-	log       ports.Logger
-	consumer  ports.NotificationConsumer
-	uc        ports.NotificationUseCase
-	validator ports.Validator
+	log        ports.Logger
+	subscriber ports.Subscriber
+	uc         ports.NotificationUseCase
+	validator  ports.Validator
 }
 
 func NewNotificationHandler(
 	log ports.Logger,
-	consumer ports.NotificationConsumer,
+	subscriber ports.Subscriber,
 	notificationUc ports.NotificationUseCase,
 	validator ports.Validator,
 ) *NotificationHandler {
 	if log == nil {
 		panic("log is required")
 	}
-	if consumer == nil {
-		panic("consumer is required")
+	if subscriber == nil {
+		panic("subscriber is required")
 	}
 	if notificationUc == nil {
 		panic("notificationUc is required")
@@ -38,34 +41,40 @@ func NewNotificationHandler(
 		panic("validator is required")
 	}
 	return &NotificationHandler{
-		log:       log,
-		consumer:  consumer,
-		uc:        notificationUc,
-		validator: validator,
+		log:        log,
+		subscriber: subscriber,
+		uc:         notificationUc,
+		validator:  validator,
 	}
 }
 
-// Consume starts the notification consumer to listen for incoming notifications and persist them.
-// This should be called once during application startup and not called as a regular API endpoint.
-func (h *NotificationHandler) Consume(ctx context.Context) error {
-	outCh, err := h.consumer.Start(ctx)
-	if err != nil {
-		return err
-	}
-
-	go func(ctx context.Context) {
-		for n := range outCh {
-			if n == nil {
-				continue
-			}
-			if err := h.uc.SaveNotification(ctx, n); err != nil {
-				h.log.Error(ctx, "failed to persist notification", "userID", n.UserID, "type", n.Type, "error", err)
-			}
-			h.log.Info(ctx, "notification persisted successfully", "id", n.ID, "userID", n.UserID)
+// Listen starts a goroutine to listen for incoming notifications from the PubSub system
+// and persists them to the database.
+func (h *NotificationHandler) Listen(ctx context.Context) error {
+	return h.subscriber.Subscribe(ctx, notificationTopic, func(ctx context.Context, event ports.Event) error {
+		var notification domain.Notification
+		if err := json.Unmarshal(event.Payload, &notification); err != nil {
+			h.log.Error(ctx, "failed to unmarshal notification event", "error", err)
+			return nil
 		}
-	}(ctx)
 
-	return nil
+		if err := notification.Validate(); err != nil {
+			h.log.Error(ctx, "invalid notification event", "error", err)
+			return nil
+		}
+
+		if err := h.uc.SaveNotification(ctx, &notification); err != nil {
+			h.log.Error(ctx, "failed to save notification", "error", err)
+			return err
+		}
+
+		h.log.Info(ctx, "notification saved",
+			"userID", notification.UserID,
+			"actorID", notification.ActorID,
+			"type", notification.Type,
+		)
+		return nil
+	})
 }
 
 // GetNotifications handles the GET /notifications endpoint.

@@ -2,16 +2,19 @@ package usecase
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
 )
 
+const followNotificationTopic = "notifications"
+
 type followUseCase struct {
 	followRepo ports.FollowRepository
 	userRepo   ports.UserRepository
-	publisher  ports.NotificationPublisher
+	publisher  ports.Publisher
 	log        ports.Logger
 }
 
@@ -19,7 +22,7 @@ type followUseCase struct {
 func NewFollowUseCase(
 	followRepo ports.FollowRepository,
 	userRepo ports.UserRepository,
-	publisher ports.NotificationPublisher,
+	publisher ports.Publisher,
 	log ports.Logger,
 ) ports.FollowUseCase {
 	if followRepo == nil || userRepo == nil || publisher == nil || log == nil {
@@ -68,15 +71,24 @@ func (u *followUseCase) Follow(ctx context.Context, followerUsername, followedUs
 		ActorID: follower.ID,
 		Type:    domain.NotificationTypeFollow,
 	}
-
-	err = notification.Validate()
-	if err != nil {
+	if err := notification.Validate(); err != nil {
 		u.log.Error(ctx, "invalid follow notification", "error", err)
-	} else {
-		err = u.publisher.Publish(ctx, notification)
-		if err != nil {
-			u.log.Error(ctx, "failed to publish follow notification", "error", err)
-		}
+		return follow, nil
+	}
+
+	payload, err := json.Marshal(notification)
+	if err != nil {
+		u.log.Error(ctx, "failed to marshal follow notification", "error", err)
+		return follow, nil
+	}
+
+	event := ports.Event{
+		Topic:   followNotificationTopic,
+		Key:     fmt.Sprintf("user:%d", followed.ID),
+		Payload: payload,
+	}
+	if err := u.publisher.Publish(ctx, event); err != nil {
+		u.log.Error(ctx, "failed to publish follow notification", "error", err)
 	}
 
 	return follow, nil

@@ -12,14 +12,12 @@ import (
 type notificationUseCase struct {
 	repo     ports.NotificationRepository
 	userRepo ports.UserRepository
-	consumer ports.NotificationConsumer
 	log      ports.Logger
 }
 
 func NewNotificationUseCase(
 	repo ports.NotificationRepository,
 	userRepo ports.UserRepository,
-	consumer ports.NotificationConsumer,
 	log ports.Logger,
 ) ports.NotificationUseCase {
 	if repo == nil {
@@ -28,16 +26,12 @@ func NewNotificationUseCase(
 	if userRepo == nil {
 		panic("NewNotificationUseCase: userRepo is required")
 	}
-	if consumer == nil {
-		panic("NewNotificationUseCase: consumer is required")
-	}
 	if log == nil {
 		panic("NewNotificationUseCase: log is required")
 	}
 	return &notificationUseCase{
 		repo:     repo,
 		userRepo: userRepo,
-		consumer: consumer,
 		log:      log,
 	}
 }
@@ -133,8 +127,7 @@ func (uc *notificationUseCase) MarkAllAsRead(ctx context.Context, username strin
 func (uc *notificationUseCase) SaveNotification(ctx context.Context, notification *domain.Notification) error {
 	if err := uc.repo.Create(ctx, notification); err != nil {
 		uc.log.Error(ctx, "failed to persist notification", "userID", notification.UserID, "type", notification.Type, "error", err)
-	} else {
-		uc.log.Info(ctx, "notification persisted successfully", "id", notification.ID, "userID", notification.UserID)
 	}
+	uc.log.Info(ctx, "notification persisted successfully", "id", notification.ID, "userID", notification.UserID)
 	return nil
 }

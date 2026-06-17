@@ -31,17 +31,3 @@ type NotificationUseCase interface {
 	// SaveNotification saves a notification to the database.
 	SaveNotification(ctx context.Context, notification *domain.Notification) error
 }
-
-// NotificationPublisher is a driven port for publishing notifications to an event broker asynchronously.
-type NotificationPublisher interface {
-	// Publish sends a notification event to the message broker.
-	Publish(ctx context.Context, notification *domain.Notification) error
-}
-
-// NotificationConsumer is a driver port representing a background worker that consumes notification events.
-type NotificationConsumer interface {
-	// Start begins the asynchronous consumption of events from the broker.
-	Start(ctx context.Context) (<-chan *domain.Notification, error)
-	// Stop gracefully terminates the background worker process.
-	Stop(ctx context.Context) error
-}

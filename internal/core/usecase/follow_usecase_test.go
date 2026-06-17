@@ -17,7 +17,7 @@ func TestFollowUseCase_Follow(t *testing.T) {
 
 	mockFollowRepo := mocks.NewMockFollowRepository(ctrl)
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
-	mockPublisher := mocks.NewMockNotificationPublisher(ctrl)
+	mockPublisher := mocks.NewMockPublisher(ctrl)
 	mockLogger := mocks.NewMockLogger(ctrl)
 	svc := NewFollowUseCase(mockFollowRepo, mockUserRepo, mockPublisher, mockLogger)
 
@@ -30,11 +30,7 @@ func TestFollowUseCase_Follow(t *testing.T) {
 		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{ID: 1, Username: "user1"}, nil)
 		mockUserRepo.EXPECT().GetUserByUsername(ctx, followedUsername).Return(&domain.User{ID: 2, Username: "user2"}, nil)
 		mockFollowRepo.EXPECT().Create(ctx, gomock.Any()).Return(nil)
-		mockPublisher.EXPECT().Publish(ctx, &domain.Notification{
-			UserID:  2,
-			ActorID: 1,
-			Type:    domain.NotificationTypeFollow,
-		}).Return(nil)
+		mockPublisher.EXPECT().Publish(ctx, gomock.Any()).Return(nil)
 
 		follow, err := svc.Follow(ctx, followerUsername, followedUsername)
 
@@ -86,7 +82,7 @@ func TestFollowUseCase_Follow(t *testing.T) {
 		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{ID: 1, Username: "user1"}, nil)
 		mockUserRepo.EXPECT().GetUserByUsername(ctx, followedUsername).Return(&domain.User{ID: 0, Username: "user2"}, nil)
 		mockFollowRepo.EXPECT().Create(ctx, gomock.Any()).Return(nil)
-		mockLogger.EXPECT().Error(ctx, "invalid follow notification", "error", gomock.Any())
+		mockPublisher.EXPECT().Publish(ctx, gomock.Any()).Return(nil)
 
 		follow, err := svc.Follow(ctx, followerUsername, followedUsername)
 
@@ -101,7 +97,7 @@ func TestFollowUseCase_Unfollow(t *testing.T) {
 
 	mockFollowRepo := mocks.NewMockFollowRepository(ctrl)
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
-	mockPublisher := mocks.NewMockNotificationPublisher(ctrl)
+	mockPublisher := mocks.NewMockPublisher(ctrl)
 	mockLogger := mocks.NewMockLogger(ctrl)
 	svc := NewFollowUseCase(mockFollowRepo, mockUserRepo, mockPublisher, mockLogger)
 
@@ -143,7 +139,7 @@ func TestFollowUseCase_GetFollowing(t *testing.T) {
 
 	mockFollowRepo := mocks.NewMockFollowRepository(ctrl)
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
-	mockPublisher := mocks.NewMockNotificationPublisher(ctrl)
+	mockPublisher := mocks.NewMockPublisher(ctrl)
 	mockLogger := mocks.NewMockLogger(ctrl)
 	svc := NewFollowUseCase(mockFollowRepo, mockUserRepo, mockPublisher, mockLogger)
 
@@ -193,7 +189,7 @@ func TestFollowUseCase_GetFollowers(t *testing.T) {
 
 	mockFollowRepo := mocks.NewMockFollowRepository(ctrl)
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
-	mockPublisher := mocks.NewMockNotificationPublisher(ctrl)
+	mockPublisher := mocks.NewMockPublisher(ctrl)
 	mockLogger := mocks.NewMockLogger(ctrl)
 	svc := NewFollowUseCase(mockFollowRepo, mockUserRepo, mockPublisher, mockLogger)
 

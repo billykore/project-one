@@ -2,19 +2,23 @@ package usecase
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
 )
 
+const postNotificationTopic = "notifications"
+
 type postUseCase struct {
+	log       ports.Logger
 	postRepo  ports.PostRepository
 	likeRepo  ports.LikeRepository
 	userRepo  ports.UserRepository
-	publisher ports.NotificationPublisher
-	log       ports.Logger
+	publisher ports.Publisher
 }
 
 // NewPostUseCase creates a new instance of ports.PostUseCase.
@@ -22,7 +26,7 @@ func NewPostUseCase(
 	postRepo ports.PostRepository,
 	likeRepo ports.LikeRepository,
 	userRepo ports.UserRepository,
-	publisher ports.NotificationPublisher,
+	publisher ports.Publisher,
 	log ports.Logger,
 ) ports.PostUseCase {
 	if postRepo == nil {
@@ -212,14 +216,22 @@ func (uc *postUseCase) LikePost(ctx context.Context, postID int, username string
 					UserID:  postOwner.ID,
 					ActorID: liker.ID,
 					Type:    domain.NotificationTypeLike,
-					PostID:  &post.ID,
+					PostID:  post.ID,
 				}
-				if err := notification.Validate(); err != nil {
-					uc.log.Error(ctx, "invalid like notification", "error", err)
-				} else {
-					if pErr := uc.publisher.Publish(ctx, notification); pErr != nil {
-						uc.log.Error(ctx, "failed to publish like notification", "error", pErr)
-					}
+
+				payload, err := json.Marshal(notification)
+				if err != nil {
+					uc.log.Error(ctx, "failed to marshal follow notification", "error", err)
+					return 0, nil
+				}
+
+				err = uc.publisher.Publish(ctx, ports.Event{
+					Topic:   postNotificationTopic,
+					Key:     fmt.Sprintf("user:%d", liker.ID),
+					Payload: payload,
+				})
+				if err != nil {
+					uc.log.Error(ctx, "failed to publish follow notification", "error", err)
 				}
 			}
 		}

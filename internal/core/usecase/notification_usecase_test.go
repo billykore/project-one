@@ -25,35 +25,28 @@ func TestNewNotificationUseCase(t *testing.T) {
 
 	mockRepo := mocks.NewMockNotificationRepository(ctrl)
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
-	mockConsumer := mocks.NewMockNotificationConsumer(ctrl)
-	lgr := mockUseCaseLogger{}
+	lgr := &mockUseCaseLogger{}
 
 	t.Run("success", func(t *testing.T) {
-		uc := NewNotificationUseCase(mockRepo, mockUserRepo, mockConsumer, lgr)
+		uc := NewNotificationUseCase(mockRepo, mockUserRepo, lgr)
 		assert.NotNil(t, uc)
 	})
 
 	t.Run("nil repo", func(t *testing.T) {
 		assert.PanicsWithValue(t, "NewNotificationUseCase: repo is required", func() {
-			NewNotificationUseCase(nil, mockUserRepo, mockConsumer, lgr)
+			NewNotificationUseCase(nil, mockUserRepo, lgr)
 		})
 	})
 
 	t.Run("nil userRepo", func(t *testing.T) {
 		assert.PanicsWithValue(t, "NewNotificationUseCase: userRepo is required", func() {
-			NewNotificationUseCase(mockRepo, nil, mockConsumer, lgr)
-		})
-	})
-
-	t.Run("nil consumer", func(t *testing.T) {
-		assert.PanicsWithValue(t, "NewNotificationUseCase: consumer is required", func() {
-			NewNotificationUseCase(mockRepo, mockUserRepo, nil, lgr)
+			NewNotificationUseCase(mockRepo, nil, lgr)
 		})
 	})
 
 	t.Run("nil logger", func(t *testing.T) {
 		assert.PanicsWithValue(t, "NewNotificationUseCase: log is required", func() {
-			NewNotificationUseCase(mockRepo, mockUserRepo, mockConsumer, nil)
+			NewNotificationUseCase(mockRepo, mockUserRepo, nil)
 		})
 	})
 }
@@ -64,9 +57,8 @@ func TestNotificationUseCase_SaveNotification(t *testing.T) {
 
 	mockRepo := mocks.NewMockNotificationRepository(ctrl)
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
-	mockConsumer := mocks.NewMockNotificationConsumer(ctrl)
-	lgr := mockUseCaseLogger{}
-	uc := NewNotificationUseCase(mockRepo, mockUserRepo, mockConsumer, lgr)
+	lgr := &mockUseCaseLogger{}
+	uc := NewNotificationUseCase(mockRepo, mockUserRepo, lgr)
 
 	ctx := context.Background()
 	notification := &domain.Notification{ID: 101, UserID: 1, Type: domain.NotificationTypeFollow}
@@ -90,9 +82,8 @@ func TestNotificationUseCase_GetNotifications(t *testing.T) {
 
 	mockRepo := mocks.NewMockNotificationRepository(ctrl)
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
-	mockConsumer := mocks.NewMockNotificationConsumer(ctrl)
-	lgr := mockUseCaseLogger{}
-	uc := NewNotificationUseCase(mockRepo, mockUserRepo, mockConsumer, lgr)
+	lgr := &mockUseCaseLogger{}
+	uc := NewNotificationUseCase(mockRepo, mockUserRepo, lgr)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -191,9 +182,8 @@ func TestNotificationUseCase_MarkAsRead(t *testing.T) {
 
 	mockRepo := mocks.NewMockNotificationRepository(ctrl)
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
-	mockConsumer := mocks.NewMockNotificationConsumer(ctrl)
-	lgr := mockUseCaseLogger{}
-	uc := NewNotificationUseCase(mockRepo, mockUserRepo, mockConsumer, lgr)
+	lgr := &mockUseCaseLogger{}
+	uc := NewNotificationUseCase(mockRepo, mockUserRepo, lgr)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -273,9 +263,8 @@ func TestNotificationUseCase_MarkAllAsRead(t *testing.T) {
 
 	mockRepo := mocks.NewMockNotificationRepository(ctrl)
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
-	mockConsumer := mocks.NewMockNotificationConsumer(ctrl)
-	lgr := mockUseCaseLogger{}
-	uc := NewNotificationUseCase(mockRepo, mockUserRepo, mockConsumer, lgr)
+	lgr := &mockUseCaseLogger{}
+	uc := NewNotificationUseCase(mockRepo, mockUserRepo, lgr)
 
 	ctx := context.Background()
 	username := "testuser"

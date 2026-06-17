@@ -15,8 +15,8 @@ type notificationModel struct {
 	UserID    uint      `gorm:"column:user_id;notNull"`
 	ActorID   uint      `gorm:"column:actor_id;notNull"`
 	Type      string    `gorm:"column:type;size:50;notNull"`
-	PostID    *uint     `gorm:"column:post_id;default:null"`
-	CommentID *uint     `gorm:"column:comment_id;default:null"`
+	PostID    uint      `gorm:"column:post_id;default:null"`
+	CommentID uint      `gorm:"column:comment_id;default:null"`
 	IsRead    bool      `gorm:"column:is_read;default:false"`
 	CreatedAt time.Time `gorm:"column:created_at;notNull"`
 }
@@ -26,22 +26,13 @@ func (notificationModel) TableName() string {
 }
 
 func (m *notificationModel) toDomain() *domain.Notification {
-	var postID, commentID *int
-	if m.PostID != nil {
-		pID := int(*m.PostID)
-		postID = &pID
-	}
-	if m.CommentID != nil {
-		cID := int(*m.CommentID)
-		commentID = &cID
-	}
 	return &domain.Notification{
 		ID:        int(m.ID),
 		UserID:    int(m.UserID),
 		ActorID:   int(m.ActorID),
 		Type:      domain.NotificationType(m.Type),
-		PostID:    postID,
-		CommentID: commentID,
+		PostID:    int(m.PostID),
+		CommentID: int(m.CommentID),
 		IsRead:    m.IsRead,
 		CreatedAt: m.CreatedAt,
 	}
@@ -52,18 +43,8 @@ func (m *notificationModel) fromDomain(n *domain.Notification) {
 	m.UserID = uint(n.UserID)
 	m.ActorID = uint(n.ActorID)
 	m.Type = string(n.Type)
-	if n.PostID != nil {
-		pID := uint(*n.PostID)
-		m.PostID = &pID
-	} else {
-		m.PostID = nil
-	}
-	if n.CommentID != nil {
-		cID := uint(*n.CommentID)
-		m.CommentID = &cID
-	} else {
-		m.CommentID = nil
-	}
+	m.PostID = uint(n.PostID)
+	m.CommentID = uint(n.CommentID)
 	m.IsRead = n.IsRead
 	m.CreatedAt = n.CreatedAt
 }
