@@ -19,14 +19,15 @@ const (
 )
 
 type Notification struct {
-	Type      NotificationType
-	ID        int
-	UserID    int
-	ActorID   int
-	PostID    int
-	CommentID int
-	IsRead    bool
-	CreatedAt time.Time
+	Type          NotificationType
+	ID            int
+	UserID        int
+	ActorID       int
+	ActorUsername string
+	PostID        int
+	CommentID     int
+	IsRead        bool
+	CreatedAt     time.Time
 }
 
 type NotificationDetail struct {

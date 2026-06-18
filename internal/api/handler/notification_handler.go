@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
+	wsadapter "github.com/billykore/project-one/internal/adapters/websocket"
 	"github.com/billykore/project-one/internal/api/dto"
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
@@ -20,6 +21,7 @@ type NotificationHandler struct {
 	subscriber ports.Subscriber
 	uc         ports.NotificationUseCase
 	validator  ports.Validator
+	wsManager  *wsadapter.Manager
 }
 
 func NewNotificationHandler(
@@ -27,6 +29,7 @@ func NewNotificationHandler(
 	subscriber ports.Subscriber,
 	notificationUc ports.NotificationUseCase,
 	validator ports.Validator,
+	wsManager *wsadapter.Manager,
 ) *NotificationHandler {
 	if log == nil {
 		panic("log is required")
@@ -40,11 +43,15 @@ func NewNotificationHandler(
 	if validator == nil {
 		panic("validator is required")
 	}
+	if wsManager == nil {
+		panic("wsManager is required")
+	}
 	return &NotificationHandler{
 		log:        log,
 		subscriber: subscriber,
 		uc:         notificationUc,
 		validator:  validator,
+		wsManager:  wsManager,
 	}
 }
 
@@ -73,6 +80,25 @@ func (h *NotificationHandler) Listen(ctx context.Context) error {
 			"actorID", notification.ActorID,
 			"type", notification.Type,
 		)
+
+		if err := h.wsManager.Send(&dto.NotificationResponse{
+			ID:            notification.ID,
+			UserID:        notification.UserID,
+			ActorID:       notification.ActorID,
+			ActorUsername: notification.ActorUsername,
+			Type:          string(notification.Type),
+			PostID:        notification.PostID,
+			CommentID:     notification.CommentID,
+			IsRead:        notification.IsRead,
+			CreatedAt:     notification.CreatedAt,
+			Title:         dto.NotificationTitle(notification.Type),
+			Body:          dto.NotificationBody(notification.Type, notification.ActorUsername),
+		}); err != nil {
+			h.log.Warn(ctx, "failed to stream notification to websocket", "userID", notification.UserID, "error", err)
+			return nil
+		}
+
+		h.log.Info(ctx, "notification streamed to websocket", "userID", notification.UserID, "type", notification.Type)
 		return nil
 	})
 }
@@ -122,15 +148,17 @@ func (h *NotificationHandler) GetNotifications(c echo.Context) error {
 	resp := make([]dto.NotificationResponse, len(notifications))
 	for i, n := range notifications {
 		resp[i] = dto.NotificationResponse{
-			ID:        n.ID,
-			UserID:    n.UserID,
-			ActorID:   n.ActorID,
-			ActorName: n.ActorUsername,
-			Type:      string(n.Type),
-			PostID:    n.PostID,
-			CommentID: n.CommentID,
-			IsRead:    n.IsRead,
-			CreatedAt: n.CreatedAt,
+			ID:            n.ID,
+			UserID:        n.UserID,
+			ActorID:       n.ActorID,
+			ActorUsername: n.ActorUsername,
+			Type:          string(n.Type),
+			PostID:        n.PostID,
+			CommentID:     n.CommentID,
+			IsRead:        n.IsRead,
+			CreatedAt:     n.CreatedAt,
+			Title:         dto.NotificationTitle(n.Type),
+			Body:          dto.NotificationBody(n.Type, n.ActorUsername),
 		}
 	}
 

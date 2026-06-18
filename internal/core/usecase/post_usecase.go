@@ -213,10 +213,12 @@ func (uc *postUseCase) LikePost(ctx context.Context, postID int, username string
 				uc.log.Error(ctx, "failed to resolve liker username for like notification", "username", username, "error", err)
 			} else if liker != nil && postOwner.ID != liker.ID {
 				notification := &domain.Notification{
-					UserID:  postOwner.ID,
-					ActorID: liker.ID,
-					Type:    domain.NotificationTypeLike,
-					PostID:  post.ID,
+					UserID:        postOwner.ID,
+					ActorID:       liker.ID,
+					Type:          domain.NotificationTypeLike,
+					PostID:        post.ID,
+					ActorUsername: liker.Username,
+					CreatedAt:     like.CreatedAt,
 				}
 
 				payload, err := json.Marshal(notification)

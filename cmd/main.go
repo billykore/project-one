@@ -17,6 +17,7 @@ import (
 	"github.com/billykore/project-one/internal/adapters/repository"
 	"github.com/billykore/project-one/internal/adapters/token"
 	"github.com/billykore/project-one/internal/adapters/validator"
+	wsadapter "github.com/billykore/project-one/internal/adapters/websocket"
 	"github.com/billykore/project-one/internal/api/handler"
 	"github.com/billykore/project-one/internal/api/middleware"
 	"github.com/billykore/project-one/internal/config"
@@ -75,6 +76,7 @@ func main() {
 	publisher := pubsub.NewInMemoryPublisher(inMemoryPubSub)
 	subcriber := pubsub.NewInMemorySubscriber(inMemoryPubSub)
 	notificationRepo := repository.NewNotificationRepository(db)
+	wsManager := wsadapter.NewManager()
 
 	// 4. Initialize UseCase.
 	loginUc := usecase.NewLoginUseCase(userRepo, tokenSvc, userTokenRepo, hasher, lgr)
@@ -88,13 +90,17 @@ func main() {
 	userHdl := handler.NewUserHandler(userUc, loginUc, followUc, postUc, val, lgr)
 	postHdl := handler.NewPostHandler(postUc, commentUc, val)
 	commentHdl := handler.NewCommentHandler(commentUc, val, lgr)
-	notificationHdl := handler.NewNotificationHandler(lgr, subcriber, notificationUc, val)
+	notificationHdl := handler.NewNotificationHandler(lgr, subcriber, notificationUc, val, wsManager)
+	wsHdl := handler.NewWebSocketHandler(lgr, tokenSvc, userUc, wsManager)
 
 	// 6. Set up Echo.
 	e := echo.New()
 	e.Use(echomiddleware.Recover())
 	e.Use(echomiddleware.RequestID())
 	e.Use(echomiddleware.RequestLogger())
+
+	// WebSocket endpoint.
+	e.GET("/ws", wsHdl.HandleUpgrade)
 
 	// Only expose Swagger UI in non-production environments.
 	if cfg.App.Env != "production" {
@@ -200,6 +206,10 @@ func main() {
 
 	if err := publisher.Close(); err != nil {
 		lgr.Error(ctx, "failed to close publisher", "error", err)
+	}
+
+	if err := wsManager.Close(); err != nil {
+		lgr.Error(ctx, "failed to close websocket manager", "error", err)
 	}
 
 	if err := e.Shutdown(ctxShutdown); err != nil {

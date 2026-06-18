@@ -116,6 +116,13 @@ The frontend uses the **Next.js App Router** with layouts, pages, and components
 | `make check` | Run docs, vet, lint, and test in one go |
 | `make clean` | Remove backend build artifacts from `bin/` |
 
+### Real-time Notifications (WebSocket)
+
+- Endpoint: `GET /ws`
+- Auth: `Authorization: Bearer <access_token>` during WebSocket handshake
+- Behavior: streams only new notifications for the authenticated user
+- Historical notifications: use `GET /notifications`
+
 ---
 
 ## 📂 Project Structure
