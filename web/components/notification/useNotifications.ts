@@ -84,9 +84,9 @@ export function useNotifications() {
   // Stable ref so the WS client callback can access latest state
   // without being included in its own dependency array.
   const setNotificationsRef = useRef(setNotifications);
-  setNotificationsRef.current = setNotifications;
 
   useEffect(() => {
+    setNotificationsRef.current = setNotifications;
     let isActive = true;
 
     const initialLoad = async () => {

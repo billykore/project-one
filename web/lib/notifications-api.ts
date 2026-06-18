@@ -25,7 +25,7 @@ type NotificationsListResponse = {
   items?: BackendNotification[];
 };
 
-const NOTIFICATIONS_ENDPOINT = "/notifications";
+const NOTIFICATIONS_ENDPOINT = "/api/v1/notifications";
 
 const ALLOWED_TYPES: NotificationType[] = ["success", "info", "warning", "error"];
 

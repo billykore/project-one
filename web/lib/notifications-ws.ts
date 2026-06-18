@@ -4,15 +4,12 @@
  * Transport contract:
  *   Endpoint : ws(s)://<host>/websocket  (configured via NEXT_PUBLIC_WS_URL)
  *   Protocol : native WebSocket (no sub-protocol negotiation)
- *   Auth     : The backend handler at /websocket currently validates the JWT from the
- *              "Authorization: ******" HTTP header.  Native browser WebSockets
- *              do NOT allow setting arbitrary headers during the upgrade handshake.
- *              The browser DOES automatically forward cookies that belong to the WS
- *              host on the upgrade request.  For this client to authenticate, the
- *              backend /websocket handler must be updated to also accept the
- *              "access_token" cookie (matching the behaviour of the REST auth
- *              middleware in internal/api/middleware/authorization.go).
- *              Until that backend change lands, connections will be rejected with 401.
+ *   Auth     : The access_token is fetched from the Next.js API route
+ *              `/api/ws-token` (which reads the HttpOnly cookie server-side)
+ *              and appended as a `?token=` query parameter on the WebSocket
+ *              URL.  Browser WebSocket connections cannot set custom HTTP
+ *              headers during the upgrade handshake, so the backend Authorize
+ *              middleware also accepts the token from query parameters.
  *   Messages : JSON-encoded NotificationResponse (see WsNotificationPayload below).
  */
 
@@ -38,8 +35,7 @@ export type WsNotificationPayload = {
 type MessageHandler = (notification: Notification) => void;
 type StateHandler = (state: WsConnectionState) => void;
 
-const WS_URL =
-  process.env.NEXT_PUBLIC_WS_URL ?? 'ws://localhost:8080/websocket';
+const WS_URL = process.env.NEXT_PUBLIC_WS_URL ?? 'ws://localhost:8080/websocket';
 
 /** Minimum reconnect delay in ms. */
 const BACKOFF_BASE_MS = 1_000;
@@ -52,9 +48,33 @@ const DEBUG = process.env.NEXT_PUBLIC_WS_DEBUG === 'true';
 
 function dbg(...args: unknown[]) {
   if (DEBUG) {
-    // eslint-disable-next-line no-console
     console.debug('[notifications-ws]', ...args);
   }
+}
+
+/**
+ * Fetch the access_token from the Next.js API route `/api/ws-token`.
+ * The API route reads the HttpOnly cookie server-side and returns it.
+ * Returns null if the user is not authenticated.
+ */
+async function fetchWsToken(): Promise<string | null> {
+  try {
+    const res = await fetch('/api/ws-token', { credentials: 'include' });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { token?: string | null };
+    return data.token ?? null;
+  } catch {
+    dbg('failed to fetch WS token from /api/ws-token');
+    return null;
+  }
+}
+
+/**
+ * Build the final WebSocket URL by appending the token as a query parameter.
+ */
+function buildWsUrl(token: string): string {
+  const separator = WS_URL.includes('?') ? '&' : '?';
+  return `${WS_URL}${separator}token=${encodeURIComponent(token)}`;
 }
 
 /**
@@ -73,6 +93,7 @@ export class NotificationWsClient {
   private attempts = 0;
   private retryTimer: ReturnType<typeof setTimeout> | null = null;
   private explicitClose = false;
+  private connecting = false;
   private messageHandlers: Set<MessageHandler> = new Set();
   private stateHandlers: Set<StateHandler> = new Set();
   private _state: WsConnectionState = 'offline';
@@ -103,11 +124,32 @@ export class NotificationWsClient {
   connect() {
     if (this.explicitClose) return;
     if (this.ws && this.ws.readyState <= WebSocket.OPEN) return;
+    if (this.connecting) return;
 
+    this.connecting = true;
+
+    void this.connectAsync().finally(() => {
+      this.connecting = false;
+    });
+  }
+
+  private async connectAsync() {
+    if (this.explicitClose) return;
+
+    const token = await fetchWsToken();
+    if (this.explicitClose) return;
+
+    if (!token) {
+      dbg('no access_token available, skipping WebSocket connection');
+      this.setState('offline');
+      return;
+    }
+
+    const url = buildWsUrl(token);
     dbg('connecting to', WS_URL, 'attempt', this.attempts + 1);
 
     try {
-      this.ws = new WebSocket(WS_URL);
+      this.ws = new WebSocket(url);
     } catch (err) {
       dbg('WebSocket constructor error', err);
       this.scheduleReconnect();
@@ -196,3 +238,4 @@ export class NotificationWsClient {
     this.attempts = 0;
   }
 }
+

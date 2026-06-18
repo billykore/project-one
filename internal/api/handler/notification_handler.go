@@ -94,7 +94,13 @@ func (h *NotificationHandler) Listen(ctx context.Context) error {
 			Title:         dto.NotificationTitle(notification.Type),
 			Body:          dto.NotificationBody(notification.Type, notification.ActorUsername),
 		}); err != nil {
-			h.log.Warn(ctx, "failed to stream notification to websocket", "userID", notification.UserID, "error", err)
+			// User not being connected is a normal condition (user is offline);
+			// only log actual send failures as warnings.
+			if errors.Is(err, wsadapter.ErrUserNotConnected) {
+				h.log.Debug(ctx, "user not connected to websocket, skipping stream", "userID", notification.UserID)
+			} else {
+				h.log.Warn(ctx, "failed to stream notification to websocket", "userID", notification.UserID, "error", err)
+			}
 			return nil
 		}
 

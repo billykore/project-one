@@ -29,6 +29,13 @@ func Authorize(tks ports.TokenService) echo.MiddlewareFunc {
 				}
 			}
 
+			// If still no token, check for "token" query parameter.
+			// This is used by browser WebSocket connections which cannot
+			// set custom headers during the HTTP upgrade handshake.
+			if token == "" {
+				token = c.QueryParam("token")
+			}
+
 			if token == "" {
 				return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 			}

@@ -2,7 +2,6 @@ package handler
 
 import (
 	"net/http"
-	"strings"
 
 	wsadapter "github.com/billykore/project-one/internal/adapters/websocket"
 	"github.com/billykore/project-one/internal/api/dto"
@@ -50,14 +49,8 @@ func NewWebSocketHandler(
 // HandleUpgrade handles the WebSocket upgrade request.
 // It validates the user's token, retrieves the user information, and registers the WebSocket connection.
 func (h *WebSocketHandler) HandleUpgrade(c echo.Context) error {
-	authHeader := c.Request().Header.Get("Authorization")
-	token, ok := strings.CutPrefix(authHeader, "Bearer ")
-	if !ok || token == "" {
-		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
-	}
-
-	username, err := h.tokenSvc.ValidateToken(c.Request().Context(), token)
-	if err != nil {
+	username, ok := c.Get("username").(string)
+	if !ok {
 		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
 	}
 
