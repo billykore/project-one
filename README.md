@@ -7,8 +7,26 @@ A robust, production-ready fullstack application featuring a **Go** backend stru
 * **User Management**: Registration and login with Email/Username and Password (JWT-based).
 * **Social Connectivity**: Follow and unfollow users to build a personal feed.
 * **Content Creation**: Create and view posts with real-time feedback.
+* **Notifications**: Frontend notification system with panel and dropdown UI for live updates.
+* **Guest UX**: Read-only guest session guards with disabled post interaction states and tooltips.
+* **Profile Experience**: User profile pages with root-level dynamic routing and dashboard links.
+* **Secure Password Management**: Backend change-password API, validation, and encrypted password storage.
+* **Idempotent Post Likes**: Like/unlike behavior has been refactored for consistent idempotent interactions.
+* **Post Ownership Controls**: Delete post actions are restricted to the author and UI reflects authorization.
 * **Clean Architecture**: Backend strictly follows separation of concerns for testability and maintainability.
 * **Modern Frontend**: Server-side rendering and interactive UI using Next.js 16 and Tailwind 4.
+
+## 🛠️ Recent Work
+
+Recent repository work includes:
+
+* Adding notification system components and utilities in the frontend.
+* Improving guest session handling and disabled like button UX.
+* Making post detail pages publicly accessible while keeping auth-aware headers.
+* Building user profile routes and profile navigation flows.
+* Implementing a secure change password API endpoint with backend validation.
+* Updating the follow model to include `FollowerID` and `FollowedID` in domain/repository layers.
+* Refactoring likes to be idempotent and restricting delete post options to the author.
 
 ## 🚀 Tech Stack
 
