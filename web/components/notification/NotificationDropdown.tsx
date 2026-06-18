@@ -7,7 +7,7 @@ import NotificationPanel from './NotificationPanel';
 import NotificationList from './NotificationList';
 
 export default function NotificationDropdown() {
-  const { notifications, isOpen, unreadCount, toggleDropdown, markAllAsRead, markAsRead } = useNotifications();
+  const { notifications, isOpen, unreadCount, connectionState, toggleDropdown, markAllAsRead, markAsRead } = useNotifications();
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -25,7 +25,7 @@ export default function NotificationDropdown() {
     <div className="relative" ref={containerRef}>
       <NotificationIcon unreadCount={unreadCount} isOpen={isOpen} onClick={toggleDropdown} />
       {isOpen && (
-        <NotificationPanel onMarkAll={markAllAsRead} unreadCount={unreadCount}>
+        <NotificationPanel onMarkAll={markAllAsRead} unreadCount={unreadCount} connectionState={connectionState}>
           <NotificationList items={notifications} onItemClick={markAsRead} />
         </NotificationPanel>
       )}
