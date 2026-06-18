@@ -2,34 +2,54 @@ package usecase
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
 )
 
+const postNotificationTopic = "notifications"
+
 type postUseCase struct {
-	postRepo ports.PostRepository
-	likeRepo ports.LikeRepository
-	log      ports.Logger
+	log       ports.Logger
+	postRepo  ports.PostRepository
+	likeRepo  ports.LikeRepository
+	userRepo  ports.UserRepository
+	publisher ports.Publisher
 }
 
 // NewPostUseCase creates a new instance of ports.PostUseCase.
-func NewPostUseCase(postRepo ports.PostRepository, likeRepo ports.LikeRepository, log ports.Logger) ports.PostUseCase {
+func NewPostUseCase(
+	postRepo ports.PostRepository,
+	likeRepo ports.LikeRepository,
+	userRepo ports.UserRepository,
+	publisher ports.Publisher,
+	log ports.Logger,
+) ports.PostUseCase {
 	if postRepo == nil {
 		panic("NewPostUseCase: postRepo is required")
 	}
 	if likeRepo == nil {
 		panic("NewPostUseCase: likeRepo is required")
 	}
+	if userRepo == nil {
+		panic("NewPostUseCase: userRepo is required")
+	}
+	if publisher == nil {
+		panic("NewPostUseCase: publisher is required")
+	}
 	if log == nil {
 		panic("NewPostUseCase: log is required")
 	}
 	return &postUseCase{
-		postRepo: postRepo,
-		likeRepo: likeRepo,
-		log:      log,
+		postRepo:  postRepo,
+		likeRepo:  likeRepo,
+		userRepo:  userRepo,
+		publisher: publisher,
+		log:       log,
 	}
 }
 
@@ -68,6 +88,16 @@ func (uc *postUseCase) GetPostByID(ctx context.Context, id int) (*domain.Post, e
 }
 
 func (uc *postUseCase) GetPosts(ctx context.Context, username string, limit, offset int) ([]*domain.Post, error) {
+	if limit <= 0 {
+		limit = 10
+	}
+	if limit > 100 {
+		limit = 100
+	}
+	if offset < 0 {
+		offset = 0
+	}
+
 	posts, err := uc.postRepo.GetUserPosts(ctx, username, limit, offset)
 	if err != nil {
 		uc.log.Error(ctx, "failed to get posts for user", "username", username, "error", err)
@@ -131,6 +161,16 @@ func (uc *postUseCase) LikePost(ctx context.Context, postID int, username string
 		return 0, domain.ErrValidationFailed
 	}
 
+	// Check if post exists
+	post, err := uc.postRepo.GetByIDOnly(ctx, postID)
+	if err != nil {
+		if errors.Is(err, domain.ErrPostNotFound) {
+			return 0, err
+		}
+		uc.log.Error(ctx, "failed to verify post existence for like", "postID", postID, "error", err)
+		return 0, domain.ErrInternalServer
+	}
+
 	exists, err := uc.likeRepo.Exists(ctx, postID, username)
 	if err != nil {
 		uc.log.Error(ctx, "failed to check if like exists", "postID", postID, "username", username, "error", err)
@@ -138,11 +178,6 @@ func (uc *postUseCase) LikePost(ctx context.Context, postID int, username string
 	}
 
 	if exists {
-		post, err := uc.postRepo.GetByIDOnly(ctx, postID)
-		if err != nil {
-			uc.log.Error(ctx, "failed to get post for like count", "postID", postID, "error", err)
-			return 0, domain.ErrInternalServer
-		}
 		return post.LikeCount, nil
 	}
 
@@ -155,10 +190,6 @@ func (uc *postUseCase) LikePost(ctx context.Context, postID int, username string
 			return 0, err
 		}
 		if errors.Is(err, domain.ErrAlreadyLiked) {
-			post, err := uc.postRepo.GetByIDOnly(ctx, postID)
-			if err != nil {
-				return 0, domain.ErrInternalServer
-			}
 			return post.LikeCount, nil
 		}
 		uc.log.Error(ctx, "failed to create like", "postID", postID, "username", username, "error", err)
@@ -172,13 +203,41 @@ func (uc *postUseCase) LikePost(ctx context.Context, postID int, username string
 
 	uc.log.Info(ctx, "post liked successfully", "postID", postID, "username", username)
 
-	post, err := uc.postRepo.GetByIDOnly(ctx, postID)
-	if err != nil {
-		uc.log.Error(ctx, "failed to get post for like count", "postID", postID, "error", err)
-		return 0, domain.ErrInternalServer
+	if post.Username != username {
+		postOwner, err := uc.userRepo.GetUserByUsername(ctx, post.Username)
+		if err != nil {
+			uc.log.Error(ctx, "failed to resolve post owner username for like notification", "username", post.Username, "error", err)
+		} else if postOwner != nil {
+			liker, err := uc.userRepo.GetUserByUsername(ctx, username)
+			if err != nil {
+				uc.log.Error(ctx, "failed to resolve liker username for like notification", "username", username, "error", err)
+			} else if liker != nil && postOwner.ID != liker.ID {
+				notification := &domain.Notification{
+					UserID:  postOwner.ID,
+					ActorID: liker.ID,
+					Type:    domain.NotificationTypeLike,
+					PostID:  post.ID,
+				}
+
+				payload, err := json.Marshal(notification)
+				if err != nil {
+					uc.log.Error(ctx, "failed to marshal follow notification", "error", err)
+					return 0, nil
+				}
+
+				err = uc.publisher.Publish(ctx, ports.Event{
+					Topic:   postNotificationTopic,
+					Key:     fmt.Sprintf("user:%d", liker.ID),
+					Payload: payload,
+				})
+				if err != nil {
+					uc.log.Error(ctx, "failed to publish follow notification", "error", err)
+				}
+			}
+		}
 	}
 
-	return post.LikeCount, nil
+	return post.LikeCount + 1, nil
 }
 
 func (uc *postUseCase) UnlikePost(ctx context.Context, postID int, username string) (int, error) {
