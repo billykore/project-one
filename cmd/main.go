@@ -100,7 +100,7 @@ func main() {
 	e.Use(echomiddleware.RequestLogger())
 
 	// WebSocket endpoint.
-	e.GET("/ws", wsHdl.HandleUpgrade)
+	e.GET("/websocket", wsHdl.HandleUpgrade)
 
 	// Only expose Swagger UI in non-production environments.
 	if cfg.App.Env != "production" {

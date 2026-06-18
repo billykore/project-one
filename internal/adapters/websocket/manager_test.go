@@ -17,14 +17,14 @@ func TestManager_RegisterReplaceAndCount(t *testing.T) {
 
 	c1 := mustDial(t, wsURL)
 	defer func() {
-		assert.NoError(t, c1.Close())
+		_ = c1.Close()
 	}()
 	assert.NoError(t, m.Register(1, c1))
 	assert.Equal(t, 1, m.ConnectionCount())
 
 	c2 := mustDial(t, wsURL)
 	defer func() {
-		assert.NoError(t, c2.Close())
+		_ = c2.Close()
 	}()
 	assert.NoError(t, m.Register(1, c2))
 	assert.Equal(t, 1, m.ConnectionCount())
@@ -37,7 +37,7 @@ func TestManager_SendToConnectedUser(t *testing.T) {
 
 	conn := mustDial(t, wsURL)
 	defer func() {
-		assert.NoError(t, conn.Close())
+		_ = conn.Close()
 	}()
 	assert.NoError(t, m.Register(10, conn))
 

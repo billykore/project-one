@@ -1576,7 +1576,10 @@ const docTemplate = `{
                 "actor_id": {
                     "type": "integer"
                 },
-                "actor_name": {
+                "actor_username": {
+                    "type": "string"
+                },
+                "body": {
                     "type": "string"
                 },
                 "comment_id": {
@@ -1593,6 +1596,9 @@ const docTemplate = `{
                 },
                 "post_id": {
                     "type": "integer"
+                },
+                "title": {
+                    "type": "string"
                 },
                 "type": {
                     "type": "string"

@@ -145,7 +145,9 @@ definitions:
     properties:
       actor_id:
         type: integer
-      actor_name:
+      actor_username:
+        type: string
+      body:
         type: string
       comment_id:
         type: integer
@@ -157,6 +159,8 @@ definitions:
         type: boolean
       post_id:
         type: integer
+      title:
+        type: string
       type:
         type: string
       user_id:

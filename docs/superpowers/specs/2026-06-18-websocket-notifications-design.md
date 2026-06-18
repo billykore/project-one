@@ -47,7 +47,7 @@ The system uses three layers:
 
 ### Data Flow
 
-```
+```text
 1. Client opens WebSocket: GET /ws with Authorization header
 2. Handler validates JWT → extracts UserID
 3. Handler registers connection: manager.Register(userID, conn)

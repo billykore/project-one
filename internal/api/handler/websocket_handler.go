@@ -48,17 +48,7 @@ func NewWebSocketHandler(
 }
 
 // HandleUpgrade handles the WebSocket upgrade request.
-//
-//	@Summary		Upgrade to WebSocket
-//	@Description	Upgrade the HTTP connection to a WebSocket connection for real-time notifications.
-//	@Tags			websocket
-//	@Accept			json
-//	@Produce		json
-//	@Success		200		{array}		dto.NotificationResponse
-//	@Failure		401		{object}	dto.ErrorResponse
-//	@Failure		500		{object}	dto.ErrorResponse
-//	@Security		BearerAuth
-//	@Router			/notifications [get]
+// It validates the user's token, retrieves the user information, and registers the WebSocket connection.
 func (h *WebSocketHandler) HandleUpgrade(c echo.Context) error {
 	authHeader := c.Request().Header.Get("Authorization")
 	token, ok := strings.CutPrefix(authHeader, "Bearer ")
