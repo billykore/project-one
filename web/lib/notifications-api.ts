@@ -3,6 +3,9 @@ import type { Notification, NotificationType } from "./types/notification.types"
 
 type BackendNotification = {
   id: string | number;
+  actor_name?: string;
+  post_id?: number;
+  comment_id?: number;
   title?: string;
   message?: string;
   body?: string;
@@ -22,7 +25,7 @@ type NotificationsListResponse = {
   items?: BackendNotification[];
 };
 
-const NOTIFICATIONS_ENDPOINT = "/api/v1/notifications";
+const NOTIFICATIONS_ENDPOINT = "/notifications";
 
 const ALLOWED_TYPES: NotificationType[] = ["success", "info", "warning", "error"];
 
@@ -34,13 +37,41 @@ function normalizeType(type: string | undefined): NotificationType {
   return "info";
 }
 
+function buildFallbackContent(item: BackendNotification): Pick<Notification, "title" | "message"> {
+  const actor = item.actor_name?.trim() || "Someone";
+
+  switch (item.type) {
+    case "follow":
+      return {
+        title: "New follower",
+        message: `${actor} started following you.`,
+      };
+    case "like":
+      return {
+        title: "Post liked",
+        message: `${actor} liked your post.`,
+      };
+    case "comment":
+      return {
+        title: "New comment",
+        message: `${actor} commented on your post.`,
+      };
+    default:
+      return {
+        title: "Notification",
+        message: `${actor} sent you an update.`,
+      };
+  }
+}
+
 function normalizeNotification(item: BackendNotification): Notification {
   const createdAt = item.createdAt ?? item.created_at ?? new Date().toISOString();
+  const fallback = buildFallbackContent(item);
 
   return {
     id: String(item.id),
-    title: item.title?.trim() || "Notification",
-    message: item.message?.trim() || item.body?.trim() || "",
+    title: item.title?.trim() || fallback.title,
+    message: item.message?.trim() || item.body?.trim() || fallback.message,
     type: normalizeType(item.type),
     isRead: item.isRead ?? item.is_read ?? false,
     createdAt,
