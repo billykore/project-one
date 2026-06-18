@@ -1,57 +1,105 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ApiError } from '@/lib/api';
+import {
+  fetchNotifications,
+  markAllNotificationsAsRead,
+  markNotificationAsRead,
+} from '@/lib/notifications-api';
 import type { Notification } from '../../lib/types/notification.types';
 
-const mockNotifications: Notification[] = [
-  {
-    id: '1',
-    title: 'Welcome!',
-    message: 'Thanks for joining Project One.',
-    type: 'info',
-    isRead: false,
-    createdAt: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
-  },
-  {
-    id: '2',
-    title: 'New follower',
-    message: 'alex started following you.',
-    type: 'success',
-    isRead: false,
-    createdAt: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
-  },
-  {
-    id: '3',
-    title: 'System',
-    message: 'Planned maintenance tonight.',
-    type: 'warning',
-    isRead: true,
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-  },
-];
-
 export function useNotifications() {
-  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const unreadCount = useMemo(() => notifications.filter((n) => !n.isRead).length, [notifications]);
+
+  const loadNotifications = useCallback(async () => {
+    try {
+      const nextNotifications = await fetchNotifications();
+      setNotifications(nextNotifications);
+      setError(null);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to load notifications';
+      setError(message);
+
+      // If API is not available yet, keep UI functional with an empty list.
+      if (err instanceof ApiError && [404, 405, 501].includes(err.status)) {
+        setNotifications([]);
+      }
+    } finally {
+      // no-op
+    }
+  }, []);
+
+  const refresh = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      await loadNotifications();
+    } finally {
+      setIsLoading(false);
+    }
+  }, [loadNotifications]);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const initialLoad = async () => {
+      await loadNotifications();
+      if (isActive) {
+        setIsLoading(false);
+      }
+    };
+
+    void initialLoad();
+
+    return () => {
+      isActive = false;
+    };
+  }, [loadNotifications]);
 
   function toggleDropdown() {
     setIsOpen((s) => !s);
   }
 
-  function markAllAsRead() {
+  async function markAllAsRead() {
+    const previous = notifications;
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+
+    try {
+      await markAllNotificationsAsRead();
+      setError(null);
+    } catch (err) {
+      setNotifications(previous);
+      const message = err instanceof Error ? err.message : 'Failed to mark notifications as read';
+      setError(message);
+    }
   }
 
-  function markAsRead(id: string) {
+  async function markAsRead(id: string) {
+    const previous = notifications;
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
+
+    try {
+      await markNotificationAsRead(id);
+      setError(null);
+    } catch (err) {
+      setNotifications(previous);
+      const message = err instanceof Error ? err.message : 'Failed to mark notification as read';
+      setError(message);
+    }
   }
 
   return {
     notifications,
     isOpen,
+    isLoading,
+    error,
     unreadCount,
+    refresh,
     toggleDropdown,
     markAllAsRead,
     markAsRead,
