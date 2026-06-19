@@ -1,6 +1,7 @@
 # Notification Read Actions UI Design
 
 ## Objective
+
 Integrate the notification UI with the existing notification APIs so users can mark a single notification as read by clicking it, and mark all notifications as read using the existing panel button.
 
 This design keeps the current notification stack intact and focuses on wiring, state updates, and failure handling. The backend already exposes the required endpoints:

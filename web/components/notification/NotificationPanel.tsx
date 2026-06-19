@@ -47,11 +47,6 @@ export default function NotificationPanel({
             <div className="font-semibold text-gray-900 dark:text-zinc-50">Notifications</div>
             <ConnectionIndicator state={connectionState} />
           </div>
-          {unreadCount > 0 && (
-            <button onClick={onMarkAll} className="text-xs px-2 py-1 rounded bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-200">
-              Mark all as read
-            </button>
-          )}
         </div>
         <div>{children}</div>
         {unreadCount > 0 && (

@@ -11,11 +11,21 @@ import { NotificationWsClient } from '@/lib/notifications-ws';
 import type { WsConnectionState } from '@/lib/notifications-ws';
 import type { Notification } from '../../lib/types/notification.types';
 
+function sortByNewest(items: Notification[]): Notification[] {
+  return [...items].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
 function mergeNotification(prev: Notification[], incoming: Notification): Notification[] {
   if (prev.some((n) => n.id === incoming.id)) return prev;
-  return [incoming, ...prev].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  );
+  return sortByNewest([incoming, ...prev]);
+}
+
+function markOneRead(prev: Notification[], id: string): Notification[] {
+  return prev.map((n) => (n.id === id ? { ...n, isRead: true } : n));
+}
+
+function markAllRead(prev: Notification[]): Notification[] {
+  return prev.map((n) => ({ ...n, isRead: true }));
 }
 
 function reconcileNotifications(
@@ -28,9 +38,7 @@ function reconcileNotifications(
       liveMap.set(n.id, n);
     }
   }
-  return Array.from(liveMap.values()).sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  );
+  return sortByNewest(Array.from(liveMap.values()));
 }
 
 export function useNotifications() {
@@ -110,8 +118,12 @@ export function useNotifications() {
   }
 
   async function markAllAsRead() {
-    const previous = notifications;
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    let previous: Notification[] = [];
+
+    setNotifications((current) => {
+      previous = current;
+      return markAllRead(current);
+    });
 
     try {
       await markAllNotificationsAsRead();
@@ -124,8 +136,12 @@ export function useNotifications() {
   }
 
   async function markAsRead(id: string) {
-    const previous = notifications;
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
+    let previous: Notification[] = [];
+
+    setNotifications((current) => {
+      previous = current;
+      return markOneRead(current, id);
+    });
 
     try {
       await markNotificationAsRead(id);

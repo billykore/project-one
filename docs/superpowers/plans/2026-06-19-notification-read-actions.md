@@ -38,10 +38,12 @@
 ## Task 1: Tighten the Notification Hook
 
 **Files:**
+
 - Modify: `web/components/notification/useNotifications.ts`
 - Test: `web/components/notification/useNotifications.test.ts`
 
 **Interfaces:**
+
 - Consumes:
   - `fetchNotifications`, `markNotificationAsRead`, `markAllNotificationsAsRead` from `web/lib/notifications-api.ts`
   - `NotificationWsClient` and `WsConnectionState` from `web/lib/notifications-ws.ts`
@@ -194,6 +196,7 @@ git commit -m "feat: harden notification read mutations"
 ## Task 2: Simplify the UI Wiring
 
 **Files:**
+
 - Modify: `web/components/notification/NotificationItem.tsx`
 - Modify: `web/components/notification/NotificationPanel.tsx`
 - Modify: `web/components/notification/NotificationDropdown.tsx`
@@ -201,6 +204,7 @@ git commit -m "feat: harden notification read mutations"
 - Create: `web/test/setup.ts`
 
 **Interfaces:**
+
 - Consumes: `useNotifications()` return values from `web/components/notification/useNotifications.ts`
 - Produces:
   - A semantic, clickable notification item
@@ -302,9 +306,11 @@ git commit -m "feat: wire notification read actions in the UI"
 ## Task 3: Final Verification and Cleanup
 
 **Files:**
+
 - No new files expected.
 
 **Interfaces:**
+
 - Confirms the previous tasks produced the expected notification read behavior.
 
 - [ ] **Step 1: Run the full web test suite**
