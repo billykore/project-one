@@ -81,7 +81,7 @@ func (h *NotificationHandler) Listen(ctx context.Context) error {
 			"type", notification.Type,
 		)
 
-		if err := h.wsManager.Send(&dto.NotificationResponse{
+		err := h.wsManager.Send(&dto.NotificationResponse{
 			ID:            notification.ID,
 			UserID:        notification.UserID,
 			ActorID:       notification.ActorID,
@@ -93,7 +93,8 @@ func (h *NotificationHandler) Listen(ctx context.Context) error {
 			CreatedAt:     notification.CreatedAt,
 			Title:         dto.NotificationTitle(notification.Type),
 			Body:          dto.NotificationBody(notification.Type, notification.ActorUsername),
-		}); err != nil {
+		})
+		if err != nil {
 			// User not being connected is a normal condition (user is offline);
 			// only log actual send failures as warnings.
 			if errors.Is(err, wsadapter.ErrUserNotConnected) {

@@ -81,15 +81,17 @@ func (uc *commentUseCase) AddComment(ctx context.Context, postID int, username s
 				uc.log.Error(ctx, "failed to resolve commenter username for comment notification", "username", username, "error", err)
 			} else if commenter != nil && postOwner.ID != commenter.ID {
 				notification := &domain.Notification{
-					UserID:  postOwner.ID,
-					ActorID: commenter.ID,
-					Type:    domain.NotificationTypeLike,
-					PostID:  post.ID,
+					UserID:        postOwner.ID,
+					ActorID:       commenter.ID,
+					Type:          domain.NotificationTypeComment,
+					PostID:        post.ID,
+					ActorUsername: commenter.Username,
+					CreatedAt:     comment.CreatedAt,
 				}
 
 				payload, err := json.Marshal(notification)
 				if err != nil {
-					uc.log.Error(ctx, "failed to marshal follow notification", "error", err)
+					uc.log.Error(ctx, "failed to marshal comment notification", "error", err)
 					return nil
 				}
 
