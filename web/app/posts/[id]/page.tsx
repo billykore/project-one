@@ -80,6 +80,15 @@ export default async function PostDetailPage({ params }: PageProps) {
               {post.title}
             </h1>
             <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-gray-500">
+              {/* ponytail: simple author metadata display */}
+              {post.author && (
+                <>
+                  <span className="font-semibold text-gray-700 dark:text-zinc-300">
+                    Created by {post.author}
+                  </span>
+                  <span>•</span>
+                </>
+              )}
               <time dateTime={post.created_at}>
                 Created on {new Date(post.created_at).toLocaleDateString(undefined, {
                   year: 'numeric',
@@ -96,8 +105,8 @@ export default async function PostDetailPage({ params }: PageProps) {
             {post.tags && post.tags.length > 0 && (
               <div className="mt-6 flex flex-wrap gap-2">
                 {post.tags.map((tag) => (
-                  <span 
-                    key={tag} 
+                  <span
+                    key={tag}
                     className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400"
                   >
                     #{tag}
@@ -113,9 +122,9 @@ export default async function PostDetailPage({ params }: PageProps) {
             </p>
           </div>
 
-          <PostInteractionSection 
-            postId={post.id} 
-            initialComments={post.comments} 
+          <PostInteractionSection
+            postId={post.id}
+            initialComments={post.comments}
             isGuest={!isAuthenticated}
             initialLikeCount={post.like_count}
           />
