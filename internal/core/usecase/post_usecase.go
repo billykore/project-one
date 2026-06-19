@@ -29,20 +29,9 @@ func NewPostUseCase(
 	publisher ports.Publisher,
 	log ports.Logger,
 ) ports.PostUseCase {
-	if postRepo == nil {
-		panic("NewPostUseCase: postRepo is required")
-	}
-	if likeRepo == nil {
-		panic("NewPostUseCase: likeRepo is required")
-	}
-	if userRepo == nil {
-		panic("NewPostUseCase: userRepo is required")
-	}
-	if publisher == nil {
-		panic("NewPostUseCase: publisher is required")
-	}
-	if log == nil {
-		panic("NewPostUseCase: log is required")
+	// ponytail: simplified dependency validation to match NewFollowUseCase
+	if postRepo == nil || likeRepo == nil || userRepo == nil || publisher == nil || log == nil {
+		panic("NewPostUseCase: dependencies must not be nil")
 	}
 	return &postUseCase{
 		postRepo:  postRepo,
@@ -171,20 +160,11 @@ func (uc *postUseCase) LikePost(ctx context.Context, postID int, username string
 		return 0, domain.ErrInternalServer
 	}
 
-	exists, err := uc.likeRepo.Exists(ctx, postID, username)
-	if err != nil {
-		uc.log.Error(ctx, "failed to check if like exists", "postID", postID, "username", username, "error", err)
-		return 0, domain.ErrInternalServer
-	}
-
-	if exists {
-		return post.LikeCount, nil
-	}
-
 	like := &domain.Like{
 		PostID:   postID,
 		Username: username,
 	}
+	// ponytail: calling Create directly instead of checking Exists first saves a DB roundtrip
 	if err := uc.likeRepo.Create(ctx, like); err != nil {
 		if errors.Is(err, domain.ErrPostNotFound) {
 			return 0, err
@@ -211,7 +191,7 @@ func (uc *postUseCase) LikePost(ctx context.Context, postID int, username string
 			liker, err := uc.userRepo.GetUserByUsername(ctx, username)
 			if err != nil {
 				uc.log.Error(ctx, "failed to resolve liker username for like notification", "username", username, "error", err)
-			} else if liker != nil && postOwner.ID != liker.ID {
+			} else if liker != nil {
 				notification := &domain.Notification{
 					UserID:        postOwner.ID,
 					ActorID:       liker.ID,
@@ -223,7 +203,7 @@ func (uc *postUseCase) LikePost(ctx context.Context, postID int, username string
 
 				payload, err := json.Marshal(notification)
 				if err != nil {
-					uc.log.Error(ctx, "failed to marshal follow notification", "error", err)
+					uc.log.Error(ctx, "failed to marshal like notification", "error", err)
 					return 0, nil
 				}
 
@@ -233,7 +213,7 @@ func (uc *postUseCase) LikePost(ctx context.Context, postID int, username string
 					Payload: payload,
 				})
 				if err != nil {
-					uc.log.Error(ctx, "failed to publish follow notification", "error", err)
+					uc.log.Error(ctx, "failed to publish like notification", "error", err)
 				}
 			}
 		}
@@ -250,23 +230,28 @@ func (uc *postUseCase) UnlikePost(ctx context.Context, postID int, username stri
 		return 0, domain.ErrValidationFailed
 	}
 
-	exists, err := uc.likeRepo.Exists(ctx, postID, username)
-	if err != nil {
-		uc.log.Error(ctx, "failed to check if like exists", "postID", postID, "username", username, "error", err)
+	// ponytail: calling Delete directly instead of checking Exists first saves a DB roundtrip
+	if err := uc.likeRepo.Delete(ctx, postID, username); err != nil {
+		if errors.Is(err, domain.ErrNotLiked) {
+			post, err := uc.postRepo.GetByIDOnly(ctx, postID)
+			if err != nil {
+				if errors.Is(err, domain.ErrPostNotFound) {
+					return 0, err
+				}
+				uc.log.Error(ctx, "failed to get post for like count", "postID", postID, "error", err)
+				return 0, domain.ErrInternalServer
+			}
+			return post.LikeCount, nil
+		}
+		uc.log.Error(ctx, "failed to delete like", "postID", postID, "username", username, "error", err)
 		return 0, domain.ErrInternalServer
 	}
 
-	if exists {
-		if err := uc.likeRepo.Delete(ctx, postID, username); err != nil {
-			uc.log.Error(ctx, "failed to delete like", "postID", postID, "username", username, "error", err)
-			return 0, domain.ErrInternalServer
-		}
-		if err := uc.postRepo.IncrementLikeCount(ctx, postID, -1); err != nil {
-			uc.log.Error(ctx, "failed to decrement like count", "postID", postID, "error", err)
-			return 0, domain.ErrInternalServer
-		}
-		uc.log.Info(ctx, "post unliked successfully", "postID", postID, "username", username)
+	if err := uc.postRepo.IncrementLikeCount(ctx, postID, -1); err != nil {
+		uc.log.Error(ctx, "failed to decrement like count", "postID", postID, "error", err)
+		return 0, domain.ErrInternalServer
 	}
+	uc.log.Info(ctx, "post unliked successfully", "postID", postID, "username", username)
 
 	post, err := uc.postRepo.GetByIDOnly(ctx, postID)
 	if err != nil {

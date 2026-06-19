@@ -326,7 +326,6 @@ func TestPostUseCase_LikePost(t *testing.T) {
 
 	t.Run("success - new like", func(t *testing.T) {
 		mockRepo.EXPECT().GetByIDOnly(ctx, postID).Return(&domain.Post{ID: postID, Username: "postowner", LikeCount: 4}, nil)
-		mockLikeRepo.EXPECT().Exists(ctx, postID, username).Return(false, nil)
 		mockLikeRepo.EXPECT().Create(ctx, gomock.Any()).Return(nil)
 		mockRepo.EXPECT().IncrementLikeCount(ctx, postID, 1).Return(nil)
 		mockUserRepo.EXPECT().GetUserByUsername(ctx, "postowner").Return(&domain.User{ID: 2, Username: "postowner"}, nil)
@@ -341,7 +340,7 @@ func TestPostUseCase_LikePost(t *testing.T) {
 
 	t.Run("success idempotent - already liked", func(t *testing.T) {
 		mockRepo.EXPECT().GetByIDOnly(ctx, postID).Return(&domain.Post{ID: postID, LikeCount: 4}, nil)
-		mockLikeRepo.EXPECT().Exists(ctx, postID, username).Return(true, nil)
+		mockLikeRepo.EXPECT().Create(ctx, gomock.Any()).Return(domain.ErrAlreadyLiked)
 
 		count, err := svc.LikePost(ctx, postID, username)
 		assert.NoError(t, err)
@@ -374,7 +373,6 @@ func TestPostUseCase_UnlikePost(t *testing.T) {
 	postID := 1
 
 	t.Run("success - unlike existing", func(t *testing.T) {
-		mockLikeRepo.EXPECT().Exists(ctx, postID, username).Return(true, nil)
 		mockLikeRepo.EXPECT().Delete(ctx, postID, username).Return(nil)
 		mockRepo.EXPECT().IncrementLikeCount(ctx, postID, -1).Return(nil)
 		mockRepo.EXPECT().GetByIDOnly(ctx, postID).Return(&domain.Post{ID: postID, LikeCount: 3}, nil)
@@ -386,7 +384,7 @@ func TestPostUseCase_UnlikePost(t *testing.T) {
 	})
 
 	t.Run("success idempotent - not liked", func(t *testing.T) {
-		mockLikeRepo.EXPECT().Exists(ctx, postID, username).Return(false, nil)
+		mockLikeRepo.EXPECT().Delete(ctx, postID, username).Return(domain.ErrNotLiked)
 		mockRepo.EXPECT().GetByIDOnly(ctx, postID).Return(&domain.Post{ID: postID, LikeCount: 4}, nil)
 
 		count, err := svc.UnlikePost(ctx, postID, username)

@@ -28,20 +28,9 @@ func NewCommentUseCase(
 	publisher ports.Publisher,
 	log ports.Logger,
 ) ports.CommentUseCase {
-	if commentRepo == nil {
-		panic("NewCommentUseCase: commentRepo is required")
-	}
-	if postRepo == nil {
-		panic("NewCommentUseCase: postRepo is required")
-	}
-	if userRepo == nil {
-		panic("NewCommentUseCase: userRepo is required")
-	}
-	if publisher == nil {
-		panic("NewCommentUseCase: publisher is required")
-	}
-	if log == nil {
-		panic("NewCommentUseCase: log is required")
+	// ponytail: simplified dependency validation to match NewPostUseCase
+	if commentRepo == nil || postRepo == nil || userRepo == nil || publisher == nil || log == nil {
+		panic("NewCommentUseCase: dependencies must not be nil")
 	}
 	return &commentUseCase{
 		commentRepo: commentRepo,

@@ -27,52 +27,29 @@ type NotificationsListResponse = {
 
 const NOTIFICATIONS_ENDPOINT = "/api/v1/notifications";
 
-const ALLOWED_TYPES: NotificationType[] = ["success", "info", "warning", "error"];
-
-function normalizeType(type: string | undefined): NotificationType {
-  if (!type) return "info";
-  if (ALLOWED_TYPES.includes(type as NotificationType)) {
-    return type as NotificationType;
-  }
-  return "info";
-}
-
-function buildFallbackContent(item: BackendNotification): Pick<Notification, "title" | "message"> {
-  const actor = item.actor_name?.trim() || "Someone";
-
-  switch (item.type) {
-    case "follow":
-      return {
-        title: "New follower",
-        message: `${actor} started following you.`,
-      };
-    case "like":
-      return {
-        title: "Post liked",
-        message: `${actor} liked your post.`,
-      };
-    case "comment":
-      return {
-        title: "New comment",
-        message: `${actor} commented on your post.`,
-      };
-    default:
-      return {
-        title: "Notification",
-        message: `${actor} sent you an update.`,
-      };
-  }
-}
+const ALLOWED_TYPES = ["success", "info", "warning", "error"] as const;
 
 function normalizeNotification(item: BackendNotification): Notification {
   const createdAt = item.createdAt ?? item.created_at ?? new Date().toISOString();
-  const fallback = buildFallbackContent(item);
+  const actor = item.actor_name?.trim() || "Someone";
+  const fallback: Pick<Notification, "title" | "message"> =
+    item.type === "follow"
+      ? { title: "New follower", message: `${actor} started following you.` }
+      : item.type === "like"
+        ? { title: "Post liked", message: `${actor} liked your post.` }
+        : item.type === "comment"
+          ? { title: "New comment", message: `${actor} commented on your post.` }
+          : { title: "Notification", message: `${actor} sent you an update.` };
+  const type: NotificationType =
+    item.type && ALLOWED_TYPES.includes(item.type as (typeof ALLOWED_TYPES)[number])
+      ? (item.type as NotificationType)
+      : "info";
 
   return {
     id: String(item.id),
     title: item.title?.trim() || fallback.title,
     message: item.message?.trim() || item.body?.trim() || fallback.message,
-    type: normalizeType(item.type),
+    type,
     isRead: item.isRead ?? item.is_read ?? false,
     createdAt,
     avatar: item.avatar,
@@ -80,23 +57,14 @@ function normalizeNotification(item: BackendNotification): Notification {
   };
 }
 
-function extractNotifications(payload: NotificationsListResponse | BackendNotification[]): BackendNotification[] {
-  if (Array.isArray(payload)) {
-    return payload;
-  }
-
-  return payload.notifications ?? payload.data ?? payload.items ?? [];
-}
-
 export async function fetchNotifications(): Promise<Notification[]> {
   const payload = await api.get<NotificationsListResponse | BackendNotification[]>(NOTIFICATIONS_ENDPOINT);
-  const notifications = extractNotifications(payload).map(normalizeNotification);
+  const notifications = (Array.isArray(payload)
+    ? payload
+    : payload.notifications ?? payload.data ?? payload.items ?? []
+  ).map(normalizeNotification);
 
-  return notifications.sort((a, b) => {
-    const aTime = new Date(a.createdAt).getTime();
-    const bTime = new Date(b.createdAt).getTime();
-    return bTime - aTime;
-  });
+  return notifications.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
 export async function markNotificationAsRead(id: string): Promise<void> {

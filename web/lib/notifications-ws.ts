@@ -1,18 +1,3 @@
-/**
- * WebSocket notification client for real-time notification streaming.
- *
- * Transport contract:
- *   Endpoint : ws(s)://<host>/websocket  (configured via NEXT_PUBLIC_WS_URL)
- *   Protocol : native WebSocket (no sub-protocol negotiation)
- *   Auth     : The access_token is fetched from the Next.js API route
- *              `/api/ws-token` (which reads the HttpOnly cookie server-side)
- *              and appended as a `?token=` query parameter on the WebSocket
- *              URL.  Browser WebSocket connections cannot set custom HTTP
- *              headers during the upgrade handshake, so the backend Authorize
- *              middleware also accepts the token from query parameters.
- *   Messages : JSON-encoded NotificationResponse (see WsNotificationPayload below).
- */
-
 import type { Notification } from './types/notification.types';
 import { mapWsPayload } from './notifications-ws-mapper';
 
@@ -37,11 +22,8 @@ type StateHandler = (state: WsConnectionState) => void;
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL ?? 'ws://localhost:8080/websocket';
 
-/** Minimum reconnect delay in ms. */
 const BACKOFF_BASE_MS = 1_000;
-/** Maximum reconnect delay in ms (30 s). */
 const BACKOFF_CAP_MS = 30_000;
-/** Maximum reconnect attempts before giving up entirely. */
 const MAX_ATTEMPTS = 10;
 
 const DEBUG = process.env.NEXT_PUBLIC_WS_DEBUG === 'true';
@@ -52,11 +34,6 @@ function dbg(...args: unknown[]) {
   }
 }
 
-/**
- * Fetch the access_token from the Next.js API route `/api/ws-token`.
- * The API route reads the HttpOnly cookie server-side and returns it.
- * Returns null if the user is not authenticated.
- */
 async function fetchWsToken(): Promise<string | null> {
   try {
     const res = await fetch('/api/ws-token', { credentials: 'include' });
@@ -69,35 +46,20 @@ async function fetchWsToken(): Promise<string | null> {
   }
 }
 
-/**
- * Build the final WebSocket URL by appending the token as a query parameter.
- */
 function buildWsUrl(token: string): string {
   const separator = WS_URL.includes('?') ? '&' : '?';
   return `${WS_URL}${separator}token=${encodeURIComponent(token)}`;
 }
 
-/**
- * NotificationWsClient manages the WebSocket lifecycle for notification streaming.
- *
- * Usage:
- *   const client = new NotificationWsClient();
- *   client.onMessage(n => setState(prev => [n, ...prev]));
- *   client.onStateChange(s => setConnectionState(s));
- *   client.connect();
- *   // On cleanup:
- *   client.disconnect();
- */
 export class NotificationWsClient {
   private ws: WebSocket | null = null;
   private attempts = 0;
   private retryTimer: ReturnType<typeof setTimeout> | null = null;
   private explicitClose = false;
   private connecting = false;
-  private messageHandlers: Set<MessageHandler> = new Set();
-  private stateHandlers: Set<StateHandler> = new Set();
+  private messageHandler: MessageHandler | null = null;
+  private stateHandler: StateHandler | null = null;
   private _state: WsConnectionState = 'offline';
-  /** Called when a clean reconnect succeeds after previous failure. */
   onReconnect: (() => void) | null = null;
 
   get state(): WsConnectionState {
@@ -108,17 +70,21 @@ export class NotificationWsClient {
     if (this._state === next) return;
     this._state = next;
     dbg('state →', next);
-    this.stateHandlers.forEach((h) => h(next));
+    this.stateHandler?.(next);
   }
 
   onMessage(handler: MessageHandler): () => void {
-    this.messageHandlers.add(handler);
-    return () => this.messageHandlers.delete(handler);
+    this.messageHandler = handler;
+    return () => {
+      if (this.messageHandler === handler) this.messageHandler = null;
+    };
   }
 
   onStateChange(handler: StateHandler): () => void {
-    this.stateHandlers.add(handler);
-    return () => this.stateHandlers.delete(handler);
+    this.stateHandler = handler;
+    return () => {
+      if (this.stateHandler === handler) this.stateHandler = null;
+    };
   }
 
   connect() {
@@ -180,7 +146,7 @@ export class NotificationWsClient {
         dbg('payload did not map to a notification, skipping');
         return;
       }
-      this.messageHandlers.forEach((h) => h(notification));
+      this.messageHandler?.(notification);
     };
 
     this.ws.onerror = (event) => {
@@ -190,10 +156,7 @@ export class NotificationWsClient {
     this.ws.onclose = (event) => {
       dbg('closed code=%d reason=%s', event.code, event.reason);
       this.ws = null;
-      if (this.explicitClose) {
-        this.setState('offline');
-        return;
-      }
+      if (this.explicitClose) return;
       this.scheduleReconnect();
     };
   }
@@ -229,13 +192,9 @@ export class NotificationWsClient {
       this.ws.close();
       this.ws = null;
     }
+    this.messageHandler = null;
+    this.stateHandler = null;
     this.setState('offline');
-  }
-
-  /** Reset the client so it can be reconnected after an explicit disconnect. */
-  reset() {
-    this.explicitClose = false;
-    this.attempts = 0;
   }
 }
 
