@@ -1,0 +1,42 @@
+name: Web Dependency Audit
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "web/package.json"
+      - "web/package-lock.json"
+      - ".github/workflows/web-dependency-audit.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "web/package.json"
+      - "web/package-lock.json"
+      - ".github/workflows/web-dependency-audit.yml"
+
+jobs:
+  audit:
+    name: NPM Audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Audit dependencies (high and critical)
+        run: npm audit --audit-level=high
