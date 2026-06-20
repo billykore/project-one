@@ -1,5 +1,3 @@
-import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { apiServer } from "@/lib/api-server";
 import { ApiError } from "@/lib/api";
@@ -7,6 +5,7 @@ import { Post } from "../model";
 import PostInteractionSection from "@/components/posts/PostInteractionSection";
 import DeletePostButton from "@/components/posts/DeletePostButton";
 import { cookies } from "next/headers";
+import Navbar from "@/components/layout/Navbar";
 
 async function getPost(id: string) {
   try {
@@ -37,41 +36,14 @@ export default async function PostDetailPage({ params }: PageProps) {
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50 font-sans dark:bg-black">
-      <nav className="flex items-center justify-between bg-white px-8 py-4 shadow-sm dark:bg-zinc-900">
-        <div className="flex items-center gap-4">
-          <Link href={isAuthenticated ? "/home" : "/login"}>
-            <Image
-              className="dark:invert"
-              src="/next.svg"
-              alt="Next.js logo"
-              width={100}
-              height={20}
-              priority
-            />
-          </Link>
-          <span className="text-xl font-bold text-gray-900 dark:text-zinc-50">Post Details</span>
-        </div>
-        <div className="flex items-center gap-4">
-          {isAuthenticated ? (
-            <>
-              <DeletePostButton postId={post.id} postAuthor={post.author} />
-              <Link
-                href="/posts"
-                className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-              >
-                Back to Posts
-              </Link>
-            </>
-          ) : (
-            <Link
-              href="/login"
-              className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
-            >
-              Log In
-            </Link>
-          )}
-        </div>
-      </nav>
+      <Navbar
+        pageTitle="Post Details"
+        rightActions={
+          isAuthenticated && (
+            <DeletePostButton postId={post.id} postAuthor={post.author} />
+          )
+        }
+      />
 
       <main className="mx-auto w-full max-w-3xl flex-1 p-8">
         <article className="rounded-xl bg-white p-8 shadow-lg dark:bg-zinc-900 sm:p-12">

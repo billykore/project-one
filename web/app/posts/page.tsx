@@ -1,9 +1,9 @@
 import Link from "next/link";
-import Image from "next/image";
 import { redirect } from "next/navigation";
 import { apiServer } from "@/lib/api-server";
 import { ApiError } from "@/lib/api";
 import { Post } from "./model";
+import Navbar from "@/components/layout/Navbar";
 
 async function getPosts() {
   try {
@@ -27,35 +27,7 @@ export default async function PostsPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50 font-sans dark:bg-black">
-      <nav className="flex items-center justify-between bg-white px-8 py-4 shadow-sm dark:bg-zinc-900">
-        <div className="flex items-center gap-4">
-          <Link href="/home">
-            <Image
-              className="dark:invert"
-              src="/next.svg"
-              alt="Next.js logo"
-              width={100}
-              height={20}
-              priority
-            />
-          </Link>
-          <span className="text-xl font-bold text-gray-900 dark:text-zinc-50">Posts</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <Link
-            href="/posts/create"
-            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-          >
-            Create New Post
-          </Link>
-          <Link
-            href="/home"
-            className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-          >
-            Dashboard
-          </Link>
-        </div>
-      </nav>
+      <Navbar pageTitle="Posts" />
 
       <main className="mx-auto w-full max-w-5xl flex-1 p-8">
         {posts.length === 0 ? (

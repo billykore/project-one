@@ -2,11 +2,11 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useProfileController } from "./controller";
 import ResetPasswordForm from "./ResetPasswordForm";
 import FollowListModal from "./FollowListModal";
 import { UserProfile, FollowerInfo, PostInfo } from "./model";
+import Navbar from "@/components/layout/Navbar";
 
 interface UserProfileViewProps {
   profile: UserProfile;
@@ -72,37 +72,7 @@ export default function UserProfileView({
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50 font-sans dark:bg-black text-gray-900 dark:text-zinc-100 transition-colors duration-200">
-      {/* Top Navbar */}
-      <nav className="flex items-center justify-between bg-white px-6 py-4 shadow-sm dark:bg-zinc-900 border-b border-gray-100 dark:border-zinc-800">
-        <div className="flex items-center gap-4">
-          <Link href="/home">
-            <Image
-              className="dark:invert"
-              src="/next.svg"
-              alt="Next.js logo"
-              width={90}
-              height={18}
-              priority
-            />
-          </Link>
-          <span className="h-5 w-px bg-zinc-200 dark:bg-zinc-700"></span>
-          <span className="text-md font-bold text-gray-900 dark:text-zinc-50">Profile</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link
-            href="/posts"
-            className="rounded-md border border-gray-300 bg-white px-3.5 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 transition duration-150"
-          >
-            All Posts
-          </Link>
-          <Link
-            href="/home"
-            className="rounded-md border border-gray-300 bg-white px-3.5 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 transition duration-150"
-          >
-            Dashboard
-          </Link>
-        </div>
-      </nav>
+      <Navbar pageTitle="Profile" />
 
       {/* Main Container */}
       <main className="mx-auto w-full max-w-6xl flex-1 p-6 md:p-8">
