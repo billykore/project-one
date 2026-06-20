@@ -51,6 +51,11 @@ func main() {
 		lgr.Fatal(ctx, "failed to load config", "error", err)
 	}
 
+	privateKey, publicKey, err := loadRSAKeyPair(cfg.JWT.PrivateKeyPath, cfg.JWT.PublicKeyPath)
+	if err != nil {
+		lgr.Fatal(ctx, "failed to load jwt keys", "error", err)
+	}
+
 	// Set dynamic Swagger host.
 	swagger.SwaggerInfo.Host = fmt.Sprintf("localhost:%d", cfg.App.Port)
 
@@ -70,7 +75,7 @@ func main() {
 	followRepo := repository.NewFollowRepository(db)
 	commentRepo := repository.NewCommentRepository(db)
 	likeRepo := repository.NewLikeRepository(db)
-	tokenSvc := token.NewJWTTokenService(cfg.JWT.SecretKey, cfg.JWT.ExpirationTime)
+	tokenSvc := token.NewJWTTokenService(privateKey, publicKey, cfg.JWT.ExpirationTime)
 	hasher := hasher.NewBcryptHasher()
 	inMemoryPubSub := pubsub.NewInMemoryPubSub()
 	publisher := pubsub.NewInMemoryPublisher(inMemoryPubSub)

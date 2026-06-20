@@ -13,7 +13,7 @@ CONFIG_ARG = -config $(config)
 
 ## build: Compile the application binary
 build:
-	go build -mod=mod -o $(BUILD_DIR)/main ./cmd/main.go
+	go build -mod=mod -o $(BUILD_DIR)/main ./cmd
 	@echo "Build completed. Binary is located at $(BUILD_DIR)/main"
 
 ## run: Build and run the application (e.g., make run config="./configs" or make run args="-config ./configs")

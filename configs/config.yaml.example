@@ -9,7 +9,8 @@ database:
   max_open_conns: 100
   conn_max_lifetime: "1h"
 jwt:
-  secret_key: "supersecretjwtkey"
+  private_key_path: "./configs/keys/jwt-private.pem"
+  public_key_path: "./configs/keys/jwt-public.pem"
   expiration_time: 24h
 app:
   port: 8080

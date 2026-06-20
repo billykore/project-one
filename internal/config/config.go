@@ -36,7 +36,8 @@ type DatabaseConfig struct {
 
 // JWTConfig holds JWT-related settings.
 type JWTConfig struct {
-	SecretKey      string        `mapstructure:"secret_key"`
+	PrivateKeyPath string        `mapstructure:"private_key_path"`
+	PublicKeyPath  string        `mapstructure:"public_key_path"`
 	ExpirationTime time.Duration `mapstructure:"expiration_time"`
 }
 
@@ -62,7 +63,8 @@ func Load(path string) (cfg *Config, err error) { // Changed named return to cfg
 	_ = v.BindEnv("database.password", "DATABASE_PASSWORD")
 	_ = v.BindEnv("database.dbname", "DATABASE_DBNAME")
 	_ = v.BindEnv("database.sslmode", "DATABASE_SSLMODE")
-	_ = v.BindEnv("jwt.secret_key", "JWT_SECRET_KEY")
+	_ = v.BindEnv("jwt.private_key_path", "JWT_PRIVATE_KEY_PATH")
+	_ = v.BindEnv("jwt.public_key_path", "JWT_PUBLIC_KEY_PATH")
 	_ = v.BindEnv("jwt.expiration_time", "JWT_EXPIRATION_TIME")
 
 	// Set default values
@@ -83,8 +85,11 @@ func Load(path string) (cfg *Config, err error) { // Changed named return to cfg
 	}
 
 	// Basic validation for critical fields
-	if loadedConfig.JWT.SecretKey == "" {
-		return nil, fmt.Errorf("JWT secret key cannot be empty")
+	if loadedConfig.JWT.PrivateKeyPath == "" {
+		return nil, fmt.Errorf("JWT private key path cannot be empty")
+	}
+	if loadedConfig.JWT.PublicKeyPath == "" {
+		return nil, fmt.Errorf("JWT public key path cannot be empty")
 	}
 	if loadedConfig.Database.Host == "" || loadedConfig.Database.User == "" || loadedConfig.Database.DBName == "" { // Added database validation
 		return nil, fmt.Errorf("database host, user, and dbname cannot be empty")
