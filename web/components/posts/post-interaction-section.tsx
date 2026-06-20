@@ -4,11 +4,13 @@ import { useState, useEffect } from "react";
 import { LikeButton } from "./like-button";
 import { CommentForm } from "./comment-form";
 import { CommentList } from "./comment-list";
+import DeletePostButton from "./delete-post-button";
 import { api } from "@/lib/api";
 import { Comment } from "@/lib/types/post.types";
 
 interface PostInteractionSectionProps {
   postId: number;
+  postAuthor?: string;
   initialComments?: Comment[];
   isGuest?: boolean;
   initialLikeCount?: number;
@@ -16,6 +18,7 @@ interface PostInteractionSectionProps {
 
 export default function PostInteractionSection({
   postId,
+  postAuthor,
   initialComments = [],
   isGuest = false,
   initialLikeCount = 0,
@@ -118,6 +121,9 @@ export default function PostInteractionSection({
           onToggle={handleLikeToggle}
           isGuest={isGuest}
         />
+        {!isGuest && (
+          <DeletePostButton postId={postId} postAuthor={postAuthor} />
+        )}
       </div>
 
       <div className="space-y-4">

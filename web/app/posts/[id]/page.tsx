@@ -3,7 +3,6 @@ import { apiServer } from "@/lib/api-server";
 import { ApiError } from "@/lib/api";
 import { Post } from "@/lib/types/post.types";
 import PostInteractionSection from "@/components/posts/post-interaction-section";
-import DeletePostButton from "@/components/posts/delete-post-button";
 import { cookies } from "next/headers";
 import Navbar from "@/components/layout/navbar";
 
@@ -36,14 +35,7 @@ export default async function PostDetailPage({ params }: PageProps) {
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50 font-sans dark:bg-black">
-      <Navbar
-        pageTitle="Post Details"
-        rightActions={
-          isAuthenticated && (
-            <DeletePostButton postId={post.id} postAuthor={post.author} />
-          )
-        }
-      />
+      <Navbar pageTitle="Post Details" />
 
       <main className="mx-auto w-full max-w-3xl flex-1 p-8">
         <article className="rounded-xl bg-white p-8 shadow-lg dark:bg-zinc-900 sm:p-12">
@@ -96,6 +88,7 @@ export default async function PostDetailPage({ params }: PageProps) {
 
           <PostInteractionSection
             postId={post.id}
+            postAuthor={post.author}
             initialComments={post.comments}
             isGuest={!isAuthenticated}
             initialLikeCount={post.like_count}
