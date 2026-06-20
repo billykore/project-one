@@ -2,7 +2,7 @@
 
 import React from "react";
 import { InputField } from "@/components/ui/input";
-import { ChangePasswordFormData } from "./model";
+import { ChangePasswordFormData } from "@/lib/types/profile.types";
 
 interface ResetPasswordFormProps {
   pwdForm: ChangePasswordFormData;

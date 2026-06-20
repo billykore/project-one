@@ -1,8 +1,8 @@
 import { notFound, redirect } from "next/navigation";
 import { apiServer } from "@/lib/api-server";
 import { ApiError } from "@/lib/api";
-import UserProfileView from "./UserProfileView";
-import { UserProfile, FollowerInfo, PostInfo } from "./model";
+import UserProfileView from "@/components/profile/user-profile-view";
+import { UserProfile, FollowerInfo, PostInfo } from "@/lib/types/profile.types";
 
 interface PageProps {
   params: Promise<{ username: string }>;

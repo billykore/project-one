@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import Link from "next/link";
-import { FollowerInfo } from "./model";
+import { FollowerInfo } from "@/lib/types/profile.types";
 
 interface FollowListModalProps {
   isOpen: boolean;

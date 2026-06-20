@@ -2,11 +2,11 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useProfileController } from "./controller";
-import ResetPasswordForm from "./ResetPasswordForm";
-import FollowListModal from "./FollowListModal";
-import { UserProfile, FollowerInfo, PostInfo } from "./model";
-import Navbar from "@/components/layout/Navbar";
+import { useProfileController } from "@/hooks/use-profile-controller";
+import ResetPasswordForm from "@/components/profile/reset-password-form";
+import FollowListModal from "@/components/profile/follow-list-modal";
+import { UserProfile, FollowerInfo, PostInfo } from "@/lib/types/profile.types";
+import Navbar from "@/components/layout/navbar";
 
 interface UserProfileViewProps {
   profile: UserProfile;

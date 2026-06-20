@@ -2,7 +2,7 @@ import React from "react";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import ProfileDropdown from "./ProfileDropdown";
+import ProfileDropdown from "@/components/layout/profile-dropdown";
 
 // Mock localStorage
 class LocalStorageMock {

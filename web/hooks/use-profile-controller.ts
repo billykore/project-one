@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { api, ApiError } from "@/lib/api";
-import { changePasswordSchema, ChangePasswordFormData, FollowerInfo } from "./model";
+import { changePasswordSchema, ChangePasswordFormData, FollowerInfo } from "@/lib/types/profile.types";
 
 export function useProfileController(profileUsername: string, initialFollowers: FollowerInfo[], initialFollowing: FollowerInfo[]) {
   const router = useRouter();

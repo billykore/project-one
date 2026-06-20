@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { apiServer } from "@/lib/api-server";
 import { ApiError } from "@/lib/api";
 import { Post } from "@/lib/types/post.types";
-import Navbar from "@/components/layout/Navbar";
+import Navbar from "@/components/layout/navbar";
 
 async function getPosts() {
   try {

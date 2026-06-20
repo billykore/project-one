@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import type { Notification } from '../../lib/types/notification.types';
-import { formatTimestamp } from '../../lib/utils/date.utils';
+import type { Notification } from '@/lib/types/notification.types';
+import { formatTimestamp } from '@/lib/utils/date.utils';
 
 export default function NotificationItem({
   item,

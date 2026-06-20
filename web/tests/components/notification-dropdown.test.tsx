@@ -2,12 +2,12 @@ import React from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { describe, expect, it, vi } from 'vitest';
-import NotificationDropdown from './NotificationDropdown';
+import NotificationDropdown from '@/components/notification/notification-dropdown';
 
 const markAsRead = vi.fn();
 const markAllAsRead = vi.fn();
 
-vi.mock('./useNotifications', () => ({
+vi.mock('@/hooks/use-notifications', () => ({
   useNotifications: () => ({
     notifications: [
       {
