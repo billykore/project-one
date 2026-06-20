@@ -4,8 +4,8 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { api } from "@/lib/api";
-import NotificationDropdown from "../notification/NotificationDropdown";
-import ProfileDropdown from "./ProfileDropdown";
+import NotificationDropdown from "@/components/notification/notification-dropdown";
+import ProfileDropdown from "@/components/layout/profile-dropdown";
 
 interface User {
   name: string;

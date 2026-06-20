@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import type { WsConnectionState } from '../../lib/notifications-ws';
+import type { WsConnectionState } from '@/lib/notifications-ws';
 
 function ConnectionIndicator({ state }: { state: WsConnectionState }) {
   if (state === 'connected') {

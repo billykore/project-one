@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { apiServer } from "@/lib/api-server";
 import { ApiError } from "@/lib/api";
-import { createPostSchema, FormState, CreatePostResponse } from "./model";
+import { createPostSchema, FormState, CreatePostResponse } from "@/lib/types/create-post.types";
 
 export async function createPostAction(
   prevState: FormState,
@@ -30,8 +30,8 @@ export async function createPostAction(
   const tagArray = tags
     ? tags
         .split(",")
-        .map((t) => t.trim())
-        .filter((t) => t !== "")
+        .map((t: string) => t.trim())
+        .filter((t: string) => t !== "")
     : [];
 
   try {

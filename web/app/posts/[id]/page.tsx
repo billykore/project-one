@@ -2,10 +2,10 @@ import { notFound } from "next/navigation";
 import { apiServer } from "@/lib/api-server";
 import { ApiError } from "@/lib/api";
 import { Post } from "@/lib/types/post.types";
-import PostInteractionSection from "@/components/posts/PostInteractionSection";
-import DeletePostButton from "@/components/posts/DeletePostButton";
+import PostInteractionSection from "@/components/posts/post-interaction-section";
+import DeletePostButton from "@/components/posts/delete-post-button";
 import { cookies } from "next/headers";
-import Navbar from "@/components/layout/Navbar";
+import Navbar from "@/components/layout/navbar";
 
 async function getPost(id: string) {
   try {

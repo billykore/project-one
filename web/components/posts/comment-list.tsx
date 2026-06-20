@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Comment } from "@/lib/types/post.types";
-import { CommentItem } from "./CommentItem";
+import { CommentItem } from "./comment-item";
 
 interface CommentListProps {
   comments: Comment[];

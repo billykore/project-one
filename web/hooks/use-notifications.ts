@@ -9,7 +9,7 @@ import {
 } from '@/lib/notifications-api';
 import { NotificationWsClient } from '@/lib/notifications-ws';
 import type { WsConnectionState } from '@/lib/notifications-ws';
-import type { Notification } from '../../lib/types/notification.types';
+import type { Notification } from '@/lib/types/notification.types';
 
 function sortByNewest(items: Notification[]): Notification[] {
   return [...items].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());

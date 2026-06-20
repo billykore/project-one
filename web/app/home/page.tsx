@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api, ApiError } from "@/lib/api";
-import Navbar from "../../components/layout/Navbar";
+import Navbar from "@/components/layout/navbar";
 
 // ponytail: inline types and simplified page component fetch logic
 interface UserResponse {

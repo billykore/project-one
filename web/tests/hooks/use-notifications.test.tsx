@@ -2,7 +2,7 @@ import React from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { useNotifications } from './useNotifications';
+import { useNotifications } from '@/hooks/use-notifications';
 
 const mocks = vi.hoisted(() => ({
   fetchNotifications: vi.fn(),

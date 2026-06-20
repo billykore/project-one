@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { useNotifications } from './useNotifications';
-import NotificationIcon from './NotificationIcon';
-import NotificationPanel from './NotificationPanel';
-import NotificationList from './NotificationList';
+import { useNotifications } from '@/hooks/use-notifications';
+import NotificationIcon from '@/components/notification/notification-icon';
+import NotificationPanel from '@/components/notification/notification-panel';
+import NotificationList from '@/components/notification/notification-list';
 
 export default function NotificationDropdown() {
   const { notifications, isOpen, unreadCount, connectionState, toggleDropdown, markAllAsRead, markAsRead } = useNotifications();

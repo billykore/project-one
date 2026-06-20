@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import type { Notification } from '../../lib/types/notification.types';
-import NotificationItem from './NotificationItem';
+import type { Notification } from '@/lib/types/notification.types';
+import NotificationItem from '@/components/notification/notification-item';
 
 export default function NotificationList({
   items,

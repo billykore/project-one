@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { LikeButton } from "./LikeButton";
-import { CommentForm } from "./CommentForm";
-import { CommentList } from "./CommentList";
+import { LikeButton } from "./like-button";
+import { CommentForm } from "./comment-form";
+import { CommentList } from "./comment-list";
 import { api } from "@/lib/api";
 import { Comment } from "@/lib/types/post.types";
 

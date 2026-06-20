@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { CreatePostForm } from "./CreatePostForm";
+import { CreatePostForm } from "@/components/posts/create-post-form";
 
 export const metadata: Metadata = {
   title: "Create Post | Project One",
