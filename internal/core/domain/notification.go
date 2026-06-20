@@ -34,7 +34,3 @@ type NotificationDetail struct {
 	Notification
 	ActorUsername string
 }
-
-func (n *Notification) Validate() error {
-	return nil
-}

@@ -32,9 +32,7 @@ func NewUserHandler(
 	validator ports.Validator,
 	log ports.Logger,
 ) *UserHandler {
-	if userUseCase == nil || loginUseCase == nil || followUseCase == nil || validator == nil || log == nil {
-		panic("NewUserHandler: dependencies must not be nil")
-	}
+	// ponytail: nil checks removed — Go panics at method call site on nil pointer
 	return &UserHandler{
 		userUseCase:   userUseCase,
 		loginUseCase:  loginUseCase,

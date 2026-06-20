@@ -31,21 +31,7 @@ func NewNotificationHandler(
 	validator ports.Validator,
 	wsManager *wsadapter.Manager,
 ) *NotificationHandler {
-	if log == nil {
-		panic("log is required")
-	}
-	if subscriber == nil {
-		panic("subscriber is required")
-	}
-	if notificationUc == nil {
-		panic("notificationUc is required")
-	}
-	if validator == nil {
-		panic("validator is required")
-	}
-	if wsManager == nil {
-		panic("wsManager is required")
-	}
+	// ponytail: nil checks removed — Go panics at method call site on nil pointer
 	return &NotificationHandler{
 		log:        log,
 		subscriber: subscriber,
@@ -62,11 +48,6 @@ func (h *NotificationHandler) Listen(ctx context.Context) error {
 		var notification domain.Notification
 		if err := json.Unmarshal(event.Payload, &notification); err != nil {
 			h.log.Error(ctx, "failed to unmarshal notification event", "error", err)
-			return nil
-		}
-
-		if err := notification.Validate(); err != nil {
-			h.log.Error(ctx, "invalid notification event", "error", err)
 			return nil
 		}
 

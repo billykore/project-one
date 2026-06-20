@@ -18,16 +18,8 @@ type PostHandler struct {
 	validator      ports.Validator
 }
 
+// ponytail: nil checks removed — Go panics at method call site on nil pointer
 func NewPostHandler(postUseCase ports.PostUseCase, commentUseCase ports.CommentUseCase, validator ports.Validator) *PostHandler {
-	if postUseCase == nil {
-		panic("postUseCase is required")
-	}
-	if commentUseCase == nil {
-		panic("commentUseCase is required")
-	}
-	if validator == nil {
-		panic("validator is required")
-	}
 	return &PostHandler{
 		postUseCase:    postUseCase,
 		commentUseCase: commentUseCase,

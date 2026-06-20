@@ -41,59 +41,55 @@ type JWTConfig struct {
 	ExpirationTime time.Duration `mapstructure:"expiration_time"`
 }
 
-// Load reads configuration from file or environment variables.
-func Load(path string) (cfg *Config, err error) { // Changed named return to cfg
-	v := viper.New() // Use a new Viper instance for each call
+// ponytail: uses viper (already-installed dep). BindEnv needed so AutomaticEnv
+// knows which keys to check (it only looks up env vars for registered keys).
+func Load(path string) (*Config, error) {
+	v := viper.New()
 	v.AddConfigPath(path)
-	v.AddConfigPath(fmt.Sprintf("../%s", path))
 	v.SetConfigName("config")
 	v.SetConfigType("yaml")
 
-	// Set EnvKeyReplacer to automatically map env vars like DATABASE_HOST to database.host
-	replacer := strings.NewReplacer(".", "_")
-	v.SetEnvKeyReplacer(replacer)
-	v.AutomaticEnv() // read in environment variables that match
+	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	v.AutomaticEnv()
 
-	// Explicitly bind environment variables for all fields to ensure they are picked up reliably
-	_ = v.BindEnv("app.port", "APP_PORT")
-	_ = v.BindEnv("app.env", "APP_ENV")
-	_ = v.BindEnv("database.host", "DATABASE_HOST")
-	_ = v.BindEnv("database.port", "DATABASE_PORT")
-	_ = v.BindEnv("database.user", "DATABASE_USER")
-	_ = v.BindEnv("database.password", "DATABASE_PASSWORD")
-	_ = v.BindEnv("database.dbname", "DATABASE_DBNAME")
-	_ = v.BindEnv("database.sslmode", "DATABASE_SSLMODE")
-	_ = v.BindEnv("jwt.private_key_path", "JWT_PRIVATE_KEY_PATH")
-	_ = v.BindEnv("jwt.public_key_path", "JWT_PUBLIC_KEY_PATH")
-	_ = v.BindEnv("jwt.expiration_time", "JWT_EXPIRATION_TIME")
+	v.SetDefault("app.port", 8080)
+	for _, key := range []string{
+		"app.port",
+		"app.env",
+		"database.host",
+		"database.port",
+		"database.user",
+		"database.password",
+		"database.dbname",
+		"database.sslmode",
+		"jwt.private_key_path",
+		"jwt.public_key_path",
+		"jwt.expiration_time",
+	} {
+		_ = v.BindEnv(key)
+	}
 
-	// Set default values
-	v.SetDefault("app.port", 8080) // Added default for app.port
-
-	err = v.ReadInConfig()
+	err := v.ReadInConfig()
 	if err != nil {
-		// If config file not found, but env vars are present, it's okay.
 		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
 			return nil, fmt.Errorf("failed to read config file: %w", err)
 		}
 	}
 
-	var loadedConfig Config // Changed variable name
-	err = v.Unmarshal(&loadedConfig)
-	if err != nil {
+	var cfg Config
+	if err := v.Unmarshal(&cfg); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
 	}
 
-	// Basic validation for critical fields
-	if loadedConfig.JWT.PrivateKeyPath == "" {
+	if cfg.JWT.PrivateKeyPath == "" {
 		return nil, fmt.Errorf("JWT private key path cannot be empty")
 	}
-	if loadedConfig.JWT.PublicKeyPath == "" {
+	if cfg.JWT.PublicKeyPath == "" {
 		return nil, fmt.Errorf("JWT public key path cannot be empty")
 	}
-	if loadedConfig.Database.Host == "" || loadedConfig.Database.User == "" || loadedConfig.Database.DBName == "" { // Added database validation
+	if cfg.Database.Host == "" || cfg.Database.User == "" || cfg.Database.DBName == "" {
 		return nil, fmt.Errorf("database host, user, and dbname cannot be empty")
 	}
 
-	return &loadedConfig, nil // Return the renamed variable
+	return &cfg, nil
 }

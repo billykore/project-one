@@ -17,16 +17,8 @@ type CommentHandler struct {
 	log            ports.Logger
 }
 
+// ponytail: nil checks removed — Go panics at method call site on nil pointer
 func NewCommentHandler(commentUseCase ports.CommentUseCase, validator ports.Validator, log ports.Logger) *CommentHandler {
-	if commentUseCase == nil {
-		panic("commentUseCase is required")
-	}
-	if validator == nil {
-		panic("validator is required")
-	}
-	if log == nil {
-		panic("log is required")
-	}
 	return &CommentHandler{
 		commentUseCase: commentUseCase,
 		validator:      validator,

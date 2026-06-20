@@ -24,19 +24,7 @@ func NewWebSocketHandler(
 	userUc ports.UserUseCase,
 	manager *wsadapter.Manager,
 ) *WebSocketHandler {
-	if log == nil {
-		panic("log is required")
-	}
-	if tokenSvc == nil {
-		panic("tokenSvc is required")
-	}
-	if userUc == nil {
-		panic("userUc is required")
-	}
-	if manager == nil {
-		panic("manager is required")
-	}
-
+	// ponytail: nil checks removed — Go panics at method call site on nil pointer
 	return &WebSocketHandler{
 		log:      log,
 		tokenSvc: tokenSvc,

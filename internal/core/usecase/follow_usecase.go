@@ -73,10 +73,6 @@ func (u *followUseCase) Follow(ctx context.Context, followerUsername, followedUs
 		Type:          domain.NotificationTypeFollow,
 		CreatedAt:     follow.CreatedAt,
 	}
-	if err := notification.Validate(); err != nil {
-		u.log.Error(ctx, "invalid follow notification", "error", err)
-		return follow, nil
-	}
 
 	payload, err := json.Marshal(notification)
 	if err != nil {
