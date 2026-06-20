@@ -5,7 +5,7 @@ import { LikeButton } from "./LikeButton";
 import { CommentForm } from "./CommentForm";
 import { CommentList } from "./CommentList";
 import { api } from "@/lib/api";
-import { Comment } from "@/app/posts/model";
+import { Comment } from "@/lib/types/post.types";
 
 interface PostInteractionSectionProps {
   postId: number;

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { apiServer } from "@/lib/api-server";
 import { ApiError } from "@/lib/api";
-import { Post } from "../model";
+import { Post } from "@/lib/types/post.types";
 import PostInteractionSection from "@/components/posts/PostInteractionSection";
 import DeletePostButton from "@/components/posts/DeletePostButton";
 import { cookies } from "next/headers";

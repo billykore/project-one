@@ -1,15 +1,51 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useHome } from "./controller";
+import { api, ApiError } from "@/lib/api";
 import Navbar from "../../components/layout/Navbar";
 
+// ponytail: inline types and simplified page component fetch logic
+interface UserResponse {
+  username: string;
+  email: string;
+  name: string;
+}
+
 export default function HomePage() {
-  const { 
-    user, 
-    isLoading, 
-    error 
-  } = useHome();
+  const router = useRouter();
+  const [user, setUser] = useState<UserResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // ponytail: load user profile details directly inside component
+    const fetchUser = async () => {
+      try {
+        const username = localStorage.getItem("username");
+        if (!username) {
+          router.push("/login");
+          return;
+        }
+
+        const userData = await api.get<UserResponse>(`/api/v1/users/${username}`);
+        setUser(userData);
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 401) {
+          router.push("/login");
+          return;
+        }
+        const message = err instanceof Error ? err.message : "Failed to load user data";
+        setError(message);
+        router.push(`/error?message=${encodeURIComponent(message)}`);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, [router]);
 
   if (isLoading) {
     return (

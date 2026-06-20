@@ -1,0 +1,92 @@
+# Navbar Test Report
+
+## Test Summary
+
+- **Test Date**: June 20, 2026
+- **Tester**: Antigravity AI Agent
+- **Tested User**: `geralt@gmail.com`
+- **Status**: **PASSED**
+
+---
+
+## Test Objectives
+
+1. Verify that the login flow functions correctly for the test user `geralt@gmail.com` (password: `p@ssw0Rd`).
+2. Verify that the authenticated user is redirected to the `/home` (Dashboard) page.
+3. Verify that the new dynamic `Navbar` component displays correctly, showing the page title `Dashboard`.
+4. Verify that the user profile avatar button renders the user's initials (e.g. `GR` or `G`) correctly.
+5. Verify that clicking the avatar opens the `ProfileDropdown` showing the logged-in user's name, username (`@geralt`), and email, along with navigation links.
+6. Verify that the navigation links ("Dashboard", "View Profile", "All Posts", "Create New Post", "Log Out") work as expected.
+7. Verify that navigation dynamically updates the page title in the Navbar (e.g., to "Posts" on the `/posts` page).
+8. Verify that the `NotificationDropdown` displays properly in the Navbar and initiates a WebSocket connection for live notifications.
+9. Verify that clicking "Log Out" opens a confirmation modal and successfully logs the user out, redirecting back to `/login`.
+
+---
+
+## Test Execution Details
+
+The verification was performed using a local Next.js development server running on port `3000` and a Go backend server on port `8080`.
+
+1. **Login & Redirection**:
+   - Navigation to `http://localhost:3000/login` was initiated.
+   - Form inputs were populated with:
+     - **Email**: `geralt@gmail.com`
+     - **Password**: `p@ssw0Rd`
+   - Form submission succeeded, and the client was correctly redirected to `http://localhost:3000/home`.
+
+2. **Navbar Title & Elements**:
+   - The new unified `<Navbar />` component rendered successfully.
+   - The left-hand section correctly displayed the Next.js logo followed by the dynamic page title separator and **"Dashboard"**.
+   - The right-hand section displayed:
+     - **All Posts** button.
+     - **Create Post** button.
+     - **NotificationDropdown** bell icon.
+     - **ProfileDropdown** avatar button showing the initials **"GR"** (Geralt of Rivia).
+
+3. **Profile Dropdown Menu**:
+   - Clicking the initials avatar button successfully toggled the dropdown menu.
+   - Verified content header elements in the dropdown:
+     - "Signed in as"
+     - **Geralt of Rivia**
+     - **@geralt**
+   - Verified navigation links inside the dropdown:
+     - **Dashboard** (`/home`)
+     - **View Profile** (`/geralt`)
+     - **All Posts** (`/posts`)
+     - **Create New Post** (`/posts/create`)
+     - **Log Out** button.
+
+4. **Dynamic Navigation & Title Updates**:
+   - Clicking **All Posts** navigated to `/posts`. The page title in the Navbar dynamically updated to **"Posts"**.
+   - Clicking **View Profile** navigated to `/geralt` (the root-level username dynamic route). The profile page loaded successfully.
+   - Clicking **Create New Post** navigated to `/posts/create`.
+
+5. **Notification Dropdown**:
+   - The notification bell loaded, and backend logs confirmed the WebSocket handshake succeeded:
+     `GET /websocket?token=... status=200`
+   - Real-time updates were ready, and historical notifications were requested correctly.
+
+6. **Logout Flow**:
+   - Clicking the **Log Out** button in the profile dropdown successfully opened the confirmation modal dialog (`Confirm Logout`).
+   - Clicking the confirm **Logout** button triggered `POST /api/v1/auth/logout`, cleared local storage keys (including `username`), and redirected back to `http://localhost:3000/login`.
+
+---
+
+## Test Results
+
+| Step / Feature | Expected Behavior | Actual Behavior | Status |
+| :--- | :--- | :--- | :---: |
+| **Login Flow** | User can authenticate with valid credentials. | Redirected to `/home` with set cookies. | **PASSED** |
+| **Dynamic Page Title** | Navbar shows the page context (e.g. Dashboard). | Title changed dynamically as links were clicked. | **PASSED** |
+| **Profile Initials** | Avatar displays initials matching user name ("GR"). | Rendered initials "GR" in a gradient bubble. | **PASSED** |
+| **Profile Dropdown** | Menu toggles open with user info and links. | Dropdown opens cleanly with correct details. | **PASSED** |
+| **WebSocket Connection** | Websocket connects via `/websocket?token=...`. | Handshake completed successfully (status 200). | **PASSED** |
+| **Logout Confirmation** | Logout button triggers confirmation modal. | Modal appeared, click confirmed logout. | **PASSED** |
+| **Redirect after Logout** | Local storage is cleared and redirected to `/login`. | Username removed; redirected to login page. | **PASSED** |
+
+### Automated Tests Execution
+- **Backend Tests**: `go test -v -race -count=1 ./...` passed (including notification use-case testing for mark as read actions).
+- **Frontend Tests**: `vitest` unit tests for `ProfileDropdown`, `useNotifications`, and `NotificationDropdown` passed successfully.
+
+---
+*Report generated by Antigravity AI Agent on June 20, 2026.*

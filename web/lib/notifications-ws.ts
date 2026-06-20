@@ -1,5 +1,5 @@
 import type { Notification } from './types/notification.types';
-import { mapWsPayload } from './notifications-ws-mapper';
+import { normalizeNotification } from './notifications-api';
 
 export type WsConnectionState = 'connected' | 'reconnecting' | 'offline';
 
@@ -141,7 +141,7 @@ export class NotificationWsClient {
         dbg('failed to parse message JSON, skipping');
         return;
       }
-      const notification = mapWsPayload(payload);
+      const notification = normalizeNotification(payload);
       if (!notification) {
         dbg('payload did not map to a notification, skipping');
         return;

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Comment } from "@/app/posts/model";
+import { Comment } from "@/lib/types/post.types";
 import { CommentItem } from "./CommentItem";
 
 interface CommentListProps {

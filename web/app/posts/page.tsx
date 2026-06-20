@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { apiServer } from "@/lib/api-server";
 import { ApiError } from "@/lib/api";
-import { Post } from "./model";
+import { Post } from "@/lib/types/post.types";
 import Navbar from "@/components/layout/Navbar";
 
 async function getPosts() {

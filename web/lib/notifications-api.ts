@@ -1,23 +1,5 @@
 import { api } from "./api";
-import type { Notification, NotificationType } from "./types/notification.types";
-
-type BackendNotification = {
-  id: string | number;
-  actor_name?: string;
-  post_id?: number;
-  comment_id?: number;
-  title?: string;
-  message?: string;
-  body?: string;
-  type?: string;
-  is_read?: boolean;
-  isRead?: boolean;
-  created_at?: string;
-  createdAt?: string;
-  avatar?: string;
-  link?: string;
-  url?: string;
-};
+import type { Notification, NotificationType, BackendNotification } from "./types/notification.types";
 
 type NotificationsListResponse = {
   notifications?: BackendNotification[];
@@ -29,31 +11,37 @@ const NOTIFICATIONS_ENDPOINT = "/api/v1/notifications";
 
 const ALLOWED_TYPES = ["success", "info", "warning", "error"] as const;
 
-function normalizeNotification(item: BackendNotification): Notification {
-  const createdAt = item.createdAt ?? item.created_at ?? new Date().toISOString();
-  const actor = item.actor_name?.trim() || "Someone";
+export function normalizeNotification(item: unknown): Notification | null {
+  if (!item || typeof item !== "object" || Array.isArray(item)) return null;
+  const p = item as BackendNotification;
+  if (p.id === undefined || p.id === null) return null;
+
+  const createdAt = p.createdAt ?? p.created_at ?? new Date().toISOString();
+  // ponytail: handle both HTTP (actor_name) and WebSocket (actor_username) actor fields
+  const actor = p.actor_name?.trim() || p.actor_username?.trim() || "Someone";
   const fallback: Pick<Notification, "title" | "message"> =
-    item.type === "follow"
+    p.type === "follow"
       ? { title: "New follower", message: `${actor} started following you.` }
-      : item.type === "like"
+      : p.type === "like"
         ? { title: "Post liked", message: `${actor} liked your post.` }
-        : item.type === "comment"
+        : p.type === "comment"
           ? { title: "New comment", message: `${actor} commented on your post.` }
           : { title: "Notification", message: `${actor} sent you an update.` };
+
   const type: NotificationType =
-    item.type && ALLOWED_TYPES.includes(item.type as (typeof ALLOWED_TYPES)[number])
-      ? (item.type as NotificationType)
+    p.type && ALLOWED_TYPES.includes(p.type as (typeof ALLOWED_TYPES)[number])
+      ? (p.type as NotificationType)
       : "info";
 
   return {
-    id: String(item.id),
-    title: item.title?.trim() || fallback.title,
-    message: item.message?.trim() || item.body?.trim() || fallback.message,
+    id: String(p.id),
+    title: p.title?.trim() || fallback.title,
+    message: p.message?.trim() || p.body?.trim() || fallback.message,
     type,
-    isRead: item.isRead ?? item.is_read ?? false,
+    isRead: p.isRead ?? p.is_read ?? false,
     createdAt,
-    avatar: item.avatar,
-    link: item.link ?? item.url,
+    avatar: p.avatar,
+    link: p.link ?? p.url,
   };
 }
 
@@ -62,7 +50,9 @@ export async function fetchNotifications(): Promise<Notification[]> {
   const notifications = (Array.isArray(payload)
     ? payload
     : payload.notifications ?? payload.data ?? payload.items ?? []
-  ).map(normalizeNotification);
+  )
+    .map(normalizeNotification)
+    .filter((n): n is Notification => n !== null);
 
   return notifications.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }

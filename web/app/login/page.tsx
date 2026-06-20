@@ -1,12 +1,100 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { useLogin } from "./controller";
+import { useRouter } from "next/navigation";
+import { z, ZodError } from "zod";
+import { api, ApiError } from "@/lib/api";
 import { InputField } from "@/components/ui/input";
 
+// ponytail: inline login schema and validation types
+const loginSchema = z.object({
+  email: z.string().min(1, "Email is required").pipe(z.email("Please enter a valid email address")),
+  password: z
+    .string()
+    .min(1, "Password is required")
+    .min(8, "Password must be at least 8 characters long"),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
+
+interface LoginErrors {
+  email?: string;
+  password?: string;
+  general?: string;
+}
+
+interface LoginResponse {
+  message: string;
+  username: string;
+}
+
 export default function LoginPage() {
-  const { formData, errors, isSubmitting, handleChange, handleSubmit } = useLogin();
+  const router = useRouter();
+  const [formData, setFormData] = useState<LoginFormData>({
+    email: "",
+    password: "",
+  });
+  const [errors, setErrors] = useState<LoginErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name as keyof LoginFormData]) {
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
+  };
+
+  const validate = (): boolean => {
+    try {
+      loginSchema.parse(formData);
+      setErrors({});
+      return true;
+    } catch (err) {
+      if (err instanceof ZodError) {
+        const fieldErrors: LoginErrors = {};
+        err.issues.forEach((e) => {
+          if (e.path.length > 0) {
+            const path = e.path[0] as keyof LoginFormData;
+            if (!fieldErrors[path]) {
+              fieldErrors[path] = e.message;
+            }
+          } else {
+            fieldErrors.general = e.message;
+          }
+        });
+        setErrors(fieldErrors);
+      }
+      return false;
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) return;
+
+    setIsSubmitting(true);
+    setErrors({});
+
+    try {
+      const response = await api.post<LoginResponse>("/api/v1/auth/login", {
+        email: formData.email.trim(),
+        password: formData.password,
+      });
+      localStorage.setItem("username", response.username);
+      router.push("/home");
+    } catch (err) {
+      if (err instanceof ApiError && (err.status === 401 || err.status === 400)) {
+        setErrors({ general: err.message });
+        return;
+      }
+      const errorMessage = err instanceof Error ? err.message : "An error occurred. Please try again later.";
+      router.push(`/error?message=${encodeURIComponent(errorMessage)}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
