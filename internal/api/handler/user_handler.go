@@ -156,6 +156,26 @@ func (h *UserHandler) HandleLogout(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Internal server error"})
 	}
 
+	// Clear auth cookies so the client cannot access protected routes after logout.
+	c.SetCookie(&http.Cookie{
+		Name:     "access_token",
+		Value:    "",
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   -1,
+	})
+	c.SetCookie(&http.Cookie{
+		Name:     "username",
+		Value:    "",
+		Path:     "/",
+		HttpOnly: false,
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   -1,
+	})
+
 	return c.JSON(http.StatusOK, dto.LogoutResponse{
 		Message: "Logged out successfully",
 	})
