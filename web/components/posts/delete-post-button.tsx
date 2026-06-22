@@ -27,7 +27,8 @@ export default function DeletePostButton({
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    const username = localStorage.getItem("username");
+    // ponytail: read from cookie
+    const username = document.cookie.split("; ").find(r => r.startsWith("username="))?.split("=")[1] || null;
     setCurrentUser(username);
     setIsLoaded(true);
   }, []);

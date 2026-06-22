@@ -104,7 +104,7 @@ export default function ProfileDropdown({ user }: ProfileDropdownProps) {
           {/* Menu Items */}
           <div className="py-1">
             <Link
-              href="/home"
+              href="/"
               onClick={closeDropdown}
               className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-zinc-300 dark:hover:bg-zinc-900 transition-colors"
             >

@@ -1,23 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, ApiError } from "@/lib/api";
 import { changePasswordSchema, ChangePasswordFormData, FollowerInfo } from "@/lib/types/profile.types";
 
 export function useProfileController(profileUsername: string, initialFollowers: FollowerInfo[], initialFollowing: FollowerInfo[]) {
   const router = useRouter();
-  const [loggedInUsername, setLoggedInUsername] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("username");
-      if (stored) {
-        const timer = setTimeout(() => {
-          setLoggedInUsername(stored);
-        }, 0);
-        return () => clearTimeout(timer);
-      }
-    }
-  }, []);
+  // ponytail: read cookie directly in state initializer, no effect needed
+  const [loggedInUsername] = useState<string | null>(() =>
+    document.cookie.split("; ").find(r => r.startsWith("username="))?.split("=")[1] || null
+  );
 
   const isOwner = loggedInUsername === profileUsername;
 

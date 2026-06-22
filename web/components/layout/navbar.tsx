@@ -6,6 +6,7 @@ import Image from "next/image";
 import { api } from "@/lib/api";
 import NotificationDropdown from "@/components/notification/notification-dropdown";
 import ProfileDropdown from "@/components/layout/profile-dropdown";
+import { NavbarActionsSkeleton } from "@/components/ui/page-skeleton";
 
 interface User {
   name: string;
@@ -25,7 +26,8 @@ export default function Navbar({ pageTitle, rightActions }: NavbarProps) {
   useEffect(() => {
     const loadUser = async () => {
       try {
-        const username = localStorage.getItem("username");
+        // ponytail: read cookie instead of localStorage
+        const username = document.cookie.split("; ").find(r => r.startsWith("username="))?.split("=")[1];
         if (!username) {
           setIsLoading(false);
           return;
@@ -48,7 +50,7 @@ export default function Navbar({ pageTitle, rightActions }: NavbarProps) {
     <nav className="flex items-center justify-between bg-white px-8 py-4 shadow-sm dark:bg-zinc-900 border-b border-gray-100 dark:border-zinc-800">
       {/* Left side: Logo & Dynamic page title */}
       <div className="flex items-center">
-        <Link href={user ? "/home" : "/login"}>
+        <Link href={user ? "/" : "/login"}>
           <Image
             className="dark:invert"
             src="/next.svg"
@@ -71,12 +73,7 @@ export default function Navbar({ pageTitle, rightActions }: NavbarProps) {
       {/* Right side: Nav links and dropdowns */}
       <div className="flex items-center gap-4">
         {isLoading ? (
-          // Skeleton loading state
-          <div className="flex items-center gap-4 animate-pulse">
-            <div className="h-9 w-24 bg-gray-200 rounded-md dark:bg-zinc-800"></div>
-            <div className="h-9 w-9 bg-gray-200 rounded-full dark:bg-zinc-800"></div>
-            <div className="h-9 w-9 bg-gray-200 rounded-full dark:bg-zinc-800"></div>
-          </div>
+          <NavbarActionsSkeleton />
         ) : user ? (
           // Authenticated state
           <>

@@ -17,7 +17,7 @@ type TokenService interface {
 // LoginUseCase is a driving port for login-related application logic.
 type LoginUseCase interface {
 	// Login authenticates a user and returns tokens.
-	Login(ctx context.Context, email, password string) (accessToken, username string, err error)
+	Login(ctx context.Context, email, password string) (*domain.UserToken, error)
 	// Logout invalidates the given token.
 	Logout(ctx context.Context, username string) error
 }

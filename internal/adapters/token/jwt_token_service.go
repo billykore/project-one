@@ -37,7 +37,12 @@ func (s *jwtTokenService) GenerateTokens(_ context.Context, user *domain.User) (
 		return nil, err
 	}
 
-	return &domain.UserToken{Token: accessToken, ExpiresAt: accessExp}, nil
+	return &domain.UserToken{
+		UserID:    user.ID,
+		Username:  user.Username,
+		Token:     accessToken,
+		ExpiresAt: accessExp,
+	}, nil
 }
 
 func (s *jwtTokenService) ValidateToken(_ context.Context, tokenString string) (string, error) {

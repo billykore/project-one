@@ -97,7 +97,7 @@ func (h *UserHandler) HandleLogin(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
 	}
 
-	accessToken, username, err := h.loginUseCase.Login(c.Request().Context(), req.Email, req.Password)
+	accessToken, err := h.loginUseCase.Login(c.Request().Context(), req.Email, req.Password)
 	if err != nil {
 		if errors.Is(err, domain.ErrInvalidCredentials) {
 			return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Invalid email or password"})
@@ -109,16 +109,27 @@ func (h *UserHandler) HandleLogin(c echo.Context) error {
 	// Set access token cookie
 	c.SetCookie(&http.Cookie{
 		Name:     "access_token",
-		Value:    accessToken,
+		Value:    accessToken.Token,
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   false, // Set to true in production
 		SameSite: http.SameSiteLaxMode,
+		MaxAge:   int(time.Until(accessToken.ExpiresAt).Seconds()),
+	})
+
+	c.SetCookie(&http.Cookie{
+		Name:     "username",
+		Value:    accessToken.Username,
+		Path:     "/",
+		HttpOnly: false, // ponytail: readable by JS for client-side redirect guard
+		Secure:   false, // Set to true in production
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   int(time.Until(accessToken.ExpiresAt).Seconds()),
 	})
 
 	return c.JSON(http.StatusOK, dto.LoginResponse{
 		Message:  "Login successful",
-		Username: username,
+		Username: accessToken.Username,
 	})
 }
 

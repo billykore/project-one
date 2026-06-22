@@ -78,12 +78,11 @@ export default function LoginPage() {
     setErrors({});
 
     try {
-      const response = await api.post<LoginResponse>("/api/v1/auth/login", {
+      await api.post<LoginResponse>("/api/v1/auth/login", {
         email: formData.email.trim(),
         password: formData.password,
       });
-      localStorage.setItem("username", response.username);
-      router.push("/home");
+      router.push("/");
     } catch (err) {
       if (err instanceof ApiError && (err.status === 401 || err.status === 400)) {
         setErrors({ general: err.message });

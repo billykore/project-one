@@ -1,64 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { api, ApiError } from "@/lib/api";
 import Navbar from "@/components/layout/navbar";
-
-// ponytail: inline types and simplified page component fetch logic
-interface UserResponse {
-  username: string;
-  email: string;
-  name: string;
-}
+import { useUser } from "@/hooks/use-user";
 
 export default function HomePage() {
-  const router = useRouter();
-  const [user, setUser] = useState<UserResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    // ponytail: load user profile details directly inside component
-    const fetchUser = async () => {
-      try {
-        const username = localStorage.getItem("username");
-        if (!username) {
-          router.push("/login");
-          return;
-        }
-
-        const userData = await api.get<UserResponse>(`/api/v1/users/${username}`);
-        setUser(userData);
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 401) {
-          router.push("/login");
-          return;
-        }
-        const message = err instanceof Error ? err.message : "Failed to load user data";
-        setError(message);
-        router.push(`/error?message=${encodeURIComponent(message)}`);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUser();
-  }, [router]);
+  const { user, isLoading } = useUser();
 
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="text-xl font-semibold text-gray-700">Loading...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="text-xl font-semibold text-red-600">Error: {error}</div>
       </div>
     );
   }

@@ -48,40 +48,37 @@ func NewLoginUseCase(
 	}
 }
 
-func (s *loginUseCase) Login(ctx context.Context, email, password string) (string, string, error) {
+func (s *loginUseCase) Login(ctx context.Context, email, password string) (*domain.UserToken, error) {
 	// 1. Get user by email
 	user, err := s.repo.GetUserByEmail(ctx, email)
 	if err != nil {
 		s.log.Error(ctx, "failed to get user by email", "email", email, "error", err)
-		return "", "", domain.ErrInvalidCredentials
+		return nil, domain.ErrInvalidCredentials
 	}
 
 	// 2. Compare passwords
 	if err := s.hasher.Compare(ctx, password, user.Password); err != nil {
 		s.log.Error(ctx, "password mismatch", "email", email, "error", err)
-		return "", "", domain.ErrInvalidCredentials
+		return nil, domain.ErrInvalidCredentials
 	}
 
 	// 3. Generate tokens
 	accessToken, err := s.tokens.GenerateTokens(ctx, user)
 	if err != nil {
 		s.log.Error(ctx, "failed to generate tokens", "username", user.Username, "error", err)
-		return "", "", fmt.Errorf("generate tokens: %w", err)
+		return nil, fmt.Errorf("generate tokens: %w", err)
 	}
 
 	// 4. Store access token
-	err = s.tokenRepo.StoreToken(ctx, &domain.UserToken{
-		Username:  user.Username,
-		Token:     accessToken.Token,
-		ExpiresAt: accessToken.ExpiresAt,
-	})
+	accessToken.Username = user.Username
+	err = s.tokenRepo.StoreToken(ctx, accessToken)
 	if err != nil {
 		s.log.Error(ctx, "failed to store user token", "username", user.Username, "error", err)
-		return "", "", fmt.Errorf("store user token: %w", err)
+		return nil, fmt.Errorf("store user token: %w", err)
 	}
 
 	s.log.Info(ctx, "user logged in successfully", "username", user.Username)
-	return accessToken.Token, user.Username, nil
+	return accessToken, nil
 }
 
 func (s *loginUseCase) Logout(ctx context.Context, username string) error {

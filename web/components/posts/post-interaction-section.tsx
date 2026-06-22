@@ -31,7 +31,8 @@ export default function PostInteractionSection({
 
   useEffect(() => {
     async function init() {
-      const stored = isGuest ? null : localStorage.getItem("username");
+      // ponytail: read from cookie
+      const stored = isGuest ? null : document.cookie.split("; ").find(r => r.startsWith("username="))?.split("=")[1] || null;
       setCurrentUser(stored);
 
       if (isGuest) {
