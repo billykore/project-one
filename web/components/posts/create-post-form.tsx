@@ -60,7 +60,7 @@ export function CreatePostForm() {
 
         <div className="flex items-center justify-between gap-4">
           <Link
-            href="/home"
+            href="/"
             className="flex-1 text-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-700"
           >
             Cancel

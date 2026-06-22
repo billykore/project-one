@@ -114,7 +114,7 @@ export default function PostInteractionSection({
 
   return (
     <div className="mt-8 border-t border-gray-200 pt-8 dark:border-zinc-800 space-y-6">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between space-x-4">
         <LikeButton
           isLiked={isLiked}
           likeCount={likeCount}

@@ -20,7 +20,7 @@ export default function PostsError({
         <ErrorDisplay 
           message={error.message || "Failed to load posts. Please make sure you are logged in."} 
           onRetry={() => reset()} 
-          homePath="/home"
+          homePath="/"
         />
       </main>
     </div>
