@@ -51,6 +51,7 @@ func main() {
 		lgr.Fatal(ctx, "failed to load config", "error", err)
 	}
 
+	// Load JWT keys.
 	privateKey, publicKey, err := loadRSAKeyPair(cfg.JWT.PrivateKeyPath, cfg.JWT.PublicKeyPath)
 	if err != nil {
 		lgr.Fatal(ctx, "failed to load jwt keys", "error", err)
@@ -201,8 +202,12 @@ func main() {
 	ctxShutdown, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	if err := closeDB(db); err != nil {
-		lgr.Error(ctx, "failed to close database connection", "error", err)
+	if sqlDB, err := db.DB(); err == nil {
+		if err := sqlDB.Close(); err != nil {
+			lgr.Error(ctx, "failed to close database connection", "error", err)
+		}
+	} else {
+		lgr.Error(ctx, "failed to get sql.DB for closing", "error", err)
 	}
 
 	if err := subcriber.Close(); err != nil {
@@ -245,25 +250,13 @@ func setupDB(dbConfig config.DatabaseConfig) (*gorm.DB, error) {
 		return nil, fmt.Errorf("failed to configure connection pool: %w", err)
 	}
 
-	// Set reasonable defaults for connection pooling.
-	// These can be further tuned based on load testing.
 	sqlDB.SetMaxIdleConns(dbConfig.MaxIdleConns)
 	sqlDB.SetMaxOpenConns(dbConfig.MaxOpenConns)
 	sqlDB.SetConnMaxLifetime(dbConfig.ConnMaxLifetime)
 
-	// Verify the database connection is alive.
 	if err := sqlDB.Ping(); err != nil {
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
 	return db, nil
-}
-
-// closeDB gracefully closes the database connection.
-func closeDB(db *gorm.DB) error {
-	sqlDB, err := db.DB()
-	if err != nil {
-		return err
-	}
-	return sqlDB.Close()
 }
