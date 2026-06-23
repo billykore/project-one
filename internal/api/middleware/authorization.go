@@ -15,13 +15,11 @@ func Authorize(tks ports.TokenService) echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			var token string
 
-			// Check for access_token cookie first
 			cookie, err := c.Cookie("access_token")
 			if err == nil {
 				token = cookie.Value
 			}
 
-			// If no cookie, check Authorization header
 			if token == "" {
 				authHeader := c.Request().Header.Get("Authorization")
 				if after, ok := strings.CutPrefix(authHeader, "Bearer "); ok {
@@ -29,9 +27,7 @@ func Authorize(tks ports.TokenService) echo.MiddlewareFunc {
 				}
 			}
 
-			// If still no token, check for "token" query parameter.
-			// This is used by browser WebSocket connections which cannot
-			// set custom headers during the HTTP upgrade handshake.
+			// Query param for browser WebSocket connections — they can't set headers during upgrade.
 			if token == "" {
 				token = c.QueryParam("token")
 			}
