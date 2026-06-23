@@ -142,6 +142,51 @@ func (uc *postUseCase) DeletePost(ctx context.Context, username string, postID i
 	return nil
 }
 
+// ponytail: best-effort notification, flattened from nested if-else pyramid.
+// Two user lookups needed for correct UserID/ActorID; errors logged, not returned.
+func (uc *postUseCase) publishLikeNotification(ctx context.Context, post *domain.Post, like *domain.Like) {
+	postOwner, err := uc.userRepo.GetUserByUsername(ctx, post.Username)
+	if err != nil {
+		uc.log.Error(ctx, "failed to resolve post owner for like notification", "username", post.Username, "error", err)
+		return
+	}
+	if postOwner == nil {
+		return
+	}
+
+	liker, err := uc.userRepo.GetUserByUsername(ctx, like.Username)
+	if err != nil {
+		uc.log.Error(ctx, "failed to resolve liker for like notification", "username", like.Username, "error", err)
+		return
+	}
+	if liker == nil {
+		return
+	}
+
+	notification := &domain.Notification{
+		UserID:        postOwner.ID,
+		ActorID:       liker.ID,
+		Type:          domain.NotificationTypeLike,
+		PostID:        post.ID,
+		ActorUsername: liker.Username,
+		CreatedAt:     like.CreatedAt,
+	}
+
+	payload, err := json.Marshal(notification)
+	if err != nil {
+		uc.log.Error(ctx, "failed to marshal like notification", "error", err)
+		return
+	}
+
+	if err := uc.publisher.Publish(ctx, ports.Event{
+		Topic:   postNotificationTopic,
+		Key:     fmt.Sprintf("user:%d", liker.ID),
+		Payload: payload,
+	}); err != nil {
+		uc.log.Error(ctx, "failed to publish like notification", "error", err)
+	}
+}
+
 func (uc *postUseCase) LikePost(ctx context.Context, postID int, username string) (int, error) {
 	if postID <= 0 {
 		return 0, domain.ErrInvalidPost
@@ -183,40 +228,9 @@ func (uc *postUseCase) LikePost(ctx context.Context, postID int, username string
 
 	uc.log.Info(ctx, "post liked successfully", "postID", postID, "username", username)
 
+	// ponytail: best-effort notification, flattened from nested if-else pyramid
 	if post.Username != username {
-		postOwner, err := uc.userRepo.GetUserByUsername(ctx, post.Username)
-		if err != nil {
-			uc.log.Error(ctx, "failed to resolve post owner username for like notification", "username", post.Username, "error", err)
-		} else if postOwner != nil {
-			liker, err := uc.userRepo.GetUserByUsername(ctx, username)
-			if err != nil {
-				uc.log.Error(ctx, "failed to resolve liker username for like notification", "username", username, "error", err)
-			} else if liker != nil {
-				notification := &domain.Notification{
-					UserID:        postOwner.ID,
-					ActorID:       liker.ID,
-					Type:          domain.NotificationTypeLike,
-					PostID:        post.ID,
-					ActorUsername: liker.Username,
-					CreatedAt:     like.CreatedAt,
-				}
-
-				payload, err := json.Marshal(notification)
-				if err != nil {
-					uc.log.Error(ctx, "failed to marshal like notification", "error", err)
-					return 0, nil
-				}
-
-				err = uc.publisher.Publish(ctx, ports.Event{
-					Topic:   postNotificationTopic,
-					Key:     fmt.Sprintf("user:%d", liker.ID),
-					Payload: payload,
-				})
-				if err != nil {
-					uc.log.Error(ctx, "failed to publish like notification", "error", err)
-				}
-			}
-		}
+		uc.publishLikeNotification(ctx, post, like)
 	}
 
 	return post.LikeCount + 1, nil
@@ -230,17 +244,19 @@ func (uc *postUseCase) UnlikePost(ctx context.Context, postID int, username stri
 		return 0, domain.ErrValidationFailed
 	}
 
+	// ponytail: one fetch for existence + count, then delete — same DB calls as before but no re-fetch
+	post, err := uc.postRepo.GetByIDOnly(ctx, postID)
+	if err != nil {
+		if errors.Is(err, domain.ErrPostNotFound) {
+			return 0, err
+		}
+		uc.log.Error(ctx, "failed to get post for unlike", "postID", postID, "error", err)
+		return 0, domain.ErrInternalServer
+	}
+
 	// ponytail: calling Delete directly instead of checking Exists first saves a DB roundtrip
 	if err := uc.likeRepo.Delete(ctx, postID, username); err != nil {
 		if errors.Is(err, domain.ErrNotLiked) {
-			post, err := uc.postRepo.GetByIDOnly(ctx, postID)
-			if err != nil {
-				if errors.Is(err, domain.ErrPostNotFound) {
-					return 0, err
-				}
-				uc.log.Error(ctx, "failed to get post for like count", "postID", postID, "error", err)
-				return 0, domain.ErrInternalServer
-			}
 			return post.LikeCount, nil
 		}
 		uc.log.Error(ctx, "failed to delete like", "postID", postID, "username", username, "error", err)
@@ -253,16 +269,7 @@ func (uc *postUseCase) UnlikePost(ctx context.Context, postID int, username stri
 	}
 	uc.log.Info(ctx, "post unliked successfully", "postID", postID, "username", username)
 
-	post, err := uc.postRepo.GetByIDOnly(ctx, postID)
-	if err != nil {
-		if errors.Is(err, domain.ErrPostNotFound) {
-			return 0, err
-		}
-		uc.log.Error(ctx, "failed to get post for like count", "postID", postID, "error", err)
-		return 0, domain.ErrInternalServer
-	}
-
-	return post.LikeCount, nil
+	return post.LikeCount - 1, nil
 }
 
 func (uc *postUseCase) GetLikeStatus(ctx context.Context, postID int, username string) (bool, int, error) {

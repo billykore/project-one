@@ -10,8 +10,6 @@ import (
 	"github.com/billykore/project-one/internal/core/ports"
 )
 
-const commentNotificationTopic = "notifications"
-
 type commentUseCase struct {
 	commentRepo ports.CommentRepository
 	postRepo    ports.PostRepository
@@ -54,7 +52,7 @@ func (uc *commentUseCase) AddComment(ctx context.Context, postID int, username s
 	}
 
 	// 2. Verify post exists
-	post, err := uc.postRepo.GetByIDOnly(ctx, int(postID))
+	post, err := uc.postRepo.GetByIDOnly(ctx, postID)
 	if err != nil {
 		if errors.Is(err, domain.ErrPostNotFound) {
 			return err
@@ -71,43 +69,57 @@ func (uc *commentUseCase) AddComment(ctx context.Context, postID int, username s
 
 	uc.log.Info(ctx, "comment created successfully", "commentID", comment.ID, "postID", postID, "username", username)
 
+	// ponytail: best-effort notification, flattened from nested if-else pyramid
 	if post.Username != username {
-		postOwner, err := uc.userRepo.GetUserByUsername(ctx, post.Username)
-		if err != nil {
-			uc.log.Error(ctx, "failed to resolve post owner username for comment notification", "username", post.Username, "error", err)
-		} else if postOwner != nil {
-			commenter, err := uc.userRepo.GetUserByUsername(ctx, username)
-			if err != nil {
-				uc.log.Error(ctx, "failed to resolve commenter username for comment notification", "username", username, "error", err)
-			} else if commenter != nil && postOwner.ID != commenter.ID {
-				notification := &domain.Notification{
-					UserID:        postOwner.ID,
-					ActorID:       commenter.ID,
-					Type:          domain.NotificationTypeComment,
-					PostID:        post.ID,
-					ActorUsername: commenter.Username,
-					CreatedAt:     comment.CreatedAt,
-				}
-
-				payload, err := json.Marshal(notification)
-				if err != nil {
-					uc.log.Error(ctx, "failed to marshal comment notification", "error", err)
-					return nil
-				}
-
-				err = uc.publisher.Publish(ctx, ports.Event{
-					Topic:   commentNotificationTopic,
-					Key:     fmt.Sprintf("user:%d", commenter.ID),
-					Payload: payload,
-				})
-				if err != nil {
-					uc.log.Error(ctx, "failed to publish comment notification", "error", err)
-				}
-			}
-		}
+		uc.publishCommentNotification(ctx, post, comment)
 	}
 
 	return nil
+}
+
+// ponytail: best-effort notification with early returns.
+// Two user lookups needed for correct UserID/ActorID; errors logged, not returned.
+func (uc *commentUseCase) publishCommentNotification(ctx context.Context, post *domain.Post, comment *domain.Comment) {
+	postOwner, err := uc.userRepo.GetUserByUsername(ctx, post.Username)
+	if err != nil {
+		uc.log.Error(ctx, "failed to resolve post owner for comment notification", "username", post.Username, "error", err)
+		return
+	}
+	if postOwner == nil {
+		return
+	}
+
+	commenter, err := uc.userRepo.GetUserByUsername(ctx, comment.Username)
+	if err != nil {
+		uc.log.Error(ctx, "failed to resolve commenter for comment notification", "username", comment.Username, "error", err)
+		return
+	}
+	if commenter == nil {
+		return
+	}
+
+	notification := &domain.Notification{
+		UserID:        postOwner.ID,
+		ActorID:       commenter.ID,
+		Type:          domain.NotificationTypeComment,
+		PostID:        post.ID,
+		ActorUsername: commenter.Username,
+		CreatedAt:     comment.CreatedAt,
+	}
+
+	payload, err := json.Marshal(notification)
+	if err != nil {
+		uc.log.Error(ctx, "failed to marshal comment notification", "error", err)
+		return
+	}
+
+	if err := uc.publisher.Publish(ctx, ports.Event{
+		Topic:   postNotificationTopic,
+		Key:     fmt.Sprintf("user:%d", commenter.ID),
+		Payload: payload,
+	}); err != nil {
+		uc.log.Error(ctx, "failed to publish comment notification", "error", err)
+	}
 }
 
 func (uc *commentUseCase) GetCommentsByPostID(ctx context.Context, postID int) ([]*domain.Comment, error) {

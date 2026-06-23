@@ -33,19 +33,19 @@ func TestNewNotificationUseCase(t *testing.T) {
 	})
 
 	t.Run("nil repo", func(t *testing.T) {
-		assert.PanicsWithValue(t, "NewNotificationUseCase: repo is required", func() {
+		assert.PanicsWithValue(t, "NewNotificationUseCase: dependencies must not be nil", func() {
 			NewNotificationUseCase(nil, mockUserRepo, lgr)
 		})
 	})
 
 	t.Run("nil userRepo", func(t *testing.T) {
-		assert.PanicsWithValue(t, "NewNotificationUseCase: userRepo is required", func() {
+		assert.PanicsWithValue(t, "NewNotificationUseCase: dependencies must not be nil", func() {
 			NewNotificationUseCase(mockRepo, nil, lgr)
 		})
 	})
 
 	t.Run("nil logger", func(t *testing.T) {
-		assert.PanicsWithValue(t, "NewNotificationUseCase: log is required", func() {
+		assert.PanicsWithValue(t, "NewNotificationUseCase: dependencies must not be nil", func() {
 			NewNotificationUseCase(mockRepo, mockUserRepo, nil)
 		})
 	})
@@ -72,7 +72,7 @@ func TestNotificationUseCase_SaveNotification(t *testing.T) {
 	t.Run("repository error", func(t *testing.T) {
 		mockRepo.EXPECT().Create(ctx, notification).Return(errors.New("db error"))
 		err := uc.SaveNotification(ctx, notification)
-		assert.NoError(t, err)
+		assert.Error(t, err)
 	})
 }
 

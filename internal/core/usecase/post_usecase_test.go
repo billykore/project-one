@@ -373,9 +373,9 @@ func TestPostUseCase_UnlikePost(t *testing.T) {
 	postID := 1
 
 	t.Run("success - unlike existing", func(t *testing.T) {
+		mockRepo.EXPECT().GetByIDOnly(ctx, postID).Return(&domain.Post{ID: postID, LikeCount: 4}, nil)
 		mockLikeRepo.EXPECT().Delete(ctx, postID, username).Return(nil)
 		mockRepo.EXPECT().IncrementLikeCount(ctx, postID, -1).Return(nil)
-		mockRepo.EXPECT().GetByIDOnly(ctx, postID).Return(&domain.Post{ID: postID, LikeCount: 3}, nil)
 		mockLog.EXPECT().Info(ctx, "post unliked successfully", "postID", postID, "username", username)
 
 		count, err := svc.UnlikePost(ctx, postID, username)
