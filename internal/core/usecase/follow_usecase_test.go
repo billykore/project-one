@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/billykore/project-one/internal/core/domain"
-	"github.com/billykore/project-one/internal/core/usecase/mocks"
+	"github.com/billykore/project-one/internal/core/ports/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"

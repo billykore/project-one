@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/billykore/project-one/internal/core/domain"
-	"github.com/billykore/project-one/internal/core/usecase/mocks"
+	"github.com/billykore/project-one/internal/core/ports/mocks"
 	"go.uber.org/mock/gomock"
 )
 

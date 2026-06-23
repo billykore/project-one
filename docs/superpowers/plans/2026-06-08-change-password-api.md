@@ -269,7 +269,7 @@
 
   	"github.com/billykore/project-one/internal/api/dto"
   	"github.com/billykore/project-one/internal/core/domain"
-  	"github.com/billykore/project-one/internal/core/usecase/mocks"
+  	"github.com/billykore/project-one/internal/core/ports/mocks"
   	"github.com/labstack/echo/v4"
   	"github.com/stretchr/testify/assert"
   	"go.uber.org/mock/gomock"

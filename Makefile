@@ -27,13 +27,13 @@ test:
 ## mock: Generate test mocks
 mock:
 	@echo "Mock Generation"
-	@mkdir -p internal/core/usecase/mocks
-	@rm -f internal/core/usecase/mocks/mock_*.go
+	@mkdir -p internal/core/ports/mocks
+	@rm -f internal/core/ports/mocks/mock_*.go
 	@for file in internal/core/ports/*.go; do \
 		filename=$$(basename $$file); \
 		mockname="mock_$$filename"; \
 		echo "Generating mock for $$filename -> $$mockname"; \
-		go run go.uber.org/mock/mockgen -source=$$file -destination=internal/core/usecase/mocks/$$mockname -package=mocks; \
+		go run go.uber.org/mock/mockgen -source=$$file -destination=internal/core/ports/mocks/$$mockname -package=mocks; \
 	done
 	@echo "Mocks generation completed successfully."
 
