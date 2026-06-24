@@ -3,21 +3,11 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { z, ZodError } from "zod";
-import { api, ApiError } from "@/lib/api";
+import { ZodError } from "zod";
+import { ApiError } from "@/lib/api";
 import { InputField } from "@/components/ui/input";
 import { useErrorModal } from "@/hooks/use-error-modal";
-
-// ponytail: inline login schema and validation types
-const loginSchema = z.object({
-  email: z.string().min(1, "Email is required").pipe(z.email("Please enter a valid email address")),
-  password: z
-    .string()
-    .min(1, "Password is required")
-    .min(8, "Password must be at least 8 characters long"),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
+import { loginRequestBodySchema, LoginRequestBody } from "@/app/(auth)/api/login/schema";
 
 interface LoginErrors {
   email?: string;
@@ -25,15 +15,10 @@ interface LoginErrors {
   general?: string;
 }
 
-interface LoginResponse {
-  message: string;
-  username: string;
-}
-
 export default function LoginPage() {
   const router = useRouter();
   const { showError } = useErrorModal();
-  const [formData, setFormData] = useState<LoginFormData>({
+  const [formData, setFormData] = useState<LoginRequestBody>({
     email: "",
     password: "",
   });
@@ -43,14 +28,14 @@ export default function LoginPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name as keyof LoginFormData]) {
+    if (errors[name as keyof LoginRequestBody]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
   };
 
   const validate = (): boolean => {
     try {
-      loginSchema.parse(formData);
+      loginRequestBodySchema.parse(formData);
       setErrors({});
       return true;
     } catch (err) {
@@ -58,7 +43,7 @@ export default function LoginPage() {
         const fieldErrors: LoginErrors = {};
         err.issues.forEach((e) => {
           if (e.path.length > 0) {
-            const path = e.path[0] as keyof LoginFormData;
+            const path = e.path[0] as keyof LoginRequestBody;
             if (!fieldErrors[path]) {
               fieldErrors[path] = e.message;
             }
@@ -72,7 +57,7 @@ export default function LoginPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!validate()) return;
 
@@ -80,10 +65,20 @@ export default function LoginPage() {
     setErrors({});
 
     try {
-      await api.post<LoginResponse>("/api/v1/auth/login", {
-        email: formData.email.trim(),
-        password: formData.password,
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.email.trim(),
+          password: formData.password,
+        }),
       });
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({ error: "Login failed" }));
+        throw new ApiError(errBody.error || "Login failed", res.status);
+      }
+
       router.push("/");
     } catch (err) {
       if (err instanceof ApiError && (err.status === 401 || err.status === 400)) {
