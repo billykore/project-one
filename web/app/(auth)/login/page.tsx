@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { z, ZodError } from "zod";
 import { api, ApiError } from "@/lib/api";
 import { InputField } from "@/components/ui/input";
+import { useErrorModal } from "@/hooks/use-error-modal";
 
 // ponytail: inline login schema and validation types
 const loginSchema = z.object({
@@ -31,6 +32,7 @@ interface LoginResponse {
 
 export default function LoginPage() {
   const router = useRouter();
+  const { showError } = useErrorModal();
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
     password: "",
@@ -89,7 +91,7 @@ export default function LoginPage() {
         return;
       }
       const errorMessage = err instanceof Error ? err.message : "An error occurred. Please try again later.";
-      router.push(`/error?message=${encodeURIComponent(errorMessage)}`);
+      showError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
