@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { api } from "@/lib/api";
+import { handleApiResponse } from "@/lib/errors";
 import NotificationDropdown from "@/components/notification/notification-dropdown";
 import ProfileDropdown from "@/components/layout/profile-dropdown";
 import { NavbarActionsSkeleton } from "@/components/ui/page-skeleton";
@@ -33,7 +33,7 @@ export default function Navbar({ pageTitle, rightActions }: NavbarProps) {
           return;
         }
 
-        const userData = await api.get<User>(`/users/${username}`);
+        const userData = await handleApiResponse<User>(await fetch(`/api/users/${username}`));
         setUser(userData);
       } catch (err) {
         console.error("Navbar failed to load user info:", err);

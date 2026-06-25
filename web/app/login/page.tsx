@@ -4,10 +4,10 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ZodError } from "zod";
-import { ApiError } from "@/lib/api";
+import { ApiError } from "@/lib/errors";
 import { InputField } from "@/components/ui/input";
 import { useErrorModal } from "@/hooks/use-error-modal";
-import { loginRequestBodySchema, LoginRequestBody } from "@/app/(auth)/api/login/schema";
+import { loginRequestBodySchema, LoginRequestBody } from "@/app/api/login/schema";
 
 interface LoginErrors {
   email?: string;

@@ -32,7 +32,7 @@ describe("LoginPage", () => {
     container = document.createElement("div");
     document.body.appendChild(container);
 
-    const mod = await import("@/app/(auth)/login/page");
+    const mod = await import("@/app/login/page");
     LoginPage = mod.default;
   });
 

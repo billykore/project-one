@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { api, ApiError } from "@/lib/api";
+import { ApiError, handleApiResponse } from "@/lib/errors";
 
 interface User {
   username: string;
@@ -20,7 +20,7 @@ export function useUser() {
       return;
     }
 
-    api.get<User>(`/users/${username}`)
+    handleApiResponse<User>(await fetch(`/api/users/${username}`))
       .then(setUser)
       .catch((err) => {
         if (err instanceof ApiError && err.status === 401) {
