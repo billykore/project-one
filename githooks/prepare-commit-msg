@@ -1,0 +1,70 @@
+#!/bin/bash
+
+# Prepare Commit Message Hook
+# Validates commit messages follow the convention:
+# <type>(<team-code> or <ticket-id>): <description>
+#
+# Examples:
+#   feat(auth): add register logic
+#   fix(api): correct status code
+#   chore(deps): update dependency version
+#   refactor(utils): simplify helper function
+#   docs(readme): update setup instructions
+#   test(user): add login tests
+
+set -euo pipefail
+
+COMMIT_MSG_FILE="$1"
+COMMIT_SOURCE="${2:-}"
+
+# Skip validation for merge, squash, rebase, template, and editor-initiated commits
+if [ -n "$COMMIT_SOURCE" ] && [ "$COMMIT_SOURCE" != "message" ]; then
+    exit 0
+fi
+
+# Read the commit message
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# Skip empty messages
+if [ -z "$COMMIT_MSG" ]; then
+    exit 0
+fi
+
+# Extract the first non-comment, non-empty line
+COMMIT_MSG_FIRST_LINE=$(echo "$COMMIT_MSG" | grep -v '^#' | head -n1 | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+
+# Skip if no meaningful first line
+if [ -z "$COMMIT_MSG_FIRST_LINE" ]; then
+    exit 0
+fi
+
+# Valid commit types
+VALID_TYPES="feat|fix|chore|refactor|docs|test"
+
+# Regex pattern: <type>(<scope>): <description>
+# Scope must be at least 1 character of alphanumeric, hyphen, or underscore
+# Description must be at least 1 character
+PATTERN="^($VALID_TYPES)\([a-zA-Z0-9_-]+\): .+"
+
+if ! echo "$COMMIT_MSG_FIRST_LINE" | grep -qE "$PATTERN"; then
+    echo ""
+    echo "❌ Invalid commit message format!"
+    echo ""
+    echo "Expected format: <type>(<team-code> or <ticket-id>): <description>"
+    echo ""
+    echo "Valid types: feat, fix, chore, refactor, docs, test"
+    echo ""
+    echo "Examples:"
+    echo "  feat(auth): add register logic"
+    echo "  fix(api): correct status code"
+    echo "  chore(deps): update dependency version"
+    echo "  refactor(utils): simplify helper function"
+    echo "  docs(readme): update setup instructions"
+    echo "  test(user): add login tests"
+    echo ""
+    echo "Aborting commit due to invalid commit message format."
+    echo ""
+    exit 1
+fi
+
+exit 0

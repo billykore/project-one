@@ -3,7 +3,7 @@
 ## githooks: Configure git to use local githooks directory
 githooks:
 	git config core.hooksPath githooks
-	chmod +x githooks/pre-commit githooks/pre-push
+	chmod +x githooks/pre-commit githooks/pre-push githooks/prepare-commit-msg
 
 BUILD_DIR := ./bin
 

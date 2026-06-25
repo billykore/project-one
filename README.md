@@ -112,9 +112,41 @@ The frontend uses the **Next.js App Router** with layouts, pages, and components
 | `make migrate-create name=...` | Create a new SQL migration file |
 | `make migrate-up dsn=...` | Run database migrations up |
 | `make migrate-down dsn=...` | Run database migrations down |
-| `make githooks` | Configure git to use local pre-commit and pre-push hooks |
+| `make githooks` | Configure git to use local pre-commit, prepare-commit-msg, and pre-push hooks |
 | `make check` | Run docs, vet, lint, and test in one go |
 | `make clean` | Remove backend build artifacts from `bin/` |
+
+### Commit Convention
+
+All commits must follow the format:
+
+```
+<type>(<team-code> or <ticket-id>): <description>
+```
+
+**Valid types:**
+
+| Type       | Description                          |
+| :--------- | :----------------------------------- |
+| `feat`     | A new feature                        |
+| `fix`      | A bug fix                            |
+| `chore`    | Maintenance, dependencies, build etc |
+| `refactor` | Code refactoring (no feature/fix)    |
+| `docs`     | Documentation changes                |
+| `test`     | Adding or updating tests             |
+
+**Examples:**
+
+```
+feat(auth): add register logic
+fix(api): correct status code
+chore(deps): update dependency version
+refactor(utils): simplify helper function
+docs(readme): update setup instructions
+test(user): add login tests
+```
+
+A `prepare-commit-msg` git hook enforces this convention locally. Run `make githooks` to activate it.
 
 ### Real-time Notifications (WebSocket)
 
@@ -135,7 +167,7 @@ The frontend uses the **Next.js App Router** with layouts, pages, and components
 ├── db/migrations/        # SQL migration files
 ├── deployments/          # Deployment configurations and templates
 ├── docs/                 # Documentation (plans, specifications, and tasks)
-├── githooks/             # Local Git hooks (pre-commit, pre-push)
+├── githooks/             # Local Git hooks (pre-commit, prepare-commit-msg, pre-push)
 ├── internal/
 │   ├── api/              # Handlers, DTOs, and Middlewares
 │   ├── core/
