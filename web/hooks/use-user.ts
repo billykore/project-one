@@ -20,17 +20,22 @@ export function useUser() {
       return;
     }
 
-    handleApiResponse<User>(await fetch(`/api/users/${username}`))
-      .then(setUser)
-      .catch((err) => {
+    (async () => {
+      try {
+        const res = await fetch(`/api/users/${username}`);
+        const data = await handleApiResponse<User>(res);
+        setUser(data);
+      } catch (err) {
         if (err instanceof ApiError && err.status === 401) {
           router.push("/login");
           return;
         }
         const msg = err instanceof Error ? err.message : "Failed to load user data";
         router.push(`/error?message=${encodeURIComponent(msg)}`);
-      })
-      .finally(() => setIsLoading(false));
+      } finally {
+        setIsLoading(false);
+      }
+    })();
   }, [router]);
 
   return { user, isLoading };

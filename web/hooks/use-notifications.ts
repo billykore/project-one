@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ApiError } from '@/lib/api';
+import { ApiError } from '@/lib/errors';
 import {
   fetchNotifications,
   markAllNotificationsAsRead,

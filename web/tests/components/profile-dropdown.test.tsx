@@ -38,11 +38,18 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
-const apiPostMock = vi.fn();
-vi.mock("@/lib/api", () => ({
-  api: {
-    post: (...args: unknown[]) => apiPostMock(...args),
+const fetchMock = vi.fn();
+global.fetch = fetchMock;
+
+vi.mock("@/lib/errors", () => ({
+  ApiError: class ApiError extends Error {
+    status: number;
+    constructor(message: string, status: number) {
+      super(message);
+      this.status = status;
+    }
   },
+  handleApiResponse: (res: Response) => res.json(),
 }));
 
 describe("ProfileDropdown", () => {
@@ -139,7 +146,7 @@ describe("ProfileDropdown", () => {
   it("triggers API logout and redirects to login when confirmed", async () => {
     const container = document.createElement("div");
     document.body.appendChild(container);
-    apiPostMock.mockResolvedValueOnce({});
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({}) });
 
     await act(async () => {
       createRoot(container).render(<ProfileDropdown user={mockUser} />);
@@ -171,7 +178,7 @@ describe("ProfileDropdown", () => {
       confirmBtn?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
 
-    expect(apiPostMock).toHaveBeenCalledWith("/api/v1/auth/logout", {});
+    expect(fetchMock).toHaveBeenCalledWith("/api/logout", { method: "POST" });
     expect(localStorage.getItem("username")).toBeNull();
     expect(pushMock).toHaveBeenCalledWith("/login");
   });
