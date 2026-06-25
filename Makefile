@@ -1,4 +1,4 @@
-.PHONY: build run test mock vet lint clean docs help migrate-create migrate-up migrate-down check githooks
+.PHONY: build run test test-cover mock vet lint clean docs help migrate-create migrate-up migrate-down check githooks
 
 ## githooks: Configure git to use local githooks directory
 githooks:
@@ -20,9 +20,27 @@ build:
 run: build
 	$(BUILD_DIR)/main $(CONFIG_ARG) $(args)
 
-## test: Run all tests
+# Coverage output directory
+COVERAGE_DIR := ./test/coverage
+
+## test: Run all tests (e.g., make test coverage=true to generate coverage report)
 test:
-	go test -v -race -count=1 ./...
+	@if [ "$(coverage)" = "true" ]; then \
+		mkdir -p $(COVERAGE_DIR); \
+		go test -v -race -count=1 -coverprofile=$(COVERAGE_DIR)/coverage.out -covermode=atomic ./...; \
+		go tool cover -html=$(COVERAGE_DIR)/coverage.out -o $(COVERAGE_DIR)/coverage.html; \
+		go tool cover -func=$(COVERAGE_DIR)/coverage.out | tail -1; \
+	else \
+		go test -v -race -count=1 ./...; \
+	fi
+
+## test-cover: Run tests and generate coverage report
+test-cover:
+	mkdir -p $(COVERAGE_DIR)
+	go test -v -race -count=1 -coverprofile=$(COVERAGE_DIR)/coverage.out -covermode=atomic ./...
+	go tool cover -html=$(COVERAGE_DIR)/coverage.out -o $(COVERAGE_DIR)/coverage.html
+	go tool cover -func=$(COVERAGE_DIR)/coverage.out | tail -1
+	@echo "Coverage report: $(COVERAGE_DIR)/coverage.html"
 
 ## mock: Generate test mocks
 mock:
