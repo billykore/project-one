@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { api } from "@/lib/api";
+import { handleApiResponse } from "@/lib/errors";
 
 interface User {
   name: string;
@@ -64,7 +64,7 @@ export default function ProfileDropdown({ user }: ProfileDropdownProps) {
   const handleConfirmLogout = async () => {
     setIsLoggingOut(true);
     try {
-      await api.post("/api/v1/auth/logout", {});
+      await handleApiResponse(await fetch("/api/logout", { method: "POST" }));
       localStorage.removeItem("username");
       setIsLogoutModalOpen(false);
       router.push("/login");

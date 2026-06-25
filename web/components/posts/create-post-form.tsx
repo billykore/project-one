@@ -2,7 +2,7 @@
 
 import React, { useActionState } from "react";
 import Link from "next/link";
-import { createPostAction } from "@/app/(post)/posts/create/actions";
+import { createPostAction } from "@/app/posts/create/actions";
 import { FormState } from "@/lib/types/create-post.types";
 import { InputField } from "@/components/ui/input";
 import { TextAreaField } from "@/components/ui/textarea";

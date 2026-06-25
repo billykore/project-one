@@ -1,0 +1,105 @@
+import { notFound } from "next/navigation";
+import { serverFetch } from "@/lib/server-fetch";
+import { ApiError, handleApiResponse } from "@/lib/errors";
+import { Post } from "@/lib/types/post.types";
+import PostInteractionSection from "@/components/posts/post-interaction-section";
+import { cookies } from "next/headers";
+import Navbar from "@/components/layout/navbar";
+
+async function getPost(id: string) {
+  try {
+    const res = await serverFetch(`/api/posts/${id}`);
+    const post = await handleApiResponse<Post>(res);
+    if (!post) {
+      notFound();
+    }
+    return post;
+  } catch (err) {
+    if (err instanceof ApiError) {
+      if (err.status === 404) {
+        notFound();
+      }
+    }
+    throw err;
+  }
+}
+
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function PostDetailPage({ params }: PageProps) {
+  const { id } = await params;
+  const post = await getPost(id);
+  const cookieStore = await cookies();
+  const isAuthenticated = cookieStore.has("access_token");
+
+  return (
+    <div className="flex min-h-screen flex-col bg-gray-50 font-sans dark:bg-black">
+      <Navbar pageTitle="Post Details" />
+
+      <main className="mx-auto w-full max-w-3xl flex-1 p-8">
+        <article className="rounded-xl bg-white p-8 shadow-lg dark:bg-zinc-900 sm:p-12">
+          <header className="mb-8 border-b border-gray-100 pb-8 dark:border-zinc-800">
+            <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-zinc-50">
+              {post.title}
+            </h1>
+            <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-gray-500">
+              {/* ponytail: simple author metadata display */}
+              {post.author && (
+                <>
+                  <span className="font-semibold text-gray-700 dark:text-zinc-300">
+                    Created by {post.author}
+                  </span>
+                  <span>•</span>
+                </>
+              )}
+              <time dateTime={post.created_at}>
+                Created on {new Date(post.created_at).toLocaleDateString(undefined, {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </time>
+              {post.updated_at !== post.created_at && (
+                <span className="italic">
+                  (Updated: {new Date(post.updated_at).toLocaleDateString()})
+                </span>
+              )}
+            </div>
+            {post.tags && post.tags.length > 0 && (
+              <div className="mt-6 flex flex-wrap gap-2">
+                {post.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400"
+                  >
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            )}
+          </header>
+
+          <div className="prose prose-indigo max-w-none dark:prose-invert">
+            <p className="whitespace-pre-wrap text-lg leading-relaxed text-gray-700 dark:text-zinc-300">
+              {post.content}
+            </p>
+          </div>
+
+          <PostInteractionSection
+            postId={post.id}
+            postAuthor={post.author}
+            initialComments={post.comments}
+            isGuest={!isAuthenticated}
+            initialLikeCount={post.like_count}
+          />
+        </article>
+      </main>
+
+      <footer className="bg-white py-6 text-center text-sm text-gray-500 dark:bg-zinc-900 dark:text-zinc-400">
+        &copy; {new Date().getFullYear()} Project One. All rights reserved.
+      </footer>
+    </div>
+  );
+}

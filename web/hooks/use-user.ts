@@ -20,7 +20,7 @@ export function useUser() {
       return;
     }
 
-    api.get<User>(`/api/v1/users/${username}`)
+    api.get<User>(`/users/${username}`)
       .then(setUser)
       .catch((err) => {
         if (err instanceof ApiError && err.status === 401) {

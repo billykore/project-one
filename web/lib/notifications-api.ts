@@ -1,4 +1,4 @@
-import { api } from "./api";
+import { handleApiResponse } from "./errors";
 import type { Notification, NotificationType, BackendNotification } from "./types/notification.types";
 
 type NotificationsListResponse = {
@@ -7,7 +7,6 @@ type NotificationsListResponse = {
   items?: BackendNotification[];
 };
 
-const NOTIFICATIONS_ENDPOINT = "/api/v1/notifications";
 
 const ALLOWED_TYPES = ["success", "info", "warning", "error"] as const;
 
@@ -46,7 +45,9 @@ export function normalizeNotification(item: unknown): Notification | null {
 }
 
 export async function fetchNotifications(): Promise<Notification[]> {
-  const payload = await api.get<NotificationsListResponse | BackendNotification[]>(NOTIFICATIONS_ENDPOINT);
+  const payload = await handleApiResponse<NotificationsListResponse | BackendNotification[]>(
+    await fetch("/api/notifications")
+  );
   const notifications = (Array.isArray(payload)
     ? payload
     : payload.notifications ?? payload.data ?? payload.items ?? []
@@ -58,9 +59,9 @@ export async function fetchNotifications(): Promise<Notification[]> {
 }
 
 export async function markNotificationAsRead(id: string): Promise<void> {
-  await api.put(`${NOTIFICATIONS_ENDPOINT}/${id}/read`, {});
+  await handleApiResponse(await fetch(`/api/notifications/${id}/read`, { method: "PUT" }));
 }
 
 export async function markAllNotificationsAsRead(): Promise<void> {
-  await api.put(`${NOTIFICATIONS_ENDPOINT}/read-all`, {});
+  await handleApiResponse(await fetch("/api/notifications/read-all", { method: "PUT" }));
 }

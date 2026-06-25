@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { api, ApiError } from "@/lib/api";
+import { ApiError, handleApiResponse } from "@/lib/errors";
 
 interface DeletePostButtonProps {
   postId: number;
@@ -68,7 +68,7 @@ export default function DeletePostButton({
     setIsDeleting(true);
     setError(null);
     try {
-      await api.delete(`/api/v1/posts/${postId}`);
+      await handleApiResponse(await fetch(`/api/posts/${postId}`, { method: "DELETE" }));
       if (onSuccess) {
         onSuccess();
       } else {

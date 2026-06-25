@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { api, ApiError } from "@/lib/api";
+import { ApiError, handleApiResponse } from "@/lib/errors";
 import { changePasswordSchema, ChangePasswordFormData, FollowerInfo } from "@/lib/types/profile.types";
 
 export function useProfileController(profileUsername: string, initialFollowers: FollowerInfo[], initialFollowing: FollowerInfo[]) {
@@ -37,10 +37,10 @@ export function useProfileController(profileUsername: string, initialFollowers: 
     setIsFollowingPending(true);
     try {
       if (isFollowing) {
-        await api.delete(`/api/v1/users/${profileUsername}/followers`);
+        await handleApiResponse(await fetch(`/api/users/${profileUsername}/followers`, { method: "DELETE" }));
         setFollowers((prev) => prev.filter((f) => f.username !== loggedInUsername));
       } else {
-        await api.post(`/api/v1/users/${profileUsername}/followers`, {});
+        await handleApiResponse(await fetch(`/api/users/${profileUsername}/followers`, { method: "POST" }));
         setFollowers((prev) => [
           ...prev,
           {
@@ -85,10 +85,14 @@ export function useProfileController(profileUsername: string, initialFollowers: 
 
     setIsSubmittingPwd(true);
     try {
-      await api.put("/api/v1/users/password", {
-        old_password: pwdForm.oldPassword,
-        new_password: pwdForm.newPassword,
-      });
+      await handleApiResponse(await fetch("/api/users/password", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          old_password: pwdForm.oldPassword,
+          new_password: pwdForm.newPassword,
+        }),
+      }));
       setPwdSuccess("Password updated successfully!");
       setPwdForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
       setErrors({});

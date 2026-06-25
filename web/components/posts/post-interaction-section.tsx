@@ -5,7 +5,7 @@ import { LikeButton } from "./like-button";
 import { CommentForm } from "./comment-form";
 import { CommentList } from "./comment-list";
 import DeletePostButton from "./delete-post-button";
-import { api } from "@/lib/api";
+import { handleApiResponse } from "@/lib/errors";
 import { Comment } from "@/lib/types/post.types";
 
 interface PostInteractionSectionProps {
@@ -43,8 +43,8 @@ export default function PostInteractionSection({
       }
 
       try {
-        const res = await api.get<{ liked: boolean; like_count: number }>(
-          `/api/v1/posts/${postId}/likes`
+        const res = await handleApiResponse<{ liked: boolean; like_count: number }>(
+          await fetch(`/api/posts/${postId}/likes`)
         );
         setIsLiked(res.liked);
         setLikeCount(res.like_count);
@@ -68,9 +68,9 @@ export default function PostInteractionSection({
 
     try {
       if (originalIsLiked) {
-        await api.delete(`/api/v1/posts/${postId}/likes`);
+        await handleApiResponse(await fetch(`/api/posts/${postId}/likes`, { method: "DELETE" }));
       } else {
-        await api.post(`/api/v1/posts/${postId}/likes`, {});
+        await handleApiResponse(await fetch(`/api/posts/${postId}/likes`, { method: "POST" }));
       }
     } catch (err) {
       console.error("Failed to save like action", err);
@@ -82,7 +82,7 @@ export default function PostInteractionSection({
 
   const fetchComments = async () => {
     try {
-      const res = await api.get<{ comments?: Comment[] }>(`/api/v1/posts/${postId}`);
+      const res = await handleApiResponse<{ comments?: Comment[] }>(await fetch(`/api/posts/${postId}`));
       if (res && res.comments) {
         setComments(res.comments);
       }
@@ -93,22 +93,27 @@ export default function PostInteractionSection({
 
   const handleAddComment = async (content: string) => {
     if (isGuest) return;
-    await api.post(`/api/v1/posts/${postId}/comments`, {
-      content,
-      id: postId,
-    });
+    await handleApiResponse(await fetch(`/api/posts/${postId}/comments`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content, id: postId }),
+    }));
     await fetchComments();
   };
 
   const handleEditComment = async (commentId: number, content: string) => {
     if (isGuest) return;
-    await api.put(`/api/v1/comments/${commentId}`, { content });
+    await handleApiResponse(await fetch(`/api/comments/${commentId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content }),
+    }));
     await fetchComments();
   };
 
   const handleDeleteComment = async (commentId: number) => {
     if (isGuest) return;
-    await api.delete(`/api/v1/comments/${commentId}`);
+    await handleApiResponse(await fetch(`/api/comments/${commentId}`, { method: "DELETE" }));
     await fetchComments();
   };
 

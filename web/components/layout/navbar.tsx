@@ -33,7 +33,7 @@ export default function Navbar({ pageTitle, rightActions }: NavbarProps) {
           return;
         }
 
-        const userData = await api.get<User>(`/api/v1/users/${username}`);
+        const userData = await api.get<User>(`/users/${username}`);
         setUser(userData);
       } catch (err) {
         console.error("Navbar failed to load user info:", err);
