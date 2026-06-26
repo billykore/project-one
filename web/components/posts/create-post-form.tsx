@@ -16,65 +16,70 @@ export function CreatePostForm() {
   const [state, formAction, isPending] = useActionState(createPostAction, initialState);
 
   return (
-    <div className="max-w-2xl w-full space-y-8 bg-white p-10 rounded-xl shadow-lg border border-gray-100 dark:bg-zinc-900 dark:border-zinc-800">
-      <div>
-        <h2 className="text-center text-3xl font-extrabold text-gray-900 dark:text-zinc-50">
+    <div className="w-full max-w-2xl space-y-8 rounded-2xl bg-white p-8 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800 sm:p-10">
+      <div className="space-y-1">
+        <h2 className="text-2xl/[1.2] font-semibold tracking-tight text-gray-900 dark:text-white">
           Create a New Post
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600 dark:text-zinc-400">
-          Share your thoughts with the community
+        <p className="text-sm text-gray-500 dark:text-gray-400 font-light">
+          Share your thoughts with the community.
         </p>
       </div>
-      <form action={formAction} className="mt-8 space-y-6" noValidate>
-        <div className="space-y-4">
-          <InputField
-            label="Title"
-            id="title"
-            type="text"
-            placeholder="Enter post title"
-            error={state.errors?.title}
-          />
+      <form action={formAction} className="space-y-5" noValidate>
+        <InputField
+          label="Title"
+          id="title"
+          type="text"
+          placeholder="Enter post title"
+          error={state.errors?.title}
+        />
 
-          <TextAreaField
-            label="Content"
-            id="content"
-            placeholder="What's on your mind? (min 10 characters)"
-            error={state.errors?.content}
-            rows={6}
-          />
+        <TextAreaField
+          label="Content"
+          id="content"
+          placeholder="What's on your mind? (min 10 characters)"
+          error={state.errors?.content}
+          rows={6}
+        />
 
-          <InputField
-            label="Tags"
-            id="tags"
-            type="text"
-            placeholder="e.g. news, technology, life (comma separated)"
-            error={state.errors?.tags}
-          />
-        </div>
+        <InputField
+          label="Tags"
+          id="tags"
+          type="text"
+          placeholder="e.g. news, technology, life (comma separated)"
+          error={state.errors?.tags}
+        />
 
         {state.message && (
-          <div className="rounded-md bg-red-50 p-4 border border-red-200 dark:bg-red-900/20 dark:border-red-800">
-            <p className="text-sm text-red-700 dark:text-red-400">{state.message}</p>
+          <div className="animate-in fade-in rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-950">
+            <p className="text-sm text-red-600 dark:text-red-400">{state.message}</p>
           </div>
         )}
 
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3 pt-1">
           <Link
             href="/"
-            className="flex-1 text-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-700"
+            className="flex-1 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-center text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
           >
             Cancel
           </Link>
           <button
             type="submit"
             disabled={isPending}
-            className={`flex-1 flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
-              isPending
-                ? "bg-indigo-400 cursor-not-allowed"
-                : "bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            }`}
+            className={`flex-1 inline-flex items-center justify-center rounded-lg px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-950
+              ${
+                isPending
+                  ? "cursor-not-allowed bg-indigo-400"
+                  : "bg-linear-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 hover:shadow-md hover:shadow-indigo-500/20 active:scale-[0.98]"
+              }`}
           >
-            {isPending ? "Creating..." : "Create Post"}
+            {isPending && (
+              <svg className="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            )}
+            {isPending ? "Creating…" : "Create Post"}
           </button>
         </div>
       </form>

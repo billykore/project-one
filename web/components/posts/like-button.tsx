@@ -74,7 +74,7 @@ export function LikeButton({
         <button
           disabled
           aria-label={isLiked ? "Unlike post" : "Like post"}
-          className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 pointer-events-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 select-none opacity-50"
+          className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 pointer-events-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 select-none opacity-50"
         >
           {buttonContent}
         </button>
@@ -87,7 +87,7 @@ export function LikeButton({
       onClick={onToggle}
       disabled={isLoading}
       aria-label={isLiked ? "Unlike post" : "Like post"}
-      className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:scale-95 duration-200 transition-transform dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed select-none"
+      className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:scale-95 transition-all duration-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed select-none cursor-pointer"
     >
       {buttonContent}
     </button>

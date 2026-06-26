@@ -15,7 +15,7 @@ export default function PostsError({
   }, [error]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-black">
+    <div className="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-950">
       <main className="flex flex-1 items-center justify-center p-4">
         <ErrorDisplay 
           message={error.message || "Failed to load posts. Please make sure you are logged in."} 

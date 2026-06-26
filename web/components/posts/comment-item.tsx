@@ -54,10 +54,10 @@ export function CommentItem({ comment, currentUser, onEdit, onDelete }: CommentI
   };
 
   return (
-    <div className="border-b border-gray-100 py-4 last:border-0 dark:border-zinc-800">
+    <div className="border-b border-gray-100 py-4 last:border-0 dark:border-gray-800">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-sm text-gray-900 dark:text-zinc-50">
+          <span className="font-semibold text-sm text-gray-900 dark:text-white">
             {comment.username}
           </span>
           <span className="text-xs text-gray-500">

@@ -24,8 +24,11 @@ export const InputField: React.FC<InputFieldProps> = ({
   const errorMessage = Array.isArray(error) ? error.join(", ") : error;
   
   return (
-    <div>
-      <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">
+    <div className="space-y-1.5">
+      <label
+        htmlFor={id}
+        className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+      >
         {label}
       </label>
       <input
@@ -33,9 +36,13 @@ export const InputField: React.FC<InputFieldProps> = ({
         name={id}
         type={type}
         autoComplete={autoComplete}
-        className={`appearance-none rounded-md relative block w-full px-3 py-2 border ${
-          error ? "border-red-500" : "border-gray-300"
-        } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
+        className={`block w-full rounded-lg border bg-white px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 shadow-sm transition-all duration-200 outline-none
+          dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500
+          ${
+            error
+              ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+              : "border-gray-200 hover:border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:hover:border-gray-600 dark:focus:border-indigo-400"
+          }`}
         placeholder={placeholder}
         value={value}
         onChange={onChange}
@@ -43,7 +50,7 @@ export const InputField: React.FC<InputFieldProps> = ({
         aria-describedby={error ? `${id}-error` : undefined}
       />
       {errorMessage && (
-        <p className="mt-2 text-sm text-red-600" id={`${id}-error`} aria-live="polite">
+        <p className="text-xs text-red-500 mt-1" id={`${id}-error`} aria-live="polite">
           {errorMessage}
         </p>
       )}
