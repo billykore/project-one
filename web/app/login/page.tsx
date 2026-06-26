@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ZodError } from "zod";
@@ -18,8 +18,9 @@ interface LoginErrors {
 export default function LoginPage({
   searchParams,
 }: {
-  searchParams: { registered?: string };
+  searchParams: Promise<{ registered?: string }>;
 }) {
+  const { registered } = use(searchParams);
   const router = useRouter();
   const { showError } = useErrorModal();
   const [formData, setFormData] = useState<LoginRequestBody>({
@@ -99,7 +100,7 @@ export default function LoginPage({
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-lg">
-        {searchParams.registered === "true" && (
+        {registered === "true" && (
           <div className="rounded-md bg-green-50 border border-green-200 p-4">
             <p className="text-sm text-green-800">
               ✅ Registration successful! Please sign in with your new account.
