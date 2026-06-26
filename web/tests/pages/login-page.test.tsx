@@ -21,7 +21,7 @@ vi.mock("@/hooks/use-error-modal", () => ({
   useErrorModal: () => ({ showError: mockShowError }),
 }));
 
-let LoginPage: React.ComponentType;
+let LoginPage: React.ComponentType<{ searchParams: Promise<{ registered?: string }> }>;
 let container: HTMLDivElement;
 
 describe("LoginPage", () => {
@@ -45,7 +45,7 @@ describe("LoginPage", () => {
   async function fillAndSubmit(email: string, password: string) {
     const root = createRoot(container);
     await act(async () => {
-      root.render(React.createElement(LoginPage));
+      root.render(React.createElement(LoginPage, { searchParams: Promise.resolve({}) }));
     });
 
     const emailInput = container.querySelector("#email") as HTMLInputElement;

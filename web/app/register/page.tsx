@@ -1,54 +1,57 @@
 "use client";
 
-import React, { useState, use } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ZodError } from "zod";
 import { ApiError } from "@/lib/errors";
 import { InputField } from "@/components/ui/input";
 import { useErrorModal } from "@/hooks/use-error-modal";
-import { loginRequestBodySchema, LoginRequestBody } from "@/app/api/login/schema";
+import { registerRequestBodySchema, RegisterRequestBody } from "@/app/api/register/schema";
 
-interface LoginErrors {
+interface RegisterErrors {
+  first_name?: string;
+  last_name?: string;
+  username?: string;
   email?: string;
   password?: string;
+  confirmPassword?: string;
   general?: string;
 }
 
-export default function LoginPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ registered?: string }>;
-}) {
-  const { registered } = use(searchParams);
+export default function RegisterPage() {
   const router = useRouter();
   const { showError } = useErrorModal();
-  const [formData, setFormData] = useState<LoginRequestBody>({
+  const [formData, setFormData] = useState<RegisterRequestBody>({
+    first_name: "",
+    last_name: "",
+    username: "",
     email: "",
     password: "",
+    confirmPassword: "",
   });
-  const [errors, setErrors] = useState<LoginErrors>({});
+  const [errors, setErrors] = useState<RegisterErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name as keyof LoginRequestBody]) {
+    if (errors[name as keyof RegisterErrors]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
   };
 
   const validate = (): boolean => {
     try {
-      loginRequestBodySchema.parse(formData);
+      registerRequestBodySchema.parse(formData);
       setErrors({});
       return true;
     } catch (err) {
       if (err instanceof ZodError) {
-        const fieldErrors: LoginErrors = {};
+        const fieldErrors: RegisterErrors = {};
         err.issues.forEach((e) => {
           if (e.path.length > 0) {
-            const path = e.path[0] as keyof LoginRequestBody;
+            const path = e.path[0] as keyof RegisterErrors;
             if (!fieldErrors[path]) {
               fieldErrors[path] = e.message;
             }
@@ -70,23 +73,26 @@ export default function LoginPage({
     setErrors({});
 
     try {
-      const res = await fetch("/api/login", {
+      const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          first_name: formData.first_name.trim(),
+          last_name: formData.last_name.trim(),
+          username: formData.username.trim(),
           email: formData.email.trim(),
           password: formData.password,
         }),
       });
 
       if (!res.ok) {
-        const errBody = await res.json().catch(() => ({ error: "Login failed" }));
-        throw new ApiError(errBody.error || "Login failed", res.status);
+        const errBody = await res.json().catch(() => ({ error: "Registration failed" }));
+        throw new ApiError(errBody.error || "Registration failed", res.status);
       }
 
-      router.push("/");
+      router.push("/login?registered=true");
     } catch (err) {
-      if (err instanceof ApiError && (err.status === 401 || err.status === 400)) {
+      if (err instanceof ApiError && err.status === 400) {
         setErrors({ general: err.message });
         return;
       }
@@ -100,20 +106,43 @@ export default function LoginPage({
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-lg">
-        {registered === "true" && (
-          <div className="rounded-md bg-green-50 border border-green-200 p-4">
-            <p className="text-sm text-green-800">
-              ✅ Registration successful! Please sign in with your new account.
-            </p>
-          </div>
-        )}
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
+            Create your account
           </h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit} noValidate>
           <div className="rounded-md space-y-4">
+            <InputField
+              label="First Name"
+              id="first_name"
+              type="text"
+              autoComplete="given-name"
+              placeholder="First Name"
+              value={formData.first_name}
+              onChange={handleChange}
+              error={errors.first_name}
+            />
+            <InputField
+              label="Last Name"
+              id="last_name"
+              type="text"
+              autoComplete="family-name"
+              placeholder="Last Name"
+              value={formData.last_name}
+              onChange={handleChange}
+              error={errors.last_name}
+            />
+            <InputField
+              label="Username"
+              id="username"
+              type="text"
+              autoComplete="username"
+              placeholder="Username"
+              value={formData.username}
+              onChange={handleChange}
+              error={errors.username}
+            />
             <InputField
               label="Email address"
               id="email"
@@ -128,33 +157,22 @@ export default function LoginPage({
               label="Password"
               id="password"
               type="password"
-              autoComplete="current-password"
+              autoComplete="new-password"
               placeholder="Password"
               value={formData.password}
               onChange={handleChange}
               error={errors.password}
             />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="text-sm">
-              <Link
-                href="/forgot-password"
-                title="Forgot password link"
-                className="font-medium text-indigo-600 hover:text-indigo-500"
-              >
-                Forgot your password?
-              </Link>
-            </div>
-            <div className="text-sm">
-              <Link
-                href="/register"
-                title="Create an account"
-                className="font-medium text-indigo-600 hover:text-indigo-500"
-              >
-                Create an account
-              </Link>
-            </div>
+            <InputField
+              label="Confirm Password"
+              id="confirmPassword"
+              type="password"
+              autoComplete="new-password"
+              placeholder="Confirm Password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              error={errors.confirmPassword}
+            />
           </div>
 
           {errors.general && (
@@ -173,8 +191,17 @@ export default function LoginPage({
                   : "bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               }`}
             >
-              {isSubmitting ? "Signing in..." : "Sign in"}
+              {isSubmitting ? "Creating account..." : "Create account"}
             </button>
+          </div>
+
+          <div className="text-sm text-center">
+            <Link
+              href="/login"
+              className="font-medium text-indigo-600 hover:text-indigo-500"
+            >
+              Already have an account? Sign in
+            </Link>
           </div>
         </form>
       </div>
