@@ -120,7 +120,7 @@ The frontend uses the **Next.js App Router** with layouts, pages, and components
 
 All commits must follow the format:
 
-```
+```text
 <type>(<team-code> or <ticket-id>): <description>
 ```
 
@@ -137,7 +137,7 @@ All commits must follow the format:
 
 **Examples:**
 
-```
+```text
 feat(auth): add register logic
 fix(api): correct status code
 chore(deps): update dependency version
@@ -150,10 +150,10 @@ A `prepare-commit-msg` git hook enforces this convention locally. Run `make gith
 
 ### Real-time Notifications (WebSocket)
 
-- Endpoint: `GET /ws`
-- Auth: `Authorization: Bearer <access_token>` during WebSocket handshake
-- Behavior: streams only new notifications for the authenticated user
-- Historical notifications: use `GET /notifications`
+* Endpoint: `GET /ws`
+* Auth: `Authorization: Bearer <access_token>` during WebSocket handshake
+* Behavior: streams only new notifications for the authenticated user
+* Historical notifications: use `GET /notifications`
 
 ---
 
