@@ -89,14 +89,14 @@ describe("ProfileDropdown", () => {
     const button = container.querySelector("button[title='Account Menu']");
     
     // Dropdown should not be visible initially
-    expect(container.querySelector("a[href='/home']")).toBeNull();
+    expect(container.querySelector("a[href='/']")).toBeNull();
 
     // Click to open
     await act(async () => {
       button?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
 
-    expect(container.querySelector("a[href='/home']")).not.toBeNull();
+    expect(container.querySelector("a[href='/']")).not.toBeNull();
     expect(container.textContent).toContain("Signed in as");
     expect(container.textContent).toContain("John Doe");
     expect(container.textContent).toContain("@johndoe");
@@ -106,7 +106,7 @@ describe("ProfileDropdown", () => {
       button?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
 
-    expect(container.querySelector("a[href='/home']")).toBeNull();
+    expect(container.querySelector("a[href='/']")).toBeNull();
   });
 
   it("opens logout confirmation modal when Log Out is clicked", async () => {
@@ -138,7 +138,7 @@ describe("ProfileDropdown", () => {
     });
 
     // Dropdown is closed, modal is open
-    expect(container.querySelector("a[href='/home']")).toBeNull();
+    expect(container.querySelector("a[href='/']")).toBeNull();
     expect(container.querySelector("h3[id='modal-title']")).not.toBeNull();
     expect(container.textContent).toContain("Confirm Logout");
   });
