@@ -35,44 +35,46 @@ export default async function PostDetailPage({ params }: PageProps) {
   const isAuthenticated = cookieStore.has("access_token");
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50 font-sans dark:bg-black">
+    <div className="flex min-h-screen flex-col bg-gray-50 font-sans dark:bg-gray-950">
       <Navbar pageTitle="Post Details" />
 
-      <main className="mx-auto w-full max-w-3xl flex-1 p-8">
-        <article className="rounded-xl bg-white p-8 shadow-lg dark:bg-zinc-900 sm:p-12">
-          <header className="mb-8 border-b border-gray-100 pb-8 dark:border-zinc-800">
-            <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-zinc-50">
+      <main className="mx-auto w-full max-w-3xl flex-1 p-6 sm:p-8">
+        <article className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800 sm:p-10">
+          <header className="mb-8 border-b border-gray-100 pb-8 dark:border-gray-800">
+            <h1 className="text-3xl font-semibold tracking-tight text-gray-900 dark:text-white sm:text-4xl/[1.2]">
               {post.title}
             </h1>
-            <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-gray-500">
-              {/* ponytail: simple author metadata display */}
+            <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
               {post.author && (
                 <>
-                  <span className="font-semibold text-gray-700 dark:text-zinc-300">
-                    Created by {post.author}
+                  <span className="inline-flex items-center gap-1.5 font-medium text-gray-700 dark:text-gray-300">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    {post.author}
                   </span>
-                  <span>•</span>
+                  <span className="text-gray-300 dark:text-gray-700">·</span>
                 </>
               )}
               <time dateTime={post.created_at}>
-                Created on {new Date(post.created_at).toLocaleDateString(undefined, {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
+                {new Date(post.created_at).toLocaleDateString(undefined, {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
                 })}
               </time>
               {post.updated_at !== post.created_at && (
-                <span className="italic">
+                <span className="italic text-gray-400">
                   (Updated: {new Date(post.updated_at).toLocaleDateString()})
                 </span>
               )}
             </div>
             {post.tags && post.tags.length > 0 && (
-              <div className="mt-6 flex flex-wrap gap-2">
+              <div className="mt-5 flex flex-wrap gap-2">
                 {post.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400"
+                    className="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-700/10 dark:bg-indigo-950 dark:text-indigo-300 dark:ring-indigo-300/10"
                   >
                     #{tag}
                   </span>
@@ -81,8 +83,8 @@ export default async function PostDetailPage({ params }: PageProps) {
             )}
           </header>
 
-          <div className="prose prose-indigo max-w-none dark:prose-invert">
-            <p className="whitespace-pre-wrap text-lg leading-relaxed text-gray-700 dark:text-zinc-300">
+          <div className="prose prose-gray max-w-none dark:prose-invert">
+            <p className="whitespace-pre-wrap text-base leading-relaxed text-gray-700 dark:text-gray-300">
               {post.content}
             </p>
           </div>
@@ -97,7 +99,7 @@ export default async function PostDetailPage({ params }: PageProps) {
         </article>
       </main>
 
-      <footer className="bg-white py-6 text-center text-sm text-gray-500 dark:bg-zinc-900 dark:text-zinc-400">
+      <footer className="py-6 text-center text-xs text-gray-400 dark:text-gray-600">
         &copy; {new Date().getFullYear()} Project One. All rights reserved.
       </footer>
     </div>

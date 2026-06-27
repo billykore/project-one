@@ -77,7 +77,7 @@ export default function UserProfileView({
       {/* Main Container */}
       <main className="mx-auto w-full max-w-6xl flex-1 p-6 md:p-8">
         {/* Profile Header Block */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-8 shadow-md dark:shadow-zinc-900/30 mb-8 text-white">
+        <div className="relative overflow-hidden rounded-2xl bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 p-8 shadow-md mb-8 text-white">
           <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px]"></div>
           <div className="relative z-10 flex flex-col sm:flex-row items-center gap-6">
             <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-white/20 border-2 border-white/40 text-2xl font-bold uppercase tracking-wider text-white shadow-inner">

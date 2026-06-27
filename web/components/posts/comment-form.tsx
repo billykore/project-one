@@ -54,10 +54,10 @@ export function CommentForm({ onSubmit }: CommentFormProps) {
         <button
           type="submit"
           disabled={isSubmitting || !content.trim()}
-          className={`px-4 py-2 text-sm font-medium rounded-md text-white transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:ring-offset-white dark:focus:ring-offset-zinc-900 ${
+          className={`inline-flex items-center rounded-lg px-4 py-2 text-sm font-medium text-white shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-950 ${
             isSubmitting || !content.trim()
-              ? "bg-indigo-400 dark:bg-indigo-600/50 cursor-not-allowed opacity-70"
-              : "bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+              ? "cursor-not-allowed bg-indigo-400 opacity-70"
+              : "bg-linear-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 hover:shadow-md hover:shadow-indigo-500/20 active:scale-[0.98]"
           }`}
         >
           {isSubmitting ? "Posting..." : "Post Comment"}

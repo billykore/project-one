@@ -15,18 +15,18 @@ export function PageSkeletonLayout({
   contentMaxWidthClass = "max-w-5xl",
 }: PageSkeletonLayoutProps) {
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50 font-sans dark:bg-black">
-      <nav className="flex items-center justify-between border-b border-gray-100 bg-white px-8 py-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="flex min-h-screen flex-col bg-gray-50 font-sans dark:bg-gray-950">
+      <nav className="sticky top-0 z-40 flex items-center justify-between bg-white/80 backdrop-blur-md px-6 py-3 shadow-sm ring-1 ring-gray-200 dark:bg-gray-950/80 dark:ring-gray-800">
         <div className="flex items-center gap-4">
-          <Skeleton className="h-5 w-24" />
-          <span className="text-xl font-bold text-gray-900 dark:text-zinc-50">{title}</span>
+          <Skeleton className="h-5 w-20" />
+          <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</span>
         </div>
         <div className="flex items-center gap-4">{rightActions}</div>
       </nav>
 
-      <main className={`mx-auto w-full flex-1 p-8 ${contentMaxWidthClass}`}>{children}</main>
+      <main className={`mx-auto w-full flex-1 p-6 sm:p-8 ${contentMaxWidthClass}`}>{children}</main>
 
-      <footer className="bg-white py-6 text-center text-sm text-gray-500 dark:bg-zinc-900 dark:text-zinc-400">
+      <footer className="py-6 text-center text-xs text-gray-400 dark:text-gray-600">
         &copy; {new Date().getFullYear()} Project One. All rights reserved.
       </footer>
     </div>
@@ -41,15 +41,15 @@ export function PostsGridSkeleton({ count = 6 }: PostsGridSkeletonProps) {
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: count }).map((_, index) => (
-        <div key={index} className="flex flex-col rounded-xl bg-white p-6 shadow-md dark:bg-zinc-900">
+        <div key={index} className="flex flex-col rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
           <Skeleton className="h-7 w-3/4" />
           <div className="mt-4 space-y-2">
-            <Skeleton className="h-4 w-full bg-gray-100 dark:bg-zinc-800" />
-            <Skeleton className="h-4 w-5/6 bg-gray-100 dark:bg-zinc-800" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-5/6" />
           </div>
           <div className="mt-6 flex items-center justify-between">
-            <Skeleton className="h-4 w-20 bg-gray-100 dark:bg-zinc-800" />
-            <Skeleton className="h-4 w-16 bg-indigo-100 dark:bg-indigo-950" />
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-4 w-16" />
           </div>
         </div>
       ))}
@@ -59,24 +59,25 @@ export function PostsGridSkeleton({ count = 6 }: PostsGridSkeletonProps) {
 
 export function PostDetailContentSkeleton() {
   return (
-    <div className="rounded-xl bg-white p-8 shadow-lg dark:bg-zinc-900 sm:p-12">
-      <header className="mb-8 border-b border-gray-100 pb-8 dark:border-zinc-800">
+    <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800 sm:p-10">
+      <header className="mb-8 border-b border-gray-100 pb-8 dark:border-gray-800">
         <Skeleton className="h-10 w-3/4" />
         <div className="mt-4 flex gap-4">
-          <Skeleton className="h-4 w-32 bg-gray-100 dark:bg-zinc-800" />
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-4 w-24" />
         </div>
-        <div className="mt-6 flex gap-2">
-          <Skeleton className="h-6 w-16 rounded-full bg-indigo-50 dark:bg-indigo-950" />
-          <Skeleton className="h-6 w-16 rounded-full bg-indigo-50 dark:bg-indigo-950" />
+        <div className="mt-5 flex gap-2">
+          <Skeleton className="h-6 w-16 rounded-full" />
+          <Skeleton className="h-6 w-16 rounded-full" />
         </div>
       </header>
 
-      <div className="space-y-4">
-        <Skeleton className="h-4 w-full bg-gray-100 dark:bg-zinc-800" />
-        <Skeleton className="h-4 w-full bg-gray-100 dark:bg-zinc-800" />
-        <Skeleton className="h-4 w-5/6 bg-gray-100 dark:bg-zinc-800" />
-        <Skeleton className="h-4 w-full bg-gray-100 dark:bg-zinc-800" />
-        <Skeleton className="h-4 w-4/5 bg-gray-100 dark:bg-zinc-800" />
+      <div className="space-y-3">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-5/6" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-4/5" />
       </div>
     </div>
   );

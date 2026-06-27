@@ -83,7 +83,7 @@ export default function ProfileDropdown({ user }: ProfileDropdownProps) {
       {/* Profile Avatar Button */}
       <button
         onClick={toggleDropdown}
-        className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-xs font-extrabold uppercase tracking-wider text-white shadow-sm hover:opacity-90 hover:scale-105 active:scale-95 transition-all duration-150 border border-white/20 dark:border-zinc-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 cursor-pointer"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 text-xs font-extrabold uppercase tracking-wider text-white shadow-sm hover:opacity-90 hover:scale-105 active:scale-95 transition-all duration-150 border border-white/20 dark:border-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 cursor-pointer"
         aria-expanded={isOpen}
         aria-haspopup="true"
         title="Account Menu"

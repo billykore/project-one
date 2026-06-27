@@ -104,15 +104,65 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-lg">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create your account
-          </h2>
+    <div className="min-h-screen grid lg:grid-cols-2 font-sans">
+      {/* Brand Panel */}
+      <div className="relative hidden lg:flex flex-col justify-between bg-linear-to-br from-indigo-600 via-indigo-700 to-purple-800 p-12 overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.1)_0%,transparent_60%)]" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-linear-to-bl from-purple-500/30 to-transparent rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-linear-to-tr from-indigo-400/20 to-transparent rounded-full blur-3xl" />
+
+        <div className="relative z-10">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm shadow-inner ring-1 ring-white/30">
+              <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
+              </svg>
+            </div>
+            <span className="text-xl font-semibold text-white tracking-tight">Project1</span>
+          </div>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit} noValidate>
-          <div className="rounded-md space-y-4">
+
+        <div className="relative z-10 space-y-4">
+          <h1 className="text-4xl/[1.15] font-semibold text-white tracking-tight">
+            Join the community.
+            <br />
+            <span className="text-indigo-200">Create your account.</span>
+          </h1>
+          <p className="text-indigo-200/80 text-sm/[1.6] font-light max-w-xs">
+            Sign up to start sharing posts, connecting with others, and building your network.
+          </p>
+        </div>
+
+        <p className="relative z-10 text-xs font-light text-indigo-300/50 tracking-wide">
+          &copy; {new Date().getFullYear()} Project1. All rights reserved.
+        </p>
+      </div>
+
+      {/* Form Panel */}
+      <div className="flex items-center justify-center px-4 py-12 sm:px-6 lg:px-12 bg-white dark:bg-gray-950">
+        <div className="w-full max-w-md space-y-8">
+          {/* Mobile logo */}
+          <div className="lg:hidden flex flex-col items-center gap-2">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-linear-to-br from-indigo-600 to-purple-700 shadow-lg shadow-indigo-500/25">
+              <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
+              </svg>
+            </div>
+            <span className="text-lg font-semibold text-gray-900 dark:text-white tracking-tight">Project1</span>
+          </div>
+
+          {/* Header */}
+          <div className="space-y-1">
+            <h2 className="text-2xl/[1.2] font-semibold tracking-tight text-gray-900 dark:text-white">
+              Create account
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 font-light">
+              Fill in the details below to get started.
+            </p>
+          </div>
+
+          {/* Form */}
+          <form className="space-y-5" onSubmit={handleSubmit} noValidate>
             <InputField
               label="First Name"
               id="first_name"
@@ -148,7 +198,7 @@ export default function RegisterPage() {
               id="email"
               type="email"
               autoComplete="email"
-              placeholder="Email address"
+              placeholder="you@example.com"
               value={formData.email}
               onChange={handleChange}
               error={errors.email}
@@ -158,7 +208,7 @@ export default function RegisterPage() {
               id="password"
               type="password"
               autoComplete="new-password"
-              placeholder="Password"
+              placeholder="••••••••"
               value={formData.password}
               onChange={handleChange}
               error={errors.password}
@@ -168,42 +218,50 @@ export default function RegisterPage() {
               id="confirmPassword"
               type="password"
               autoComplete="new-password"
-              placeholder="Confirm Password"
+              placeholder="••••••••"
               value={formData.confirmPassword}
               onChange={handleChange}
               error={errors.confirmPassword}
             />
-          </div>
 
-          {errors.general && (
-            <div className="rounded-md bg-red-50 p-4">
-              <p className="text-sm text-red-700">{errors.general}</p>
-            </div>
-          )}
+            {/* General error */}
+            {errors.general && (
+              <div className="animate-in fade-in rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-950">
+                <p className="text-sm text-red-600 dark:text-red-400">{errors.general}</p>
+              </div>
+            )}
 
-          <div>
+            {/* Submit */}
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
-                isSubmitting
-                  ? "bg-indigo-400 cursor-not-allowed"
-                  : "bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              }`}
+              className={`group relative w-full inline-flex items-center justify-center rounded-lg px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-950
+                ${
+                  isSubmitting
+                    ? "cursor-not-allowed bg-indigo-400"
+                    : "bg-linear-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 hover:shadow-md hover:shadow-indigo-500/20 active:scale-[0.98]"
+                }`}
             >
-              {isSubmitting ? "Creating account..." : "Create account"}
+              {isSubmitting && (
+                <svg className="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              )}
+              {isSubmitting ? "Creating account…" : "Create account"}
             </button>
-          </div>
 
-          <div className="text-sm text-center">
-            <Link
-              href="/login"
-              className="font-medium text-indigo-600 hover:text-indigo-500"
-            >
-              Already have an account? Sign in
-            </Link>
-          </div>
-        </form>
+            <p className="text-center text-sm text-gray-500 dark:text-gray-400">
+              Already have an account?{" "}
+              <Link
+                href="/login"
+                className="font-medium text-indigo-600 transition-colors hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+              >
+                Sign in
+              </Link>
+            </p>
+          </form>
+        </div>
       </div>
     </div>
   );
