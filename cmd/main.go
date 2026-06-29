@@ -86,7 +86,7 @@ func main() {
 
 	// 4. Initialize UseCase.
 	loginUc := usecase.NewLoginUseCase(userRepo, tokenSvc, userTokenRepo, hasher, lgr)
-	userUc := usecase.NewUserUseCase(userRepo, userTokenRepo, hasher)
+	userUc := usecase.NewUserUseCase(userRepo, hasher)
 	postUc := usecase.NewPostUseCase(postRepo, likeRepo, userRepo, publisher, lgr)
 	followUc := usecase.NewFollowUseCase(followRepo, userRepo, publisher, lgr)
 	commentUc := usecase.NewCommentUseCase(commentRepo, postRepo, userRepo, publisher, lgr)

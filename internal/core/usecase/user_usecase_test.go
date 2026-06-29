@@ -15,9 +15,8 @@ func TestUserUseCase_GetUserProfile(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockUserRepository(ctrl)
-	mockTokenRepo := mocks.NewMockTokenRepository(ctrl)
 	mockHasher := mocks.NewMockHasher(ctrl)
-	svc := NewUserUseCase(mockRepo, mockTokenRepo, mockHasher)
+	svc := NewUserUseCase(mockRepo, mockHasher)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -51,9 +50,8 @@ func TestUserUseCase_Register(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockUserRepository(ctrl)
-	mockTokenRepo := mocks.NewMockTokenRepository(ctrl)
 	mockHasher := mocks.NewMockHasher(ctrl)
-	svc := NewUserUseCase(mockRepo, mockTokenRepo, mockHasher)
+	svc := NewUserUseCase(mockRepo, mockHasher)
 
 	ctx := context.Background()
 
@@ -130,9 +128,8 @@ func TestUserUseCase_ChangePassword(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockUserRepository(ctrl)
-	mockTokenRepo := mocks.NewMockTokenRepository(ctrl)
 	mockHasher := mocks.NewMockHasher(ctrl)
-	svc := NewUserUseCase(mockRepo, mockTokenRepo, mockHasher)
+	svc := NewUserUseCase(mockRepo, mockHasher)
 
 	ctx := context.Background()
 	username := "testuser"

@@ -10,26 +10,21 @@ import (
 )
 
 type userUseCase struct {
-	userRepo  ports.UserRepository
-	tokenRepo ports.TokenRepository
-	hasher    ports.Hasher
+	userRepo ports.UserRepository
+	hasher   ports.Hasher
 }
 
 // NewUserUseCase creates a new instance of ports.UserUseCase.
-func NewUserUseCase(userRepo ports.UserRepository, tokenRepo ports.TokenRepository, hasher ports.Hasher) ports.UserUseCase {
+func NewUserUseCase(userRepo ports.UserRepository, hasher ports.Hasher) ports.UserUseCase {
 	if userRepo == nil {
 		panic("NewUserUseCase: userRepo is required")
-	}
-	if tokenRepo == nil {
-		panic("NewUserUseCase: tokenRepo is required")
 	}
 	if hasher == nil {
 		panic("NewUserUseCase: hasher is required")
 	}
 	return &userUseCase{
-		userRepo:  userRepo,
-		tokenRepo: tokenRepo,
-		hasher:    hasher,
+		userRepo: userRepo,
+		hasher:   hasher,
 	}
 }
 
