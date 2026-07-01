@@ -91,6 +91,7 @@ func main() {
 	followUc := usecase.NewFollowUseCase(followRepo, userRepo, publisher, lgr)
 	commentUc := usecase.NewCommentUseCase(commentRepo, postRepo, userRepo, publisher, lgr)
 	notificationUc := usecase.NewNotificationUseCase(notificationRepo, userRepo, lgr)
+	feedUc := usecase.NewFeedUseCase(postRepo, followRepo, userRepo, lgr)
 
 	// 5. Initialize Handler.
 	userHdl := handler.NewUserHandler(userUc, loginUc, followUc, postUc, val, lgr)
@@ -98,6 +99,7 @@ func main() {
 	commentHdl := handler.NewCommentHandler(commentUc, val, lgr)
 	notificationHdl := handler.NewNotificationHandler(lgr, subcriber, notificationUc, val, wsManager)
 	wsHdl := handler.NewWebSocketHandler(lgr, tokenSvc, userUc, wsManager)
+	feedHdl := handler.NewFeedHandler(feedUc, lgr)
 
 	// 6. Set up Echo.
 	e := echo.New()
@@ -174,6 +176,12 @@ func main() {
 		notifications.GET("", notificationHdl.GetNotifications)
 		notifications.PUT("/:id/read", notificationHdl.MarkAsRead)
 		notifications.PUT("/read-all", notificationHdl.MarkAllAsRead)
+	}
+
+	// Feeds Group
+	feeds := e.Group("/feeds", middleware.Authorize(tokenSvc))
+	{
+		feeds.GET("", feedHdl.HandleGetFeed)
 	}
 
 	// Start server.

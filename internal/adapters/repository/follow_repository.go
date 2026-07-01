@@ -88,3 +88,12 @@ func (r *followRepository) Delete(ctx context.Context, followerUsername, followe
 	}
 	return nil
 }
+
+func (r *followRepository) GetFollowedUsernames(ctx context.Context, followerUsername string) ([]string, error) {
+	var usernames []string
+	err := r.db.WithContext(ctx).
+		Model(&followModel{}).
+		Where("follower_username = ?", followerUsername).
+		Pluck("followed_username", &usernames).Error
+	return usernames, err
+}

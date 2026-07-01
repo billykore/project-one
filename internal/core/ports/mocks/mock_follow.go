@@ -69,6 +69,21 @@ func (mr *MockFollowRepositoryMockRecorder) Delete(ctx, followerUsername, follow
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockFollowRepository)(nil).Delete), ctx, followerUsername, followedUsername)
 }
 
+// GetFollowedUsernames mocks base method.
+func (m *MockFollowRepository) GetFollowedUsernames(ctx context.Context, followerUsername string) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFollowedUsernames", ctx, followerUsername)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFollowedUsernames indicates an expected call of GetFollowedUsernames.
+func (mr *MockFollowRepositoryMockRecorder) GetFollowedUsernames(ctx, followerUsername any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFollowedUsernames", reflect.TypeOf((*MockFollowRepository)(nil).GetFollowedUsernames), ctx, followerUsername)
+}
+
 // GetFollowers mocks base method.
 func (m *MockFollowRepository) GetFollowers(ctx context.Context, followedUsername string, limit, offset int) ([]domain.Follower, error) {
 	m.ctrl.T.Helper()

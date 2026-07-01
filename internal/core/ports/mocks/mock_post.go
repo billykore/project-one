@@ -12,6 +12,7 @@ package mocks
 import (
 	context "context"
 	reflect "reflect"
+	time "time"
 
 	domain "github.com/billykore/project-one/internal/core/domain"
 	gomock "go.uber.org/mock/gomock"
@@ -97,6 +98,21 @@ func (m *MockPostRepository) GetByIDOnly(ctx context.Context, id int) (*domain.P
 func (mr *MockPostRepositoryMockRecorder) GetByIDOnly(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByIDOnly", reflect.TypeOf((*MockPostRepository)(nil).GetByIDOnly), ctx, id)
+}
+
+// GetFeed mocks base method.
+func (m *MockPostRepository) GetFeed(ctx context.Context, usernames []string, cursorCreatedAt time.Time, cursorID, limit int) ([]*domain.Post, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFeed", ctx, usernames, cursorCreatedAt, cursorID, limit)
+	ret0, _ := ret[0].([]*domain.Post)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFeed indicates an expected call of GetFeed.
+func (mr *MockPostRepositoryMockRecorder) GetFeed(ctx, usernames, cursorCreatedAt, cursorID, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFeed", reflect.TypeOf((*MockPostRepository)(nil).GetFeed), ctx, usernames, cursorCreatedAt, cursorID, limit)
 }
 
 // GetUserPosts mocks base method.

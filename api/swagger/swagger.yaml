@@ -70,6 +70,17 @@ definitions:
       error:
         type: string
     type: object
+  dto.FeedResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dto.PostItem'
+        type: array
+      has_more:
+        type: boolean
+      next_cursor:
+        type: string
+    type: object
   dto.FollowData:
     properties:
       followed_at:
@@ -165,6 +176,27 @@ definitions:
         type: string
       user_id:
         type: integer
+    type: object
+  dto.PostItem:
+    properties:
+      author:
+        type: string
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      like_count:
+        type: integer
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+      updated_at:
+        type: string
     type: object
   dto.PostResponse:
     properties:
@@ -418,6 +450,43 @@ paths:
       summary: Edit comment
       tags:
       - comments
+  /feeds:
+    get:
+      description: Returns paginated posts from users the authenticated user follows
+        and their own posts.
+      parameters:
+      - description: Pagination cursor
+        in: query
+        name: cursor
+        type: string
+      - description: Items per page (1-50, default 10)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.FeedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get feed
+      tags:
+      - feeds
   /notifications:
     get:
       consumes:

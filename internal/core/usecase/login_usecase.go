@@ -24,20 +24,9 @@ func NewLoginUseCase(
 	hasher ports.Hasher,
 	log ports.Logger,
 ) ports.LoginUseCase {
-	if repo == nil {
-		panic("NewLoginUseCase: repo is required")
-	}
-	if tokens == nil {
-		panic("NewLoginUseCase: tokens is required")
-	}
-	if tokenRepo == nil {
-		panic("NewLoginUseCase: tokenRepo is required")
-	}
-	if hasher == nil {
-		panic("NewLoginUseCase: hasher is required")
-	}
-	if log == nil {
-		panic("NewLoginUseCase: log is required")
+	// ponytail: normalized nil checks to match other constructors
+	if repo == nil || tokens == nil || tokenRepo == nil || hasher == nil || log == nil {
+		panic("NewLoginUseCase: dependencies must not be nil")
 	}
 	return &loginUseCase{
 		repo:      repo,

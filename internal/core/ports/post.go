@@ -2,6 +2,7 @@ package ports
 
 import (
 	"context"
+	"time"
 
 	"github.com/billykore/project-one/internal/core/domain"
 )
@@ -22,6 +23,10 @@ type PostRepository interface {
 	Delete(ctx context.Context, username string, id int) error
 	// IncrementLikeCount increments or decrements the like count for a post.
 	IncrementLikeCount(ctx context.Context, id int, increment int) error
+	// GetFeed returns posts from the given usernames with cursor-based pagination.
+	// cursorCreatedAt and cursorID are the last post's values from the previous page.
+	// Pass zero values for the first page. limit is the max number of posts to return.
+	GetFeed(ctx context.Context, usernames []string, cursorCreatedAt time.Time, cursorID int, limit int) ([]*domain.Post, error)
 }
 
 // PostUseCase is a driving port for post-related application logic.

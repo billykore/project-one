@@ -16,6 +16,8 @@ type FollowRepository interface {
 	GetFollowers(ctx context.Context, followedUsername string, limit, offset int) ([]domain.Follower, error)
 	// Delete removes an existing follow relationship.
 	Delete(ctx context.Context, followerUsername, followedUsername string) error
+	// GetFollowedUsernames returns all usernames that the given user follows.
+	GetFollowedUsernames(ctx context.Context, followerUsername string) ([]string, error)
 }
 
 // FollowUseCase defines the interface for follow-related business logic.

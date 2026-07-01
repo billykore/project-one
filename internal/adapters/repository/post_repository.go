@@ -3,6 +3,8 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
+	"time"
 
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
@@ -139,4 +141,33 @@ func (r *postRepository) IncrementLikeCount(ctx context.Context, id int, increme
 		Model(&postModel{}).
 		Where("id = ?", id).
 		UpdateColumn("like_count", gorm.Expr("like_count + ?", increment)).Error
+}
+
+func (r *postRepository) GetFeed(ctx context.Context, usernames []string, cursorCreatedAt time.Time, cursorID int, limit int) ([]*domain.Post, error) {
+	if len(usernames) == 0 {
+		return []*domain.Post{}, nil
+	}
+
+	query := r.db.WithContext(ctx).
+		Model(&postModel{}).
+		Where("username IN ?", usernames).
+		Where("deleted_at IS NULL")
+
+	if !cursorCreatedAt.IsZero() && cursorID > 0 {
+		query = query.Where("(created_at, id) < (?, ?)", cursorCreatedAt, cursorID)
+	}
+
+	var models []postModel
+	if err := query.
+		Order("created_at DESC, id DESC").
+		Limit(limit).
+		Find(&models).Error; err != nil {
+		return nil, fmt.Errorf("get feed: %w", err)
+	}
+
+	posts := make([]*domain.Post, 0, len(models))
+	for _, m := range models {
+		posts = append(posts, m.toDomain())
+	}
+	return posts, nil
 }
