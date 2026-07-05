@@ -1,91 +1,55 @@
-"use client";
-
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { serverFetch } from "@/lib/server-fetch";
+import { ApiError, handleApiResponse } from "@/lib/errors";
+import { FeedView } from "@/components/posts/FeedView";
 import Navbar from "@/components/layout/navbar";
-import { useUser } from "@/hooks/use-user";
+import type { Post } from "@/lib/types/post.types";
 
-export default function HomePage() {
-  const { user, isLoading } = useUser();
+interface FeedApiResponse {
+  data: Post[];
+  has_more: boolean;
+  next_cursor: string;
+}
 
-  if (isLoading) {
+async function getFeed(): Promise<FeedApiResponse> {
+  const res = await serverFetch("/api/feeds?limit=10");
+  return handleApiResponse<FeedApiResponse>(res);
+}
+
+export default async function HomePage() {
+  let feed: FeedApiResponse;
+  try {
+    feed = await getFeed();
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 401) redirect("/login");
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-950">
-        <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
-          <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
-          <span className="text-sm font-medium">Loading…</span>
-        </div>
+      <div className="flex min-h-screen flex-col bg-gray-50 font-sans dark:bg-gray-950">
+        <Navbar pageTitle="Home" />
+        <main className="flex flex-1 items-center justify-center p-6">
+          <div className="flex flex-col items-center gap-4 text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+              <svg className="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Failed to load feed</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Something went wrong. Please try again.</p>
+            <Link href="/" className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 transition-colors">Retry</Link>
+          </div>
+        </main>
+        <footer className="py-6 text-center text-xs text-gray-400 dark:text-gray-600">&copy; {new Date().getFullYear()} Project One. All rights reserved.</footer>
       </div>
     );
   }
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50 font-sans dark:bg-gray-950">
-      <Navbar pageTitle="Dashboard" />
-
-      <main className="flex flex-1 flex-col items-center justify-center p-6 sm:p-8">
-        <div className="w-full max-w-2xl space-y-8">
-          {/* Welcome card */}
-          <div className="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800 sm:p-10">
-            <div className="flex flex-col items-center gap-6 text-center">
-              {/* Avatar */}
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-linear-to-br from-indigo-600 to-purple-700 text-xl font-bold uppercase tracking-wider text-white shadow-lg shadow-indigo-500/25">
-                {user?.name ? user.name.split(" ").map((n: string) => n[0]).slice(0, 2).join("") : "?"}
-              </div>
-
-              <div className="space-y-2">
-                <h1 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">
-                  Welcome back, {user?.name}
-                </h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto leading-relaxed">
-                  You&apos;re signed in as{" "}
-                  <span className="font-medium text-gray-700 dark:text-gray-300">{user?.email}</span>.
-                  This is your personal dashboard.
-                </p>
-              </div>
-
-              {/* Action buttons */}
-              <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-                {user?.username && (
-                  <Link
-                    href={`/${user.username}`}
-                    className="inline-flex items-center gap-2 rounded-lg bg-linear-to-r from-indigo-600 to-indigo-700 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:from-indigo-500 hover:to-indigo-600 hover:shadow-md hover:shadow-indigo-500/20 active:scale-[0.98]"
-                  >
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    View Profile
-                  </Link>
-                )}
-                <Link
-                  href="/posts"
-                  className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-                >
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 4a2 2 0 00-2-2m2 2v10a2 2 0 01-2 2M9 9h6m-6 4h6m-6 4h5" />
-                  </svg>
-                  All Posts
-                </Link>
-                <Link
-                  href="/posts/create"
-                  className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-                >
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                  </svg>
-                  Create Post
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
+      <Navbar pageTitle="Home" />
+      <main className="mx-auto w-full max-w-2xl flex-1 p-6 sm:p-8">
+        <FeedView initialPosts={feed.data} nextCursor={feed.next_cursor} hasMore={feed.has_more} />
       </main>
-
-      <footer className="py-6 text-center text-xs text-gray-400 dark:text-gray-600">
-        &copy; {new Date().getFullYear()} Project One. All rights reserved.
-      </footer>
+      <footer className="py-6 text-center text-xs text-gray-400 dark:text-gray-600">&copy; {new Date().getFullYear()} Project One. All rights reserved.</footer>
     </div>
   );
 }
