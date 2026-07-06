@@ -9,7 +9,7 @@ import type { Post } from "@/lib/types/post.types";
 interface FeedApiResponse {
   data: Post[];
   has_more: boolean;
-  next_cursor: string;
+  next_cursor: string | null;
 }
 
 async function getFeed(): Promise<FeedApiResponse> {

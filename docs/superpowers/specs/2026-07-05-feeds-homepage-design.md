@@ -59,7 +59,7 @@ Client Component with:
 
 **States covered:**
 - **Loading:** skeleton spinner at bottom while fetching next page
-- **Empty:** "No posts yet" message with "Create Post" and "Find Users" links
+- **Empty:** "No posts yet" message with "Create Post" and "Browse Posts" links
 - **Error:** inline error banner with "Retry" button
 - **End of feed:** subtle "You're all caught up" message when `hasMore === false`
 

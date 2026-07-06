@@ -2,10 +2,10 @@
 
 Act as Senior Frontend Web Engineer to make a plan from this development requirements.
 
-## Prerequiset
+## Prerequisites
 
 - Create new working branch with name  `<category:feature|fix|refactor|test|chore|docs>/<short-description>`.
-- Read following document for informations about this project:
+- Read following document for information about this project:
   - @web/AGENTS.md.
   - @web/README.md.
   - @api/swagger/swagger.json (path: /feeds).

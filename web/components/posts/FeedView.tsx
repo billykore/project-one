@@ -29,7 +29,9 @@ export function FeedView({ initialPosts, nextCursor, hasMore }: FeedViewProps) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/feeds?cursor=${cursor}&limit=10`);
+      const searchParams = new URLSearchParams({ limit: "10" });
+      searchParams.set("cursor", cursor);
+      const res = await fetch(`/api/feeds?${searchParams.toString()}`);
       if (res.status === 401) { window.location.href = "/login"; return; }
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `Failed (${res.status})`);
       const { data, next_cursor, has_more } = await res.json();
@@ -78,15 +80,17 @@ export function FeedView({ initialPosts, nextCursor, hasMore }: FeedViewProps) {
   return (
     <div className="space-y-4">
       {posts.map((post) => (
-        <Link key={post.id} href={`/posts/${post.id}`} className="group block rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-200 transition-all hover:shadow-lg hover:ring-gray-300 hover:-translate-y-0.5 dark:bg-gray-900 dark:ring-gray-800 dark:hover:ring-gray-700">
+        <article key={post.id} className="group rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-200 transition-all hover:-translate-y-0.5 hover:shadow-lg hover:ring-gray-300 dark:bg-gray-900 dark:ring-gray-800 dark:hover:ring-gray-700">
           <div className="flex items-center justify-between mb-3">
             {post.author ? (
-              <Link href={`/${post.author}`} onClick={(e) => e.stopPropagation()} className="text-sm font-medium text-gray-700 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400 transition-colors">{post.author}</Link>
+              <Link href={`/${post.author}`} className="text-sm font-medium text-gray-700 transition-colors hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400">{post.author}</Link>
             ) : <span className="text-sm text-gray-400 dark:text-gray-500">Unknown</span>}
             <span className="text-xs text-gray-400 dark:text-gray-500">{new Date(post.created_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}</span>
           </div>
-          <h3 className="text-lg font-semibold tracking-tight text-gray-900 group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400 transition-colors">{post.title}</h3>
-          <p className="mt-2 text-sm leading-relaxed text-gray-500 dark:text-gray-400">{truncate(post.content)}</p>
+          <Link href={`/posts/${post.id}`} className="block">
+            <h3 className="text-lg font-semibold tracking-tight text-gray-900 transition-colors group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400">{post.title}</h3>
+            <p className="mt-2 text-sm leading-relaxed text-gray-500 dark:text-gray-400">{truncate(post.content)}</p>
+          </Link>
           <div className="mt-4 flex items-center justify-between">
             <div className="flex items-center gap-2 flex-wrap">
               {post.tags?.map((t) => <span key={t} className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400">{t}</span>)}
@@ -98,10 +102,12 @@ export function FeedView({ initialPosts, nextCursor, hasMore }: FeedViewProps) {
                   {post.like_count}
                 </span>
               )}
-              <span className="font-medium text-indigo-600 dark:text-indigo-400 group-hover:translate-x-0.5 transition-transform">Read more →</span>
+              <Link href={`/posts/${post.id}`} className="font-medium text-indigo-600 transition-transform group-hover:translate-x-0.5 dark:text-indigo-400">
+                Read more →
+              </Link>
             </div>
           </div>
-        </Link>
+        </article>
       ))}
 
       {more && <div ref={sentinel} data-feed-sentinel="true" className="h-4" />}
