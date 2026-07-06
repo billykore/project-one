@@ -35,8 +35,11 @@ export function FeedView({ initialPosts, nextCursor, hasMore }: FeedViewProps) {
       if (res.status === 401) { window.location.href = "/login"; return; }
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `Failed (${res.status})`);
       const { data, next_cursor, has_more } = await res.json();
-      setPosts((prev) => [...prev, ...(data ?? []).filter((p: Post) => !prev.some((x) => x.id === p.id))]);
-      setCursor(next_cursor ?? null);
+      setPosts((prev) => {
+        const seenIds = new Set(prev.map((post) => post.id));
+        return [...prev, ...(data ?? []).filter((post: Post) => !seenIds.has(post.id))];
+      });
+      setCursor(next_cursor || null);
       setMore(has_more ?? false);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load");

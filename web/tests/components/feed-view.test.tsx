@@ -89,7 +89,7 @@ describe("FeedView", () => {
       new Response(
         JSON.stringify({
           data: [makePost(2, { title: "Loaded post" })],
-          next_cursor: null,
+          next_cursor: "",
           has_more: false,
         }),
         { status: 200, headers: { "Content-Type": "application/json" } },
@@ -138,7 +138,7 @@ describe("FeedView", () => {
         new Response(
           JSON.stringify({
             data: [makePost(2, { title: "Recovered post" })],
-            next_cursor: null,
+            next_cursor: "",
             has_more: false,
           }),
           { status: 200, headers: { "Content-Type": "application/json" } },

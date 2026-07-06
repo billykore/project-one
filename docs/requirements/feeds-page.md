@@ -1,6 +1,6 @@
 # Development Requirement
 
-Act as Senior Frontend Web Engineer to make a plan from this development requirements.
+Act as a Senior Frontend Web Engineer and create a plan from these development requirements.
 
 ## Prerequisites
 

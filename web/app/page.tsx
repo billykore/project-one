@@ -9,7 +9,7 @@ import type { Post } from "@/lib/types/post.types";
 interface FeedApiResponse {
   data: Post[];
   has_more: boolean;
-  next_cursor: string | null;
+  next_cursor: string;
 }
 
 async function getFeed(): Promise<FeedApiResponse> {
@@ -47,7 +47,7 @@ export default async function HomePage() {
     <div className="flex min-h-screen flex-col bg-gray-50 font-sans dark:bg-gray-950">
       <Navbar pageTitle="Home" />
       <main className="mx-auto w-full max-w-2xl flex-1 p-6 sm:p-8">
-        <FeedView initialPosts={feed.data} nextCursor={feed.next_cursor} hasMore={feed.has_more} />
+        <FeedView initialPosts={feed.data} nextCursor={feed.next_cursor || null} hasMore={feed.has_more} />
       </main>
       <footer className="py-6 text-center text-xs text-gray-400 dark:text-gray-600">&copy; {new Date().getFullYear()} Project One. All rights reserved.</footer>
     </div>
