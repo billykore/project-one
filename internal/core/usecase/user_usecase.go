@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
@@ -97,6 +98,56 @@ func (s *userUseCase) ChangePassword(ctx context.Context, username, oldPassword,
 	// 5. Save to repository
 	if err := s.userRepo.UpdateUser(ctx, user); err != nil {
 		return fmt.Errorf("update user: %w", err)
+	}
+
+	return nil
+}
+
+// UpdateProfile updates the authenticated user's profile fields.
+// It trims and validates input, checks username uniqueness if changed,
+// and cascades the update to all denormalized columns via a transaction.
+func (s *userUseCase) UpdateProfile(ctx context.Context, username string, updatedUser *domain.User) error {
+	// 1. Retrieve the current user record.
+	currentUser, err := s.userRepo.GetUserByUsername(ctx, username)
+	if err != nil {
+		return fmt.Errorf("get current user: %w", err)
+	}
+
+	// 2. Trim whitespace and lowercase username.
+	updatedUser.FirstName = strings.TrimSpace(updatedUser.FirstName)
+	updatedUser.LastName = strings.TrimSpace(updatedUser.LastName)
+	updatedUser.Username = strings.ToLower(strings.TrimSpace(updatedUser.Username))
+
+	// 3. Validate the profile fields.
+	if err := updatedUser.ValidateProfileUpdate(); err != nil {
+		return fmt.Errorf("validate profile update: %w", err)
+	}
+
+	// 4. If the username changed, check uniqueness.
+	if updatedUser.Username != currentUser.Username {
+		existingUser, err := s.userRepo.GetUserByUsername(ctx, updatedUser.Username)
+		if err == nil && existingUser != nil {
+			return domain.ErrUsernameAlreadyTaken
+		}
+		if err != nil && !errors.Is(err, domain.ErrUserNotFound) {
+			return fmt.Errorf("check username uniqueness: %w", err)
+		}
+	}
+
+	// 5. Copy the mutable fields onto the current user entity.
+	currentUser.FirstName = updatedUser.FirstName
+	currentUser.LastName = updatedUser.LastName
+
+	// 6. If the username changed, store the old username and update currentUser.
+	//    Pass the old username to UpdateProfile for cascade WHERE clauses.
+	oldUsername := currentUser.Username
+	currentUser.Username = updatedUser.Username
+
+	if err := s.userRepo.UpdateProfile(ctx, oldUsername, currentUser); err != nil {
+		if errors.Is(err, domain.ErrUsernameAlreadyTaken) {
+			return err
+		}
+		return fmt.Errorf("update profile: %w", err)
 	}
 
 	return nil

@@ -100,6 +100,20 @@ func (mr *MockUserRepositoryMockRecorder) GetUserByUsername(ctx, username any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByUsername", reflect.TypeOf((*MockUserRepository)(nil).GetUserByUsername), ctx, username)
 }
 
+// UpdateProfile mocks base method.
+func (m *MockUserRepository) UpdateProfile(ctx context.Context, oldUsername string, user *domain.User) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateProfile", ctx, oldUsername, user)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateProfile indicates an expected call of UpdateProfile.
+func (mr *MockUserRepositoryMockRecorder) UpdateProfile(ctx, oldUsername, user any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfile", reflect.TypeOf((*MockUserRepository)(nil).UpdateProfile), ctx, oldUsername, user)
+}
+
 // UpdateUser mocks base method.
 func (m *MockUserRepository) UpdateUser(ctx context.Context, user *domain.User) error {
 	m.ctrl.T.Helper()
@@ -179,4 +193,18 @@ func (m *MockUserUseCase) Register(ctx context.Context, user *domain.User) error
 func (mr *MockUserUseCaseMockRecorder) Register(ctx, user any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockUserUseCase)(nil).Register), ctx, user)
+}
+
+// UpdateProfile mocks base method.
+func (m *MockUserUseCase) UpdateProfile(ctx context.Context, username string, user *domain.User) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateProfile", ctx, username, user)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateProfile indicates an expected call of UpdateProfile.
+func (mr *MockUserUseCaseMockRecorder) UpdateProfile(ctx, username, user any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfile", reflect.TypeOf((*MockUserUseCase)(nil).UpdateProfile), ctx, username, user)
 }

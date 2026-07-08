@@ -116,3 +116,66 @@ func (r *userRepository) UpdateUser(ctx context.Context, user *domain.User) erro
 	// Save updates all fields by primary key
 	return r.db.WithContext(ctx).Save(&m).Error
 }
+
+// UpdateProfile updates the user's profile fields and cascades the username
+// change to all denormalized columns within a single database transaction.
+// oldUsername is the user's current username before the update; it is used
+// in WHERE clauses to find rows that need the cascade.
+func (r *userRepository) UpdateProfile(ctx context.Context, oldUsername string, user *domain.User) error {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		// Update the users row.
+		result := tx.Model(&userModel{}).Where("id = ?", user.ID).Updates(map[string]interface{}{
+			"first_name": user.FirstName,
+			"last_name":  user.LastName,
+			"username":   user.Username,
+			"updated_at": time.Now(),
+		})
+		if result.Error != nil {
+			if errors.Is(result.Error, gorm.ErrDuplicatedKey) {
+				return domain.ErrUsernameAlreadyTaken
+			}
+			return result.Error
+		}
+
+		// Only cascade if the username actually changed.
+		if oldUsername == user.Username {
+			return nil
+		}
+
+		// Cascade username to follows table (both follower and followed columns).
+		if err := tx.Model(&followModel{}).Where("follower_username = ?", oldUsername).
+			Update("follower_username", user.Username).Error; err != nil {
+			return err
+		}
+		if err := tx.Model(&followModel{}).Where("followed_username = ?", oldUsername).
+			Update("followed_username", user.Username).Error; err != nil {
+			return err
+		}
+
+		// Cascade username to posts table.
+		if err := tx.Model(&postModel{}).Where("username = ?", oldUsername).
+			Update("username", user.Username).Error; err != nil {
+			return err
+		}
+
+		// Cascade username to user_tokens table.
+		if err := tx.Model(&userTokenModel{}).Where("username = ?", oldUsername).
+			Update("username", user.Username).Error; err != nil {
+			return err
+		}
+
+		// Cascade username to comments table.
+		if err := tx.Model(&commentModel{}).Where("username = ?", oldUsername).
+			Update("username", user.Username).Error; err != nil {
+			return err
+		}
+
+		// Cascade username to post_likes table.
+		if err := tx.Model(&likeModel{}).Where("username = ?", oldUsername).
+			Update("username", user.Username).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+}

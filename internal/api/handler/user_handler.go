@@ -520,3 +520,55 @@ func (h *UserHandler) HandleChangePassword(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, dto.MessageResponse{Message: "Password updated successfully"})
 }
+
+// HandleUpdateProfile handles the PUT /users/profile endpoint.
+//
+//	@Summary		Update user profile
+//	@Description	Update the authenticated user's first name, last name, and username.
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		dto.UpdateProfileRequest	true	"Updated profile fields"
+//	@Success		200		{object}	dto.UpdateProfileResponse
+//	@Failure		400		{object}	dto.ErrorResponse
+//	@Failure		401		{object}	dto.ErrorResponse
+//	@Failure		500		{object}	dto.ErrorResponse
+//	@Security		BearerAuth
+//	@Router			/users/profile [put]
+func (h *UserHandler) HandleUpdateProfile(c echo.Context) error {
+	username, ok := c.Get("username").(string)
+	if !ok {
+		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
+	}
+
+	var req dto.UpdateProfileRequest
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid request body"})
+	}
+
+	if err := h.validator.Validate(req); err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+	}
+
+	user := &domain.User{
+		FirstName: strings.TrimSpace(req.FirstName),
+		LastName:  strings.TrimSpace(req.LastName),
+		Username:  strings.ToLower(strings.TrimSpace(req.Username)),
+	}
+
+	if err := h.userUseCase.UpdateProfile(c.Request().Context(), username, user); err != nil {
+		if errors.Is(err, domain.ErrValidationFailed) {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+		}
+		if errors.Is(err, domain.ErrUsernameAlreadyTaken) {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Username is already taken"})
+		}
+		h.log.Error(c.Request().Context(), "failed to update profile", "username", username, "error", err)
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Internal server error"})
+	}
+
+	return c.JSON(http.StatusOK, dto.UpdateProfileResponse{
+		Message:  "Profile updated successfully",
+		Username: user.Username,
+	})
+}

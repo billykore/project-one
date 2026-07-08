@@ -265,6 +265,32 @@ definitions:
       title:
         type: string
     type: object
+  dto.UpdateProfileRequest:
+    properties:
+      first_name:
+        maxLength: 100
+        minLength: 3
+        type: string
+      last_name:
+        maxLength: 100
+        minLength: 3
+        type: string
+      username:
+        maxLength: 30
+        minLength: 3
+        type: string
+    required:
+    - first_name
+    - last_name
+    - username
+    type: object
+  dto.UpdateProfileResponse:
+    properties:
+      message:
+        type: string
+      username:
+        type: string
+    type: object
   dto.UserResponse:
     properties:
       email:
@@ -1179,6 +1205,42 @@ paths:
       security:
       - BearerAuth: []
       summary: Change password
+      tags:
+      - users
+  /users/profile:
+    put:
+      consumes:
+      - application/json
+      description: Update the authenticated user's first name, last name, and username.
+      parameters:
+      - description: Updated profile fields
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UpdateProfileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update user profile
       tags:
       - users
 securityDefinitions:

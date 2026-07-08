@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useProfileController } from "@/hooks/use-profile-controller";
 import ResetPasswordForm from "@/components/profile/reset-password-form";
 import FollowListModal from "@/components/profile/follow-list-modal";
@@ -69,6 +70,18 @@ export default function UserProfileView({
   } = useProfileController(profile.username, initialFollowers, initialFollowing);
 
   const [activeModal, setActiveModal] = useState<"followers" | "following" | null>(null);
+  const searchParams = useSearchParams();
+  const [successBanner, setSuccessBanner] = useState<string | null>(() => {
+    return searchParams.get("updated") === "1" ? "✅ Profile updated successfully" : null;
+  });
+
+  // Auto-dismiss success banner after 5 seconds.
+  useEffect(() => {
+    if (successBanner) {
+      const timer = setTimeout(() => setSuccessBanner(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [successBanner]);
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50 font-sans dark:bg-black text-gray-900 dark:text-zinc-100 transition-colors duration-200">
@@ -76,6 +89,20 @@ export default function UserProfileView({
 
       {/* Main Container */}
       <main className="mx-auto w-full max-w-6xl flex-1 p-6 md:p-8">
+        {/* Success Banner */}
+        {successBanner && (
+          <div className="mb-6 flex items-center justify-between rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800 dark:border-green-800 dark:bg-green-900/20 dark:text-green-400">
+            <span className="font-medium">{successBanner}</span>
+            <button
+              onClick={() => setSuccessBanner(null)}
+              className="ml-4 cursor-pointer text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 font-bold"
+              aria-label="Dismiss success message"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         {/* Profile Header Block */}
         <div className="relative overflow-hidden rounded-2xl bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 p-8 shadow-md mb-8 text-white">
           <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px]"></div>
@@ -138,6 +165,18 @@ export default function UserProfileView({
                   <span className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Following</span>
                 </button>
               </div>
+
+              {/* Edit Profile Button (Owner only) */}
+              {isOwner && (
+                <div className="mt-4">
+                  <Link
+                    href="/settings/profile/edit"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-800 shadow-sm transition duration-200 hover:bg-zinc-50 hover:border-indigo-400 hover:text-indigo-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 dark:hover:border-indigo-500 dark:hover:text-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  >
+                    Edit Profile
+                  </Link>
+                </div>
+              )}
 
               {/* Follow Toggle (if not profile owner) */}
               {!isOwner && (
