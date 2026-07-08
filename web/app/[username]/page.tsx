@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { Suspense } from "react";
 import { serverFetch } from "@/lib/server-fetch";
 import { ApiError, handleApiResponse } from "@/lib/errors";
 import UserProfileView from "@/components/profile/user-profile-view";
@@ -41,12 +42,14 @@ export default async function UserProfilePage({ params }: PageProps) {
   }
 
   return (
-    <UserProfileView
-      key={user.username}
-      profile={user}
-      followers={followers}
-      following={following}
-      posts={posts}
-    />
+    <Suspense fallback={null}>
+      <UserProfileView
+        key={user.username}
+        profile={user}
+        followers={followers}
+        following={following}
+        posts={posts}
+      />
+    </Suspense>
   );
 }

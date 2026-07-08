@@ -73,11 +73,17 @@ func (u *User) Validate() error {
 	if len(u.FirstName) < 3 {
 		return fmt.Errorf("%w: first name must be at least 3 characters", ErrValidationFailed)
 	}
+	if len(u.FirstName) > 100 {
+		return fmt.Errorf("%w: first name must be at most 100 characters", ErrValidationFailed)
+	}
 	if u.LastName == "" {
 		return fmt.Errorf("%w: last name is required", ErrValidationFailed)
 	}
 	if len(u.LastName) < 3 {
 		return fmt.Errorf("%w: last name must be at least 3 characters", ErrValidationFailed)
+	}
+	if len(u.LastName) > 100 {
+		return fmt.Errorf("%w: last name must be at most 100 characters", ErrValidationFailed)
 	}
 	if u.Email == "" {
 		return fmt.Errorf("%w: email is required", ErrValidationFailed)
@@ -87,6 +93,43 @@ func (u *User) Validate() error {
 	}
 	if len(u.Password) < 8 {
 		return fmt.Errorf("%w: password must be at least 8 characters", ErrValidationFailed)
+	}
+	return nil
+}
+
+// ValidateProfileUpdate performs domain-level validation for profile edits.
+// Unlike Validate(), it only checks the mutable profile fields and does not
+// require email or password to be present.
+func (u *User) ValidateProfileUpdate() error {
+	if u.FirstName == "" {
+		return fmt.Errorf("%w: first name is required", ErrValidationFailed)
+	}
+	if len(u.FirstName) < 3 {
+		return fmt.Errorf("%w: first name must be at least 3 characters", ErrValidationFailed)
+	}
+	if len(u.FirstName) > 100 {
+		return fmt.Errorf("%w: first name must be at most 100 characters", ErrValidationFailed)
+	}
+	if u.LastName == "" {
+		return fmt.Errorf("%w: last name is required", ErrValidationFailed)
+	}
+	if len(u.LastName) < 3 {
+		return fmt.Errorf("%w: last name must be at least 3 characters", ErrValidationFailed)
+	}
+	if len(u.LastName) > 100 {
+		return fmt.Errorf("%w: last name must be at most 100 characters", ErrValidationFailed)
+	}
+	if u.Username == "" {
+		return fmt.Errorf("%w: username is required", ErrValidationFailed)
+	}
+	if len(u.Username) < 3 {
+		return fmt.Errorf("%w: username must be at least 3 characters", ErrValidationFailed)
+	}
+	if len(u.Username) > 30 {
+		return fmt.Errorf("%w: username must be at most 30 characters", ErrValidationFailed)
+	}
+	if !usernameRegex.MatchString(u.Username) {
+		return fmt.Errorf("%w: username can only contain alphanumeric characters and underscores", ErrValidationFailed)
 	}
 	return nil
 }

@@ -88,3 +88,16 @@ type ChangePasswordRequest struct {
 	OldPassword string `json:"old_password" validate:"required,min=8"`
 	NewPassword string `json:"new_password" validate:"required,min=8"`
 }
+
+// UpdateProfileRequest is the request body for updating user profile.
+type UpdateProfileRequest struct {
+	FirstName string `json:"first_name" validate:"required,min=3,max=100"`
+	LastName  string `json:"last_name" validate:"required,min=3,max=100"`
+	Username  string `json:"username" validate:"required,min=3,max=30"`
+}
+
+// UpdateProfileResponse is the response body for a successful profile update.
+type UpdateProfileResponse struct {
+	Message  string `json:"message"`
+	Username string `json:"username"`
+}

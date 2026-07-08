@@ -18,9 +18,9 @@ interface LoginErrors {
 export default function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ registered?: string }>;
+  searchParams: Promise<{ registered?: string; redirect?: string }>;
 }) {
-  const { registered } = use(searchParams);
+  const { registered, redirect: redirectUrl } = use(searchParams);
   const router = useRouter();
   const { showError } = useErrorModal();
   const [formData, setFormData] = useState<LoginRequestBody>({
@@ -84,7 +84,7 @@ export default function LoginPage({
         throw new ApiError(errBody.error || "Login failed", res.status);
       }
 
-      router.push("/");
+      router.push(redirectUrl || "/");
     } catch (err) {
       if (err instanceof ApiError && (err.status === 401 || err.status === 400)) {
         setErrors({ general: err.message });

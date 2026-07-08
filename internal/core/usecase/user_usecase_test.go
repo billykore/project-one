@@ -185,3 +185,125 @@ func TestUserUseCase_ChangePassword(t *testing.T) {
 		assert.ErrorIs(t, err, domain.ErrValidationFailed)
 	})
 }
+
+func TestUserUseCase_UpdateProfile(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mocks.NewMockUserRepository(ctrl)
+	mockHasher := mocks.NewMockHasher(ctrl)
+	svc := NewUserUseCase(mockRepo, mockHasher)
+
+	ctx := context.Background()
+	oldUsername := "olduser"
+
+	t.Run("success - username unchanged", func(t *testing.T) {
+		currentUser := &domain.User{
+			ID:        1,
+			Username:  oldUsername,
+			FirstName: "Old",
+			LastName:  "User",
+		}
+		updatedUser := &domain.User{
+			FirstName: "New",
+			LastName:  "User",
+			Username:  oldUsername,
+		}
+
+		mockRepo.EXPECT().GetUserByUsername(ctx, oldUsername).Return(currentUser, nil)
+		mockRepo.EXPECT().UpdateProfile(ctx, oldUsername, gomock.Any()).DoAndReturn(
+			func(_ context.Context, old string, u *domain.User) error {
+				assert.Equal(t, "New", u.FirstName)
+				assert.Equal(t, "User", u.LastName)
+				assert.Equal(t, oldUsername, u.Username)
+				return nil
+			},
+		)
+
+		err := svc.UpdateProfile(ctx, oldUsername, updatedUser)
+		assert.NoError(t, err)
+	})
+
+	t.Run("success - username changed", func(t *testing.T) {
+		currentUser := &domain.User{
+			ID:        1,
+			Username:  oldUsername,
+			FirstName: "Old",
+			LastName:  "User",
+		}
+		newUsername := "newuser"
+		updatedUser := &domain.User{
+			FirstName: "New",
+			LastName:  "User",
+			Username:  newUsername,
+		}
+
+		mockRepo.EXPECT().GetUserByUsername(ctx, oldUsername).Return(currentUser, nil)
+		mockRepo.EXPECT().GetUserByUsername(ctx, newUsername).Return(nil, domain.ErrUserNotFound)
+		// The oldUsername parameter should be the original username (before update),
+		// while the domain.User should carry the new username.
+		mockRepo.EXPECT().UpdateProfile(ctx, oldUsername, gomock.Any()).DoAndReturn(
+			func(_ context.Context, old string, u *domain.User) error {
+				assert.Equal(t, newUsername, u.Username)
+				assert.Equal(t, oldUsername, old)
+				return nil
+			},
+		)
+
+		err := svc.UpdateProfile(ctx, oldUsername, updatedUser)
+		assert.NoError(t, err)
+	})
+
+	t.Run("username already taken", func(t *testing.T) {
+		currentUser := &domain.User{
+			ID:        1,
+			Username:  oldUsername,
+			FirstName: "Old",
+			LastName:  "User",
+		}
+		newUsername := "takenuser"
+		updatedUser := &domain.User{
+			FirstName: "New",
+			LastName:  "User",
+			Username:  newUsername,
+		}
+
+		mockRepo.EXPECT().GetUserByUsername(ctx, oldUsername).Return(currentUser, nil)
+		mockRepo.EXPECT().GetUserByUsername(ctx, newUsername).Return(&domain.User{ID: 2, Username: newUsername}, nil)
+
+		err := svc.UpdateProfile(ctx, oldUsername, updatedUser)
+		assert.ErrorIs(t, err, domain.ErrUsernameAlreadyTaken)
+	})
+
+	t.Run("validation failure - empty first name", func(t *testing.T) {
+		currentUser := &domain.User{
+			ID:        1,
+			Username:  oldUsername,
+			FirstName: "Old",
+			LastName:  "User",
+		}
+		updatedUser := &domain.User{
+			FirstName: "",
+			LastName:  "User",
+			Username:  oldUsername,
+		}
+
+		mockRepo.EXPECT().GetUserByUsername(ctx, oldUsername).Return(currentUser, nil)
+
+		err := svc.UpdateProfile(ctx, oldUsername, updatedUser)
+		assert.ErrorIs(t, err, domain.ErrValidationFailed)
+	})
+
+	t.Run("user not found", func(t *testing.T) {
+		updatedUser := &domain.User{
+			FirstName: "New",
+			LastName:  "User",
+			Username:  "newuser",
+		}
+
+		mockRepo.EXPECT().GetUserByUsername(ctx, "nonexistent").Return(nil, domain.ErrUserNotFound)
+
+		err := svc.UpdateProfile(ctx, "nonexistent", updatedUser)
+		assert.ErrorIs(t, err, domain.ErrUserNotFound)
+	})
+}

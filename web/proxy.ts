@@ -15,7 +15,9 @@ export function proxy(request: NextRequest) {
   }
 
   if (!request.cookies.has("access_token")) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("redirect", pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();

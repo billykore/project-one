@@ -136,6 +136,7 @@ func main() {
 		usersAuth := users.Group("", middleware.Authorize(tokenSvc))
 		{
 			usersAuth.PUT("/password", userHdl.HandleChangePassword)
+			usersAuth.PUT("/profile", userHdl.HandleUpdateProfile)
 			usersAuth.GET("/:username/following", userHdl.GetFollowing)
 			usersAuth.GET("/:username/followers", userHdl.GetFollowers)
 			usersAuth.POST("/:username/followers", userHdl.HandleFollow)

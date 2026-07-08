@@ -18,6 +18,10 @@ type UserRepository interface {
 	CreateUser(ctx context.Context, user *domain.User) error
 	// UpdateUser updates user details, including password if changed.
 	UpdateUser(ctx context.Context, user *domain.User) error
+	// UpdateProfile updates the mutable profile fields (first_name, last_name, username)
+	// and cascades the username change to all denormalized columns within a transaction.
+	// oldUsername is the user's current username before the update.
+	UpdateProfile(ctx context.Context, oldUsername string, user *domain.User) error
 }
 
 // UserUseCase is a driving port for user-related application logic.
@@ -28,4 +32,6 @@ type UserUseCase interface {
 	GetUser(ctx context.Context, username string) (*domain.User, error)
 	// ChangePassword verifies the old password and sets the new password.
 	ChangePassword(ctx context.Context, username, oldPassword, newPassword string) error
+	// UpdateProfile updates the authenticated user's profile fields (first_name, last_name, username).
+	UpdateProfile(ctx context.Context, username string, user *domain.User) error
 }
