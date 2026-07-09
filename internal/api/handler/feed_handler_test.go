@@ -11,7 +11,7 @@ import (
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
 	"github.com/billykore/project-one/internal/core/ports/mocks"
-	"github.com/billykore/project-one/internal/pkg/pagination"
+	vo "github.com/billykore/project-one/internal/core/valueobject"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -51,7 +51,7 @@ func TestHandleGetFeed_Success(t *testing.T) {
 	c := e.NewContext(req, rec)
 	c.Set("username", "alice")
 
-	feedUc.EXPECT().GetFeed(gomock.Any(), "alice", (*pagination.Cursor)(nil), 10).
+	feedUc.EXPECT().GetFeed(gomock.Any(), "alice", (*vo.Cursor)(nil), 10).
 		Return(&ports.FeedResult{
 			Posts: []*domain.Post{
 				{ID: 1, Username: "alice", Title: "Hello", Content: "World", Tags: []string{"go"}, LikeCount: 3, CreatedAt: now, UpdatedAt: now},
@@ -117,7 +117,7 @@ func TestHandleGetFeed_WithCursor(t *testing.T) {
 	logger := mocks.NewMockLogger(ctrl)
 
 	now := time.Date(2026, 7, 1, 12, 0, 0, 0, time.UTC)
-	cursorStr := pagination.Cursor{CreatedAt: now, ID: 10}.Encode()
+	cursorStr := vo.Cursor{CreatedAt: now, ID: 10}.Encode()
 
 	h := NewFeedHandler(feedUc, logger)
 	e := echo.New()
@@ -126,7 +126,7 @@ func TestHandleGetFeed_WithCursor(t *testing.T) {
 	c := e.NewContext(req, rec)
 	c.Set("username", "alice")
 
-	expectedCursor := &pagination.Cursor{CreatedAt: now, ID: 10}
+	expectedCursor := &vo.Cursor{CreatedAt: now, ID: 10}
 	feedUc.EXPECT().GetFeed(gomock.Any(), "alice", expectedCursor, 5).
 		Return(&ports.FeedResult{
 			Posts:   []*domain.Post{},

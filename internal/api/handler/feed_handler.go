@@ -8,7 +8,7 @@ import (
 	"github.com/billykore/project-one/internal/api/dto"
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
-	"github.com/billykore/project-one/internal/pkg/pagination"
+	vo "github.com/billykore/project-one/internal/core/valueobject"
 	"github.com/labstack/echo/v4"
 )
 
@@ -57,9 +57,9 @@ func (h *FeedHandler) HandleGetFeed(c echo.Context) error {
 	}
 
 	// Decode cursor.
-	var cursor *pagination.Cursor
+	var cursor *vo.Cursor
 	if cursorStr := c.QueryParam("cursor"); cursorStr != "" {
-		decoded, err := pagination.DecodeCursor(cursorStr)
+		decoded, err := vo.DecodeCursor(cursorStr)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "invalid cursor"})
 		}

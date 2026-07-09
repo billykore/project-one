@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { serverFetch } from "@/lib/server-fetch";
 import { ApiError, handleApiResponse } from "@/lib/errors";
-import { FeedView } from "@/components/posts/FeedView";
+import { FeedView } from "@/components/posts/feed-view";
 import Navbar from "@/components/layout/navbar";
 import type { Post } from "@/lib/types/post.types";
 

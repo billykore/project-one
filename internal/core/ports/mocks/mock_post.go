@@ -12,9 +12,9 @@ package mocks
 import (
 	context "context"
 	reflect "reflect"
-	time "time"
 
 	domain "github.com/billykore/project-one/internal/core/domain"
+	valueobject "github.com/billykore/project-one/internal/core/valueobject"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -101,18 +101,18 @@ func (mr *MockPostRepositoryMockRecorder) GetByIDOnly(ctx, id any) *gomock.Call 
 }
 
 // GetFeed mocks base method.
-func (m *MockPostRepository) GetFeed(ctx context.Context, usernames []string, cursorCreatedAt time.Time, cursorID, limit int) ([]*domain.Post, error) {
+func (m *MockPostRepository) GetFeed(ctx context.Context, usernames []string, cursor *valueobject.Cursor, limit int) ([]*domain.Post, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetFeed", ctx, usernames, cursorCreatedAt, cursorID, limit)
+	ret := m.ctrl.Call(m, "GetFeed", ctx, usernames, cursor, limit)
 	ret0, _ := ret[0].([]*domain.Post)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetFeed indicates an expected call of GetFeed.
-func (mr *MockPostRepositoryMockRecorder) GetFeed(ctx, usernames, cursorCreatedAt, cursorID, limit any) *gomock.Call {
+func (mr *MockPostRepositoryMockRecorder) GetFeed(ctx, usernames, cursor, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFeed", reflect.TypeOf((*MockPostRepository)(nil).GetFeed), ctx, usernames, cursorCreatedAt, cursorID, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFeed", reflect.TypeOf((*MockPostRepository)(nil).GetFeed), ctx, usernames, cursor, limit)
 }
 
 // GetUserPosts mocks base method.

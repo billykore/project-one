@@ -3,11 +3,10 @@ package usecase
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
-	"github.com/billykore/project-one/internal/pkg/pagination"
+	vo "github.com/billykore/project-one/internal/core/valueobject"
 )
 
 type feedUseCase struct {
@@ -35,7 +34,7 @@ func NewFeedUseCase(
 	}
 }
 
-func (u *feedUseCase) GetFeed(ctx context.Context, username string, cursor *pagination.Cursor, limit int) (*ports.FeedResult, error) {
+func (u *feedUseCase) GetFeed(ctx context.Context, username string, cursor *vo.Cursor, limit int) (*ports.FeedResult, error) {
 	// Clamp limit.
 	if limit <= 0 {
 		limit = 10
@@ -62,17 +61,9 @@ func (u *feedUseCase) GetFeed(ctx context.Context, username string, cursor *pagi
 	// Build username list: self + followed.
 	usernames := append([]string{username}, followedUsernames...)
 
-	// Extract cursor params.
-	var cursorCreatedAt time.Time
-	var cursorID int
-	if cursor != nil {
-		cursorCreatedAt = cursor.CreatedAt
-		cursorID = cursor.ID
-	}
-
 	// Fetch one extra to detect has_more.
 	dbLimit := limit + 1
-	posts, err := u.postRepo.GetFeed(ctx, usernames, cursorCreatedAt, cursorID, dbLimit)
+	posts, err := u.postRepo.GetFeed(ctx, usernames, cursor, dbLimit)
 	if err != nil {
 		return nil, fmt.Errorf("get feed from repo: %w", err)
 	}
@@ -90,7 +81,7 @@ func (u *feedUseCase) GetFeed(ctx context.Context, username string, cursor *pagi
 	// Build next cursor from last post.
 	if len(result.Posts) > 0 {
 		last := result.Posts[len(result.Posts)-1]
-		result.NextCursor = &pagination.Cursor{
+		result.NextCursor = &vo.Cursor{
 			CreatedAt: last.CreatedAt,
 			ID:        last.ID,
 		}

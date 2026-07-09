@@ -8,7 +8,7 @@ import (
 
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports/mocks"
-	"github.com/billykore/project-one/internal/pkg/pagination"
+	vo "github.com/billykore/project-one/internal/core/valueobject"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
@@ -39,7 +39,7 @@ func TestFeedUseCase_GetFeed_ReturnsPostsForUserAndFollowed(t *testing.T) {
 
 		followRepo.EXPECT().GetFollowedUsernames(ctx, username).Return([]string{"bob", "charlie"}, nil)
 
-		postRepo.EXPECT().GetFeed(ctx, []string{"alice", "bob", "charlie"}, time.Time{}, 0, 11).
+		postRepo.EXPECT().GetFeed(ctx, []string{"alice", "bob", "charlie"}, (*vo.Cursor)(nil), 11).
 			Return([]*domain.Post{
 				{ID: 3, Username: "charlie", Title: "Third", Content: "Content 3", CreatedAt: now, UpdatedAt: now},
 				{ID: 2, Username: "bob", Title: "Second", Content: "Content 2", CreatedAt: now.Add(-1 * time.Hour), UpdatedAt: now.Add(-1 * time.Hour)},
@@ -90,9 +90,9 @@ func TestFeedUseCase_GetFeed_DetectsHasMore(t *testing.T) {
 		}
 	}
 
-	postRepo.EXPECT().GetFeed(ctx, []string{"alice"}, time.Time{}, 0, 11).Return(posts, nil)
+	postRepo.EXPECT().GetFeed(ctx, []string{"alice"}, (*vo.Cursor)(nil), 11).Return(posts, nil)
 
-	result, err := uc.GetFeed(ctx, username, nil, 10)
+	result, err := uc.GetFeed(ctx, username, (*vo.Cursor)(nil), 10)
 	assert.NoError(t, err)
 	assert.Len(t, result.Posts, 10)
 	assert.True(t, result.HasMore)
@@ -141,7 +141,7 @@ func TestFeedUseCase_GetFeed_EmptyFeed(t *testing.T) {
 		ID: 1, Username: "alice",
 	}, nil)
 	followRepo.EXPECT().GetFollowedUsernames(ctx, "alice").Return([]string{}, nil)
-	postRepo.EXPECT().GetFeed(ctx, []string{"alice"}, time.Time{}, 0, 11).Return([]*domain.Post{}, nil)
+	postRepo.EXPECT().GetFeed(ctx, []string{"alice"}, (*vo.Cursor)(nil), 11).Return([]*domain.Post{}, nil)
 
 	result, err := uc.GetFeed(ctx, "alice", nil, 10)
 	assert.NoError(t, err)
@@ -167,7 +167,7 @@ func TestFeedUseCase_GetFeed_WithCursor(t *testing.T) {
 	ctx := context.Background()
 	now := time.Date(2026, 7, 1, 12, 0, 0, 0, time.UTC)
 
-	cursor := &pagination.Cursor{
+	cursor := &vo.Cursor{
 		CreatedAt: now.Add(-2 * time.Hour),
 		ID:        5,
 	}
@@ -176,7 +176,7 @@ func TestFeedUseCase_GetFeed_WithCursor(t *testing.T) {
 		ID: 1, Username: "alice",
 	}, nil)
 	followRepo.EXPECT().GetFollowedUsernames(ctx, "alice").Return([]string{}, nil)
-	postRepo.EXPECT().GetFeed(ctx, []string{"alice"}, cursor.CreatedAt, cursor.ID, 11).
+	postRepo.EXPECT().GetFeed(ctx, []string{"alice"}, cursor, 11).
 		Return([]*domain.Post{
 			{ID: 3, Username: "alice", Title: "Older", Content: "Content", CreatedAt: now.Add(-3 * time.Hour), UpdatedAt: now},
 		}, nil)
@@ -208,7 +208,7 @@ func TestFeedUseCase_GetFeed_ClampsLimit(t *testing.T) {
 		ID: 1, Username: "alice",
 	}, nil)
 	followRepo.EXPECT().GetFollowedUsernames(ctx, "alice").Return([]string{}, nil)
-	postRepo.EXPECT().GetFeed(ctx, []string{"alice"}, time.Time{}, 0, 11).Return([]*domain.Post{}, nil)
+	postRepo.EXPECT().GetFeed(ctx, []string{"alice"}, (*vo.Cursor)(nil), 11).Return([]*domain.Post{}, nil)
 
 	_, err := uc.GetFeed(ctx, "alice", nil, 0)
 	assert.NoError(t, err)
@@ -218,7 +218,7 @@ func TestFeedUseCase_GetFeed_ClampsLimit(t *testing.T) {
 		ID: 1, Username: "alice",
 	}, nil)
 	followRepo.EXPECT().GetFollowedUsernames(ctx, "alice").Return([]string{}, nil)
-	postRepo.EXPECT().GetFeed(ctx, []string{"alice"}, time.Time{}, 0, 51).Return([]*domain.Post{}, nil)
+	postRepo.EXPECT().GetFeed(ctx, []string{"alice"}, (*vo.Cursor)(nil), 51).Return([]*domain.Post{}, nil)
 
 	_, err = uc.GetFeed(ctx, "alice", nil, 100)
 	assert.NoError(t, err)

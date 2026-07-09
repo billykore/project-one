@@ -1,4 +1,4 @@
-package pagination
+package valueobject
 
 import (
 	"encoding/base64"

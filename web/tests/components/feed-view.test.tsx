@@ -2,7 +2,7 @@ import React from "react";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { FeedView } from "@/components/posts/FeedView";
+import { FeedView } from "@/components/posts/feed-view";
 
 vi.mock("next/link", () => ({
   default: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) =>

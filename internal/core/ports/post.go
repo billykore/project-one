@@ -2,9 +2,9 @@ package ports
 
 import (
 	"context"
-	"time"
 
 	"github.com/billykore/project-one/internal/core/domain"
+	vo "github.com/billykore/project-one/internal/core/valueobject"
 )
 
 // PostRepository is a driven port for post persistence.
@@ -26,7 +26,7 @@ type PostRepository interface {
 	// GetFeed returns posts from the given usernames with cursor-based pagination.
 	// cursorCreatedAt and cursorID are the last post's values from the previous page.
 	// Pass zero values for the first page. limit is the max number of posts to return.
-	GetFeed(ctx context.Context, usernames []string, cursorCreatedAt time.Time, cursorID int, limit int) ([]*domain.Post, error)
+	GetFeed(ctx context.Context, usernames []string, cursor *vo.Cursor, limit int) ([]*domain.Post, error)
 }
 
 // PostUseCase is a driving port for post-related application logic.

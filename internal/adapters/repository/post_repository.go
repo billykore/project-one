@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
+	vo "github.com/billykore/project-one/internal/core/valueobject"
 	"github.com/lib/pq"
 	"gorm.io/gorm"
 )
@@ -143,7 +143,7 @@ func (r *postRepository) IncrementLikeCount(ctx context.Context, id int, increme
 		UpdateColumn("like_count", gorm.Expr("like_count + ?", increment)).Error
 }
 
-func (r *postRepository) GetFeed(ctx context.Context, usernames []string, cursorCreatedAt time.Time, cursorID int, limit int) ([]*domain.Post, error) {
+func (r *postRepository) GetFeed(ctx context.Context, usernames []string, cursor *vo.Cursor, limit int) ([]*domain.Post, error) {
 	if len(usernames) == 0 {
 		return []*domain.Post{}, nil
 	}
@@ -153,8 +153,8 @@ func (r *postRepository) GetFeed(ctx context.Context, usernames []string, cursor
 		Where("username IN ?", usernames).
 		Where("deleted_at IS NULL")
 
-	if !cursorCreatedAt.IsZero() && cursorID > 0 {
-		query = query.Where("(created_at, id) < (?, ?)", cursorCreatedAt, cursorID)
+	if cursor != nil && !cursor.CreatedAt.IsZero() && cursor.ID > 0 {
+		query = query.Where("(created_at, id) < (?, ?)", cursor.CreatedAt, cursor.ID)
 	}
 
 	var models []postModel
