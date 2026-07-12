@@ -1,4 +1,6 @@
-.PHONY: build run test test-cover mock vet lint clean docs help migrate-create migrate-up migrate-down check githooks
+.PHONY: build run test test-cover mock vet lint clean docs help migrate-create migrate-up migrate-down check githooks compose-up compose-down compose-start compose-stop
+
+COMPOSE_FILE := deployments/docker-compose.yml
 
 ## githooks: Configure git to use local githooks directory
 githooks:
@@ -91,6 +93,22 @@ migrate-down:
 	@command -v migrate >/dev/null 2>&1 || { echo "Error: 'migrate' command not found." >&2; exit 1; }
 	@if [ -z "$(dsn)" ]; then echo "Error: DSN is required. Example: make migrate-down dsn=..." >&2; exit 1; fi
 	migrate -path db/migrations -database "$(dsn)" down $(steps)
+
+## compose-up: Start containers (docker compose up -d)
+compose-up:
+	docker compose -f $(COMPOSE_FILE) up -d
+
+## compose-down: Stop and remove containers (docker compose down)
+compose-down:
+	docker compose -f $(COMPOSE_FILE) down
+
+## compose-start: Start stopped containers (docker compose start)
+compose-start:
+	docker compose -f $(COMPOSE_FILE) start
+
+## compose-stop: Stop running containers (docker compose stop)
+compose-stop:
+	docker compose -f $(COMPOSE_FILE) stop
 
 ## help: Display available targets
 help:

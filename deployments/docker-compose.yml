@@ -1,0 +1,21 @@
+services:
+  app:
+    image: billykore/project1:0.6.0
+    container_name: project1
+    ports:
+      - "8080:8080"
+    environment:
+      APP_PORT: "8080"
+      APP_ENV: "development"
+      DATABASE_HOST: "aws-1-ap-northeast-1.pooler.supabase.com"
+      DATABASE_PORT: "5432"
+      DATABASE_USER: "postgres.xopdcrhjfytgoktveprc"
+      DATABASE_PASSWORD: "XpoKltO0ooCB8frm"
+      DATABASE_DBNAME: "postgres"
+      DATABASE_SSLMODE: "disable"
+      JWT_PRIVATE_KEY_PATH: "/keys/jwt-private.pem"
+      JWT_PUBLIC_KEY_PATH: "/keys/jwt-public.pem"
+      JWT_EXPIRATION_TIME: "15m"
+    volumes:
+      - ../configs/keys:/keys:ro
+    restart: unless-stopped

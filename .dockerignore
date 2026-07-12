@@ -1,0 +1,8 @@
+web/
+bin/
+test/
+.git/
+.githooks/
+*.md
+LICENSE
+Makefile
