@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 
@@ -36,45 +35,36 @@ func NewCommentHandler(commentUseCase ports.CommentUseCase, validator ports.Vali
 //	@Param			id		path		int						true	"Comment ID"
 //	@Param			request	body		dto.EditCommentRequest	true	"Comment update content"
 //	@Success		200		{object}	dto.MessageResponse
-//	@Failure		400		{object}	dto.ErrorResponse
-//	@Failure		401		{object}	dto.ErrorResponse
-//	@Failure		404		{object}	dto.ErrorResponse
-//	@Failure		500		{object}	dto.ErrorResponse
+//	@Failure		400		{object}	dto.APIErrorResponse
+//	@Failure		401		{object}	dto.APIErrorResponse
+//	@Failure		404		{object}	dto.APIErrorResponse
+//	@Failure		500		{object}	dto.APIErrorResponse
 //	@Security		BearerAuth
 //	@Router			/comments/{id} [put]
 func (h *CommentHandler) EditComment(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
-		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
+		return domain.ErrUnauthorized
 	}
 
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid request body"})
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid comment ID")
 	}
 
 	var req dto.EditCommentRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid request body"})
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
 	if err := h.validator.Validate(req); err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid request body"})
+		return err
 	}
 
 	err = h.commentUseCase.EditComment(c.Request().Context(), id, username, req.Content)
 	if err != nil {
-		if errors.Is(err, domain.ErrCommentNotFound) {
-			return c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "Comment not found"})
-		}
-		if errors.Is(err, domain.ErrUnauthorized) {
-			return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
-		}
-		if errors.Is(err, domain.ErrValidationFailed) {
-			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid request body"})
-		}
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
+		return err
 	}
 
 	return c.JSON(http.StatusOK, dto.MessageResponse{Message: "Comment updated succesfully"})
@@ -87,33 +77,27 @@ func (h *CommentHandler) EditComment(c echo.Context) error {
 //	@Tags			comments
 //	@Param			id	path		int	true	"Comment ID"
 //	@Success		200	{object}	dto.MessageResponse
-//	@Failure		400	{object}	dto.ErrorResponse
-//	@Failure		401	{object}	dto.ErrorResponse
-//	@Failure		404	{object}	dto.ErrorResponse
-//	@Failure		500	{object}	dto.ErrorResponse
+//	@Failure		400	{object}	dto.APIErrorResponse
+//	@Failure		401	{object}	dto.APIErrorResponse
+//	@Failure		404	{object}	dto.APIErrorResponse
+//	@Failure		500	{object}	dto.APIErrorResponse
 //	@Security		BearerAuth
 //	@Router			/comments/{id} [delete]
 func (h *CommentHandler) DeleteComment(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
-		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
+		return domain.ErrUnauthorized
 	}
 
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil || id <= 0 {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid comment ID"})
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid comment ID")
 	}
 
 	err = h.commentUseCase.DeleteComment(c.Request().Context(), id, username)
 	if err != nil {
-		if errors.Is(err, domain.ErrCommentNotFound) {
-			return c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "Comment not found"})
-		}
-		if errors.Is(err, domain.ErrUnauthorized) {
-			return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
-		}
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
+		return err
 	}
 
 	return c.JSON(http.StatusOK, dto.MessageResponse{Message: "Comment deleted successfully"})

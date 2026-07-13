@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	wsadapter "github.com/billykore/project-one/internal/adapters/websocket"
-	"github.com/billykore/project-one/internal/api/dto"
+	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
 	gws "github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
@@ -39,12 +39,12 @@ func NewWebSocketHandler(
 func (h *WebSocketHandler) HandleUpgrade(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
-		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
+		return domain.ErrUnauthorized
 	}
 
 	user, err := h.userUc.GetUser(c.Request().Context(), username)
 	if err != nil || user == nil {
-		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
+		return domain.ErrUnauthorized
 	}
 
 	conn, err := h.upgrader.Upgrade(c.Response().Writer, c.Request(), nil)

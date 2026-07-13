@@ -31,8 +31,7 @@ func TestHandleGetFeed_Unauthorized(t *testing.T) {
 	c := e.NewContext(req, rec)
 
 	err := h.HandleGetFeed(c)
-	assert.NoError(t, err)
-	assert.Equal(t, http.StatusUnauthorized, rec.Code)
+	assert.ErrorIs(t, err, domain.ErrUnauthorized)
 }
 
 func TestHandleGetFeed_Success(t *testing.T) {
@@ -86,8 +85,10 @@ func TestHandleGetFeed_InvalidLimit(t *testing.T) {
 	c.Set("username", "alice")
 
 	err := h.HandleGetFeed(c)
-	assert.NoError(t, err)
-	assert.Equal(t, http.StatusBadRequest, rec.Code)
+	assert.Error(t, err)
+	var httpErr *echo.HTTPError
+	assert.ErrorAs(t, err, &httpErr)
+	assert.Equal(t, http.StatusBadRequest, httpErr.Code)
 }
 
 func TestHandleGetFeed_InvalidCursor(t *testing.T) {
@@ -105,8 +106,10 @@ func TestHandleGetFeed_InvalidCursor(t *testing.T) {
 	c.Set("username", "alice")
 
 	err := h.HandleGetFeed(c)
-	assert.NoError(t, err)
-	assert.Equal(t, http.StatusBadRequest, rec.Code)
+	assert.Error(t, err)
+	var httpErr2 *echo.HTTPError
+	assert.ErrorAs(t, err, &httpErr2)
+	assert.Equal(t, http.StatusBadRequest, httpErr2.Code)
 }
 
 func TestHandleGetFeed_WithCursor(t *testing.T) {

@@ -101,14 +101,14 @@ func (h *NotificationHandler) Listen(ctx context.Context) error {
 //	@Param			limit	query		int	false	"Limit"
 //	@Param			offset	query		int	false	"Offset"
 //	@Success		200		{array}		dto.NotificationResponse
-//	@Failure		401		{object}	dto.ErrorResponse
-//	@Failure		500		{object}	dto.ErrorResponse
+//	@Failure		401		{object}	dto.APIErrorResponse
+//	@Failure		500		{object}	dto.APIErrorResponse
 //	@Security		BearerAuth
 //	@Router			/notifications [get]
 func (h *NotificationHandler) GetNotifications(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
-		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
+		return domain.ErrUnauthorized
 	}
 
 	limitStr := c.QueryParam("limit")
@@ -129,8 +129,7 @@ func (h *NotificationHandler) GetNotifications(c echo.Context) error {
 
 	notifications, err := h.uc.GetNotifications(c.Request().Context(), username, limit, offset)
 	if err != nil {
-		h.log.Error(c.Request().Context(), "failed to get notifications", "username", username, "error", err)
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Internal server error"})
+		return err
 	}
 
 	resp := make([]dto.NotificationResponse, len(notifications))
@@ -160,35 +159,28 @@ func (h *NotificationHandler) GetNotifications(c echo.Context) error {
 //	@Tags			notifications
 //	@Param			id	path		int	true	"Notification ID"
 //	@Success		200	{object}	dto.MessageResponse
-//	@Failure		400	{object}	dto.ErrorResponse
-//	@Failure		401	{object}	dto.ErrorResponse
-//	@Failure		403	{object}	dto.ErrorResponse
-//	@Failure		404	{object}	dto.ErrorResponse
-//	@Failure		500	{object}	dto.ErrorResponse
+//	@Failure		400	{object}	dto.APIErrorResponse
+//	@Failure		401	{object}	dto.APIErrorResponse
+//	@Failure		403	{object}	dto.APIErrorResponse
+//	@Failure		404	{object}	dto.APIErrorResponse
+//	@Failure		500	{object}	dto.APIErrorResponse
 //	@Security		BearerAuth
 //	@Router			/notifications/{id}/read [put]
 func (h *NotificationHandler) MarkAsRead(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
-		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
+		return domain.ErrUnauthorized
 	}
 
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil || id <= 0 {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid notification ID"})
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid notification ID")
 	}
 
 	err = h.uc.MarkAsRead(c.Request().Context(), id, username)
 	if err != nil {
-		if errors.Is(err, domain.ErrNotificationNotFound) {
-			return c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "Notification not found"})
-		}
-		if errors.Is(err, domain.ErrUnauthorized) {
-			return c.JSON(http.StatusForbidden, dto.ErrorResponse{Error: "Forbidden"})
-		}
-		h.log.Error(c.Request().Context(), "failed to mark notification as read", "id", id, "username", username, "error", err)
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Internal server error"})
+		return err
 	}
 
 	return c.JSON(http.StatusOK, dto.MessageResponse{Message: "Notification marked as read"})
@@ -200,20 +192,19 @@ func (h *NotificationHandler) MarkAsRead(c echo.Context) error {
 //	@Description	Mark all notifications for the authenticated user as read.
 //	@Tags			notifications
 //	@Success		200	{object}	dto.MessageResponse
-//	@Failure		401	{object}	dto.ErrorResponse
-//	@Failure		500	{object}	dto.ErrorResponse
+//	@Failure		401	{object}	dto.APIErrorResponse
+//	@Failure		500	{object}	dto.APIErrorResponse
 //	@Security		BearerAuth
 //	@Router			/notifications/read-all [put]
 func (h *NotificationHandler) MarkAllAsRead(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
-		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
+		return domain.ErrUnauthorized
 	}
 
 	err := h.uc.MarkAllAsRead(c.Request().Context(), username)
 	if err != nil {
-		h.log.Error(c.Request().Context(), "failed to mark all notifications as read", "username", username, "error", err)
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Internal server error"})
+		return err
 	}
 
 	return c.JSON(http.StatusOK, dto.MessageResponse{Message: "All notifications marked as read"})

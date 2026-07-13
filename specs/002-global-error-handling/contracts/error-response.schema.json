@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://project-one/api/error-response.schema.json",
+  "title": "Error Response",
+  "description": "Standard error response body returned by the Global Error Handling Middleware for all API error responses.",
+  "type": "object",
+  "required": ["error"],
+  "properties": {
+    "error": {
+      "type": "object",
+      "required": ["code", "message", "request_id"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "Machine-readable error code (e.g., USER_NOT_FOUND, VALIDATION_FAILED). Stable across releases — safe for programmatic dispatch.",
+          "pattern": "^[A-Z][A-Z0-9]*(_[A-Z][A-Z0-9]*)*$",
+          "examples": ["USER_NOT_FOUND", "VALIDATION_FAILED", "UNAUTHORIZED", "INTERNAL_SERVER"]
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable error message. Sanitized in production — never contains stack traces or raw Go error strings.",
+          "minLength": 1,
+          "examples": ["User not found", "Validation failed", "Internal server error"]
+        },
+        "request_id": {
+          "type": "string",
+          "description": "Correlation ID matching the X-Request-Id response header. Use when contacting support or searching logs.",
+          "minLength": 1,
+          "examples": ["req_abc123def456"]
+        },
+        "details": {
+          "type": "array",
+          "description": "Per-field validation details. Only present when code is VALIDATION_FAILED. Omitted otherwise.",
+          "items": {
+            "type": "object",
+            "required": ["field", "reason", "message"],
+            "properties": {
+              "field": {
+                "type": "string",
+                "description": "The JSON field name (snake_case) that failed validation.",
+                "examples": ["first_name", "username", "email"]
+              },
+              "reason": {
+                "type": "string",
+                "description": "The validation tag that failed.",
+                "examples": ["required", "min", "max", "email"]
+              },
+              "message": {
+                "type": "string",
+                "description": "Human-readable description of the validation failure.",
+                "examples": ["first name is required", "username must be at least 3 characters"]
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

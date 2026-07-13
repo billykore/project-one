@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -52,23 +50,19 @@ func NewUserHandler(
 //	@Produce		json
 //	@Param			username	path		string	true	"Username"
 //	@Success		200			{object}	dto.UserResponse
-//	@Failure		400			{object}	dto.ErrorResponse
-//	@Failure		404			{object}	dto.ErrorResponse
-//	@Failure		500			{object}	dto.ErrorResponse
+//	@Failure		400			{object}	dto.APIErrorResponse
+//	@Failure		404			{object}	dto.APIErrorResponse
+//	@Failure		500			{object}	dto.APIErrorResponse
 //	@Router			/users/{username} [get]
 func (h *UserHandler) GetUser(c echo.Context) error {
 	username := c.Param("username")
 	if username == "" {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid username"})
+		return domain.ErrValidationFailed
 	}
 
 	user, err := h.userUseCase.GetUser(c.Request().Context(), username)
 	if err != nil {
-		if errors.Is(err, domain.ErrUserNotFound) {
-			return c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: fmt.Sprintf("User %s not found", username)})
-		}
-		h.log.Error(c.Request().Context(), "failed to get user profile", "username", username, "error", err)
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Internal server error"})
+		return err
 	}
 
 	return c.JSON(http.StatusOK, toUserResponse(user))
@@ -83,27 +77,23 @@ func (h *UserHandler) GetUser(c echo.Context) error {
 //	@Produce		json
 //	@Param			LoginRequest	body		dto.LoginRequest	true	"Login credentials"
 //	@Success		200				{object}	dto.LoginResponse
-//	@Failure		400				{object}	dto.ErrorResponse
-//	@Failure		401				{object}	dto.ErrorResponse
-//	@Failure		500				{object}	dto.ErrorResponse
+//	@Failure		400				{object}	dto.APIErrorResponse
+//	@Failure		401				{object}	dto.APIErrorResponse
+//	@Failure		500				{object}	dto.APIErrorResponse
 //	@Router			/auth/login [post]
 func (h *UserHandler) HandleLogin(c echo.Context) error {
 	var req dto.LoginRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid request body"})
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
 	if err := h.validator.Validate(req); err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+		return err
 	}
 
 	accessToken, err := h.loginUseCase.Login(c.Request().Context(), req.Email, req.Password)
 	if err != nil {
-		if errors.Is(err, domain.ErrInvalidCredentials) {
-			return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Invalid email or password"})
-		}
-		h.log.Error(c.Request().Context(), "login failed", "email", req.Email, "error", err)
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Internal server error"})
+		return err
 	}
 
 	// Set access token cookie
@@ -141,19 +131,18 @@ func (h *UserHandler) HandleLogin(c echo.Context) error {
 //	@Accept			json
 //	@Produce		json
 //	@Success		200	{object}	dto.LogoutResponse
-//	@Failure		401	{object}	dto.ErrorResponse
-//	@Failure		500	{object}	dto.ErrorResponse
+//	@Failure		401	{object}	dto.APIErrorResponse
+//	@Failure		500	{object}	dto.APIErrorResponse
 //	@Security		BearerAuth
 //	@Router			/auth/logout [post]
 func (h *UserHandler) HandleLogout(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
-		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
+		return domain.ErrUnauthorized
 	}
 
 	if err := h.loginUseCase.Logout(c.Request().Context(), username); err != nil {
-		h.log.Error(c.Request().Context(), "logout failed", "username", username, "error", err)
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Internal server error"})
+		return err
 	}
 
 	// Clear auth cookies so the client cannot access protected routes after logout.
@@ -190,17 +179,17 @@ func (h *UserHandler) HandleLogout(c echo.Context) error {
 //	@Produce		json
 //	@Param			request	body		dto.RegisterRequest	true	"User registration details"
 //	@Success		201		{object}	dto.RegisterResponse
-//	@Failure		400		{object}	dto.ErrorResponse
-//	@Failure		500		{object}	dto.ErrorResponse
+//	@Failure		400		{object}	dto.APIErrorResponse
+//	@Failure		500		{object}	dto.APIErrorResponse
 //	@Router			/auth/register [post]
 func (h *UserHandler) HandleRegister(c echo.Context) error {
 	var req dto.RegisterRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid request body"})
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
 	if err := h.validator.Validate(req); err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+		return err
 	}
 
 	user := &domain.User{
@@ -212,17 +201,7 @@ func (h *UserHandler) HandleRegister(c echo.Context) error {
 	}
 
 	if err := h.userUseCase.Register(c.Request().Context(), user); err != nil {
-		if errors.Is(err, domain.ErrEmailAlreadyRegistered) {
-			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Email is already registered"})
-		}
-		if errors.Is(err, domain.ErrUsernameAlreadyTaken) {
-			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Username is already taken"})
-		}
-		if errors.Is(err, domain.ErrValidationFailed) {
-			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
-		}
-		h.log.Error(c.Request().Context(), "registration failed", "email", req.Email, "error", err)
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
+		return err
 	}
 
 	return c.JSON(http.StatusCreated, dto.RegisterResponse{
@@ -239,36 +218,26 @@ func (h *UserHandler) HandleRegister(c echo.Context) error {
 //	@Produce		json
 //	@Param			username	path		string	true	"Username to follow"
 //	@Success		200			{object}	dto.FollowResponse
-//	@Failure		400			{object}	dto.ErrorResponse
-//	@Failure		401			{object}	dto.ErrorResponse
-//	@Failure		404			{object}	dto.ErrorResponse
-//	@Failure		500			{object}	dto.ErrorResponse
+//	@Failure		400			{object}	dto.APIErrorResponse
+//	@Failure		401			{object}	dto.APIErrorResponse
+//	@Failure		404			{object}	dto.APIErrorResponse
+//	@Failure		500			{object}	dto.APIErrorResponse
 //	@Security		BearerAuth
 //	@Router			/users/{username}/followers [post]
 func (h *UserHandler) HandleFollow(c echo.Context) error {
 	followerUsername, ok := c.Get("username").(string)
 	if !ok {
-		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
+		return domain.ErrUnauthorized
 	}
 
 	followedUsername := c.Param("username")
 	if followedUsername == "" {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid username"})
+		return domain.ErrValidationFailed
 	}
 
 	follow, err := h.followUseCase.Follow(c.Request().Context(), followerUsername, followedUsername)
 	if err != nil {
-		if errors.Is(err, domain.ErrCannotFollowSelf) {
-			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: domain.ErrCannotFollowSelf.Error()})
-		}
-		if errors.Is(err, domain.ErrAlreadyFollowing) {
-			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: domain.ErrAlreadyFollowing.Error()})
-		}
-		if errors.Is(err, domain.ErrUserNotFound) {
-			return c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "User not found"})
-		}
-		h.log.Error(c.Request().Context(), "follow failed", "followerUsername", followerUsername, "followedUsername", followedUsername, "error", err)
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
+		return err
 	}
 
 	return c.JSON(http.StatusOK, dto.FollowResponse{
@@ -289,32 +258,25 @@ func (h *UserHandler) HandleFollow(c echo.Context) error {
 //	@Produce		json
 //	@Param			username	path		string	true	"Username to unfollow"
 //	@Success		200			{object}	dto.UnfollowResponse
-//	@Failure		400			{object}	dto.ErrorResponse
-//	@Failure		401			{object}	dto.ErrorResponse
-//	@Failure		500			{object}	dto.ErrorResponse
+//	@Failure		400			{object}	dto.APIErrorResponse
+//	@Failure		401			{object}	dto.APIErrorResponse
+//	@Failure		500			{object}	dto.APIErrorResponse
 //	@Security		BearerAuth
 //	@Router			/users/{username}/followers [delete]
 func (h *UserHandler) HandleUnfollow(c echo.Context) error {
 	followerUsername, ok := c.Get("username").(string)
 	if !ok {
-		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
+		return domain.ErrUnauthorized
 	}
 
 	followedUsername := c.Param("username")
 	if followedUsername == "" {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid username"})
+		return domain.ErrValidationFailed
 	}
 
 	err := h.followUseCase.Unfollow(c.Request().Context(), followerUsername, followedUsername)
 	if err != nil {
-		if errors.Is(err, domain.ErrCannotUnfollowSelf) {
-			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: domain.ErrCannotUnfollowSelf.Error()})
-		}
-		if errors.Is(err, domain.ErrNotFollowing) {
-			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: domain.ErrNotFollowing.Error()})
-		}
-		h.log.Error(c.Request().Context(), "unfollow failed", "followerUsername", followerUsername, "followedUsername", followedUsername, "error", err)
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
+		return err
 	}
 
 	return c.JSON(http.StatusOK, dto.UnfollowResponse{
@@ -332,9 +294,9 @@ func (h *UserHandler) HandleUnfollow(c echo.Context) error {
 //	@Param			limit	query		int	false	"Limit for pagination"
 //	@Param			offset	query		int	false	"Offset for pagination"
 //	@Success		200		{array}		dto.FollowingResponse
-//	@Failure		400		{object}	dto.ErrorResponse
-//	@Failure		401		{object}	dto.ErrorResponse
-//	@Failure		500		{object}	dto.ErrorResponse
+//	@Failure		400		{object}	dto.APIErrorResponse
+//	@Failure		401		{object}	dto.APIErrorResponse
+//	@Failure		500		{object}	dto.APIErrorResponse
 //	@Security		BearerAuth
 //	@Router			/users/{username}/following [get]
 func (h *UserHandler) GetFollowing(c echo.Context) error {
@@ -342,17 +304,16 @@ func (h *UserHandler) GetFollowing(c echo.Context) error {
 
 	var req dto.GetFollowingRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid query parameters"})
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid query parameters")
 	}
 
 	if err := h.validator.Validate(req); err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+		return err
 	}
 
 	following, err := h.followUseCase.GetFollowing(c.Request().Context(), followerUsername, req.Limit, req.Offset)
 	if err != nil {
-		h.log.Error(c.Request().Context(), "get following failed", "followerUsername", followerUsername, "error", err)
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
+		return err
 	}
 
 	res := make([]dto.FollowingResponse, 0, len(following))
@@ -373,9 +334,9 @@ func (h *UserHandler) GetFollowing(c echo.Context) error {
 //	@Param			limit	query		int	false	"Limit for pagination"
 //	@Param			offset	query		int	false	"Offset for pagination"
 //	@Success		200		{array}		dto.FollowerResponse
-//	@Failure		400		{object}	dto.ErrorResponse
-//	@Failure		401		{object}	dto.ErrorResponse
-//	@Failure		500		{object}	dto.ErrorResponse
+//	@Failure		400		{object}	dto.APIErrorResponse
+//	@Failure		401		{object}	dto.APIErrorResponse
+//	@Failure		500		{object}	dto.APIErrorResponse
 //	@Security		BearerAuth
 //	@Router			/users/{username}/followers [get]
 func (h *UserHandler) GetFollowers(c echo.Context) error {
@@ -383,17 +344,16 @@ func (h *UserHandler) GetFollowers(c echo.Context) error {
 
 	var req dto.GetFollowersRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid query parameters"})
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid query parameters")
 	}
 
 	if err := h.validator.Validate(req); err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+		return err
 	}
 
 	followers, err := h.followUseCase.GetFollowers(c.Request().Context(), followedUsername, req.Limit, req.Offset)
 	if err != nil {
-		h.log.Error(c.Request().Context(), "get followers failed", "followedUsername", followedUsername, "error", err)
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
+		return err
 	}
 
 	res := make([]dto.FollowerResponse, 0, len(followers))
@@ -440,8 +400,8 @@ func toUserResponse(user *domain.User) dto.UserResponse {
 //	@Param			limit		query		int		false	"Limit"
 //	@Param			offset		query		int		false	"Offset"
 //	@Success		200			{array}		dto.PostResponse
-//	@Failure		400			{object}	dto.ErrorResponse
-//	@Failure		500			{object}	dto.ErrorResponse
+//	@Failure		400			{object}	dto.APIErrorResponse
+//	@Failure		500			{object}	dto.APIErrorResponse
 //	@Router			/users/{username}/posts [get]
 func (h *UserHandler) GetUserPosts(c echo.Context) error {
 	username := c.Param("username")
@@ -455,10 +415,7 @@ func (h *UserHandler) GetUserPosts(c echo.Context) error {
 
 	posts, err := h.postUseCase.GetPosts(c.Request().Context(), username, limit, offset)
 	if err != nil {
-		if errors.Is(err, domain.ErrUserNotFound) || errors.Is(err, domain.ErrValidationFailed) {
-			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "User not found"})
-		}
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Something went wrong"})
+		return err
 	}
 
 	response := make([]dto.PostResponse, 0, len(posts))
@@ -486,36 +443,29 @@ func (h *UserHandler) GetUserPosts(c echo.Context) error {
 //	@Produce		json
 //	@Param			request	body		dto.ChangePasswordRequest	true	"Change password request details"
 //	@Success		200		{object}	dto.MessageResponse
-//	@Failure		400		{object}	dto.ErrorResponse
-//	@Failure		401		{object}	dto.ErrorResponse
-//	@Failure		500		{object}	dto.ErrorResponse
+//	@Failure		400		{object}	dto.APIErrorResponse
+//	@Failure		401		{object}	dto.APIErrorResponse
+//	@Failure		500		{object}	dto.APIErrorResponse
 //	@Security		BearerAuth
 //	@Router			/users/password [put]
 func (h *UserHandler) HandleChangePassword(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
-		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
+		return domain.ErrUnauthorized
 	}
 
 	var req dto.ChangePasswordRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid request body"})
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
 	if err := h.validator.Validate(req); err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+		return err
 	}
 
 	err := h.userUseCase.ChangePassword(c.Request().Context(), username, req.OldPassword, req.NewPassword)
 	if err != nil {
-		if errors.Is(err, domain.ErrInvalidCredentials) {
-			return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Invalid current password"})
-		}
-		if errors.Is(err, domain.ErrValidationFailed) {
-			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
-		}
-		h.log.Error(c.Request().Context(), "failed to change password", "username", username, "error", err)
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Internal server error"})
+		return err
 	}
 
 	return c.JSON(http.StatusOK, dto.MessageResponse{Message: "Password updated successfully"})
@@ -530,24 +480,24 @@ func (h *UserHandler) HandleChangePassword(c echo.Context) error {
 //	@Produce		json
 //	@Param			request	body		dto.UpdateProfileRequest	true	"Updated profile fields"
 //	@Success		200		{object}	dto.UpdateProfileResponse
-//	@Failure		400		{object}	dto.ErrorResponse
-//	@Failure		401		{object}	dto.ErrorResponse
-//	@Failure		500		{object}	dto.ErrorResponse
+//	@Failure		400		{object}	dto.APIErrorResponse
+//	@Failure		401		{object}	dto.APIErrorResponse
+//	@Failure		500		{object}	dto.APIErrorResponse
 //	@Security		BearerAuth
 //	@Router			/users/profile [put]
 func (h *UserHandler) HandleUpdateProfile(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
-		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
+		return domain.ErrUnauthorized
 	}
 
 	var req dto.UpdateProfileRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Invalid request body"})
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
 	if err := h.validator.Validate(req); err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
+		return err
 	}
 
 	user := &domain.User{
@@ -557,14 +507,7 @@ func (h *UserHandler) HandleUpdateProfile(c echo.Context) error {
 	}
 
 	if err := h.userUseCase.UpdateProfile(c.Request().Context(), username, user); err != nil {
-		if errors.Is(err, domain.ErrValidationFailed) {
-			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: err.Error()})
-		}
-		if errors.Is(err, domain.ErrUsernameAlreadyTaken) {
-			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "Username is already taken"})
-		}
-		h.log.Error(c.Request().Context(), "failed to update profile", "username", username, "error", err)
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Internal server error"})
+		return err
 	}
 
 	return c.JSON(http.StatusOK, dto.UpdateProfileResponse{
