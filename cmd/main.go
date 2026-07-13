@@ -95,7 +95,7 @@ func main() {
 
 	// 5. Initialize Handler.
 	userHdl := handler.NewUserHandler(userUc, loginUc, followUc, postUc, val, lgr)
-	postHdl := handler.NewPostHandler(postUc, commentUc, val)
+	postHdl := handler.NewPostHandler(postUc, commentUc, val, lgr)
 	commentHdl := handler.NewCommentHandler(commentUc, val, lgr)
 	notificationHdl := handler.NewNotificationHandler(lgr, subcriber, notificationUc, val, wsManager)
 	wsHdl := handler.NewWebSocketHandler(lgr, tokenSvc, userUc, wsManager)
@@ -106,6 +106,9 @@ func main() {
 	e.Use(echomiddleware.Recover())
 	e.Use(echomiddleware.RequestID())
 	e.Use(echomiddleware.RequestLogger())
+
+	// Global error handler: maps domain errors to structured JSON responses.
+	e.HTTPErrorHandler = middleware.ErrorHandler(lgr, cfg.App.Env == "production")
 
 	// WebSocket endpoint.
 	e.GET("/websocket", wsHdl.HandleUpgrade, middleware.Authorize(tokenSvc))

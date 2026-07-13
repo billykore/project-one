@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 
@@ -35,15 +34,15 @@ func NewFeedHandler(feedUseCase ports.FeedUseCase, log ports.Logger) *FeedHandle
 //	@Param			cursor	query		string	false	"Pagination cursor"
 //	@Param			limit	query		int		false	"Items per page (1-50, default 10)"
 //	@Success		200		{object}	dto.FeedResponse
-//	@Failure		400		{object}	dto.ErrorResponse
-//	@Failure		401		{object}	dto.ErrorResponse
-//	@Failure		500		{object}	dto.ErrorResponse
+//	@Failure		400		{object}	dto.APIErrorResponse
+//	@Failure		401		{object}	dto.APIErrorResponse
+//	@Failure		500		{object}	dto.APIErrorResponse
 //	@Security		BearerAuth
 //	@Router			/feeds [get]
 func (h *FeedHandler) HandleGetFeed(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
-		return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
+		return domain.ErrUnauthorized
 	}
 
 	// Parse limit.
@@ -51,7 +50,7 @@ func (h *FeedHandler) HandleGetFeed(c echo.Context) error {
 	if limitStr := c.QueryParam("limit"); limitStr != "" {
 		l, err := strconv.Atoi(limitStr)
 		if err != nil || l < 1 || l > 50 {
-			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "limit must be between 1 and 50"})
+			return echo.NewHTTPError(http.StatusBadRequest, "limit must be between 1 and 50")
 		}
 		limit = l
 	}
@@ -61,18 +60,14 @@ func (h *FeedHandler) HandleGetFeed(c echo.Context) error {
 	if cursorStr := c.QueryParam("cursor"); cursorStr != "" {
 		decoded, err := vo.DecodeCursor(cursorStr)
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, dto.ErrorResponse{Error: "invalid cursor"})
+			return echo.NewHTTPError(http.StatusBadRequest, "invalid cursor")
 		}
 		cursor = &decoded
 	}
 
 	result, err := h.feedUseCase.GetFeed(c.Request().Context(), username, cursor, limit)
 	if err != nil {
-		if errors.Is(err, domain.ErrUserNotFound) {
-			return c.JSON(http.StatusNotFound, dto.ErrorResponse{Error: "User not found"})
-		}
-		h.log.Error(c.Request().Context(), "failed to get feed", "username", username, "error", err)
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Error: "Internal server error"})
+		return err
 	}
 
 	return c.JSON(http.StatusOK, dto.ToFeedResponse(result))

@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/billykore/project-one/internal/api/dto"
 	"github.com/billykore/project-one/internal/core/ports"
 	"github.com/labstack/echo/v4"
 )
@@ -33,12 +32,12 @@ func Authorize(tks ports.TokenService) echo.MiddlewareFunc {
 			}
 
 			if token == "" {
-				return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
+				return echo.NewHTTPError(http.StatusUnauthorized, "Unauthorized")
 			}
 
 			username, err := tks.ValidateToken(c.Request().Context(), token)
 			if err != nil {
-				return c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Error: "Unauthorized"})
+				return echo.NewHTTPError(http.StatusUnauthorized, "Unauthorized")
 			}
 
 			// Store username for downstream handlers
