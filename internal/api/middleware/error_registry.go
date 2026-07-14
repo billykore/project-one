@@ -10,11 +10,16 @@ import (
 
 // ErrorMapping associates a sentinel error with its HTTP representation.
 type ErrorMapping struct {
-	Status   int
-	Code     string
-	TypeSlug string // URI path segment after base URL, e.g., "not-found". Empty → about:blank.
-	Title    string // Short human-readable summary, e.g., "Not Found".
-	Detail   string // Human-readable detail message, e.g., "User not found".
+	// HTTP status code, e.g., 404.
+	Status int
+	// Application-specific error code, e.g., "NOT_FOUND".
+	Code string
+	// TypeSlug is the URI path segment after the base URL, e.g., "not-found". Empty → about:blank.
+	TypeSlug string
+	// Short human-readable summary, e.g., "Not Found".
+	Title string
+	// Human-readable detail message, e.g., "User not found".
+	Detail string
 }
 
 // ponytail: package-level map, no struct/constructor/Register. Register new errors here.
