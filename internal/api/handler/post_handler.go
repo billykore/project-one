@@ -36,9 +36,9 @@ func NewPostHandler(postUseCase ports.PostUseCase, commentUseCase ports.CommentU
 //	@Produce		json
 //	@Param			request	body		dto.CreatePostRequest	true	"Post details"
 //	@Success		201		{object}	dto.CreatePostResponse
-//	@Failure		400		{object}	dto.APIErrorResponse
-//	@Failure		401		{object}	dto.APIErrorResponse
-//	@Failure		500		{object}	dto.APIErrorResponse
+//	@Failure		400		{object}	dto.ProblemDetail
+//	@Failure		401		{object}	dto.ProblemDetail
+//	@Failure		500		{object}	dto.ProblemDetail
 //	@Security		BearerAuth
 //	@Router			/posts [post]
 func (h *PostHandler) CreatePost(c echo.Context) error {
@@ -75,9 +75,9 @@ func (h *PostHandler) CreatePost(c echo.Context) error {
 //	@Produce		json
 //	@Param			id	path		int	true	"Post ID"
 //	@Success		200	{object}	dto.PostResponse
-//	@Failure		400	{object}	dto.APIErrorResponse
-//	@Failure		404	{object}	dto.APIErrorResponse
-//	@Failure		500	{object}	dto.APIErrorResponse
+//	@Failure		400	{object}	dto.ProblemDetail
+//	@Failure		404	{object}	dto.ProblemDetail
+//	@Failure		500	{object}	dto.ProblemDetail
 //	@Router			/posts/{id} [get]
 func (h *PostHandler) GetPostByID(c echo.Context) error {
 	idStr := c.Param("id")
@@ -128,8 +128,8 @@ func (h *PostHandler) GetPostByID(c echo.Context) error {
 //	@Param			limit	query		int	false	"Limit"
 //	@Param			offset	query		int	false	"Offset"
 //	@Success		200		{array}		dto.PostResponse
-//	@Failure		401		{object}	dto.APIErrorResponse
-//	@Failure		500		{object}	dto.APIErrorResponse
+//	@Failure		401		{object}	dto.ProblemDetail
+//	@Failure		500		{object}	dto.ProblemDetail
 //	@Security		BearerAuth
 //	@Router			/posts [get]
 func (h *PostHandler) GetPosts(c echo.Context) error {
@@ -176,11 +176,11 @@ func (h *PostHandler) GetPosts(c echo.Context) error {
 //	@Param			id		path		int						true	"Post ID"
 //	@Param			request	body		dto.UpdatePostRequest	true	"Post details"
 //	@Success		200		{object}	dto.PostResponse
-//	@Failure		400		{object}	dto.APIErrorResponse
-//	@Failure		401		{object}	dto.APIErrorResponse
-//	@Failure		403		{object}	dto.APIErrorResponse
-//	@Failure		404		{object}	dto.APIErrorResponse
-//	@Failure		500		{object}	dto.APIErrorResponse
+//	@Failure		400		{object}	dto.ProblemDetail
+//	@Failure		401		{object}	dto.ProblemDetail
+//	@Failure		403		{object}	dto.ProblemDetail
+//	@Failure		404		{object}	dto.ProblemDetail
+//	@Failure		500		{object}	dto.ProblemDetail
 //	@Security		BearerAuth
 //	@Router			/posts/{id} [put]
 func (h *PostHandler) UpdatePost(c echo.Context) error {
@@ -219,10 +219,10 @@ func (h *PostHandler) UpdatePost(c echo.Context) error {
 //	@Tags			posts
 //	@Param			id	path		int	true	"Post ID"
 //	@Success		200	{object}	map[string]interface{}
-//	@Failure		400	{object}	dto.APIErrorResponse
-//	@Failure		401	{object}	dto.APIErrorResponse
-//	@Failure		404	{object}	dto.APIErrorResponse
-//	@Failure		500	{object}	dto.APIErrorResponse
+//	@Failure		400	{object}	dto.ProblemDetail
+//	@Failure		401	{object}	dto.ProblemDetail
+//	@Failure		404	{object}	dto.ProblemDetail
+//	@Failure		500	{object}	dto.ProblemDetail
 //	@Security		BearerAuth
 //	@Router			/posts/{id} [delete]
 func (h *PostHandler) DeletePost(c echo.Context) error {
@@ -258,10 +258,10 @@ func (h *PostHandler) DeletePost(c echo.Context) error {
 //	@Param			id		path	int							true	"Post ID"
 //	@Param			request	body	dto.CreateCommentRequest	true	"Comment details"
 //	@Success		201		"Created"
-//	@Failure		400		{object}	dto.APIErrorResponse
-//	@Failure		401		{object}	dto.APIErrorResponse
-//	@Failure		404		{object}	dto.APIErrorResponse
-//	@Failure		500		{object}	dto.APIErrorResponse
+//	@Failure		400		{object}	dto.ProblemDetail
+//	@Failure		401		{object}	dto.ProblemDetail
+//	@Failure		404		{object}	dto.ProblemDetail
+//	@Failure		500		{object}	dto.ProblemDetail
 //	@Security		BearerAuth
 //	@Router			/posts/{id}/comments [post]
 func (h *PostHandler) CreateComment(c echo.Context) error {
@@ -295,10 +295,10 @@ func (h *PostHandler) CreateComment(c echo.Context) error {
 //	@Produce		json
 //	@Param			id	path		int	true	"Post ID"
 //	@Success		200	{object}	dto.LikeResponse
-//	@Failure		400	{object}	dto.APIErrorResponse
-//	@Failure		401	{object}	dto.APIErrorResponse
-//	@Failure		404	{object}	dto.APIErrorResponse
-//	@Failure		500	{object}	dto.APIErrorResponse
+//	@Failure		400	{object}	dto.ProblemDetail
+//	@Failure		401	{object}	dto.ProblemDetail
+//	@Failure		404	{object}	dto.ProblemDetail
+//	@Failure		500	{object}	dto.ProblemDetail
 //	@Security		BearerAuth
 //	@Router			/posts/{id}/likes [post]
 func (h *PostHandler) LikePost(c echo.Context) error {
@@ -332,10 +332,10 @@ func (h *PostHandler) LikePost(c echo.Context) error {
 //	@Produce		json
 //	@Param			id	path		int	true	"Post ID"
 //	@Success		200	{object}	dto.LikeResponse
-//	@Failure		400	{object}	dto.APIErrorResponse
-//	@Failure		401	{object}	dto.APIErrorResponse
-//	@Failure		404	{object}	dto.APIErrorResponse
-//	@Failure		500	{object}	dto.APIErrorResponse
+//	@Failure		400	{object}	dto.ProblemDetail
+//	@Failure		401	{object}	dto.ProblemDetail
+//	@Failure		404	{object}	dto.ProblemDetail
+//	@Failure		500	{object}	dto.ProblemDetail
 //	@Security		BearerAuth
 //	@Router			/posts/{id}/likes [delete]
 func (h *PostHandler) UnlikePost(c echo.Context) error {
@@ -369,10 +369,10 @@ func (h *PostHandler) UnlikePost(c echo.Context) error {
 //	@Produce		json
 //	@Param			id	path		int	true	"Post ID"
 //	@Success		200	{object}	dto.LikeResponse
-//	@Failure		400	{object}	dto.APIErrorResponse
-//	@Failure		401	{object}	dto.APIErrorResponse
-//	@Failure		404	{object}	dto.APIErrorResponse
-//	@Failure		500	{object}	dto.APIErrorResponse
+//	@Failure		400	{object}	dto.ProblemDetail
+//	@Failure		401	{object}	dto.ProblemDetail
+//	@Failure		404	{object}	dto.ProblemDetail
+//	@Failure		500	{object}	dto.ProblemDetail
 //	@Security		BearerAuth
 //	@Router			/posts/{id}/likes [get]
 func (h *PostHandler) GetLikeStatus(c echo.Context) error {

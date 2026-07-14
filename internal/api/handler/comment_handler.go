@@ -35,10 +35,10 @@ func NewCommentHandler(commentUseCase ports.CommentUseCase, validator ports.Vali
 //	@Param			id		path		int						true	"Comment ID"
 //	@Param			request	body		dto.EditCommentRequest	true	"Comment update content"
 //	@Success		200		{object}	dto.MessageResponse
-//	@Failure		400		{object}	dto.APIErrorResponse
-//	@Failure		401		{object}	dto.APIErrorResponse
-//	@Failure		404		{object}	dto.APIErrorResponse
-//	@Failure		500		{object}	dto.APIErrorResponse
+//	@Failure		400		{object}	dto.ProblemDetail
+//	@Failure		401		{object}	dto.ProblemDetail
+//	@Failure		404		{object}	dto.ProblemDetail
+//	@Failure		500		{object}	dto.ProblemDetail
 //	@Security		BearerAuth
 //	@Router			/comments/{id} [put]
 func (h *CommentHandler) EditComment(c echo.Context) error {
@@ -77,10 +77,10 @@ func (h *CommentHandler) EditComment(c echo.Context) error {
 //	@Tags			comments
 //	@Param			id	path		int	true	"Comment ID"
 //	@Success		200	{object}	dto.MessageResponse
-//	@Failure		400	{object}	dto.APIErrorResponse
-//	@Failure		401	{object}	dto.APIErrorResponse
-//	@Failure		404	{object}	dto.APIErrorResponse
-//	@Failure		500	{object}	dto.APIErrorResponse
+//	@Failure		400	{object}	dto.ProblemDetail
+//	@Failure		401	{object}	dto.ProblemDetail
+//	@Failure		404	{object}	dto.ProblemDetail
+//	@Failure		500	{object}	dto.ProblemDetail
 //	@Security		BearerAuth
 //	@Router			/comments/{id} [delete]
 func (h *CommentHandler) DeleteComment(c echo.Context) error {

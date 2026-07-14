@@ -41,7 +41,8 @@ func TestLookupError_Known(t *testing.T) {
 			m := LookupError(tt.err)
 			assert.Equal(t, tt.wantCode, m.Status)
 			assert.Equal(t, tt.wantStr, m.Code)
-			assert.NotEmpty(t, m.Message)
+			assert.NotEmpty(t, m.Detail)
+			assert.NotEmpty(t, m.Title)
 		})
 	}
 }
@@ -50,7 +51,9 @@ func TestLookupError_Unknown(t *testing.T) {
 	m := LookupError(errors.New("some random error"))
 	assert.Equal(t, http.StatusInternalServerError, m.Status)
 	assert.Equal(t, domain.CodeInternal, m.Code)
-	assert.Equal(t, "Internal server error", m.Message)
+	assert.Equal(t, "Internal Server Error", m.Title)
+	assert.Equal(t, "Internal server error", m.Detail)
+	assert.Empty(t, m.TypeSlug) // unknown → about:blank
 }
 
 func TestLookupError_Wrapped(t *testing.T) {
@@ -59,6 +62,8 @@ func TestLookupError_Wrapped(t *testing.T) {
 	m := LookupError(wrapped)
 	assert.Equal(t, http.StatusNotFound, m.Status)
 	assert.Equal(t, domain.CodeNotFound, m.Code)
+	assert.Equal(t, "not-found", m.TypeSlug)
+	assert.Equal(t, "Not Found", m.Title)
 
 	// double-wrapped
 	doubleWrapped := fmt.Errorf("handler: %w", wrapped)

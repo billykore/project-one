@@ -17,8 +17,9 @@ type Config struct {
 
 // AppConfig holds application-level settings.
 type AppConfig struct {
-	Port int    `mapstructure:"port"`
-	Env  string `mapstructure:"env"`
+	Port             int    `mapstructure:"port"`
+	Env              string `mapstructure:"env"`
+	ErrorTypeBaseURL string `mapstructure:"error_type_base_url"`
 }
 
 // DatabaseConfig holds database connection settings.
@@ -62,6 +63,7 @@ func Load(path string) (*Config, error) {
 		"database.password",
 		"database.dbname",
 		"database.sslmode",
+		"app.error_type_base_url",
 		"jwt.private_key_path",
 		"jwt.public_key_path",
 		"jwt.expiration_time",
