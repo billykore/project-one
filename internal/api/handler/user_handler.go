@@ -50,9 +50,9 @@ func NewUserHandler(
 //	@Produce		json
 //	@Param			username	path		string	true	"Username"
 //	@Success		200			{object}	dto.UserResponse
-//	@Failure		400			{object}	dto.APIErrorResponse
-//	@Failure		404			{object}	dto.APIErrorResponse
-//	@Failure		500			{object}	dto.APIErrorResponse
+//	@Failure		400			{object}	dto.ProblemDetail
+//	@Failure		404			{object}	dto.ProblemDetail
+//	@Failure		500			{object}	dto.ProblemDetail
 //	@Router			/users/{username} [get]
 func (h *UserHandler) GetUser(c echo.Context) error {
 	username := c.Param("username")
@@ -77,9 +77,9 @@ func (h *UserHandler) GetUser(c echo.Context) error {
 //	@Produce		json
 //	@Param			LoginRequest	body		dto.LoginRequest	true	"Login credentials"
 //	@Success		200				{object}	dto.LoginResponse
-//	@Failure		400				{object}	dto.APIErrorResponse
-//	@Failure		401				{object}	dto.APIErrorResponse
-//	@Failure		500				{object}	dto.APIErrorResponse
+//	@Failure		400				{object}	dto.ProblemDetail
+//	@Failure		401				{object}	dto.ProblemDetail
+//	@Failure		500				{object}	dto.ProblemDetail
 //	@Router			/auth/login [post]
 func (h *UserHandler) HandleLogin(c echo.Context) error {
 	var req dto.LoginRequest
@@ -131,8 +131,8 @@ func (h *UserHandler) HandleLogin(c echo.Context) error {
 //	@Accept			json
 //	@Produce		json
 //	@Success		200	{object}	dto.LogoutResponse
-//	@Failure		401	{object}	dto.APIErrorResponse
-//	@Failure		500	{object}	dto.APIErrorResponse
+//	@Failure		401	{object}	dto.ProblemDetail
+//	@Failure		500	{object}	dto.ProblemDetail
 //	@Security		BearerAuth
 //	@Router			/auth/logout [post]
 func (h *UserHandler) HandleLogout(c echo.Context) error {
@@ -179,8 +179,8 @@ func (h *UserHandler) HandleLogout(c echo.Context) error {
 //	@Produce		json
 //	@Param			request	body		dto.RegisterRequest	true	"User registration details"
 //	@Success		201		{object}	dto.RegisterResponse
-//	@Failure		400		{object}	dto.APIErrorResponse
-//	@Failure		500		{object}	dto.APIErrorResponse
+//	@Failure		400		{object}	dto.ProblemDetail
+//	@Failure		500		{object}	dto.ProblemDetail
 //	@Router			/auth/register [post]
 func (h *UserHandler) HandleRegister(c echo.Context) error {
 	var req dto.RegisterRequest
@@ -218,10 +218,10 @@ func (h *UserHandler) HandleRegister(c echo.Context) error {
 //	@Produce		json
 //	@Param			username	path		string	true	"Username to follow"
 //	@Success		200			{object}	dto.FollowResponse
-//	@Failure		400			{object}	dto.APIErrorResponse
-//	@Failure		401			{object}	dto.APIErrorResponse
-//	@Failure		404			{object}	dto.APIErrorResponse
-//	@Failure		500			{object}	dto.APIErrorResponse
+//	@Failure		400			{object}	dto.ProblemDetail
+//	@Failure		401			{object}	dto.ProblemDetail
+//	@Failure		404			{object}	dto.ProblemDetail
+//	@Failure		500			{object}	dto.ProblemDetail
 //	@Security		BearerAuth
 //	@Router			/users/{username}/followers [post]
 func (h *UserHandler) HandleFollow(c echo.Context) error {
@@ -258,9 +258,9 @@ func (h *UserHandler) HandleFollow(c echo.Context) error {
 //	@Produce		json
 //	@Param			username	path		string	true	"Username to unfollow"
 //	@Success		200			{object}	dto.UnfollowResponse
-//	@Failure		400			{object}	dto.APIErrorResponse
-//	@Failure		401			{object}	dto.APIErrorResponse
-//	@Failure		500			{object}	dto.APIErrorResponse
+//	@Failure		400			{object}	dto.ProblemDetail
+//	@Failure		401			{object}	dto.ProblemDetail
+//	@Failure		500			{object}	dto.ProblemDetail
 //	@Security		BearerAuth
 //	@Router			/users/{username}/followers [delete]
 func (h *UserHandler) HandleUnfollow(c echo.Context) error {
@@ -294,9 +294,9 @@ func (h *UserHandler) HandleUnfollow(c echo.Context) error {
 //	@Param			limit	query		int	false	"Limit for pagination"
 //	@Param			offset	query		int	false	"Offset for pagination"
 //	@Success		200		{array}		dto.FollowingResponse
-//	@Failure		400		{object}	dto.APIErrorResponse
-//	@Failure		401		{object}	dto.APIErrorResponse
-//	@Failure		500		{object}	dto.APIErrorResponse
+//	@Failure		400		{object}	dto.ProblemDetail
+//	@Failure		401		{object}	dto.ProblemDetail
+//	@Failure		500		{object}	dto.ProblemDetail
 //	@Security		BearerAuth
 //	@Router			/users/{username}/following [get]
 func (h *UserHandler) GetFollowing(c echo.Context) error {
@@ -334,9 +334,9 @@ func (h *UserHandler) GetFollowing(c echo.Context) error {
 //	@Param			limit	query		int	false	"Limit for pagination"
 //	@Param			offset	query		int	false	"Offset for pagination"
 //	@Success		200		{array}		dto.FollowerResponse
-//	@Failure		400		{object}	dto.APIErrorResponse
-//	@Failure		401		{object}	dto.APIErrorResponse
-//	@Failure		500		{object}	dto.APIErrorResponse
+//	@Failure		400		{object}	dto.ProblemDetail
+//	@Failure		401		{object}	dto.ProblemDetail
+//	@Failure		500		{object}	dto.ProblemDetail
 //	@Security		BearerAuth
 //	@Router			/users/{username}/followers [get]
 func (h *UserHandler) GetFollowers(c echo.Context) error {
@@ -400,8 +400,8 @@ func toUserResponse(user *domain.User) dto.UserResponse {
 //	@Param			limit		query		int		false	"Limit"
 //	@Param			offset		query		int		false	"Offset"
 //	@Success		200			{array}		dto.PostResponse
-//	@Failure		400			{object}	dto.APIErrorResponse
-//	@Failure		500			{object}	dto.APIErrorResponse
+//	@Failure		400			{object}	dto.ProblemDetail
+//	@Failure		500			{object}	dto.ProblemDetail
 //	@Router			/users/{username}/posts [get]
 func (h *UserHandler) GetUserPosts(c echo.Context) error {
 	username := c.Param("username")
@@ -443,9 +443,9 @@ func (h *UserHandler) GetUserPosts(c echo.Context) error {
 //	@Produce		json
 //	@Param			request	body		dto.ChangePasswordRequest	true	"Change password request details"
 //	@Success		200		{object}	dto.MessageResponse
-//	@Failure		400		{object}	dto.APIErrorResponse
-//	@Failure		401		{object}	dto.APIErrorResponse
-//	@Failure		500		{object}	dto.APIErrorResponse
+//	@Failure		400		{object}	dto.ProblemDetail
+//	@Failure		401		{object}	dto.ProblemDetail
+//	@Failure		500		{object}	dto.ProblemDetail
 //	@Security		BearerAuth
 //	@Router			/users/password [put]
 func (h *UserHandler) HandleChangePassword(c echo.Context) error {
@@ -480,9 +480,9 @@ func (h *UserHandler) HandleChangePassword(c echo.Context) error {
 //	@Produce		json
 //	@Param			request	body		dto.UpdateProfileRequest	true	"Updated profile fields"
 //	@Success		200		{object}	dto.UpdateProfileResponse
-//	@Failure		400		{object}	dto.APIErrorResponse
-//	@Failure		401		{object}	dto.APIErrorResponse
-//	@Failure		500		{object}	dto.APIErrorResponse
+//	@Failure		400		{object}	dto.ProblemDetail
+//	@Failure		401		{object}	dto.ProblemDetail
+//	@Failure		500		{object}	dto.ProblemDetail
 //	@Security		BearerAuth
 //	@Router			/users/profile [put]
 func (h *UserHandler) HandleUpdateProfile(c echo.Context) error {

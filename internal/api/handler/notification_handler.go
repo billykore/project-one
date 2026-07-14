@@ -101,8 +101,8 @@ func (h *NotificationHandler) Listen(ctx context.Context) error {
 //	@Param			limit	query		int	false	"Limit"
 //	@Param			offset	query		int	false	"Offset"
 //	@Success		200		{array}		dto.NotificationResponse
-//	@Failure		401		{object}	dto.APIErrorResponse
-//	@Failure		500		{object}	dto.APIErrorResponse
+//	@Failure		401		{object}	dto.ProblemDetail
+//	@Failure		500		{object}	dto.ProblemDetail
 //	@Security		BearerAuth
 //	@Router			/notifications [get]
 func (h *NotificationHandler) GetNotifications(c echo.Context) error {
@@ -159,11 +159,11 @@ func (h *NotificationHandler) GetNotifications(c echo.Context) error {
 //	@Tags			notifications
 //	@Param			id	path		int	true	"Notification ID"
 //	@Success		200	{object}	dto.MessageResponse
-//	@Failure		400	{object}	dto.APIErrorResponse
-//	@Failure		401	{object}	dto.APIErrorResponse
-//	@Failure		403	{object}	dto.APIErrorResponse
-//	@Failure		404	{object}	dto.APIErrorResponse
-//	@Failure		500	{object}	dto.APIErrorResponse
+//	@Failure		400	{object}	dto.ProblemDetail
+//	@Failure		401	{object}	dto.ProblemDetail
+//	@Failure		403	{object}	dto.ProblemDetail
+//	@Failure		404	{object}	dto.ProblemDetail
+//	@Failure		500	{object}	dto.ProblemDetail
 //	@Security		BearerAuth
 //	@Router			/notifications/{id}/read [put]
 func (h *NotificationHandler) MarkAsRead(c echo.Context) error {
@@ -192,8 +192,8 @@ func (h *NotificationHandler) MarkAsRead(c echo.Context) error {
 //	@Description	Mark all notifications for the authenticated user as read.
 //	@Tags			notifications
 //	@Success		200	{object}	dto.MessageResponse
-//	@Failure		401	{object}	dto.APIErrorResponse
-//	@Failure		500	{object}	dto.APIErrorResponse
+//	@Failure		401	{object}	dto.ProblemDetail
+//	@Failure		500	{object}	dto.ProblemDetail
 //	@Security		BearerAuth
 //	@Router			/notifications/read-all [put]
 func (h *NotificationHandler) MarkAllAsRead(c echo.Context) error {

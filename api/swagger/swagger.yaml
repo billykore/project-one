@@ -1,10 +1,5 @@
 basePath: /
 definitions:
-  dto.APIErrorResponse:
-    properties:
-      error:
-        $ref: '#/definitions/dto.StructuredError'
-    type: object
   dto.ChangePasswordRequest:
     properties:
       new_password:
@@ -69,15 +64,6 @@ definitions:
         type: string
     required:
     - content
-    type: object
-  dto.ErrorDetail:
-    properties:
-      field:
-        type: string
-      message:
-        type: string
-      reason:
-        type: string
     type: object
   dto.FeedResponse:
     properties:
@@ -234,6 +220,27 @@ definitions:
       updated_at:
         type: string
     type: object
+  dto.ProblemDetail:
+    properties:
+      code:
+        type: string
+      detail:
+        type: string
+      errors:
+        items:
+          $ref: '#/definitions/dto.ValidationError'
+        type: array
+      instance:
+        type: string
+      request_id:
+        type: string
+      status:
+        type: integer
+      title:
+        type: string
+      type:
+        type: string
+    type: object
   dto.RegisterRequest:
     properties:
       email:
@@ -260,19 +267,6 @@ definitions:
   dto.RegisterResponse:
     properties:
       message:
-        type: string
-    type: object
-  dto.StructuredError:
-    properties:
-      code:
-        type: string
-      details:
-        items:
-          $ref: '#/definitions/dto.ErrorDetail'
-        type: array
-      message:
-        type: string
-      request_id:
         type: string
     type: object
   dto.UnfollowResponse:
@@ -322,6 +316,15 @@ definitions:
       username:
         type: string
     type: object
+  dto.ValidationError:
+    properties:
+      field:
+        type: string
+      message:
+        type: string
+      reason:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -352,15 +355,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
       summary: Login
       tags:
       - users
@@ -379,11 +382,11 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
       security:
       - BearerAuth: []
       summary: Logout
@@ -411,11 +414,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
       summary: Register
       tags:
       - users
@@ -436,19 +439,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
       security:
       - BearerAuth: []
       summary: Delete comment
@@ -480,19 +483,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
       security:
       - BearerAuth: []
       summary: Edit comment
@@ -521,15 +524,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
       security:
       - BearerAuth: []
       summary: Get feed
@@ -561,11 +564,11 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
       security:
       - BearerAuth: []
       summary: Get notifications
@@ -588,23 +591,23 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
       security:
       - BearerAuth: []
       summary: Mark notification as read
@@ -621,11 +624,11 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
       security:
       - BearerAuth: []
       summary: Mark all notifications as read
@@ -655,11 +658,11 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
       security:
       - BearerAuth: []
       summary: Get user posts
@@ -686,15 +689,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
       security:
       - BearerAuth: []
       summary: Create post
@@ -718,19 +721,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
       security:
       - BearerAuth: []
       summary: Delete post
@@ -754,15 +757,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
       summary: Get post by ID
       tags:
       - posts
@@ -792,23 +795,23 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
       security:
       - BearerAuth: []
       summary: Update post
@@ -839,19 +842,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
       security:
       - BearerAuth: []
       summary: Create comment
@@ -877,19 +880,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
       security:
       - BearerAuth: []
       summary: Unlike post
@@ -914,19 +917,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
       security:
       - BearerAuth: []
       summary: Get like status
@@ -951,19 +954,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
       security:
       - BearerAuth: []
       summary: Like post
@@ -991,15 +994,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
       summary: Get user
       tags:
       - users
@@ -1024,15 +1027,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
       security:
       - BearerAuth: []
       summary: Unfollow a user
@@ -1063,15 +1066,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
       security:
       - BearerAuth: []
       summary: Get followers list
@@ -1097,19 +1100,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
       security:
       - BearerAuth: []
       summary: Follow a user
@@ -1142,15 +1145,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
       security:
       - BearerAuth: []
       summary: Get following list
@@ -1185,11 +1188,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
       summary: Get user posts by username
       tags:
       - users
@@ -1215,15 +1218,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
       security:
       - BearerAuth: []
       summary: Change password
@@ -1251,15 +1254,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/dto.APIErrorResponse'
+            $ref: '#/definitions/dto.ProblemDetail'
       security:
       - BearerAuth: []
       summary: Update user profile

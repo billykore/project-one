@@ -107,8 +107,8 @@ func main() {
 	e.Use(echomiddleware.RequestID())
 	e.Use(echomiddleware.RequestLogger())
 
-	// Global error handler: maps domain errors to structured JSON responses.
-	e.HTTPErrorHandler = middleware.ErrorHandler(lgr, cfg.App.Env == "production")
+	// Global error handler: maps domain errors to RFC 9457 Problem Details responses.
+	e.HTTPErrorHandler = middleware.ErrorHandler(lgr, cfg.App.ErrorTypeBaseURL, cfg.App.Env == "production")
 
 	// WebSocket endpoint.
 	e.GET("/websocket", wsHdl.HandleUpgrade, middleware.Authorize(tokenSvc))

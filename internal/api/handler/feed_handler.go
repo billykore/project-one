@@ -34,9 +34,9 @@ func NewFeedHandler(feedUseCase ports.FeedUseCase, log ports.Logger) *FeedHandle
 //	@Param			cursor	query		string	false	"Pagination cursor"
 //	@Param			limit	query		int		false	"Items per page (1-50, default 10)"
 //	@Success		200		{object}	dto.FeedResponse
-//	@Failure		400		{object}	dto.APIErrorResponse
-//	@Failure		401		{object}	dto.APIErrorResponse
-//	@Failure		500		{object}	dto.APIErrorResponse
+//	@Failure		400		{object}	dto.ProblemDetail
+//	@Failure		401		{object}	dto.ProblemDetail
+//	@Failure		500		{object}	dto.ProblemDetail
 //	@Security		BearerAuth
 //	@Router			/feeds [get]
 func (h *FeedHandler) HandleGetFeed(c echo.Context) error {
