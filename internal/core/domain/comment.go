@@ -1,13 +1,9 @@
 package domain
 
 import (
-	"errors"
-	"fmt"
 	"strings"
 	"time"
 )
-
-var ErrCommentNotFound = errors.New("comment not found")
 
 // Comment is the core domain entity representing a comment on a post.
 type Comment struct {
@@ -22,7 +18,7 @@ type Comment struct {
 // Validate performs domain-level validation on the Comment entity.
 func (c *Comment) Validate() error {
 	if len(strings.TrimSpace(c.Content)) < 1 {
-		return fmt.Errorf("%w: comment must be at least 1 character", ErrValidationFailed)
+		return ErrCommentTooShort
 	}
 	return nil
 }

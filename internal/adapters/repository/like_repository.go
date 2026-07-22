@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/billykore/project-one/internal/core/domain"
@@ -41,7 +42,7 @@ func (r *likeRepository) Create(ctx context.Context, like *domain.Like) error {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return domain.ErrAlreadyLiked
 		}
-		return err
+		return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
 	like.CreatedAt = m.CreatedAt
 	return nil
@@ -52,10 +53,10 @@ func (r *likeRepository) Delete(ctx context.Context, postID int, username string
 		Where("post_id = ? AND username = ?", postID, username).
 		Delete(&likeModel{})
 	if result.Error != nil {
-		return result.Error
+		return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, result.Error)
 	}
 	if result.RowsAffected == 0 {
-		return domain.ErrNotLiked
+		return fmt.Errorf("%w: %v", domain.ErrNotLiked, errors.New("like not found"))
 	}
 	return nil
 }
@@ -67,7 +68,7 @@ func (r *likeRepository) Exists(ctx context.Context, postID int, username string
 		Where("post_id = ? AND username = ?", postID, username).
 		Count(&count).Error
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
 	return count > 0, nil
 }
@@ -79,7 +80,7 @@ func (r *likeRepository) CountByPostID(ctx context.Context, postID int) (int, er
 		Where("post_id = ?", postID).
 		Count(&count).Error
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
 	return int(count), nil
 }

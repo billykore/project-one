@@ -44,8 +44,8 @@ test-cover:
 	go tool cover -func=$(COVERAGE_DIR)/coverage.out | tail -1
 	@echo "Coverage report: $(COVERAGE_DIR)/coverage.html"
 
-## mock: Generate test mocks
-mock:
+## mocks: Generate test mocks
+mocks:
 	@echo "Mock Generation"
 	@mkdir -p internal/core/ports/mocks
 	@rm -f internal/core/ports/mocks/mock_*.go

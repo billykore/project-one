@@ -89,7 +89,7 @@ func main() {
 	userUc := usecase.NewUserUseCase(userRepo, hasher)
 	postUc := usecase.NewPostUseCase(postRepo, likeRepo, userRepo, publisher, lgr)
 	followUc := usecase.NewFollowUseCase(followRepo, userRepo, publisher, lgr)
-	commentUc := usecase.NewCommentUseCase(commentRepo, postRepo, userRepo, publisher, lgr)
+	commentUc := usecase.NewCommentUseCase(commentRepo, postRepo, userRepo, publisher)
 	notificationUc := usecase.NewNotificationUseCase(notificationRepo, userRepo, lgr)
 	feedUc := usecase.NewFeedUseCase(postRepo, followRepo, userRepo, lgr)
 

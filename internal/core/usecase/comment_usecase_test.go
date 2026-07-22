@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/billykore/project-one/internal/core/domain"
@@ -19,9 +20,8 @@ func TestCommentUseCase_AddComment(t *testing.T) {
 	mockPostRepo := mocks.NewMockPostRepository(ctrl)
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
 	mockPublisher := mocks.NewMockPublisher(ctrl)
-	mockLog := mocks.NewMockLogger(ctrl)
 
-	svc := NewCommentUseCase(mockCommentRepo, mockPostRepo, mockUserRepo, mockPublisher, mockLog)
+	svc := NewCommentUseCase(mockCommentRepo, mockPostRepo, mockUserRepo, mockPublisher)
 
 	ctx := context.Background()
 	postID := 1
@@ -43,7 +43,6 @@ func TestCommentUseCase_AddComment(t *testing.T) {
 		mockUserRepo.EXPECT().GetUserByUsername(ctx, "postowner").Return(&domain.User{ID: 2, Username: "postowner"}, nil)
 		mockUserRepo.EXPECT().GetUserByUsername(ctx, username).Return(&domain.User{ID: 1, Username: username}, nil)
 		mockPublisher.EXPECT().Publish(ctx, gomock.Any()).Return(nil)
-		mockLog.EXPECT().Info(ctx, "comment created successfully", "commentID", 100, "postID", postID, "username", username)
 
 		err := svc.AddComment(ctx, postID, username, content)
 		assert.NoError(t, err)
@@ -52,13 +51,13 @@ func TestCommentUseCase_AddComment(t *testing.T) {
 	t.Run("validation failure - empty content", func(t *testing.T) {
 		err := svc.AddComment(ctx, postID, username, "")
 		assert.Error(t, err)
-		assert.True(t, errors.Is(err, domain.ErrValidationFailed))
+		assert.True(t, errors.Is(err, domain.ErrCommentTooShort))
 	})
 
 	t.Run("validation failure - whitespace content", func(t *testing.T) {
 		err := svc.AddComment(ctx, postID, username, "   ")
 		assert.Error(t, err)
-		assert.True(t, errors.Is(err, domain.ErrValidationFailed))
+		assert.True(t, errors.Is(err, domain.ErrCommentTooShort))
 	})
 
 	t.Run("post not found", func(t *testing.T) {
@@ -78,13 +77,11 @@ func TestCommentUseCase_AddComment(t *testing.T) {
 
 		mockCommentRepo.EXPECT().
 			Create(ctx, gomock.Any()).
-			Return(errors.New("db error"))
-
-		mockLog.EXPECT().Error(ctx, "failed to create comment", "postID", postID, "username", username, "error", gomock.Any())
+			Return(fmt.Errorf("%w: %vd", domain.ErrRepositoryFailure, "db error"))
 
 		err := svc.AddComment(ctx, postID, username, content)
 		assert.Error(t, err)
-		assert.True(t, errors.Is(err, domain.ErrInternalServer))
+		assert.True(t, errors.Is(err, domain.ErrRepositoryFailure))
 	})
 }
 
@@ -96,9 +93,8 @@ func TestCommentUseCase_GetCommentsByPostID(t *testing.T) {
 	mockPostRepo := mocks.NewMockPostRepository(ctrl)
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
 	mockPublisher := mocks.NewMockPublisher(ctrl)
-	mockLog := mocks.NewMockLogger(ctrl)
 
-	svc := NewCommentUseCase(mockCommentRepo, mockPostRepo, mockUserRepo, mockPublisher, mockLog)
+	svc := NewCommentUseCase(mockCommentRepo, mockPostRepo, mockUserRepo, mockPublisher)
 
 	ctx := context.Background()
 	postID := 1
@@ -117,12 +113,11 @@ func TestCommentUseCase_GetCommentsByPostID(t *testing.T) {
 
 	t.Run("repository error", func(t *testing.T) {
 		mockCommentRepo.EXPECT().GetByPostID(ctx, postID).Return(nil, errors.New("db error"))
-		mockLog.EXPECT().Error(ctx, "failed to get comments for post", "postID", postID, "error", gomock.Any())
 
 		comments, err := svc.GetCommentsByPostID(ctx, postID)
 		assert.Error(t, err)
 		assert.Nil(t, comments)
-		assert.True(t, errors.Is(err, domain.ErrInternalServer))
+		assert.True(t, errors.Is(err, domain.ErrRepositoryFailure))
 	})
 }
 
@@ -134,9 +129,8 @@ func TestCommentUseCase_EditComment(t *testing.T) {
 	mockPostRepo := mocks.NewMockPostRepository(ctrl)
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
 	mockPublisher := mocks.NewMockPublisher(ctrl)
-	mockLog := mocks.NewMockLogger(ctrl)
 
-	svc := NewCommentUseCase(mockCommentRepo, mockPostRepo, mockUserRepo, mockPublisher, mockLog)
+	svc := NewCommentUseCase(mockCommentRepo, mockPostRepo, mockUserRepo, mockPublisher)
 
 	ctx := context.Background()
 	commentID := 1
@@ -161,8 +155,6 @@ func TestCommentUseCase_EditComment(t *testing.T) {
 				assert.Equal(t, newContent, comment.Content)
 				return nil
 			})
-
-		mockLog.EXPECT().Info(ctx, "comment updated successfully", "commentID", commentID, "username", authorUsername)
 
 		err := svc.EditComment(ctx, commentID, authorUsername, newContent)
 		assert.NoError(t, err)
@@ -198,11 +190,9 @@ func TestCommentUseCase_EditComment(t *testing.T) {
 			GetByID(ctx, commentID).
 			Return(existingComment, nil)
 
-		mockLog.EXPECT().Warn(ctx, "unauthorized attempt to edit comment", "commentID", commentID, "attemptedBy", nonAuthorUsername, "actualAuthor", authorUsername)
-
 		err := svc.EditComment(ctx, commentID, nonAuthorUsername, newContent)
 		assert.Error(t, err)
-		assert.True(t, errors.Is(err, domain.ErrUnauthorized))
+		assert.True(t, errors.Is(err, domain.ErrCommentNotOwned))
 	})
 
 	t.Run("validation failure - empty content", func(t *testing.T) {
@@ -217,7 +207,7 @@ func TestCommentUseCase_EditComment(t *testing.T) {
 
 		err := svc.EditComment(ctx, commentID, authorUsername, "")
 		assert.Error(t, err)
-		assert.True(t, errors.Is(err, domain.ErrValidationFailed))
+		assert.True(t, errors.Is(err, domain.ErrInvalidComment))
 	})
 
 	t.Run("validation failure - whitespace content", func(t *testing.T) {
@@ -232,7 +222,7 @@ func TestCommentUseCase_EditComment(t *testing.T) {
 
 		err := svc.EditComment(ctx, commentID, authorUsername, "   ")
 		assert.Error(t, err)
-		assert.True(t, errors.Is(err, domain.ErrValidationFailed))
+		assert.True(t, errors.Is(err, domain.ErrInvalidComment))
 	})
 
 	t.Run("repository update error", func(t *testing.T) {
@@ -249,11 +239,9 @@ func TestCommentUseCase_EditComment(t *testing.T) {
 			Update(ctx, gomock.Any()).
 			Return(errors.New("db update error"))
 
-		mockLog.EXPECT().Error(ctx, "failed to update comment in repository", "commentID", commentID, "error", gomock.Any())
-
 		err := svc.EditComment(ctx, commentID, authorUsername, newContent)
 		assert.Error(t, err)
-		assert.True(t, errors.Is(err, domain.ErrInternalServer))
+		assert.True(t, errors.Is(err, domain.ErrRepositoryFailure))
 	})
 }
 
@@ -265,9 +253,8 @@ func TestCommentUseCase_DeleteComment(t *testing.T) {
 	mockPostRepo := mocks.NewMockPostRepository(ctrl)
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
 	mockPublisher := mocks.NewMockPublisher(ctrl)
-	mockLog := mocks.NewMockLogger(ctrl)
 
-	svc := NewCommentUseCase(mockCommentRepo, mockPostRepo, mockUserRepo, mockPublisher, mockLog)
+	svc := NewCommentUseCase(mockCommentRepo, mockPostRepo, mockUserRepo, mockPublisher)
 
 	ctx := context.Background()
 	commentID := 1
@@ -286,8 +273,6 @@ func TestCommentUseCase_DeleteComment(t *testing.T) {
 		mockCommentRepo.EXPECT().
 			Delete(ctx, commentID).
 			Return(nil)
-
-		mockLog.EXPECT().Info(ctx, "comment deleted successfully", "commentID", commentID, "username", authorUsername)
 
 		err := svc.DeleteComment(ctx, commentID, authorUsername)
 		assert.NoError(t, err)
@@ -308,11 +293,9 @@ func TestCommentUseCase_DeleteComment(t *testing.T) {
 			GetByID(ctx, commentID).
 			Return(nil, errors.New("db error"))
 
-		mockLog.EXPECT().Error(ctx, "failed to fetch comment for delete", "commentID", commentID, "error", gomock.Any())
-
 		err := svc.DeleteComment(ctx, commentID, authorUsername)
 		assert.Error(t, err)
-		assert.True(t, errors.Is(err, domain.ErrInternalServer))
+		assert.True(t, errors.Is(err, domain.ErrRepositoryFailure))
 	})
 
 	t.Run("comment is nil", func(t *testing.T) {
@@ -334,11 +317,9 @@ func TestCommentUseCase_DeleteComment(t *testing.T) {
 			GetByID(ctx, commentID).
 			Return(existingComment, nil)
 
-		mockLog.EXPECT().Warn(ctx, "unauthorized attempt to delete comment", "commentID", commentID, "attemptedBy", nonAuthorUsername, "actualAuthor", authorUsername)
-
 		err := svc.DeleteComment(ctx, commentID, nonAuthorUsername)
 		assert.Error(t, err)
-		assert.True(t, errors.Is(err, domain.ErrUnauthorized))
+		assert.True(t, errors.Is(err, domain.ErrCommentNotOwned))
 	})
 
 	t.Run("repository delete error", func(t *testing.T) {
@@ -354,10 +335,8 @@ func TestCommentUseCase_DeleteComment(t *testing.T) {
 			Delete(ctx, commentID).
 			Return(errors.New("db delete error"))
 
-		mockLog.EXPECT().Error(ctx, "failed to delete comment in repository", "commentID", commentID, "error", gomock.Any())
-
 		err := svc.DeleteComment(ctx, commentID, authorUsername)
 		assert.Error(t, err)
-		assert.True(t, errors.Is(err, domain.ErrInternalServer))
+		assert.True(t, errors.Is(err, domain.ErrRepositoryFailure))
 	})
 }

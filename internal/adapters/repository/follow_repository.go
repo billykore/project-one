@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/billykore/project-one/internal/core/domain"
@@ -40,9 +41,9 @@ func (r *followRepository) Create(ctx context.Context, follow *domain.Follow) er
 	}
 	if err := r.db.WithContext(ctx).Create(&m).Error; err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return domain.ErrAlreadyFollowing
+			return fmt.Errorf("%w: %v", domain.ErrAlreadyFollowing, err)
 		}
-		return domain.ErrUserNotFound
+		return fmt.Errorf("%w: %v", domain.ErrUserNotFound, err)
 	}
 	follow.CreatedAt = m.CreatedAt
 	return nil
@@ -58,8 +59,10 @@ func (r *followRepository) GetFollowing(ctx context.Context, followerUsername st
 		Order("follows.created_at DESC, follows.followed_username DESC").
 		Limit(limit).Offset(offset).
 		Scan(&results).Error
-
-	return results, err
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
+	}
+	return results, nil
 }
 
 func (r *followRepository) GetFollowers(ctx context.Context, followedUsername string, limit, offset int) ([]domain.Follower, error) {
@@ -72,8 +75,10 @@ func (r *followRepository) GetFollowers(ctx context.Context, followedUsername st
 		Order("follows.created_at DESC, follows.follower_username DESC").
 		Limit(limit).Offset(offset).
 		Scan(&results).Error
-
-	return results, err
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
+	}
+	return results, nil
 }
 
 func (r *followRepository) Delete(ctx context.Context, followerUsername, followedUsername string) error {
@@ -81,10 +86,10 @@ func (r *followRepository) Delete(ctx context.Context, followerUsername, followe
 		Where("follower_username = ? AND followed_username = ?", followerUsername, followedUsername).
 		Delete(&followModel{})
 	if result.Error != nil {
-		return result.Error
+		return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, result.Error)
 	}
 	if result.RowsAffected == 0 {
-		return domain.ErrNotFollowing
+		return fmt.Errorf("%w: %v", domain.ErrNotFollowing, errors.New("no such follow relationship"))
 	}
 	return nil
 }
@@ -95,5 +100,8 @@ func (r *followRepository) GetFollowedUsernames(ctx context.Context, followerUse
 		Model(&followModel{}).
 		Where("follower_username = ?", followerUsername).
 		Pluck("followed_username", &usernames).Error
-	return usernames, err
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
+	}
+	return usernames, nil
 }

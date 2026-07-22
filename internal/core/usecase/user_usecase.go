@@ -38,6 +38,10 @@ func (s *userUseCase) GetUser(ctx context.Context, username string) (*domain.Use
 }
 
 func (s *userUseCase) Register(ctx context.Context, user *domain.User) error {
+	user.FirstName = strings.TrimSpace(user.FirstName)
+	user.LastName = strings.TrimSpace(user.LastName)
+	user.Username = strings.ToLower(strings.TrimSpace(user.Username))
+
 	existingUser, err := s.userRepo.GetUserByEmail(ctx, user.Email)
 	if err == nil && existingUser != nil {
 		return domain.ErrEmailAlreadyRegistered
@@ -54,8 +58,8 @@ func (s *userUseCase) Register(ctx context.Context, user *domain.User) error {
 		return fmt.Errorf("get user by username: %w", err)
 	}
 
-	if err := user.Validate(); err != nil {
-		return fmt.Errorf("validate user: %w", err)
+	if user.FirstName != "" && len(user.FirstName) < 3 {
+		return domain.ErrInvalidUser
 	}
 
 	hashedPassword, err := s.hasher.Hash(ctx, user.Password)
@@ -84,7 +88,7 @@ func (s *userUseCase) ChangePassword(ctx context.Context, username, oldPassword,
 
 	// 3. Validate new password length (minimum 8 characters)
 	if len(newPassword) < 8 {
-		return fmt.Errorf("%w: password must be at least 8 characters", domain.ErrValidationFailed)
+		return fmt.Errorf("%w: password must be at least 8 characters", domain.ErrPasswordTooShort)
 	}
 
 	// 4. Hash new password
@@ -113,17 +117,10 @@ func (s *userUseCase) UpdateProfile(ctx context.Context, username string, update
 		return fmt.Errorf("get current user: %w", err)
 	}
 
-	// 2. Trim whitespace and lowercase username.
 	updatedUser.FirstName = strings.TrimSpace(updatedUser.FirstName)
 	updatedUser.LastName = strings.TrimSpace(updatedUser.LastName)
 	updatedUser.Username = strings.ToLower(strings.TrimSpace(updatedUser.Username))
 
-	// 3. Validate the profile fields.
-	if err := updatedUser.ValidateProfileUpdate(); err != nil {
-		return fmt.Errorf("validate profile update: %w", err)
-	}
-
-	// 4. If the username changed, check uniqueness.
 	if updatedUser.Username != currentUser.Username {
 		existingUser, err := s.userRepo.GetUserByUsername(ctx, updatedUser.Username)
 		if err == nil && existingUser != nil {
@@ -134,12 +131,13 @@ func (s *userUseCase) UpdateProfile(ctx context.Context, username string, update
 		}
 	}
 
-	// 5. Copy the mutable fields onto the current user entity.
+	if updatedUser.FirstName == "" || len(updatedUser.FirstName) < 3 {
+		return domain.ErrInvalidUser
+	}
+
 	currentUser.FirstName = updatedUser.FirstName
 	currentUser.LastName = updatedUser.LastName
 
-	// 6. If the username changed, store the old username and update currentUser.
-	//    Pass the old username to UpdateProfile for cascade WHERE clauses.
 	oldUsername := currentUser.Username
 	currentUser.Username = updatedUser.Username
 

@@ -56,7 +56,7 @@ func TestPostUseCase_CreatePost(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.Nil(t, post)
-		assert.True(t, errors.Is(err, domain.ErrInternalServer))
+		assert.True(t, errors.Is(err, domain.ErrRepositoryFailure))
 	})
 }
 
@@ -103,7 +103,7 @@ func TestPostUseCase_GetPostByID(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.Nil(t, post)
-		assert.True(t, errors.Is(err, domain.ErrInternalServer))
+		assert.True(t, errors.Is(err, domain.ErrRepositoryFailure))
 	})
 
 	t.Run("invalid id", func(t *testing.T) {
@@ -161,7 +161,7 @@ func TestPostUseCase_GetPosts(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.Nil(t, posts)
-		assert.True(t, errors.Is(err, domain.ErrInternalServer))
+		assert.True(t, errors.Is(err, domain.ErrRepositoryFailure))
 	})
 
 	t.Run("pagination defaults", func(t *testing.T) {
@@ -298,7 +298,7 @@ func TestPostUseCase_DeletePost(t *testing.T) {
 		err := svc.DeletePost(ctx, username, postID)
 
 		assert.Error(t, err)
-		assert.True(t, errors.Is(err, domain.ErrInternalServer))
+		assert.True(t, errors.Is(err, domain.ErrRepositoryFailure))
 	})
 
 	t.Run("invalid id", func(t *testing.T) {

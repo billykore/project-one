@@ -57,7 +57,7 @@ func NewUserHandler(
 func (h *UserHandler) GetUser(c echo.Context) error {
 	username := c.Param("username")
 	if username == "" {
-		return domain.ErrValidationFailed
+		return echo.ErrUnauthorized
 	}
 
 	user, err := h.userUseCase.GetUser(c.Request().Context(), username)
@@ -138,7 +138,7 @@ func (h *UserHandler) HandleLogin(c echo.Context) error {
 func (h *UserHandler) HandleLogout(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
-		return domain.ErrUnauthorized
+		return echo.ErrUnauthorized
 	}
 
 	if err := h.loginUseCase.Logout(c.Request().Context(), username); err != nil {
@@ -227,12 +227,12 @@ func (h *UserHandler) HandleRegister(c echo.Context) error {
 func (h *UserHandler) HandleFollow(c echo.Context) error {
 	followerUsername, ok := c.Get("username").(string)
 	if !ok {
-		return domain.ErrUnauthorized
+		return echo.ErrUnauthorized
 	}
 
 	followedUsername := c.Param("username")
 	if followedUsername == "" {
-		return domain.ErrValidationFailed
+		return echo.ErrBadRequest
 	}
 
 	follow, err := h.followUseCase.Follow(c.Request().Context(), followerUsername, followedUsername)
@@ -266,12 +266,12 @@ func (h *UserHandler) HandleFollow(c echo.Context) error {
 func (h *UserHandler) HandleUnfollow(c echo.Context) error {
 	followerUsername, ok := c.Get("username").(string)
 	if !ok {
-		return domain.ErrUnauthorized
+		return echo.ErrUnauthorized
 	}
 
 	followedUsername := c.Param("username")
 	if followedUsername == "" {
-		return domain.ErrValidationFailed
+		return echo.ErrBadRequest
 	}
 
 	err := h.followUseCase.Unfollow(c.Request().Context(), followerUsername, followedUsername)
@@ -451,7 +451,7 @@ func (h *UserHandler) GetUserPosts(c echo.Context) error {
 func (h *UserHandler) HandleChangePassword(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
-		return domain.ErrUnauthorized
+		return echo.ErrUnauthorized
 	}
 
 	var req dto.ChangePasswordRequest
@@ -488,7 +488,7 @@ func (h *UserHandler) HandleChangePassword(c echo.Context) error {
 func (h *UserHandler) HandleUpdateProfile(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
-		return domain.ErrUnauthorized
+		return echo.ErrUnauthorized
 	}
 
 	var req dto.UpdateProfileRequest

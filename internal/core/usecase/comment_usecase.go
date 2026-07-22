@@ -15,7 +15,6 @@ type commentUseCase struct {
 	postRepo    ports.PostRepository
 	userRepo    ports.UserRepository
 	publisher   ports.Publisher
-	log         ports.Logger
 }
 
 // NewCommentUseCase creates a new instance of ports.CommentUseCase.
@@ -24,10 +23,9 @@ func NewCommentUseCase(
 	postRepo ports.PostRepository,
 	userRepo ports.UserRepository,
 	publisher ports.Publisher,
-	log ports.Logger,
 ) ports.CommentUseCase {
 	// ponytail: simplified dependency validation to match NewPostUseCase
-	if commentRepo == nil || postRepo == nil || userRepo == nil || publisher == nil || log == nil {
+	if commentRepo == nil || postRepo == nil || userRepo == nil || publisher == nil {
 		panic("NewCommentUseCase: dependencies must not be nil")
 	}
 	return &commentUseCase{
@@ -35,7 +33,6 @@ func NewCommentUseCase(
 		postRepo:    postRepo,
 		userRepo:    userRepo,
 		publisher:   publisher,
-		log:         log,
 	}
 }
 
@@ -54,20 +51,13 @@ func (uc *commentUseCase) AddComment(ctx context.Context, postID int, username s
 	// 2. Verify post exists
 	post, err := uc.postRepo.GetByIDOnly(ctx, postID)
 	if err != nil {
-		if errors.Is(err, domain.ErrPostNotFound) {
-			return err
-		}
-		uc.log.Error(ctx, "failed to verify post existence for comment", "postID", postID, "error", err)
-		return domain.ErrInternalServer
+		return fmt.Errorf("failed to fetch post for comment: %w", err)
 	}
 
 	// 3. Create comment
 	if err := uc.commentRepo.Create(ctx, comment); err != nil {
-		uc.log.Error(ctx, "failed to create comment", "postID", postID, "username", username, "error", err)
-		return domain.ErrInternalServer
+		return fmt.Errorf("failed to create comment: %w", err)
 	}
-
-	uc.log.Info(ctx, "comment created successfully", "commentID", comment.ID, "postID", postID, "username", username)
 
 	// ponytail: best-effort notification, flattened from nested if-else pyramid
 	if post.Username != username {
@@ -82,7 +72,6 @@ func (uc *commentUseCase) AddComment(ctx context.Context, postID int, username s
 func (uc *commentUseCase) publishCommentNotification(ctx context.Context, post *domain.Post, comment *domain.Comment) {
 	postOwner, err := uc.userRepo.GetUserByUsername(ctx, post.Username)
 	if err != nil {
-		uc.log.Error(ctx, "failed to resolve post owner for comment notification", "username", post.Username, "error", err)
 		return
 	}
 	if postOwner == nil {
@@ -91,7 +80,6 @@ func (uc *commentUseCase) publishCommentNotification(ctx context.Context, post *
 
 	commenter, err := uc.userRepo.GetUserByUsername(ctx, comment.Username)
 	if err != nil {
-		uc.log.Error(ctx, "failed to resolve commenter for comment notification", "username", comment.Username, "error", err)
 		return
 	}
 	if commenter == nil {
@@ -109,7 +97,6 @@ func (uc *commentUseCase) publishCommentNotification(ctx context.Context, post *
 
 	payload, err := json.Marshal(notification)
 	if err != nil {
-		uc.log.Error(ctx, "failed to marshal comment notification", "error", err)
 		return
 	}
 
@@ -118,15 +105,14 @@ func (uc *commentUseCase) publishCommentNotification(ctx context.Context, post *
 		Key:     fmt.Sprintf("user:%d", commenter.ID),
 		Payload: payload,
 	}); err != nil {
-		uc.log.Error(ctx, "failed to publish comment notification", "error", err)
+		return
 	}
 }
 
 func (uc *commentUseCase) GetCommentsByPostID(ctx context.Context, postID int) ([]*domain.Comment, error) {
 	comments, err := uc.commentRepo.GetByPostID(ctx, postID)
 	if err != nil {
-		uc.log.Error(ctx, "failed to get comments for post", "postID", postID, "error", err)
-		return nil, domain.ErrInternalServer
+		return nil, fmt.Errorf("failed to get comments for post: %w", domain.ErrRepositoryFailure)
 	}
 	return comments, nil
 }
@@ -138,8 +124,7 @@ func (uc *commentUseCase) EditComment(ctx context.Context, id int, username stri
 		if errors.Is(err, domain.ErrCommentNotFound) {
 			return err
 		}
-		uc.log.Error(ctx, "failed to fetch comment for edit", "commentID", id, "error", err)
-		return domain.ErrInternalServer
+		return fmt.Errorf("failed to fetch comment for edit: %w", err)
 	}
 	if comment == nil {
 		return domain.ErrCommentNotFound
@@ -147,23 +132,20 @@ func (uc *commentUseCase) EditComment(ctx context.Context, id int, username stri
 
 	// 2. Authorize: only author can edit
 	if comment.Username != username {
-		uc.log.Warn(ctx, "unauthorized attempt to edit comment", "commentID", id, "attemptedBy", username, "actualAuthor", comment.Username)
-		return domain.ErrUnauthorized
+		return domain.ErrCommentNotOwned
 	}
 
 	// 3. Update fields & Validate
 	comment.Content = content
 	if err := comment.Validate(); err != nil {
-		return err
+		return fmt.Errorf("%w: %v", domain.ErrInvalidComment, err)
 	}
 
 	// 4. Persist changes
 	if err := uc.commentRepo.Update(ctx, comment); err != nil {
-		uc.log.Error(ctx, "failed to update comment in repository", "commentID", id, "error", err)
-		return domain.ErrInternalServer
+		return fmt.Errorf("failed to update comment: %w", domain.ErrRepositoryFailure)
 	}
 
-	uc.log.Info(ctx, "comment updated successfully", "commentID", id, "username", username)
 	return nil
 }
 
@@ -174,8 +156,7 @@ func (uc *commentUseCase) DeleteComment(ctx context.Context, id int, username st
 		if errors.Is(err, domain.ErrCommentNotFound) {
 			return err
 		}
-		uc.log.Error(ctx, "failed to fetch comment for delete", "commentID", id, "error", err)
-		return domain.ErrInternalServer
+		return fmt.Errorf("failed to fetch comment for delete: %w", domain.ErrRepositoryFailure)
 	}
 	if comment == nil {
 		return domain.ErrCommentNotFound
@@ -183,16 +164,13 @@ func (uc *commentUseCase) DeleteComment(ctx context.Context, id int, username st
 
 	// 2. Authorize: only author can delete
 	if comment.Username != username {
-		uc.log.Warn(ctx, "unauthorized attempt to delete comment", "commentID", id, "attemptedBy", username, "actualAuthor", comment.Username)
-		return domain.ErrUnauthorized
+		return domain.ErrCommentNotOwned
 	}
 
 	// 3. Persist deletion
 	if err := uc.commentRepo.Delete(ctx, id); err != nil {
-		uc.log.Error(ctx, "failed to delete comment in repository", "commentID", id, "error", err)
-		return domain.ErrInternalServer
+		return fmt.Errorf("failed to delete comment: %w", domain.ErrRepositoryFailure)
 	}
 
-	uc.log.Info(ctx, "comment deleted successfully", "commentID", id, "username", username)
 	return nil
 }

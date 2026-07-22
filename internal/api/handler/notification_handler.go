@@ -108,7 +108,7 @@ func (h *NotificationHandler) Listen(ctx context.Context) error {
 func (h *NotificationHandler) GetNotifications(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
-		return domain.ErrUnauthorized
+		return echo.ErrUnauthorized
 	}
 
 	limitStr := c.QueryParam("limit")
@@ -169,7 +169,7 @@ func (h *NotificationHandler) GetNotifications(c echo.Context) error {
 func (h *NotificationHandler) MarkAsRead(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
-		return domain.ErrUnauthorized
+		return echo.ErrUnauthorized
 	}
 
 	idStr := c.Param("id")
@@ -199,7 +199,7 @@ func (h *NotificationHandler) MarkAsRead(c echo.Context) error {
 func (h *NotificationHandler) MarkAllAsRead(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
-		return domain.ErrUnauthorized
+		return echo.ErrUnauthorized
 	}
 
 	err := h.uc.MarkAllAsRead(c.Request().Context(), username)

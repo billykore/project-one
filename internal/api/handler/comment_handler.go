@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/billykore/project-one/internal/api/dto"
-	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
 	"github.com/labstack/echo/v4"
 )
@@ -44,7 +43,7 @@ func NewCommentHandler(commentUseCase ports.CommentUseCase, validator ports.Vali
 func (h *CommentHandler) EditComment(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
-		return domain.ErrUnauthorized
+		return echo.ErrUnauthorized
 	}
 
 	idStr := c.Param("id")
@@ -86,7 +85,7 @@ func (h *CommentHandler) EditComment(c echo.Context) error {
 func (h *CommentHandler) DeleteComment(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
-		return domain.ErrUnauthorized
+		return echo.ErrUnauthorized
 	}
 
 	idStr := c.Param("id")

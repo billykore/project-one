@@ -41,20 +41,20 @@ func (s *loginUseCase) Login(ctx context.Context, email, password string) (*doma
 	// 1. Get user by email
 	user, err := s.repo.GetUserByEmail(ctx, email)
 	if err != nil {
-		s.log.Error(ctx, "failed to get user by email", "email", email, "error", err)
-		return nil, domain.ErrInvalidCredentials
+		s.log.Error(ctx, "user not found during login", "email", email, "error", err)
+		return nil, fmt.Errorf("get user by email: %w", domain.ErrInvalidCredentials)
 	}
 
 	// 2. Compare passwords
 	if err := s.hasher.Compare(ctx, password, user.Password); err != nil {
-		s.log.Error(ctx, "password mismatch", "email", email, "error", err)
-		return nil, domain.ErrInvalidCredentials
+		s.log.Error(ctx, "password mismatch during login", "email", email, "error", err)
+		return nil, fmt.Errorf("compare passwords: %w", domain.ErrInvalidCredentials)
 	}
 
 	// 3. Generate tokens
 	accessToken, err := s.tokens.GenerateTokens(ctx, user)
 	if err != nil {
-		s.log.Error(ctx, "failed to generate tokens", "username", user.Username, "error", err)
+		s.log.Error(ctx, "token generation failed during login", "username", user.Username, "error", err)
 		return nil, fmt.Errorf("generate tokens: %w", err)
 	}
 
@@ -72,19 +72,19 @@ func (s *loginUseCase) Login(ctx context.Context, email, password string) (*doma
 
 func (s *loginUseCase) Logout(ctx context.Context, username string) error {
 	if username == "" {
-		return fmt.Errorf("%w: username cannot be empty", domain.ErrValidationFailed)
+		return fmt.Errorf("%w: username cannot be empty", domain.ErrInvalidUsername)
 	}
+
 	user, err := s.repo.GetUserByUsername(ctx, username)
 	if err != nil {
-		s.log.Error(ctx, "failed to get user by username on logout", "username", username, "error", err)
 		return fmt.Errorf("get user by username: %w", err)
 	}
 
 	if err := s.tokenRepo.DeleteTokenByUsername(ctx, user.Username); err != nil {
-		s.log.Error(ctx, "failed to delete user token on logout", "username", username, "error", err)
-		return fmt.Errorf("delete user token: %w", err)
+		s.log.Error(ctx, "failed to delete user token on logout", "username", user.Username, "error", err)
+		return fmt.Errorf("delete user token by username (%s): %w", user.Username, err)
 	}
 
-	s.log.Info(ctx, "user logged out successfully", "username", username)
+	s.log.Info(ctx, "user logged out successfully", "username", user.Username)
 	return nil
 }

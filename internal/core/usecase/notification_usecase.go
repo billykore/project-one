@@ -38,6 +38,7 @@ func (uc *notificationUseCase) GetNotifications(ctx context.Context, username st
 	if user == nil {
 		return nil, fmt.Errorf("get user by username: %w", domain.ErrUserNotFound)
 	}
+
 	notifications, err := uc.repo.GetByUserID(ctx, user.ID, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("get notifications by user id: %w", err)
@@ -79,6 +80,7 @@ func (uc *notificationUseCase) MarkAsRead(ctx context.Context, id int, username 
 	if user == nil {
 		return fmt.Errorf("get user by username: %w", domain.ErrUserNotFound)
 	}
+
 	notification, err := uc.repo.GetByID(ctx, id)
 	if err != nil {
 		return fmt.Errorf("get notification by id: %w", err)
@@ -87,12 +89,14 @@ func (uc *notificationUseCase) MarkAsRead(ctx context.Context, id int, username 
 		return domain.ErrNotificationNotFound
 	}
 	if notification.UserID != user.ID {
-		return domain.ErrUnauthorized
+		return domain.ErrNotificationNotOwned
 	}
+
 	err = uc.repo.MarkAsRead(ctx, id)
 	if err != nil {
 		return fmt.Errorf("mark notification as read: %w", err)
 	}
+
 	return nil
 }
 
@@ -113,9 +117,7 @@ func (uc *notificationUseCase) MarkAllAsRead(ctx context.Context, username strin
 
 func (uc *notificationUseCase) SaveNotification(ctx context.Context, notification *domain.Notification) error {
 	if err := uc.repo.Create(ctx, notification); err != nil {
-		uc.log.Error(ctx, "failed to persist notification", "userID", notification.UserID, "type", notification.Type, "error", err)
-		return err
+		return fmt.Errorf("create notification: %w", err)
 	}
-	uc.log.Info(ctx, "notification persisted successfully", "id", notification.ID, "userID", notification.UserID)
 	return nil
 }

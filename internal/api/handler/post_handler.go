@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/billykore/project-one/internal/api/dto"
-	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
 	"github.com/labstack/echo/v4"
 )
@@ -44,7 +43,7 @@ func NewPostHandler(postUseCase ports.PostUseCase, commentUseCase ports.CommentU
 func (h *PostHandler) CreatePost(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
-		return domain.ErrUnauthorized
+		return echo.ErrUnauthorized
 	}
 
 	var req dto.CreatePostRequest
@@ -135,7 +134,7 @@ func (h *PostHandler) GetPostByID(c echo.Context) error {
 func (h *PostHandler) GetPosts(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
-		return domain.ErrUnauthorized
+		return echo.ErrUnauthorized
 	}
 
 	limit, _ := strconv.Atoi(c.QueryParam("limit"))
@@ -186,7 +185,7 @@ func (h *PostHandler) GetPosts(c echo.Context) error {
 func (h *PostHandler) UpdatePost(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
-		return domain.ErrUnauthorized
+		return echo.ErrUnauthorized
 	}
 
 	idStr := c.Param("id")
@@ -228,7 +227,7 @@ func (h *PostHandler) UpdatePost(c echo.Context) error {
 func (h *PostHandler) DeletePost(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
-		return domain.ErrUnauthorized
+		return echo.ErrUnauthorized
 	}
 
 	idStr := c.Param("id")
@@ -267,7 +266,7 @@ func (h *PostHandler) DeletePost(c echo.Context) error {
 func (h *PostHandler) CreateComment(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
-		return domain.ErrUnauthorized
+		return echo.ErrUnauthorized
 	}
 
 	var req dto.CreateCommentRequest
@@ -304,7 +303,7 @@ func (h *PostHandler) CreateComment(c echo.Context) error {
 func (h *PostHandler) LikePost(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
-		return domain.ErrUnauthorized
+		return echo.ErrUnauthorized
 	}
 
 	idStr := c.Param("id")
@@ -341,7 +340,7 @@ func (h *PostHandler) LikePost(c echo.Context) error {
 func (h *PostHandler) UnlikePost(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
-		return domain.ErrUnauthorized
+		return echo.ErrUnauthorized
 	}
 
 	idStr := c.Param("id")
@@ -378,7 +377,7 @@ func (h *PostHandler) UnlikePost(c echo.Context) error {
 func (h *PostHandler) GetLikeStatus(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
-		return domain.ErrUnauthorized
+		return echo.ErrUnauthorized
 	}
 
 	idStr := c.Param("id")

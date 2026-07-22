@@ -119,7 +119,7 @@ func TestUserUseCase_Register(t *testing.T) {
 
 		err := svc.Register(ctx, user)
 
-		assert.ErrorIs(t, err, domain.ErrValidationFailed)
+		assert.ErrorIs(t, err, domain.ErrInvalidUser)
 	})
 }
 
@@ -182,7 +182,7 @@ func TestUserUseCase_ChangePassword(t *testing.T) {
 		mockHasher.EXPECT().Compare(ctx, "old_password", "hashed_old_password").Return(nil)
 
 		err := svc.ChangePassword(ctx, username, "old_password", "short")
-		assert.ErrorIs(t, err, domain.ErrValidationFailed)
+		assert.ErrorIs(t, err, domain.ErrPasswordTooShort)
 	})
 }
 
@@ -291,7 +291,7 @@ func TestUserUseCase_UpdateProfile(t *testing.T) {
 		mockRepo.EXPECT().GetUserByUsername(ctx, oldUsername).Return(currentUser, nil)
 
 		err := svc.UpdateProfile(ctx, oldUsername, updatedUser)
-		assert.ErrorIs(t, err, domain.ErrValidationFailed)
+		assert.ErrorIs(t, err, domain.ErrInvalidUser)
 	})
 
 	t.Run("user not found", func(t *testing.T) {

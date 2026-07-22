@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/billykore/project-one/internal/core/domain"
@@ -64,7 +65,7 @@ func (r *notificationRepository) Create(ctx context.Context, n *domain.Notificat
 		m.CreatedAt = time.Now()
 	}
 	if err := r.db.WithContext(ctx).Create(&m).Error; err != nil {
-		return err
+		return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
 	n.ID = int(m.ID)
 	n.CreatedAt = m.CreatedAt
@@ -77,7 +78,7 @@ func (r *notificationRepository) GetByID(ctx context.Context, id int) (*domain.N
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, domain.ErrNotificationNotFound
 		}
-		return nil, err
+		return nil, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
 	return m.toDomain(), nil
 }
@@ -92,7 +93,7 @@ func (r *notificationRepository) GetByUserID(ctx context.Context, userID int, li
 		query = query.Offset(offset)
 	}
 	if err := query.Find(&models).Error; err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
 
 	notifications := make([]*domain.Notification, len(models))
@@ -103,9 +104,17 @@ func (r *notificationRepository) GetByUserID(ctx context.Context, userID int, li
 }
 
 func (r *notificationRepository) MarkAsRead(ctx context.Context, id int) error {
-	return r.db.WithContext(ctx).Model(&notificationModel{}).Where("id = ?", id).Update("is_read", true).Error
+	err := r.db.WithContext(ctx).Model(&notificationModel{}).Where("id = ?", id).Update("is_read", true).Error
+	if err != nil {
+		return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
+	}
+	return nil
 }
 
 func (r *notificationRepository) MarkAllAsRead(ctx context.Context, userID int) error {
-	return r.db.WithContext(ctx).Model(&notificationModel{}).Where("user_id = ?", userID).Update("is_read", true).Error
+	err := r.db.WithContext(ctx).Model(&notificationModel{}).Where("user_id = ?", userID).Update("is_read", true).Error
+	if err != nil {
+		return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
+	}
+	return nil
 }

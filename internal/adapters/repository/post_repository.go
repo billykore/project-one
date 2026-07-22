@@ -59,7 +59,7 @@ func (r *postRepository) Create(ctx context.Context, post *domain.Post) error {
 	var m postModel
 	m.fromDomain(post)
 	if err := r.db.WithContext(ctx).Create(&m).Error; err != nil {
-		return err
+		return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
 	post.ID = int(m.ID)
 	post.CreatedAt = m.CreatedAt
@@ -76,7 +76,7 @@ func (r *postRepository) GetByID(ctx context.Context, username string, id int) (
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, domain.ErrPostNotFound
 		}
-		return nil, err
+		return nil, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
 	return m.toDomain(), nil
 }
@@ -88,7 +88,7 @@ func (r *postRepository) GetByIDOnly(ctx context.Context, id int) (*domain.Post,
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, domain.ErrPostNotFound
 		}
-		return nil, err
+		return nil, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
 	return m.toDomain(), nil
 }
@@ -105,7 +105,7 @@ func (r *postRepository) GetUserPosts(ctx context.Context, username string, limi
 	}
 
 	if err := query.Find(&models).Error; err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
 
 	posts := make([]*domain.Post, 0, len(models))
@@ -119,11 +119,12 @@ func (r *postRepository) Update(ctx context.Context, username string, post *doma
 	var m postModel
 	m.ID = uint(post.ID)
 	m.fromDomain(post)
-	if err := r.db.WithContext(ctx).Model(&m).
+	err := r.db.WithContext(ctx).Model(&m).
 		Select("Title", "Content", "Tags").
 		Where("username = ? AND id = ?", username, post.ID).
-		Updates(&m).Error; err != nil {
-		return err
+		Updates(&m).Error
+	if err != nil {
+		return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
 	post.UpdatedAt = m.UpdatedAt
 	return nil
@@ -131,16 +132,20 @@ func (r *postRepository) Update(ctx context.Context, username string, post *doma
 
 func (r *postRepository) Delete(ctx context.Context, username string, id int) error {
 	if err := r.db.WithContext(ctx).Where("username = ? AND id = ?", username, id).Delete(&postModel{}).Error; err != nil {
-		return err
+		return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
 	return nil
 }
 
 func (r *postRepository) IncrementLikeCount(ctx context.Context, id int, increment int) error {
-	return r.db.WithContext(ctx).
+	err := r.db.WithContext(ctx).
 		Model(&postModel{}).
 		Where("id = ?", id).
 		UpdateColumn("like_count", gorm.Expr("like_count + ?", increment)).Error
+	if err != nil {
+		return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
+	}
+	return nil
 }
 
 func (r *postRepository) GetFeed(ctx context.Context, usernames []string, cursor *vo.Cursor, limit int) ([]*domain.Post, error) {
@@ -158,11 +163,12 @@ func (r *postRepository) GetFeed(ctx context.Context, usernames []string, cursor
 	}
 
 	var models []postModel
-	if err := query.
+	err := query.
 		Order("created_at DESC, id DESC").
 		Limit(limit).
-		Find(&models).Error; err != nil {
-		return nil, fmt.Errorf("get feed: %w", err)
+		Find(&models).Error
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
 
 	posts := make([]*domain.Post, 0, len(models))

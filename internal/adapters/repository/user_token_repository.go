@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/billykore/project-one/internal/core/domain"
@@ -42,7 +43,11 @@ func NewUserTokenRepository(db *gorm.DB) ports.TokenRepository {
 
 func (r *userTokenRepository) StoreToken(ctx context.Context, token *domain.UserToken) error {
 	m := fromDomainUserToken(token)
-	return r.db.WithContext(ctx).Create(m).Error
+	err := r.db.WithContext(ctx).Create(m).Error
+	if err != nil {
+		return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
+	}
+	return nil
 }
 
 func (r *userTokenRepository) GetTokenByUsername(ctx context.Context, username string) (*domain.UserToken, error) {
@@ -52,7 +57,7 @@ func (r *userTokenRepository) GetTokenByUsername(ctx context.Context, username s
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil // No token found for this user
 		}
-		return nil, err
+		return nil, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
 	return &domain.UserToken{
 		ID:        m.ID,
@@ -63,5 +68,9 @@ func (r *userTokenRepository) GetTokenByUsername(ctx context.Context, username s
 }
 
 func (r *userTokenRepository) DeleteTokenByUsername(ctx context.Context, username string) error {
-	return r.db.WithContext(ctx).Where("username = ?", username).Delete(&userTokenModel{}).Error
+	err := r.db.WithContext(ctx).Where("username = ?", username).Delete(&userTokenModel{}).Error
+	if err != nil {
+		return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
+	}
+	return nil
 }

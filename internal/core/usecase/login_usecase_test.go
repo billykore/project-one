@@ -87,7 +87,7 @@ func TestLoginUseCase_Login_WithMocks(t *testing.T) {
 				mockTokens.EXPECT().GenerateTokens(gomock.Any(), user).Return(nil, errors.New("token error"))
 				mockLogger.EXPECT().Error(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 			},
-			wantErr: domain.ErrInternalServer,
+			wantErr: domain.ErrRepositoryFailure,
 		},
 	}
 

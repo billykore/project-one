@@ -2,7 +2,9 @@ package hasher
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -22,5 +24,9 @@ func (h *bcryptHasher) Hash(_ context.Context, password string) (string, error) 
 }
 
 func (h *bcryptHasher) Compare(_ context.Context, password, hash string) error {
-	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	if err != nil {
+		return fmt.Errorf("%w: %v", domain.ErrInvalidCredentials, err)
+	}
+	return nil
 }

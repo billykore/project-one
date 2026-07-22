@@ -18,9 +18,6 @@ func TestLookupError_Known(t *testing.T) {
 	}{
 		{domain.ErrUserNotFound, http.StatusNotFound, domain.CodeNotFound},
 		{domain.ErrInvalidCredentials, http.StatusUnauthorized, domain.CodeUnauthenticated},
-		{domain.ErrUnauthorized, http.StatusUnauthorized, domain.CodeUnauthenticated},
-		{domain.ErrInternalServer, http.StatusInternalServerError, domain.CodeInternal},
-		{domain.ErrValidationFailed, http.StatusBadRequest, domain.CodeInvalidArgument},
 		{domain.ErrAlreadyFollowing, http.StatusConflict, domain.CodeAlreadyExists},
 		{domain.ErrCannotFollowSelf, http.StatusUnprocessableEntity, domain.CodeInvalidArgument},
 		{domain.ErrPostNotFound, http.StatusNotFound, domain.CodeNotFound},

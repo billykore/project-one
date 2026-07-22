@@ -46,25 +46,25 @@ func (s *jwtTokenService) GenerateTokens(_ context.Context, user *domain.User) (
 }
 
 func (s *jwtTokenService) ValidateToken(_ context.Context, tokenString string) (string, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, domain.ErrUnauthorized
+			return nil, domain.ErrUntrustedToken
 		}
 		return s.publicKey, nil
 	})
 
 	if err != nil || !token.Valid {
-		return "", domain.ErrUnauthorized
+		return "", domain.ErrUntrustedToken
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		return "", domain.ErrUnauthorized
+		return "", domain.ErrUntrustedToken
 	}
 
 	username, ok := claims["username"].(string)
 	if !ok {
-		return "", domain.ErrUnauthorized
+		return "", domain.ErrUntrustedToken
 	}
 
 	return username, nil

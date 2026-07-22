@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
@@ -51,7 +52,7 @@ func (r *commentRepository) Create(ctx context.Context, comment *domain.Comment)
 	var m commentModel
 	m.fromDomain(comment)
 	if err := r.db.WithContext(ctx).Create(&m).Error; err != nil {
-		return err
+		return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
 	*comment = *m.toDomain()
 	return nil
@@ -64,7 +65,7 @@ func (r *commentRepository) GetByPostID(ctx context.Context, postID int) ([]*dom
 		Order("created_at ASC").
 		Find(&models).Error
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
 
 	comments := make([]*domain.Comment, 0, len(models))
@@ -81,7 +82,7 @@ func (r *commentRepository) GetByID(ctx context.Context, id int) (*domain.Commen
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, domain.ErrCommentNotFound
 		}
-		return nil, err
+		return nil, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
 	return m.toDomain(), nil
 }
@@ -96,7 +97,7 @@ func (r *commentRepository) Update(ctx context.Context, comment *domain.Comment)
 		Select("Content").
 		Updates(&m).Error
 	if err != nil {
-		return err
+		return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
 
 	comment.UpdatedAt = m.UpdatedAt
@@ -106,7 +107,7 @@ func (r *commentRepository) Update(ctx context.Context, comment *domain.Comment)
 func (r *commentRepository) Delete(ctx context.Context, id int) error {
 	err := r.db.WithContext(ctx).Delete(&commentModel{}, id).Error
 	if err != nil {
-		return err
+		return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
 	return nil
 }

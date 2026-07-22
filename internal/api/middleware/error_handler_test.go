@@ -93,7 +93,7 @@ func TestErrorHandler_WrappedError(t *testing.T) {
 	c.Response().Header().Set(echo.HeaderXRequestID, "req_test_004")
 
 	handler := ErrorHandler(&stubLogger{}, "", false)
-	handler(echo.NewHTTPError(http.StatusBadRequest, "wraps validation").SetInternal(domain.ErrValidationFailed), c)
+	handler(echo.NewHTTPError(http.StatusBadRequest, "wraps validation").SetInternal(domain.ErrInvalidUser), c)
 
 	assert.Equal(t, http.StatusBadRequest, rec.Code) // HTTPError code takes priority
 }
@@ -106,7 +106,7 @@ func TestErrorHandler_ValidationErrors(t *testing.T) {
 	c.Response().Header().Set(echo.HeaderXRequestID, "req_test_005")
 
 	handler := ErrorHandler(&stubLogger{}, "", false)
-	handler(domain.ErrValidationFailed, c)
+	handler(echo.ErrBadRequest, c)
 
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
 	assert.Equal(t, "application/problem+json", rec.Header().Get("Content-Type"))

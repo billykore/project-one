@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/billykore/project-one/internal/api/dto"
-	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
 	vo "github.com/billykore/project-one/internal/core/valueobject"
 	"github.com/labstack/echo/v4"
@@ -42,7 +41,7 @@ func NewFeedHandler(feedUseCase ports.FeedUseCase, log ports.Logger) *FeedHandle
 func (h *FeedHandler) HandleGetFeed(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
-		return domain.ErrUnauthorized
+		return echo.ErrUnauthorized
 	}
 
 	// Parse limit.

@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -54,7 +55,7 @@ func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (*dom
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, domain.ErrUserNotFound
 		}
-		return nil, err
+		return nil, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
 	return m.toDomain(), nil
 }
@@ -65,7 +66,7 @@ func (r *userRepository) GetUserByUsername(ctx context.Context, username string)
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, domain.ErrUserNotFound
 		}
-		return nil, err
+		return nil, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
 	return m.toDomain(), nil
 }
@@ -76,7 +77,7 @@ func (r *userRepository) GetUserByID(ctx context.Context, id int) (*domain.User,
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, domain.ErrUserNotFound
 		}
-		return nil, err
+		return nil, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
 	return m.toDomain(), nil
 }
@@ -96,7 +97,7 @@ func (r *userRepository) CreateUser(ctx context.Context, user *domain.User) erro
 			}
 			return domain.ErrEmailAlreadyRegistered
 		}
-		return err
+		return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
 	user.ID = m.ID
 	return nil
@@ -114,7 +115,16 @@ func (r *userRepository) UpdateUser(ctx context.Context, user *domain.User) erro
 		UpdatedAt: time.Now(),
 	}
 	// Save updates all fields by primary key
-	return r.db.WithContext(ctx).Save(&m).Error
+	err := r.db.WithContext(ctx).Save(&m).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			if strings.Contains(err.Error(), "username") {
+				return domain.ErrUsernameAlreadyTaken
+			}
+			return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
+		}
+	}
+	return nil
 }
 
 // UpdateProfile updates the user's profile fields and cascades the username
@@ -134,7 +144,7 @@ func (r *userRepository) UpdateProfile(ctx context.Context, oldUsername string, 
 			if errors.Is(result.Error, gorm.ErrDuplicatedKey) {
 				return domain.ErrUsernameAlreadyTaken
 			}
-			return result.Error
+			return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, result.Error)
 		}
 
 		// Only cascade if the username actually changed.
@@ -145,35 +155,35 @@ func (r *userRepository) UpdateProfile(ctx context.Context, oldUsername string, 
 		// Cascade username to follows table (both follower and followed columns).
 		if err := tx.Model(&followModel{}).Where("follower_username = ?", oldUsername).
 			Update("follower_username", user.Username).Error; err != nil {
-			return err
+			return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 		}
 		if err := tx.Model(&followModel{}).Where("followed_username = ?", oldUsername).
 			Update("followed_username", user.Username).Error; err != nil {
-			return err
+			return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 		}
 
 		// Cascade username to posts table.
 		if err := tx.Model(&postModel{}).Where("username = ?", oldUsername).
 			Update("username", user.Username).Error; err != nil {
-			return err
+			return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 		}
 
 		// Cascade username to user_tokens table.
 		if err := tx.Model(&userTokenModel{}).Where("username = ?", oldUsername).
 			Update("username", user.Username).Error; err != nil {
-			return err
+			return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 		}
 
 		// Cascade username to comments table.
 		if err := tx.Model(&commentModel{}).Where("username = ?", oldUsername).
 			Update("username", user.Username).Error; err != nil {
-			return err
+			return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 		}
 
 		// Cascade username to post_likes table.
 		if err := tx.Model(&likeModel{}).Where("username = ?", oldUsername).
 			Update("username", user.Username).Error; err != nil {
-			return err
+			return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 		}
 
 		return nil

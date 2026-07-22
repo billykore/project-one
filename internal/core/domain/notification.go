@@ -1,13 +1,7 @@
 package domain
 
 import (
-	"errors"
 	"time"
-)
-
-var (
-	ErrNotificationNotFound = errors.New("notification not found")
-	ErrInvalidNotification  = errors.New("invalid notification")
 )
 
 type NotificationType string

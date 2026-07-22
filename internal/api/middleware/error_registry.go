@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/billykore/project-one/internal/core/domain"
+	"github.com/labstack/echo/v4"
 )
 
 // ErrorMapping associates a sentinel error with its HTTP representation.
@@ -24,12 +25,15 @@ type ErrorMapping struct {
 
 // ponytail: package-level map, no struct/constructor/Register. Register new errors here.
 var errorMappings = map[error]ErrorMapping{
+	echo.ErrNotFound:                 {http.StatusNotFound, domain.CodeNotFound, "not-found", "Not Found", "Resource not found"},
+	echo.ErrUnauthorized:             {http.StatusUnauthorized, domain.CodeUnauthenticated, "unauthenticated", "Unauthorized", "Unauthorized"},
+	echo.ErrForbidden:                {http.StatusForbidden, domain.CodePermissionDenied, "permission-denied", "Forbidden", "Permission denied"},
+	echo.ErrMethodNotAllowed:         {http.StatusMethodNotAllowed, domain.CodePermissionDenied, "method-not-allowed", "Method Not Allowed", "HTTP method not allowed"},
+	echo.ErrInternalServerError:      {http.StatusInternalServerError, domain.CodeInternal, "internal-server-error", "Internal Server Error", "Internal server error"},
+	echo.ErrBadRequest:               {http.StatusBadRequest, domain.CodeInvalidArgument, "invalid-argument", "Bad Request", "Invalid request"},
 	domain.ErrUserNotFound:           {http.StatusNotFound, domain.CodeNotFound, "not-found", "Not Found", "User not found"},
 	domain.ErrInvalidCredentials:     {http.StatusUnauthorized, domain.CodeUnauthenticated, "unauthenticated", "Unauthorized", "Invalid email or password"},
-	domain.ErrUnauthorized:           {http.StatusUnauthorized, domain.CodeUnauthenticated, "unauthenticated", "Unauthorized", "Unauthorized"},
-	domain.ErrInternalServer:         {http.StatusInternalServerError, domain.CodeInternal, "", "Internal Server Error", "Internal server error"},
 	domain.ErrEmailAlreadyRegistered: {http.StatusConflict, domain.CodeAlreadyExists, "already-exists", "Conflict", "Email is already registered"},
-	domain.ErrValidationFailed:       {http.StatusBadRequest, domain.CodeInvalidArgument, "invalid-argument", "Bad Request", "Validation failed"},
 	domain.ErrAlreadyFollowing:       {http.StatusConflict, domain.CodeAlreadyExists, "already-exists", "Conflict", "Already following this user"},
 	domain.ErrCannotFollowSelf:       {http.StatusUnprocessableEntity, domain.CodeInvalidArgument, "invalid-argument", "Unprocessable Entity", "Cannot follow yourself"},
 	domain.ErrNotFollowing:           {http.StatusNotFound, domain.CodeNotFound, "not-found", "Not Found", "Not following this user"},

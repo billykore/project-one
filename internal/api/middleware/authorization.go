@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"net/http"
 	"strings"
 
 	"github.com/billykore/project-one/internal/core/ports"
@@ -32,12 +31,12 @@ func Authorize(tks ports.TokenService) echo.MiddlewareFunc {
 			}
 
 			if token == "" {
-				return echo.NewHTTPError(http.StatusUnauthorized, "Unauthorized")
+				return echo.ErrUnauthorized
 			}
 
 			username, err := tks.ValidateToken(c.Request().Context(), token)
 			if err != nil {
-				return echo.NewHTTPError(http.StatusUnauthorized, "Unauthorized")
+				return echo.ErrUnauthorized
 			}
 
 			// Store username for downstream handlers

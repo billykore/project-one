@@ -242,7 +242,7 @@ func TestNotificationUseCase_MarkAsRead(t *testing.T) {
 		mockRepo.EXPECT().GetByID(ctx, notificationID).Return(notification, nil)
 
 		err := uc.MarkAsRead(ctx, notificationID, username)
-		assert.ErrorIs(t, err, domain.ErrUnauthorized)
+		assert.ErrorIs(t, err, domain.ErrNotificationNotOwned)
 	})
 
 	t.Run("mark as read repository error", func(t *testing.T) {
