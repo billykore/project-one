@@ -38,23 +38,29 @@ func NewWebSocketHandler(
 func (h *WebSocketHandler) HandleUpgrade(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
+		h.log.Error(c.Request().Context(), "HandleUpgrade failed", "error", "Username not found in context")
 		return echo.ErrUnauthorized
 	}
 
 	user, err := h.userUc.GetUser(c.Request().Context(), username)
 	if err != nil || user == nil {
+		h.log.Error(c.Request().Context(), "HandleUpgrade failed", "username", username, "error", "User not found")
 		return echo.ErrUnauthorized
 	}
 
 	conn, err := h.upgrader.Upgrade(c.Response().Writer, c.Request(), nil)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "HandleUpgrade failed", "username", username, "user_id", user.ID, "error", err)
 		return err
 	}
 
 	if err := h.manager.Register(user.ID, conn); err != nil {
+		h.log.Error(c.Request().Context(), "HandleUpgrade failed", "username", username, "user_id", user.ID, "error", err)
 		_ = conn.Close()
 		return err
 	}
+
+	h.log.Info(c.Request().Context(), "HandleUpgrade succeeded", "username", username, "user_id", user.ID)
 
 	go func(userID int, wsConn *gws.Conn) {
 		defer func() {

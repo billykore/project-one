@@ -43,23 +43,28 @@ func NewPostHandler(postUseCase ports.PostUseCase, commentUseCase ports.CommentU
 func (h *PostHandler) CreatePost(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
+		h.log.Error(c.Request().Context(), "CreatePost failed", "error", "Username not found in context")
 		return echo.ErrUnauthorized
 	}
 
 	var req dto.CreatePostRequest
 	if err := c.Bind(&req); err != nil {
+		h.log.Error(c.Request().Context(), "CreatePost failed", "username", username, "error", "Invalid request body")
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
 	if err := h.validator.Validate(req); err != nil {
+		h.log.Error(c.Request().Context(), "CreatePost failed", "username", username, "validation_error", err)
 		return err
 	}
 
 	post, err := h.postUseCase.CreatePost(c.Request().Context(), username, req.Title, req.Content, req.Tags)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "CreatePost failed", "username", username, "error", err)
 		return err
 	}
 
+	h.log.Info(c.Request().Context(), "CreatePost succeeded", "username", username, "post_id", post.ID)
 	return c.JSON(http.StatusCreated, dto.CreatePostResponse{
 		ID:      post.ID,
 		Message: "Post created successfully",
@@ -82,16 +87,19 @@ func (h *PostHandler) GetPostByID(c echo.Context) error {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "GetPostByID failed", "error", "Post ID must be a number")
 		return echo.NewHTTPError(http.StatusBadRequest, "Post ID must be a number")
 	}
 
 	post, err := h.postUseCase.GetPostByID(c.Request().Context(), id)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "GetPostByID failed", "post_id", id, "error", err)
 		return err
 	}
 
 	comments, err := h.commentUseCase.GetCommentsByPostID(c.Request().Context(), id)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "GetPostByID failed", "post_id", id, "error", err)
 		return err
 	}
 
@@ -105,6 +113,7 @@ func (h *PostHandler) GetPostByID(c echo.Context) error {
 		})
 	}
 
+	h.log.Info(c.Request().Context(), "GetPostByID succeeded", "post_id", id)
 	return c.JSON(http.StatusOK, dto.PostResponse{
 		ID:        post.ID,
 		Title:     post.Title,
@@ -134,6 +143,7 @@ func (h *PostHandler) GetPostByID(c echo.Context) error {
 func (h *PostHandler) GetPosts(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
+		h.log.Error(c.Request().Context(), "GetPosts failed", "error", "Username not found in context")
 		return echo.ErrUnauthorized
 	}
 
@@ -146,6 +156,7 @@ func (h *PostHandler) GetPosts(c echo.Context) error {
 
 	posts, err := h.postUseCase.GetPosts(c.Request().Context(), username, limit, offset)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "GetPosts failed", "username", username, "error", err)
 		return err
 	}
 
@@ -162,6 +173,7 @@ func (h *PostHandler) GetPosts(c echo.Context) error {
 		})
 	}
 
+	h.log.Info(c.Request().Context(), "GetPosts succeeded", "username", username, "count", len(response))
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -185,25 +197,30 @@ func (h *PostHandler) GetPosts(c echo.Context) error {
 func (h *PostHandler) UpdatePost(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
+		h.log.Error(c.Request().Context(), "UpdatePost failed", "error", "Username not found in context")
 		return echo.ErrUnauthorized
 	}
 
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "UpdatePost failed", "username", username, "error", "Post ID must be a number")
 		return echo.NewHTTPError(http.StatusBadRequest, "Post ID must be a number")
 	}
 
 	var req dto.UpdatePostRequest
 	if err := c.Bind(&req); err != nil {
+		h.log.Error(c.Request().Context(), "UpdatePost failed", "username", username, "post_id", id, "error", "Invalid request body")
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
 	post, err := h.postUseCase.UpdatePost(c.Request().Context(), username, id, req.Title, req.Content)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "UpdatePost failed", "username", username, "post_id", id, "error", err)
 		return err
 	}
 
+	h.log.Info(c.Request().Context(), "UpdatePost succeeded", "username", username, "post_id", id)
 	return c.JSON(http.StatusOK, dto.PostResponse{
 		ID:        post.ID,
 		Message:   "Post updated successfully",
@@ -227,20 +244,24 @@ func (h *PostHandler) UpdatePost(c echo.Context) error {
 func (h *PostHandler) DeletePost(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
+		h.log.Error(c.Request().Context(), "DeletePost failed", "error", "Username not found in context")
 		return echo.ErrUnauthorized
 	}
 
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "DeletePost failed", "username", username, "error", "Post ID must be a number")
 		return echo.NewHTTPError(http.StatusBadRequest, "Post ID must be a number")
 	}
 
 	err = h.postUseCase.DeletePost(c.Request().Context(), username, id)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "DeletePost failed", "username", username, "post_id", id, "error", err)
 		return err
 	}
 
+	h.log.Info(c.Request().Context(), "DeletePost succeeded", "username", username, "post_id", id)
 	return c.JSON(http.StatusOK, dto.PostResponse{
 		ID:      id,
 		Message: "Post deleted successfully",
@@ -266,23 +287,28 @@ func (h *PostHandler) DeletePost(c echo.Context) error {
 func (h *PostHandler) CreateComment(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
+		h.log.Error(c.Request().Context(), "CreateComment failed", "error", "Username not found in context")
 		return echo.ErrUnauthorized
 	}
 
 	var req dto.CreateCommentRequest
 	if err := c.Bind(&req); err != nil {
+		h.log.Error(c.Request().Context(), "CreateComment failed", "username", username, "error", "Invalid request body")
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
 	if err := h.validator.Validate(req); err != nil {
+		h.log.Error(c.Request().Context(), "CreateComment failed", "username", username, "validation_error", err)
 		return err
 	}
 
 	err := h.commentUseCase.AddComment(c.Request().Context(), req.ID, username, req.Content)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "CreateComment failed", "username", username, "post_id", req.ID, "error", err)
 		return err
 	}
 
+	h.log.Info(c.Request().Context(), "CreateComment succeeded", "username", username, "post_id", req.ID)
 	return c.NoContent(http.StatusCreated)
 }
 
@@ -303,20 +329,24 @@ func (h *PostHandler) CreateComment(c echo.Context) error {
 func (h *PostHandler) LikePost(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
+		h.log.Error(c.Request().Context(), "LikePost failed", "error", "Username not found in context")
 		return echo.ErrUnauthorized
 	}
 
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "LikePost failed", "username", username, "error", "Post ID must be a number")
 		return echo.NewHTTPError(http.StatusBadRequest, "Post ID must be a number")
 	}
 
 	likeCount, err := h.postUseCase.LikePost(c.Request().Context(), id, username)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "LikePost failed", "username", username, "post_id", id, "error", err)
 		return err
 	}
 
+	h.log.Info(c.Request().Context(), "LikePost succeeded", "username", username, "post_id", id, "like_count", likeCount)
 	return c.JSON(http.StatusOK, dto.LikeResponse{
 		Liked:     true,
 		LikeCount: likeCount,
@@ -340,20 +370,24 @@ func (h *PostHandler) LikePost(c echo.Context) error {
 func (h *PostHandler) UnlikePost(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
+		h.log.Error(c.Request().Context(), "UnlikePost failed", "error", "Username not found in context")
 		return echo.ErrUnauthorized
 	}
 
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "UnlikePost failed", "username", username, "error", "Post ID must be a number")
 		return echo.NewHTTPError(http.StatusBadRequest, "Post ID must be a number")
 	}
 
 	likeCount, err := h.postUseCase.UnlikePost(c.Request().Context(), id, username)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "UnlikePost failed", "username", username, "post_id", id, "error", err)
 		return err
 	}
 
+	h.log.Info(c.Request().Context(), "UnlikePost succeeded", "username", username, "post_id", id, "like_count", likeCount)
 	return c.JSON(http.StatusOK, dto.LikeResponse{
 		Liked:     false,
 		LikeCount: likeCount,
@@ -377,20 +411,24 @@ func (h *PostHandler) UnlikePost(c echo.Context) error {
 func (h *PostHandler) GetLikeStatus(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
+		h.log.Error(c.Request().Context(), "GetLikeStatus failed", "error", "Username not found in context")
 		return echo.ErrUnauthorized
 	}
 
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "GetLikeStatus failed", "username", username, "error", "Post ID must be a number")
 		return echo.NewHTTPError(http.StatusBadRequest, "Post ID must be a number")
 	}
 
 	liked, likeCount, err := h.postUseCase.GetLikeStatus(c.Request().Context(), id, username)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "GetLikeStatus failed", "username", username, "post_id", id, "error", err)
 		return err
 	}
 
+	h.log.Info(c.Request().Context(), "GetLikeStatus succeeded", "username", username, "post_id", id, "liked", liked, "like_count", likeCount)
 	return c.JSON(http.StatusOK, dto.LikeResponse{
 		Liked:     liked,
 		LikeCount: likeCount,

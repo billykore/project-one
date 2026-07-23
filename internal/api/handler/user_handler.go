@@ -57,22 +57,25 @@ func NewUserHandler(
 func (h *UserHandler) GetUser(c echo.Context) error {
 	username := c.Param("username")
 	if username == "" {
+		h.log.Error(c.Request().Context(), "GetUser failed", "error", "username parameter is empty")
 		return echo.ErrUnauthorized
 	}
 
 	user, err := h.userUseCase.GetUser(c.Request().Context(), username)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "GetUser failed", "username", username, "error", err)
 		return err
 	}
 
+	h.log.Info(c.Request().Context(), "GetUser succeeded", "username", username)
 	return c.JSON(http.StatusOK, toUserResponse(user))
 }
 
-// HandleLogin handles the POST /users/login endpoint.
+// HandleLogin handles the POST /auth/login endpoint.
 //
 //	@Summary		Login
 //	@Description	Authenticate a user and return access and refresh tokens via HttpOnly cookies.
-//	@Tags			users
+//	@Tags			auth
 //	@Accept			json
 //	@Produce		json
 //	@Param			LoginRequest	body		dto.LoginRequest	true	"Login credentials"
@@ -84,15 +87,18 @@ func (h *UserHandler) GetUser(c echo.Context) error {
 func (h *UserHandler) HandleLogin(c echo.Context) error {
 	var req dto.LoginRequest
 	if err := c.Bind(&req); err != nil {
+		h.log.Error(c.Request().Context(), "HandleLogin failed", "error", "Invalid request body")
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
 	if err := h.validator.Validate(req); err != nil {
+		h.log.Error(c.Request().Context(), "HandleLogin failed", "validation_error", err)
 		return err
 	}
 
 	accessToken, err := h.loginUseCase.Login(c.Request().Context(), req.Email, req.Password)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "HandleLogin failed", "email", req.Email, "error", err)
 		return err
 	}
 
@@ -117,17 +123,18 @@ func (h *UserHandler) HandleLogin(c echo.Context) error {
 		MaxAge:   int(time.Until(accessToken.ExpiresAt).Seconds()),
 	})
 
+	h.log.Info(c.Request().Context(), "HandleLogin succeeded", "email", req.Email)
 	return c.JSON(http.StatusOK, dto.LoginResponse{
 		Message:  "Login successful",
 		Username: accessToken.Username,
 	})
 }
 
-// HandleLogout handles the POST /users/logout endpoint.
+// HandleLogout handles the POST /auth/logout endpoint.
 //
 //	@Summary		Logout
 //	@Description	Invalidate the current user's session.
-//	@Tags			users
+//	@Tags			auth
 //	@Accept			json
 //	@Produce		json
 //	@Success		200	{object}	dto.LogoutResponse
@@ -138,10 +145,12 @@ func (h *UserHandler) HandleLogin(c echo.Context) error {
 func (h *UserHandler) HandleLogout(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
+		h.log.Error(c.Request().Context(), "HandleLogout failed", "error", "Username not found in context")
 		return echo.ErrUnauthorized
 	}
 
 	if err := h.loginUseCase.Logout(c.Request().Context(), username); err != nil {
+		h.log.Error(c.Request().Context(), "HandleLogout failed", "username", username, "error", err)
 		return err
 	}
 
@@ -165,16 +174,17 @@ func (h *UserHandler) HandleLogout(c echo.Context) error {
 		MaxAge:   -1,
 	})
 
+	h.log.Info(c.Request().Context(), "HandleLogout succeeded", "username", username)
 	return c.JSON(http.StatusOK, dto.LogoutResponse{
 		Message: "Logged out successfully",
 	})
 }
 
-// HandleRegister handles the POST /users/register endpoint.
+// HandleRegister handles the POST /auth/register endpoint.
 //
 //	@Summary		Register
 //	@Description	Create a new user account.
-//	@Tags			users
+//	@Tags			auth
 //	@Accept			json
 //	@Produce		json
 //	@Param			request	body		dto.RegisterRequest	true	"User registration details"
@@ -185,10 +195,12 @@ func (h *UserHandler) HandleLogout(c echo.Context) error {
 func (h *UserHandler) HandleRegister(c echo.Context) error {
 	var req dto.RegisterRequest
 	if err := c.Bind(&req); err != nil {
+		h.log.Error(c.Request().Context(), "HandleRegister failed", "error", "Invalid request body")
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
 	if err := h.validator.Validate(req); err != nil {
+		h.log.Error(c.Request().Context(), "HandleRegister failed", "validation_error", err)
 		return err
 	}
 
@@ -201,9 +213,11 @@ func (h *UserHandler) HandleRegister(c echo.Context) error {
 	}
 
 	if err := h.userUseCase.Register(c.Request().Context(), user); err != nil {
+		h.log.Error(c.Request().Context(), "HandleRegister failed", "email", req.Email, "error", err)
 		return err
 	}
 
+	h.log.Info(c.Request().Context(), "HandleRegister succeeded", "email", req.Email)
 	return c.JSON(http.StatusCreated, dto.RegisterResponse{
 		Message: "User registered successfully",
 	})
@@ -227,19 +241,23 @@ func (h *UserHandler) HandleRegister(c echo.Context) error {
 func (h *UserHandler) HandleFollow(c echo.Context) error {
 	followerUsername, ok := c.Get("username").(string)
 	if !ok {
+		h.log.Error(c.Request().Context(), "HandleFollow failed", "error", "Username not found in context")
 		return echo.ErrUnauthorized
 	}
 
 	followedUsername := c.Param("username")
 	if followedUsername == "" {
+		h.log.Error(c.Request().Context(), "HandleFollow failed", "error", "Username parameter is empty")
 		return echo.ErrBadRequest
 	}
 
 	follow, err := h.followUseCase.Follow(c.Request().Context(), followerUsername, followedUsername)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "HandleFollow failed", "follower", followerUsername, "followed", followedUsername, "error", err)
 		return err
 	}
 
+	h.log.Info(c.Request().Context(), "HandleFollow succeeded", "follower", followerUsername, "followed", followedUsername)
 	return c.JSON(http.StatusOK, dto.FollowResponse{
 		Message: "You are now following this user.",
 		Data: dto.FollowData{
@@ -266,19 +284,23 @@ func (h *UserHandler) HandleFollow(c echo.Context) error {
 func (h *UserHandler) HandleUnfollow(c echo.Context) error {
 	followerUsername, ok := c.Get("username").(string)
 	if !ok {
+		h.log.Error(c.Request().Context(), "HandleUnfollow failed", "error", "Username not found in context")
 		return echo.ErrUnauthorized
 	}
 
 	followedUsername := c.Param("username")
 	if followedUsername == "" {
+		h.log.Error(c.Request().Context(), "HandleUnfollow failed", "error", "Username parameter is empty")
 		return echo.ErrBadRequest
 	}
 
 	err := h.followUseCase.Unfollow(c.Request().Context(), followerUsername, followedUsername)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "HandleUnfollow failed", "follower", followerUsername, "followed", followedUsername, "error", err)
 		return err
 	}
 
+	h.log.Info(c.Request().Context(), "HandleUnfollow succeeded", "follower", followerUsername, "followed", followedUsername)
 	return c.JSON(http.StatusOK, dto.UnfollowResponse{
 		Message: "Successfully unfollowed this user.",
 	})
@@ -301,18 +323,25 @@ func (h *UserHandler) HandleUnfollow(c echo.Context) error {
 //	@Router			/users/{username}/following [get]
 func (h *UserHandler) GetFollowing(c echo.Context) error {
 	followerUsername := c.Param("username")
+	if followerUsername == "" {
+		h.log.Error(c.Request().Context(), "GetFollowing failed", "error", "Username parameter is empty")
+		return echo.ErrBadRequest
+	}
 
 	var req dto.GetFollowingRequest
 	if err := c.Bind(&req); err != nil {
+		h.log.Error(c.Request().Context(), "GetFollowing failed", "error", "Invalid query parameters")
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid query parameters")
 	}
 
 	if err := h.validator.Validate(req); err != nil {
+		h.log.Error(c.Request().Context(), "GetFollowing failed", "validation_error", err)
 		return err
 	}
 
 	following, err := h.followUseCase.GetFollowing(c.Request().Context(), followerUsername, req.Limit, req.Offset)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "GetFollowing failed", "follower", followerUsername, "error", err)
 		return err
 	}
 
@@ -321,6 +350,7 @@ func (h *UserHandler) GetFollowing(c echo.Context) error {
 		res = append(res, toFollowingResponse(f))
 	}
 
+	h.log.Info(c.Request().Context(), "GetFollowing succeeded", "follower", followerUsername, "count", len(res))
 	return c.JSON(http.StatusOK, res)
 }
 
@@ -341,18 +371,25 @@ func (h *UserHandler) GetFollowing(c echo.Context) error {
 //	@Router			/users/{username}/followers [get]
 func (h *UserHandler) GetFollowers(c echo.Context) error {
 	followedUsername := c.Param("username")
+	if followedUsername == "" {
+		h.log.Error(c.Request().Context(), "GetFollowers failed", "error", "Username parameter is empty")
+		return echo.ErrBadRequest
+	}
 
 	var req dto.GetFollowersRequest
 	if err := c.Bind(&req); err != nil {
+		h.log.Error(c.Request().Context(), "GetFollowers failed", "error", "Invalid query parameters")
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid query parameters")
 	}
 
 	if err := h.validator.Validate(req); err != nil {
+		h.log.Error(c.Request().Context(), "GetFollowers failed", "validation_error", err)
 		return err
 	}
 
 	followers, err := h.followUseCase.GetFollowers(c.Request().Context(), followedUsername, req.Limit, req.Offset)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "GetFollowers failed", "followed", followedUsername, "error", err)
 		return err
 	}
 
@@ -361,6 +398,7 @@ func (h *UserHandler) GetFollowers(c echo.Context) error {
 		res = append(res, toFollowerResponse(f))
 	}
 
+	h.log.Info(c.Request().Context(), "GetFollowers succeeded", "followed", followedUsername, "count", len(res))
 	return c.JSON(http.StatusOK, res)
 }
 
@@ -406,6 +444,11 @@ func toUserResponse(user *domain.User) dto.UserResponse {
 func (h *UserHandler) GetUserPosts(c echo.Context) error {
 	username := c.Param("username")
 
+	if username == "" {
+		h.log.Error(c.Request().Context(), "GetUserPosts failed", "error", "Username parameter is empty")
+		return echo.ErrBadRequest
+	}
+
 	limit, _ := strconv.Atoi(c.QueryParam("limit"))
 	offset, _ := strconv.Atoi(c.QueryParam("offset"))
 
@@ -415,6 +458,7 @@ func (h *UserHandler) GetUserPosts(c echo.Context) error {
 
 	posts, err := h.postUseCase.GetPosts(c.Request().Context(), username, limit, offset)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "GetUserPosts failed", "username", username, "error", err)
 		return err
 	}
 
@@ -431,6 +475,7 @@ func (h *UserHandler) GetUserPosts(c echo.Context) error {
 		})
 	}
 
+	h.log.Info(c.Request().Context(), "GetUserPosts succeeded", "username", username, "count", len(response))
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -451,6 +496,7 @@ func (h *UserHandler) GetUserPosts(c echo.Context) error {
 func (h *UserHandler) HandleChangePassword(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
+		h.log.Error(c.Request().Context(), "HandleChangePassword failed", "error", "Username not found in context")
 		return echo.ErrUnauthorized
 	}
 
@@ -460,14 +506,17 @@ func (h *UserHandler) HandleChangePassword(c echo.Context) error {
 	}
 
 	if err := h.validator.Validate(req); err != nil {
+		h.log.Error(c.Request().Context(), "HandleChangePassword failed", "username", username, "validation_error", err)
 		return err
 	}
 
 	err := h.userUseCase.ChangePassword(c.Request().Context(), username, req.OldPassword, req.NewPassword)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "HandleChangePassword failed", "username", username, "error", err)
 		return err
 	}
 
+	h.log.Info(c.Request().Context(), "HandleChangePassword succeeded", "username", username)
 	return c.JSON(http.StatusOK, dto.MessageResponse{Message: "Password updated successfully"})
 }
 
@@ -488,15 +537,18 @@ func (h *UserHandler) HandleChangePassword(c echo.Context) error {
 func (h *UserHandler) HandleUpdateProfile(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
+		h.log.Error(c.Request().Context(), "HandleUpdateProfile failed", "error", "Username not found in context")
 		return echo.ErrUnauthorized
 	}
 
 	var req dto.UpdateProfileRequest
 	if err := c.Bind(&req); err != nil {
+		h.log.Error(c.Request().Context(), "HandleUpdateProfile failed", "username", username, "error", "Failed to bind request body")
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
 	if err := h.validator.Validate(req); err != nil {
+		h.log.Error(c.Request().Context(), "HandleUpdateProfile failed", "username", username, "validation_error", err)
 		return err
 	}
 
@@ -507,9 +559,11 @@ func (h *UserHandler) HandleUpdateProfile(c echo.Context) error {
 	}
 
 	if err := h.userUseCase.UpdateProfile(c.Request().Context(), username, user); err != nil {
+		h.log.Error(c.Request().Context(), "HandleUpdateProfile failed", "username", username, "error", err)
 		return err
 	}
 
+	h.log.Info(c.Request().Context(), "HandleUpdateProfile succeeded", "username", username)
 	return c.JSON(http.StatusOK, dto.UpdateProfileResponse{
 		Message:  "Profile updated successfully",
 		Username: user.Username,

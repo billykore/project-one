@@ -41,6 +41,7 @@ func NewFeedHandler(feedUseCase ports.FeedUseCase, log ports.Logger) *FeedHandle
 func (h *FeedHandler) HandleGetFeed(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
+		h.log.Error(c.Request().Context(), "HandleGetFeed failed", "error", "Username not found in context")
 		return echo.ErrUnauthorized
 	}
 
@@ -49,7 +50,8 @@ func (h *FeedHandler) HandleGetFeed(c echo.Context) error {
 	if limitStr := c.QueryParam("limit"); limitStr != "" {
 		l, err := strconv.Atoi(limitStr)
 		if err != nil || l < 1 || l > 50 {
-			return echo.NewHTTPError(http.StatusBadRequest, "limit must be between 1 and 50")
+			h.log.Error(c.Request().Context(), "HandleGetFeed failed", "username", username, "error", "limit must be between 1 and 50")
+			return echo.NewHTTPError(http.StatusBadRequest, "Limit must be between 1 and 50")
 		}
 		limit = l
 	}
@@ -59,15 +61,18 @@ func (h *FeedHandler) HandleGetFeed(c echo.Context) error {
 	if cursorStr := c.QueryParam("cursor"); cursorStr != "" {
 		decoded, err := vo.DecodeCursor(cursorStr)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "invalid cursor")
+			h.log.Error(c.Request().Context(), "HandleGetFeed failed", "username", username, "error", "invalid cursor")
+			return echo.NewHTTPError(http.StatusBadRequest, "Invalid cursor")
 		}
 		cursor = &decoded
 	}
 
 	result, err := h.feedUseCase.GetFeed(c.Request().Context(), username, cursor, limit)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "HandleGetFeed failed", "username", username, "error", err)
 		return err
 	}
 
+	h.log.Info(c.Request().Context(), "HandleGetFeed succeeded", "username", username, "count", len(result.Posts))
 	return c.JSON(http.StatusOK, dto.ToFeedResponse(result))
 }

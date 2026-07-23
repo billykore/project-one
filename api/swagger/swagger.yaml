@@ -366,7 +366,7 @@ paths:
             $ref: '#/definitions/dto.ProblemDetail'
       summary: Login
       tags:
-      - users
+      - auth
   /auth/logout:
     post:
       consumes:
@@ -391,7 +391,7 @@ paths:
       - BearerAuth: []
       summary: Logout
       tags:
-      - users
+      - auth
   /auth/register:
     post:
       consumes:
@@ -421,7 +421,7 @@ paths:
             $ref: '#/definitions/dto.ProblemDetail'
       summary: Register
       tags:
-      - users
+      - auth
   /comments/{id}:
     delete:
       description: Delete an existing comment by the author.

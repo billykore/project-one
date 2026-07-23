@@ -48,7 +48,7 @@ func (h *NotificationHandler) Listen(ctx context.Context) error {
 		var notification domain.Notification
 		if err := json.Unmarshal(event.Payload, &notification); err != nil {
 			h.log.Error(ctx, "failed to unmarshal notification event", "error", err)
-			return nil
+			return err
 		}
 
 		if err := h.uc.SaveNotification(ctx, &notification); err != nil {
@@ -83,7 +83,7 @@ func (h *NotificationHandler) Listen(ctx context.Context) error {
 			} else {
 				h.log.Warn(ctx, "failed to stream notification to websocket", "userID", notification.UserID, "error", err)
 			}
-			return nil
+			return err
 		}
 
 		h.log.Info(ctx, "notification streamed to websocket", "userID", notification.UserID, "type", notification.Type)
@@ -108,6 +108,7 @@ func (h *NotificationHandler) Listen(ctx context.Context) error {
 func (h *NotificationHandler) GetNotifications(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
+		h.log.Error(c.Request().Context(), "GetNotifications failed", "error", "Username not found in context")
 		return echo.ErrUnauthorized
 	}
 
@@ -129,6 +130,7 @@ func (h *NotificationHandler) GetNotifications(c echo.Context) error {
 
 	notifications, err := h.uc.GetNotifications(c.Request().Context(), username, limit, offset)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "GetNotifications failed", "username", username, "error", err)
 		return err
 	}
 
@@ -149,6 +151,7 @@ func (h *NotificationHandler) GetNotifications(c echo.Context) error {
 		}
 	}
 
+	h.log.Info(c.Request().Context(), "GetNotifications succeeded", "username", username, "count", len(resp))
 	return c.JSON(http.StatusOK, resp)
 }
 
@@ -169,20 +172,24 @@ func (h *NotificationHandler) GetNotifications(c echo.Context) error {
 func (h *NotificationHandler) MarkAsRead(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
+		h.log.Error(c.Request().Context(), "MarkAsRead failed", "error", "Username not found in context")
 		return echo.ErrUnauthorized
 	}
 
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil || id <= 0 {
+		h.log.Error(c.Request().Context(), "MarkAsRead failed", "username", username, "error", "Invalid notification ID")
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid notification ID")
 	}
 
 	err = h.uc.MarkAsRead(c.Request().Context(), id, username)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "MarkAsRead failed", "username", username, "notification_id", id, "error", err)
 		return err
 	}
 
+	h.log.Info(c.Request().Context(), "MarkAsRead succeeded", "username", username, "notification_id", id)
 	return c.JSON(http.StatusOK, dto.MessageResponse{Message: "Notification marked as read"})
 }
 
@@ -199,13 +206,16 @@ func (h *NotificationHandler) MarkAsRead(c echo.Context) error {
 func (h *NotificationHandler) MarkAllAsRead(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
+		h.log.Error(c.Request().Context(), "MarkAllAsRead failed", "error", "Username not found in context")
 		return echo.ErrUnauthorized
 	}
 
 	err := h.uc.MarkAllAsRead(c.Request().Context(), username)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "MarkAllAsRead failed", "username", username, "error", err)
 		return err
 	}
 
+	h.log.Info(c.Request().Context(), "MarkAllAsRead succeeded", "username", username)
 	return c.JSON(http.StatusOK, dto.MessageResponse{Message: "All notifications marked as read"})
 }

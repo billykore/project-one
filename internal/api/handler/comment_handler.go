@@ -43,29 +43,35 @@ func NewCommentHandler(commentUseCase ports.CommentUseCase, validator ports.Vali
 func (h *CommentHandler) EditComment(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
+		h.log.Error(c.Request().Context(), "EditComment failed", "error", "Username not found in context")
 		return echo.ErrUnauthorized
 	}
 
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "EditComment failed", "username", username, "error", "Invalid comment ID")
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid comment ID")
 	}
 
 	var req dto.EditCommentRequest
 	if err := c.Bind(&req); err != nil {
+		h.log.Error(c.Request().Context(), "EditComment failed", "username", username, "comment_id", id, "error", "Invalid request body")
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
 	if err := h.validator.Validate(req); err != nil {
+		h.log.Error(c.Request().Context(), "EditComment failed", "username", username, "comment_id", id, "validation_error", err)
 		return err
 	}
 
 	err = h.commentUseCase.EditComment(c.Request().Context(), id, username, req.Content)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "EditComment failed", "username", username, "comment_id", id, "error", err)
 		return err
 	}
 
+	h.log.Info(c.Request().Context(), "EditComment succeeded", "username", username, "comment_id", id)
 	return c.JSON(http.StatusOK, dto.MessageResponse{Message: "Comment updated succesfully"})
 }
 
@@ -85,19 +91,23 @@ func (h *CommentHandler) EditComment(c echo.Context) error {
 func (h *CommentHandler) DeleteComment(c echo.Context) error {
 	username, ok := c.Get("username").(string)
 	if !ok {
+		h.log.Error(c.Request().Context(), "DeleteComment failed", "error", "Username not found in context")
 		return echo.ErrUnauthorized
 	}
 
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil || id <= 0 {
+		h.log.Error(c.Request().Context(), "DeleteComment failed", "username", username, "error", "Invalid comment ID")
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid comment ID")
 	}
 
 	err = h.commentUseCase.DeleteComment(c.Request().Context(), id, username)
 	if err != nil {
+		h.log.Error(c.Request().Context(), "DeleteComment failed", "username", username, "comment_id", id, "error", err)
 		return err
 	}
 
+	h.log.Info(c.Request().Context(), "DeleteComment succeeded", "username", username, "comment_id", id)
 	return c.JSON(http.StatusOK, dto.MessageResponse{Message: "Comment deleted successfully"})
 }
