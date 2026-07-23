@@ -17,7 +17,7 @@ import (
 //
 // ponytail: no middleware wrapper needed. Echo passes errors directly to HTTPErrorHandler.
 // Handler return nil → Echo never calls this. Return error → this formats and writes the response.
-func ErrorHandler(log ports.Logger, errorTypeBaseURL string, isProduction bool) func(err error, c echo.Context) {
+func ErrorHandler(log ports.Logger, errorTypeBaseURL string, withStackTrace bool) func(err error, c echo.Context) {
 	// ponytail: normalize base URL once at construction time.
 	if errorTypeBaseURL == "" {
 		errorTypeBaseURL = "http://localhost:8080/errors"
@@ -52,6 +52,8 @@ func ErrorHandler(log ports.Logger, errorTypeBaseURL string, isProduction bool) 
 		if validationErrs, hasValidationErrs = errors.AsType[validator.ValidationErrors](err); hasValidationErrs {
 			status = 400
 			code = domain.CodeInvalidArgument
+			mapping.Title = "Bad Request"
+			mapping.Detail = "Invalid request"
 		}
 
 		requestID := c.Response().Header().Get(echo.HeaderXRequestID)
@@ -89,7 +91,7 @@ func ErrorHandler(log ports.Logger, errorTypeBaseURL string, isProduction bool) 
 			logFields = append(logFields, "user", "anonymous")
 		}
 
-		if !isProduction {
+		if withStackTrace {
 			logFields = append(logFields, "stack_trace", string(debug.Stack()))
 		}
 

@@ -108,7 +108,7 @@ func main() {
 	e.Use(echomiddleware.RequestLogger())
 
 	// Global error handler: maps domain errors to RFC 9457 Problem Details responses.
-	e.HTTPErrorHandler = middleware.ErrorHandler(lgr, cfg.App.ErrorTypeBaseURL, cfg.App.Env == "production")
+	e.HTTPErrorHandler = middleware.ErrorHandler(lgr, cfg.App.ErrorTypeBaseURL, cfg.App.Env == "debug")
 
 	// WebSocket endpoint.
 	e.GET("/websocket", wsHdl.HandleUpgrade, middleware.Authorize(tokenSvc))
