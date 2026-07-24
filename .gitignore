@@ -30,6 +30,7 @@
 
 # Config files with sensitive information
 /configs/*.yaml
+/configs/keys
 
 .agents
 .antigravitycli
