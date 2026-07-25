@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	wsadapter "github.com/billykore/project-one/internal/adapters/websocket"
 	"github.com/billykore/project-one/internal/api/dto"
@@ -45,13 +47,24 @@ func NewNotificationHandler(
 // and persists them to the database.
 func (h *NotificationHandler) Listen(ctx context.Context) error {
 	return h.subscriber.Subscribe(ctx, notificationTopic, func(ctx context.Context, event ports.Event) error {
-		var notification domain.Notification
-		if err := json.Unmarshal(event.Payload, &notification); err != nil {
+		var notificationEvent domain.NotificationEvent
+		if err := json.Unmarshal(event.Payload, &notificationEvent); err != nil {
 			h.log.Error(ctx, "failed to unmarshal notification event", "error", err)
 			return err
 		}
+		if notificationEvent.SchemaVersion != "" && notificationEvent.SchemaVersion != "1.0" {
+			h.log.Warn(ctx, "unsupported notification schema version", "schema_version", notificationEvent.SchemaVersion)
+			return fmt.Errorf("unsupported notification schema version: %s", notificationEvent.SchemaVersion)
+		}
+
+		notification := notificationEvent.Notification
+		notification.EventID = notificationEvent.EventID
 
 		if err := h.uc.SaveNotification(ctx, &notification); err != nil {
+			if strings.Contains(err.Error(), "duplicate key") || strings.Contains(err.Error(), "unique constraint") {
+				h.log.Debug(ctx, "duplicate event skipped", "event_id", notification.EventID)
+				return nil
+			}
 			h.log.Error(ctx, "failed to save notification", "error", err)
 			return err
 		}
@@ -83,7 +96,6 @@ func (h *NotificationHandler) Listen(ctx context.Context) error {
 			} else {
 				h.log.Warn(ctx, "failed to stream notification to websocket", "userID", notification.UserID, "error", err)
 			}
-			return err
 		}
 
 		h.log.Info(ctx, "notification streamed to websocket", "userID", notification.UserID, "type", notification.Type)

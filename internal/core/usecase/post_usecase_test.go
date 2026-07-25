@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/billykore/project-one/internal/core/domain"
+	"github.com/billykore/project-one/internal/core/ports"
 	"github.com/billykore/project-one/internal/core/ports/mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -330,7 +331,10 @@ func TestPostUseCase_LikePost(t *testing.T) {
 		mockRepo.EXPECT().IncrementLikeCount(ctx, postID, 1).Return(nil)
 		mockUserRepo.EXPECT().GetUserByUsername(ctx, "postowner").Return(&domain.User{ID: 2, Username: "postowner"}, nil)
 		mockUserRepo.EXPECT().GetUserByUsername(ctx, username).Return(&domain.User{ID: 1, Username: username}, nil)
-		mockPublisher.EXPECT().Publish(ctx, gomock.Any()).Return(nil)
+		mockPublisher.EXPECT().Publish(ctx, gomock.Any()).DoAndReturn(func(ctx context.Context, event ports.Event) error {
+			assert.Equal(t, "user:2", event.Key)
+			return nil
+		})
 		mockLog.EXPECT().Info(ctx, "post liked successfully", "postID", postID, "username", username)
 
 		count, err := svc.LikePost(ctx, postID, username)

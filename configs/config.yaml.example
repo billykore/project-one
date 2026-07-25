@@ -12,6 +12,18 @@ jwt:
   private_key_path: "./configs/keys/jwt-private.pem"
   public_key_path: "./configs/keys/jwt-public.pem"
   expiration_time: 24h
+message_broker:
+  type: "inmemory"
+  kafka:
+    brokers:
+      - "localhost:9092"
+    topic_prefix: "project1"
+    consumer_group: "notification-consumer"
+    tls_enabled: false
+  rabbitmq:
+    url: "amqp://guest:guest@localhost:5672/"
+    exchange: "project1.notifications"
+    queue: "notifications"
 app:
   port: 8080
   error_type_base_url: ""

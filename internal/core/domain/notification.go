@@ -15,6 +15,7 @@ const (
 type Notification struct {
 	Type          NotificationType
 	ID            int
+	EventID       string
 	UserID        int
 	ActorID       int
 	ActorUsername string

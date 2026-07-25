@@ -13,6 +13,7 @@ import (
 
 type notificationModel struct {
 	ID        uint      `gorm:"primaryKey;autoIncrement"`
+	EventID   string    `gorm:"column:event_id;size:128;default:''"`
 	UserID    uint      `gorm:"column:user_id;notNull"`
 	ActorID   uint      `gorm:"column:actor_id;notNull"`
 	Type      string    `gorm:"column:type;size:50;notNull"`
@@ -29,6 +30,7 @@ func (notificationModel) TableName() string {
 func (m *notificationModel) toDomain() *domain.Notification {
 	return &domain.Notification{
 		ID:        int(m.ID),
+		EventID:   m.EventID,
 		UserID:    int(m.UserID),
 		ActorID:   int(m.ActorID),
 		Type:      domain.NotificationType(m.Type),
@@ -41,6 +43,7 @@ func (m *notificationModel) toDomain() *domain.Notification {
 
 func (m *notificationModel) fromDomain(n *domain.Notification) {
 	m.ID = uint(n.ID)
+	m.EventID = n.EventID
 	m.UserID = uint(n.UserID)
 	m.ActorID = uint(n.ActorID)
 	m.Type = string(n.Type)

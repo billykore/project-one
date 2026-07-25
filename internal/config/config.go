@@ -10,9 +10,10 @@ import (
 
 // Config holds all application configuration.
 type Config struct {
-	App      AppConfig      `mapstructure:"app"`
-	Database DatabaseConfig `mapstructure:"database"`
-	JWT      JWTConfig      `mapstructure:"jwt"`
+	App           AppConfig           `mapstructure:"app"`
+	Database      DatabaseConfig      `mapstructure:"database"`
+	JWT           JWTConfig           `mapstructure:"jwt"`
+	MessageBroker MessageBrokerConfig `mapstructure:"message_broker"`
 }
 
 // AppConfig holds application-level settings.
@@ -42,6 +43,28 @@ type JWTConfig struct {
 	ExpirationTime time.Duration `mapstructure:"expiration_time"`
 }
 
+// MessageBrokerConfig holds the message broker selection and configuration.
+type MessageBrokerConfig struct {
+	Type     string               `mapstructure:"type"`
+	Kafka    KafkaBrokerConfig    `mapstructure:"kafka"`
+	RabbitMQ RabbitMQBrokerConfig `mapstructure:"rabbitmq"`
+}
+
+// KafkaBrokerConfig holds Kafka-specific connection settings.
+type KafkaBrokerConfig struct {
+	Brokers       []string `mapstructure:"brokers"`
+	TopicPrefix   string   `mapstructure:"topic_prefix"`
+	ConsumerGroup string   `mapstructure:"consumer_group"`
+	TLSEnabled    bool     `mapstructure:"tls_enabled"`
+}
+
+// RabbitMQBrokerConfig holds RabbitMQ-specific connection settings.
+type RabbitMQBrokerConfig struct {
+	URL      string `mapstructure:"url"`
+	Exchange string `mapstructure:"exchange"`
+	Queue    string `mapstructure:"queue"`
+}
+
 // ponytail: uses viper (already-installed dep). BindEnv needed so AutomaticEnv
 // knows which keys to check (it only looks up env vars for registered keys).
 func Load(path string) (*Config, error) {
@@ -67,6 +90,14 @@ func Load(path string) (*Config, error) {
 		"jwt.private_key_path",
 		"jwt.public_key_path",
 		"jwt.expiration_time",
+		"message_broker.type",
+		"message_broker.kafka.brokers",
+		"message_broker.kafka.topic_prefix",
+		"message_broker.kafka.consumer_group",
+		"message_broker.kafka.tls_enabled",
+		"message_broker.rabbitmq.url",
+		"message_broker.rabbitmq.exchange",
+		"message_broker.rabbitmq.queue",
 	} {
 		_ = v.BindEnv(key)
 	}

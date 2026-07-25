@@ -120,9 +120,14 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 
 	tokenSvc := token.NewJWTTokenService(privateKey, publicKey, cfg.JWT.ExpirationTime)
 	hasherSvc := hasher.NewBcryptHasher()
-	inMemoryPubSub := pubsub.NewInMemoryPubSub()
-	publisher := pubsub.NewInMemoryPublisher(inMemoryPubSub)
-	subscriber := pubsub.NewInMemorySubscriber(inMemoryPubSub)
+	publisher, err := pubsub.NewPublisher(cfg.MessageBroker, lgr)
+	if err != nil {
+		return nil, err
+	}
+	subscriber, err := pubsub.NewSubscriber(cfg.MessageBroker, lgr)
+	if err != nil {
+		return nil, err
+	}
 	wsManager := wsadapter.NewManager()
 
 	loginUc := usecase.NewLoginUseCase(userRepo, tokenSvc, userTokenRepo, hasherSvc, lgr)
@@ -147,6 +152,25 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 	e.HTTPErrorHandler = middleware.ErrorHandler(lgr, cfg.App.ErrorTypeBaseURL, cfg.App.Env == "debug")
 
 	e.GET("/websocket", wsHdl.HandleUpgrade, middleware.Authorize(tokenSvc))
+	// HealthBroker returns the current message broker status.
+	//
+	//	@Summary		Broker health check
+	//	@Description	Returns the configured message broker type and connection status.
+	//	@Tags			health
+	//	@Produce		json
+	//	@Success		200	{object}	map[string]interface{}
+	//	@Router			/health/broker [get]
+	e.GET("/health/broker", func(c echo.Context) error {
+		publisherHealthy := brokerHealthy(publisher)
+		subscriberHealthy := brokerHealthy(subscriber)
+		return c.JSON(http.StatusOK, map[string]interface{}{
+			"type":               cfg.MessageBroker.Type,
+			"publisher_healthy":  publisherHealthy,
+			"subscriber_healthy": subscriberHealthy,
+			"status":             brokerStatus(publisherHealthy, subscriberHealthy),
+			"healthy":            publisherHealthy && subscriberHealthy,
+		})
+	})
 	if cfg.App.Env != "production" {
 		e.GET("/swagger/*", echoSwagger.WrapHandler)
 	}
@@ -257,6 +281,27 @@ func (a *application) shutdown(ctx context.Context, lgr *logger.Logger) error {
 	}
 
 	return shutdownErr
+}
+
+type brokerHealth interface {
+	Healthy() bool
+}
+
+func brokerHealthy(v any) bool {
+	if h, ok := v.(brokerHealth); ok {
+		return h.Healthy()
+	}
+	return true
+}
+
+func brokerStatus(publisherHealthy, subscriberHealthy bool) string {
+	if publisherHealthy && subscriberHealthy {
+		return "connected"
+	}
+	if !publisherHealthy && !subscriberHealthy {
+		return "disconnected"
+	}
+	return "degraded"
 }
 
 // setupDB initializes the database connection using GORM and configures connection pooling.

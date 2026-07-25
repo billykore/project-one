@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
@@ -74,7 +75,14 @@ func (u *followUseCase) Follow(ctx context.Context, followerUsername, followedUs
 		CreatedAt:     follow.CreatedAt,
 	}
 
-	payload, err := json.Marshal(notification)
+	notificationEvent := domain.NotificationEvent{
+		EventID:       fmt.Sprintf("backend-%d", time.Now().UnixNano()),
+		SchemaVersion: "1.0",
+		Timestamp:     time.Now().UTC().Format(time.RFC3339Nano),
+		Notification:  *notification,
+	}
+
+	payload, err := json.Marshal(notificationEvent)
 	if err != nil {
 		u.log.Error(ctx, "failed to marshal follow notification", "error", err)
 		return follow, nil
@@ -84,6 +92,11 @@ func (u *followUseCase) Follow(ctx context.Context, followerUsername, followedUs
 		Topic:   followNotificationTopic,
 		Key:     fmt.Sprintf("user:%d", followed.ID),
 		Payload: payload,
+		Metadata: map[string]string{
+			"event_id":       notificationEvent.EventID,
+			"schema_version": notificationEvent.SchemaVersion,
+			"timestamp":      notificationEvent.Timestamp,
+		},
 	}
 	if err := u.publisher.Publish(ctx, event); err != nil {
 		u.log.Error(ctx, "failed to publish follow notification", "error", err)

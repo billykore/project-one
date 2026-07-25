@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
@@ -29,7 +30,6 @@ func NewPostUseCase(
 	publisher ports.Publisher,
 	log ports.Logger,
 ) ports.PostUseCase {
-	// ponytail: simplified dependency validation to match NewFollowUseCase
 	if postRepo == nil || likeRepo == nil || userRepo == nil || publisher == nil || log == nil {
 		panic("NewPostUseCase: dependencies must not be nil")
 	}
@@ -137,8 +137,6 @@ func (uc *postUseCase) DeletePost(ctx context.Context, username string, postID i
 	return nil
 }
 
-// ponytail: best-effort notification, flattened from nested if-else pyramid.
-// Two user lookups needed for correct UserID/ActorID; errors logged, not returned.
 func (uc *postUseCase) publishLikeNotification(ctx context.Context, post *domain.Post, like *domain.Like) {
 	postOwner, err := uc.userRepo.GetUserByUsername(ctx, post.Username)
 	if err != nil {
@@ -167,7 +165,14 @@ func (uc *postUseCase) publishLikeNotification(ctx context.Context, post *domain
 		CreatedAt:     like.CreatedAt,
 	}
 
-	payload, err := json.Marshal(notification)
+	notificationEvent := domain.NotificationEvent{
+		EventID:       fmt.Sprintf("backend-%d", time.Now().UnixNano()),
+		SchemaVersion: "1.0",
+		Timestamp:     time.Now().UTC().Format(time.RFC3339Nano),
+		Notification:  *notification,
+	}
+
+	payload, err := json.Marshal(notificationEvent)
 	if err != nil {
 		uc.log.Error(ctx, "failed to marshal like notification", "error", err)
 		return
@@ -175,8 +180,13 @@ func (uc *postUseCase) publishLikeNotification(ctx context.Context, post *domain
 
 	if err := uc.publisher.Publish(ctx, ports.Event{
 		Topic:   postNotificationTopic,
-		Key:     fmt.Sprintf("user:%d", liker.ID),
+		Key:     fmt.Sprintf("user:%d", postOwner.ID),
 		Payload: payload,
+		Metadata: map[string]string{
+			"event_id":       notificationEvent.EventID,
+			"schema_version": notificationEvent.SchemaVersion,
+			"timestamp":      notificationEvent.Timestamp,
+		},
 	}); err != nil {
 		uc.log.Error(ctx, "failed to publish like notification", "error", err)
 	}
@@ -204,7 +214,6 @@ func (uc *postUseCase) LikePost(ctx context.Context, postID int, username string
 		PostID:   postID,
 		Username: username,
 	}
-	// ponytail: calling Create directly instead of checking Exists first saves a DB roundtrip
 	if err := uc.likeRepo.Create(ctx, like); err != nil {
 		if errors.Is(err, domain.ErrPostNotFound) {
 			return 0, err
@@ -223,7 +232,6 @@ func (uc *postUseCase) LikePost(ctx context.Context, postID int, username string
 
 	uc.log.Info(ctx, "post liked successfully", "postID", postID, "username", username)
 
-	// ponytail: best-effort notification, flattened from nested if-else pyramid
 	if post.Username != username {
 		uc.publishLikeNotification(ctx, post, like)
 	}
@@ -239,7 +247,6 @@ func (uc *postUseCase) UnlikePost(ctx context.Context, postID int, username stri
 		return 0, domain.ErrInvalidUsername
 	}
 
-	// ponytail: one fetch for existence + count, then delete — same DB calls as before but no re-fetch
 	post, err := uc.postRepo.GetByIDOnly(ctx, postID)
 	if err != nil {
 		if errors.Is(err, domain.ErrPostNotFound) {
@@ -249,7 +256,6 @@ func (uc *postUseCase) UnlikePost(ctx context.Context, postID int, username stri
 		return 0, fmt.Errorf("get post for unlike: %w", err)
 	}
 
-	// ponytail: calling Delete directly instead of checking Exists first saves a DB roundtrip
 	if err := uc.likeRepo.Delete(ctx, postID, username); err != nil {
 		if errors.Is(err, domain.ErrNotLiked) {
 			return post.LikeCount, nil

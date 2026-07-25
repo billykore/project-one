@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
@@ -24,7 +25,6 @@ func NewCommentUseCase(
 	userRepo ports.UserRepository,
 	publisher ports.Publisher,
 ) ports.CommentUseCase {
-	// ponytail: simplified dependency validation to match NewPostUseCase
 	if commentRepo == nil || postRepo == nil || userRepo == nil || publisher == nil {
 		panic("NewCommentUseCase: dependencies must not be nil")
 	}
@@ -59,7 +59,6 @@ func (uc *commentUseCase) AddComment(ctx context.Context, postID int, username s
 		return fmt.Errorf("failed to create comment: %w", err)
 	}
 
-	// ponytail: best-effort notification, flattened from nested if-else pyramid
 	if post.Username != username {
 		uc.publishCommentNotification(ctx, post, comment)
 	}
@@ -67,8 +66,6 @@ func (uc *commentUseCase) AddComment(ctx context.Context, postID int, username s
 	return nil
 }
 
-// ponytail: best-effort notification with early returns.
-// Two user lookups needed for correct UserID/ActorID; errors logged, not returned.
 func (uc *commentUseCase) publishCommentNotification(ctx context.Context, post *domain.Post, comment *domain.Comment) {
 	postOwner, err := uc.userRepo.GetUserByUsername(ctx, post.Username)
 	if err != nil {
@@ -91,19 +88,32 @@ func (uc *commentUseCase) publishCommentNotification(ctx context.Context, post *
 		ActorID:       commenter.ID,
 		Type:          domain.NotificationTypeComment,
 		PostID:        post.ID,
+		CommentID:     comment.ID,
 		ActorUsername: commenter.Username,
 		CreatedAt:     comment.CreatedAt,
 	}
 
-	payload, err := json.Marshal(notification)
+	notificationEvent := domain.NotificationEvent{
+		EventID:       fmt.Sprintf("backend-%d", time.Now().UnixNano()),
+		SchemaVersion: "1.0",
+		Timestamp:     time.Now().UTC().Format(time.RFC3339Nano),
+		Notification:  *notification,
+	}
+
+	payload, err := json.Marshal(notificationEvent)
 	if err != nil {
 		return
 	}
 
 	if err := uc.publisher.Publish(ctx, ports.Event{
 		Topic:   postNotificationTopic,
-		Key:     fmt.Sprintf("user:%d", commenter.ID),
+		Key:     fmt.Sprintf("user:%d", postOwner.ID),
 		Payload: payload,
+		Metadata: map[string]string{
+			"event_id":       notificationEvent.EventID,
+			"schema_version": notificationEvent.SchemaVersion,
+			"timestamp":      notificationEvent.Timestamp,
+		},
 	}); err != nil {
 		return
 	}
