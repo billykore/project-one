@@ -11,7 +11,6 @@ import (
 	"time"
 
 	sseadapter "github.com/billykore/project-one/internal/adapters/sse"
-	wsadapter "github.com/billykore/project-one/internal/adapters/websocket"
 	"github.com/billykore/project-one/internal/api/dto"
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
@@ -26,7 +25,6 @@ type NotificationHandler struct {
 	uc         ports.NotificationUseCase
 	userUc     ports.UserUseCase
 	validator  ports.Validator
-	wsManager  *wsadapter.Manager
 	sseManager *sseadapter.Manager
 }
 
@@ -36,7 +34,6 @@ func NewNotificationHandler(
 	notificationUc ports.NotificationUseCase,
 	userUc ports.UserUseCase,
 	validator ports.Validator,
-	wsManager *wsadapter.Manager,
 	sseManager *sseadapter.Manager,
 ) *NotificationHandler {
 	// ponytail: nil checks removed — Go panics at method call site on nil pointer
@@ -46,7 +43,6 @@ func NewNotificationHandler(
 		uc:         notificationUc,
 		userUc:     userUc,
 		validator:  validator,
-		wsManager:  wsManager,
 		sseManager: sseManager,
 	}
 }
@@ -86,17 +82,7 @@ func (h *NotificationHandler) Listen(ctx context.Context) error {
 		resp := notificationResponseFromDomain(notification)
 
 		var streamed bool
-
-		err := h.wsManager.Send(resp)
-		if err != nil {
-			if !errors.Is(err, wsadapter.ErrUserNotConnected) {
-				h.log.Warn(ctx, "failed to stream notification to websocket", "userID", notification.UserID, "error", err)
-			}
-		} else {
-			streamed = true
-		}
-
-		err = h.sseManager.Send(resp)
+		err := h.sseManager.Send(resp)
 		if err != nil {
 			if !errors.Is(err, sseadapter.ErrUserNotConnected) {
 				h.log.Warn(ctx, "failed to stream notification to sse", "userID", notification.UserID, "error", err)

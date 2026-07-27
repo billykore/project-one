@@ -1,9 +1,9 @@
 'use client';
 
 import React from 'react';
-import type { WsConnectionState } from '@/lib/notifications-ws';
+import type { ConnectionState } from '@/lib/notifications-sse';
 
-function ConnectionIndicator({ state }: { state: WsConnectionState }) {
+function ConnectionIndicator({ state }: { state: ConnectionState }) {
   if (state === 'connected') {
     return (
       <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
@@ -37,7 +37,7 @@ export default function NotificationPanel({
   children: React.ReactNode;
   onMarkAll: () => void;
   unreadCount: number;
-  connectionState?: WsConnectionState;
+  connectionState?: ConnectionState;
 }) {
   return (
     <div className="absolute right-0 mt-2 w-80 sm:w-96 z-50">

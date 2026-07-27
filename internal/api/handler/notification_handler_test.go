@@ -11,7 +11,6 @@ import (
 	"time"
 
 	sseadapter "github.com/billykore/project-one/internal/adapters/sse"
-	wsadapter "github.com/billykore/project-one/internal/adapters/websocket"
 	"github.com/billykore/project-one/internal/api/dto"
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
@@ -31,7 +30,6 @@ func TestNotificationHandler_StreamNotifications(t *testing.T) {
 		nil,
 		nil,
 		staticUserUseCase{user: &domain.User{ID: 42, Username: "alice"}},
-		nil,
 		nil,
 		sseManager,
 	)
@@ -105,7 +103,6 @@ func TestNotificationHandler_ListenSkipsMissingSSEClient(t *testing.T) {
 
 	subscriber := mocks.NewMockSubscriber(ctrl)
 	notificationUc := mocks.NewMockNotificationUseCase(ctrl)
-	wsManager := wsadapter.NewManager()
 	sseManager := sseadapter.NewManager()
 
 	h := NewNotificationHandler(
@@ -114,7 +111,6 @@ func TestNotificationHandler_ListenSkipsMissingSSEClient(t *testing.T) {
 		notificationUc,
 		nil,
 		nil,
-		wsManager,
 		sseManager,
 	)
 

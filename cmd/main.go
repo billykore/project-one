@@ -19,7 +19,6 @@ import (
 	sseadapter "github.com/billykore/project-one/internal/adapters/sse"
 	"github.com/billykore/project-one/internal/adapters/token"
 	"github.com/billykore/project-one/internal/adapters/validator"
-	wsadapter "github.com/billykore/project-one/internal/adapters/websocket"
 	"github.com/billykore/project-one/internal/api/handler"
 	"github.com/billykore/project-one/internal/api/middleware"
 	"github.com/billykore/project-one/internal/config"
@@ -47,7 +46,6 @@ type application struct {
 	publisher           ports.Publisher
 	subscriber          ports.Subscriber
 	sseManager          *sseadapter.Manager
-	wsManager           *wsadapter.Manager
 	notificationHandler *handler.NotificationHandler
 }
 
@@ -118,7 +116,6 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 		return nil, err
 	}
 
-	wsManager := wsadapter.NewManager()
 	sseManager := sseadapter.NewManager()
 
 	val := validator.New()
@@ -145,8 +142,7 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 	userHdl := handler.NewUserHandler(userUc, loginUc, followUc, postUc, val, lgr)
 	postHdl := handler.NewPostHandler(postUc, commentUc, val, lgr)
 	commentHdl := handler.NewCommentHandler(commentUc, val, lgr)
-	notificationHdl := handler.NewNotificationHandler(lgr, subscriber, notificationUc, userUc, val, wsManager, sseManager)
-	wsHdl := handler.NewWebSocketHandler(lgr, tokenSvc, userUc, wsManager)
+	notificationHdl := handler.NewNotificationHandler(lgr, subscriber, notificationUc, userUc, val, sseManager)
 	feedHdl := handler.NewFeedHandler(feedUc, lgr)
 
 	e := echo.New()
@@ -155,26 +151,6 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 	e.Use(echomiddleware.RequestLogger())
 	e.HTTPErrorHandler = middleware.ErrorHandler(lgr, cfg.App.ErrorTypeBaseURL, cfg.App.Env == "debug")
 
-	e.GET("/websocket", wsHdl.HandleUpgrade, middleware.Authorize(tokenSvc))
-	// HealthBroker returns the current message broker status.
-	//
-	//	@Summary		Broker health check
-	//	@Description	Returns the configured message broker type and connection status.
-	//	@Tags			health
-	//	@Produce		json
-	//	@Success		200	{object}	map[string]interface{}
-	//	@Router			/health/broker [get]
-	e.GET("/health/broker", func(c echo.Context) error {
-		publisherHealthy := brokerHealthy(publisher)
-		subscriberHealthy := brokerHealthy(subscriber)
-		return c.JSON(http.StatusOK, map[string]interface{}{
-			"type":               cfg.MessageBroker.Type,
-			"publisher_healthy":  publisherHealthy,
-			"subscriber_healthy": subscriberHealthy,
-			"status":             brokerStatus(publisherHealthy, subscriberHealthy),
-			"healthy":            publisherHealthy && subscriberHealthy,
-		})
-	})
 	if cfg.App.Env != "production" {
 		e.GET("/swagger/*", echoSwagger.WrapHandler)
 	}
@@ -187,7 +163,6 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 		publisher:           publisher,
 		subscriber:          subscriber,
 		sseManager:          sseManager,
-		wsManager:           wsManager,
 		notificationHandler: notificationHdl,
 	}, nil
 }
@@ -265,13 +240,6 @@ func (a *application) shutdown(ctx context.Context, lgr *logger.Logger) error {
 		}
 	}
 
-	if err := a.wsManager.Close(); err != nil {
-		lgr.Error(ctx, "failed to close websocket manager", "error", err)
-		if shutdownErr == nil {
-			shutdownErr = err
-		}
-	}
-
 	if err := a.sseManager.Close(); err != nil {
 		lgr.Error(ctx, "failed to close sse manager", "error", err)
 		if shutdownErr == nil {
@@ -294,27 +262,6 @@ func (a *application) shutdown(ctx context.Context, lgr *logger.Logger) error {
 	}
 
 	return shutdownErr
-}
-
-type brokerHealth interface {
-	Healthy() bool
-}
-
-func brokerHealthy(v any) bool {
-	if h, ok := v.(brokerHealth); ok {
-		return h.Healthy()
-	}
-	return true
-}
-
-func brokerStatus(publisherHealthy, subscriberHealthy bool) string {
-	if publisherHealthy && subscriberHealthy {
-		return "connected"
-	}
-	if !publisherHealthy && !subscriberHealthy {
-		return "disconnected"
-	}
-	return "degraded"
 }
 
 // setupDB initializes the database connection using GORM and configures connection pooling.

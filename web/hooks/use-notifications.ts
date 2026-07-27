@@ -7,8 +7,8 @@ import {
   markAllNotificationsAsRead,
   markNotificationAsRead,
 } from '@/lib/notifications-api';
-import { NotificationWsClient } from '@/lib/notifications-ws';
-import type { WsConnectionState } from '@/lib/notifications-ws';
+import { NotificationSseClient } from '@/lib/notifications-sse';
+import type { ConnectionState } from '@/lib/notifications-sse';
 import type { Notification } from '@/lib/types/notification.types';
 
 function sortByNewest(items: Notification[]): Notification[] {
@@ -46,7 +46,7 @@ export function useNotifications() {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [connectionState, setConnectionState] = useState<WsConnectionState>('offline');
+  const [connectionState, setConnectionState] = useState<ConnectionState>('offline');
 
   const unreadCount = useMemo(() => notifications.filter((n) => !n.isRead).length, [notifications]);
 
@@ -86,7 +86,7 @@ export function useNotifications() {
 
     void initialLoad();
 
-    const client = new NotificationWsClient();
+    const client = new NotificationSseClient();
 
     client.onReconnect = () => {
       fetchNotifications()

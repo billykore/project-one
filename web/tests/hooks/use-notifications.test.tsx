@@ -10,7 +10,7 @@ const mocks = vi.hoisted(() => ({
   markAllNotificationsAsRead: vi.fn(),
   // Vitest v4 propagates `new` to the implementation, so a regular function
   // (not an arrow function) is required for constructor mocks.
-  NotificationWsClient: vi.fn().mockImplementation(function () {
+  NotificationSseClient: vi.fn().mockImplementation(function () {
     return {
       connect: vi.fn(),
       disconnect: vi.fn(),
@@ -27,8 +27,8 @@ vi.mock('@/lib/notifications-api', () => ({
   markAllNotificationsAsRead: mocks.markAllNotificationsAsRead,
 }));
 
-vi.mock('@/lib/notifications-ws', () => ({
-  NotificationWsClient: mocks.NotificationWsClient,
+vi.mock('@/lib/notifications-sse', () => ({
+  NotificationSseClient: mocks.NotificationSseClient,
 }));
 
 function Harness({ onReady }: { onReady: (api: ReturnType<typeof useNotifications>) => void }) {
