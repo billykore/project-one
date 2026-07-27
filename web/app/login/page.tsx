@@ -4,7 +4,7 @@ import React, { useState, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ZodError } from "zod";
-import { ApiError } from "@/lib/errors";
+import { ApiError, ProblemDetail } from "@/lib/errors";
 import { InputField } from "@/components/ui/input";
 import { useErrorModal } from "@/hooks/use-error-modal";
 import { loginRequestBodySchema, LoginRequestBody } from "@/app/api/login/schema";
@@ -80,8 +80,15 @@ export default function LoginPage({
       });
 
       if (!res.ok) {
-        const errBody = await res.json().catch(() => ({ error: "Login failed" }));
-        throw new ApiError(errBody.error || "Login failed", res.status);
+        const errBody = await res.json().catch(() => ({}));
+        const problem: ProblemDetail = {
+          type: "about:blank",
+          title: "Login Failed",
+          status: res.status,
+          detail: errBody.detail || errBody.error || "Invalid email or password. Please try again.",
+          instance: "/login",
+        };
+        throw new ApiError(problem);
       }
 
       router.push(redirectUrl || "/");
@@ -202,6 +209,7 @@ export default function LoginPage({
               value={formData.password}
               onChange={handleChange}
               error={errors.password}
+              showPasswordToggle
             />
 
             {/* Links row */}

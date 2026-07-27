@@ -230,14 +230,6 @@ export default function UserProfileView({
                   {posts.length}
                 </span>
               </h2>
-              {isOwner && (
-                <Link
-                  href="/posts/create"
-                  className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:underline flex items-center gap-1"
-                >
-                  Create post +
-                </Link>
-              )}
             </div>
 
             {posts.length === 0 ? (
