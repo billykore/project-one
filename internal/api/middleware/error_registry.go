@@ -46,6 +46,7 @@ var errorMappings = map[error]ErrorMapping{
 	domain.ErrCommentNotFound:        {http.StatusNotFound, domain.CodeNotFound, "not-found", "Not Found", "Comment not found"},
 	domain.ErrNotificationNotFound:   {http.StatusNotFound, domain.CodeNotFound, "not-found", "Not Found", "Notification not found"},
 	domain.ErrInvalidNotification:    {http.StatusBadRequest, domain.CodeInvalidArgument, "invalid-argument", "Bad Request", "Invalid notification"},
+	domain.ErrPostIDMustBeANumber:    {http.StatusBadRequest, domain.CodeInvalidArgument, "invalid-argument", "Bad Request", "Post ID must be a number"},
 }
 
 var defaultMapping = ErrorMapping{

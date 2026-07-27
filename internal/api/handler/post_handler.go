@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/billykore/project-one/internal/api/dto"
+	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
 	"github.com/labstack/echo/v4"
 )
@@ -50,7 +51,7 @@ func (h *PostHandler) CreatePost(c echo.Context) error {
 	var req dto.CreatePostRequest
 	if err := c.Bind(&req); err != nil {
 		h.log.Error(c.Request().Context(), "CreatePost failed", "username", username, "error", "Invalid request body")
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+		return echo.ErrBadRequest
 	}
 
 	if err := h.validator.Validate(req); err != nil {
@@ -88,7 +89,7 @@ func (h *PostHandler) GetPostByID(c echo.Context) error {
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		h.log.Error(c.Request().Context(), "GetPostByID failed", "error", "Post ID must be a number")
-		return echo.NewHTTPError(http.StatusBadRequest, "Post ID must be a number")
+		return domain.ErrPostIDMustBeANumber
 	}
 
 	post, err := h.postUseCase.GetPostByID(c.Request().Context(), id)
@@ -205,13 +206,13 @@ func (h *PostHandler) UpdatePost(c echo.Context) error {
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		h.log.Error(c.Request().Context(), "UpdatePost failed", "username", username, "error", "Post ID must be a number")
-		return echo.NewHTTPError(http.StatusBadRequest, "Post ID must be a number")
+		return domain.ErrPostIDMustBeANumber
 	}
 
 	var req dto.UpdatePostRequest
 	if err := c.Bind(&req); err != nil {
 		h.log.Error(c.Request().Context(), "UpdatePost failed", "username", username, "post_id", id, "error", "Invalid request body")
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+		return echo.ErrBadRequest
 	}
 
 	post, err := h.postUseCase.UpdatePost(c.Request().Context(), username, id, req.Title, req.Content)
@@ -252,7 +253,7 @@ func (h *PostHandler) DeletePost(c echo.Context) error {
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		h.log.Error(c.Request().Context(), "DeletePost failed", "username", username, "error", "Post ID must be a number")
-		return echo.NewHTTPError(http.StatusBadRequest, "Post ID must be a number")
+		return domain.ErrPostIDMustBeANumber
 	}
 
 	err = h.postUseCase.DeletePost(c.Request().Context(), username, id)
@@ -294,7 +295,7 @@ func (h *PostHandler) CreateComment(c echo.Context) error {
 	var req dto.CreateCommentRequest
 	if err := c.Bind(&req); err != nil {
 		h.log.Error(c.Request().Context(), "CreateComment failed", "username", username, "error", "Invalid request body")
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+		return echo.ErrBadRequest
 	}
 
 	if err := h.validator.Validate(req); err != nil {
@@ -337,7 +338,7 @@ func (h *PostHandler) LikePost(c echo.Context) error {
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		h.log.Error(c.Request().Context(), "LikePost failed", "username", username, "error", "Post ID must be a number")
-		return echo.NewHTTPError(http.StatusBadRequest, "Post ID must be a number")
+		return domain.ErrPostIDMustBeANumber
 	}
 
 	likeCount, err := h.postUseCase.LikePost(c.Request().Context(), id, username)
@@ -378,7 +379,7 @@ func (h *PostHandler) UnlikePost(c echo.Context) error {
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		h.log.Error(c.Request().Context(), "UnlikePost failed", "username", username, "error", "Post ID must be a number")
-		return echo.NewHTTPError(http.StatusBadRequest, "Post ID must be a number")
+		return domain.ErrPostIDMustBeANumber
 	}
 
 	likeCount, err := h.postUseCase.UnlikePost(c.Request().Context(), id, username)
@@ -419,7 +420,7 @@ func (h *PostHandler) GetLikeStatus(c echo.Context) error {
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		h.log.Error(c.Request().Context(), "GetLikeStatus failed", "username", username, "error", "Post ID must be a number")
-		return echo.NewHTTPError(http.StatusBadRequest, "Post ID must be a number")
+		return domain.ErrPostIDMustBeANumber
 	}
 
 	liked, likeCount, err := h.postUseCase.GetLikeStatus(c.Request().Context(), id, username)

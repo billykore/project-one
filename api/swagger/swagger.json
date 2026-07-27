@@ -418,6 +418,43 @@
                 }
             }
         },
+        "/notifications/stream": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Stream new notifications for the authenticated user with Server-Sent Events.",
+                "produces": [
+                    "text/event-stream"
+                ],
+                "tags": [
+                    "notifications"
+                ],
+                "summary": "Stream notifications",
+                "responses": {
+                    "200": {
+                        "description": "SSE stream opened",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ProblemDetail"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ProblemDetail"
+                        }
+                    }
+                }
+            }
+        },
         "/notifications/{id}/read": {
             "put": {
                 "security": [

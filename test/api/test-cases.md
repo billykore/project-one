@@ -37,9 +37,17 @@
 | TC-NOTIF-RD-006 | /notifications/{id}/read | PUT | Trying to mark another user's notification as read | Security | Authenticated user, different user's notification | Path: `id={other_user_notif_id}` | 403 | `{"type":"...","title":"...","status":403,"detail":"...","instance":"...","request_id":"..."}` |
 | TC-NOTIF-RD-007 | /notifications/{id}/read | PUT | Validate response schema matches MessageResponse | Contract | Authenticated user, owns notification | Path: `id=1` | 200 | `{"message":"string"}` |
 | TC-NOTIF-ALL-001 | /notifications/read-all | PUT | Mark all notifications as read | Positive | Authenticated user with unread notifications | No body | 200 | `{"message":"..."}` |
-| TC-NOTIF-ALL-002 | /notifications/read-all | PUT | Mark all when there are no notifications | Edge Case | Authenticated user, no notifications | No body | 200 | `{"message":"..."}` |
-| TC-NOTIF-ALL-003 | /notifications/read-all | PUT | Missing authorization header | Security | None | No body | 401 | `{"type":"...","title":"...","status":401,"detail":"...","instance":"...","request_id":"..."}` |
-| TC-NOTIF-ALL-004 | /notifications/read-all | PUT | Validate response schema matches MessageResponse | Contract | Authenticated user | No body | 200 | `{"message":"string"}` |
+| TC-NOTIF-ALL-002 | /notifications/read-all | PUT | Invalid bearer token | Negative | None | Header: `Authorization: Bearer invalid_token` | 401 | `{"type":"...","title":"...","status":401,"detail":"...","instance":"...","request_id":"..."}` |
+| TC-NOTIF-ALL-003 | /notifications/read-all | PUT | Malformed authorization header | Negative | None | Header: `Authorization: Basic abc` | 401 | `{"type":"...","title":"...","status":401,"detail":"...","instance":"...","request_id":"..."}` |
+| TC-NOTIF-ALL-004 | /notifications/read-all | PUT | Mark all when there are no unread notifications | Edge Case | Authenticated user, already-synced inbox | No body | 200 | `{"message":"..."}` |
+| TC-NOTIF-ALL-005 | /notifications/read-all | PUT | Missing authorization header | Security | None | No body | 401 | `{"type":"...","title":"...","status":401,"detail":"...","instance":"...","request_id":"..."}` |
+| TC-NOTIF-ALL-006 | /notifications/read-all | PUT | Validate response schema matches MessageResponse | Contract | Authenticated user | No body | 200 | `{"message":"string"}` |
+| TC-NOTIF-STR-001 | /notifications/stream | GET | Open SSE stream with valid auth | Positive | Authenticated user | No body | 200 | `text/event-stream` |
+| TC-NOTIF-STR-002 | /notifications/stream | GET | Invalid bearer token | Negative | None | Header: `Authorization: Bearer invalid_token` | 401 | `{"type":"...","title":"...","status":401,"detail":"...","instance":"...","request_id":"..."}` |
+| TC-NOTIF-STR-003 | /notifications/stream | GET | Malformed authorization header | Negative | None | Header: `Authorization: Basic abc` | 401 | `{"type":"...","title":"...","status":401,"detail":"...","instance":"...","request_id":"..."}` |
+| TC-NOTIF-STR-004 | /notifications/stream | GET | Stream opens with no queued notifications | Edge Case | Authenticated user, empty queue | No body | 200 | `text/event-stream` |
+| TC-NOTIF-STR-005 | /notifications/stream | GET | Missing authorization header | Security | None | No body | 401 | `{"type":"...","title":"...","status":401,"detail":"...","instance":"...","request_id":"..."}` |
+| TC-NOTIF-STR-006 | /notifications/stream | GET | Validate stream content type | Contract | Authenticated user | No body | 200 | `text/event-stream` |
 | TC-POSTS-001 | /posts | GET | Get user posts with valid auth | Positive | Authenticated user with posts | Query: `?limit=10&offset=0` | 200 | Array of PostResponse objects |
 | TC-POSTS-002 | /posts | GET | Invalid limit value (negative) | Negative | Authenticated user | Query: `?limit=-10` | 400 | `{"type":"...","title":"...","status":400,"detail":"...","instance":"...","request_id":"..."}` |
 | TC-POSTS-003 | /posts | GET | Non-integer offset value | Negative | Authenticated user | Query: `?offset=abc` | 400 | `{"type":"...","title":"...","status":400,"detail":"...","instance":"...","request_id":"..."}` |

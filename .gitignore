@@ -19,6 +19,7 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+.tmp
 
 # IDEs
 .idea
@@ -35,4 +36,6 @@
 .agents
 .antigravitycli
 
+*/__debug*
 /test/coverage
+/scripts/__pycache__

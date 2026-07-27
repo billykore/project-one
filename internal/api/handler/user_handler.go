@@ -88,7 +88,7 @@ func (h *UserHandler) HandleLogin(c echo.Context) error {
 	var req dto.LoginRequest
 	if err := c.Bind(&req); err != nil {
 		h.log.Error(c.Request().Context(), "HandleLogin failed", "error", "Invalid request body")
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+		return echo.ErrBadRequest
 	}
 
 	if err := h.validator.Validate(req); err != nil {

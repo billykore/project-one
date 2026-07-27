@@ -16,6 +16,7 @@ import (
 	"github.com/billykore/project-one/internal/adapters/logger"
 	"github.com/billykore/project-one/internal/adapters/pubsub"
 	"github.com/billykore/project-one/internal/adapters/repository"
+	sseadapter "github.com/billykore/project-one/internal/adapters/sse"
 	"github.com/billykore/project-one/internal/adapters/token"
 	"github.com/billykore/project-one/internal/adapters/validator"
 	wsadapter "github.com/billykore/project-one/internal/adapters/websocket"
@@ -45,6 +46,7 @@ type application struct {
 	db                  *gorm.DB
 	publisher           ports.Publisher
 	subscriber          ports.Subscriber
+	sseManager          *sseadapter.Manager
 	wsManager           *wsadapter.Manager
 	notificationHandler *handler.NotificationHandler
 }
@@ -107,6 +109,17 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 	if err != nil {
 		return nil, err
 	}
+	publisher, err := pubsub.NewRabbitMQPublisher(cfg.MessageBroker.RabbitMQ, lgr)
+	if err != nil {
+		return nil, err
+	}
+	subscriber, err := pubsub.NewRabbitMQSubscriber(cfg.MessageBroker.RabbitMQ, lgr)
+	if err != nil {
+		return nil, err
+	}
+
+	wsManager := wsadapter.NewManager()
+	sseManager := sseadapter.NewManager()
 
 	val := validator.New()
 
@@ -120,15 +133,6 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 
 	tokenSvc := token.NewJWTTokenService(privateKey, publicKey, cfg.JWT.ExpirationTime)
 	hasherSvc := hasher.NewBcryptHasher()
-	publisher, err := pubsub.NewPublisher(cfg.MessageBroker, lgr)
-	if err != nil {
-		return nil, err
-	}
-	subscriber, err := pubsub.NewSubscriber(cfg.MessageBroker, lgr)
-	if err != nil {
-		return nil, err
-	}
-	wsManager := wsadapter.NewManager()
 
 	loginUc := usecase.NewLoginUseCase(userRepo, tokenSvc, userTokenRepo, hasherSvc, lgr)
 	userUc := usecase.NewUserUseCase(userRepo, hasherSvc)
@@ -141,7 +145,7 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 	userHdl := handler.NewUserHandler(userUc, loginUc, followUc, postUc, val, lgr)
 	postHdl := handler.NewPostHandler(postUc, commentUc, val, lgr)
 	commentHdl := handler.NewCommentHandler(commentUc, val, lgr)
-	notificationHdl := handler.NewNotificationHandler(lgr, subscriber, notificationUc, val, wsManager)
+	notificationHdl := handler.NewNotificationHandler(lgr, subscriber, notificationUc, userUc, val, wsManager, sseManager)
 	wsHdl := handler.NewWebSocketHandler(lgr, tokenSvc, userUc, wsManager)
 	feedHdl := handler.NewFeedHandler(feedUc, lgr)
 
@@ -182,6 +186,7 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 		db:                  db,
 		publisher:           publisher,
 		subscriber:          subscriber,
+		sseManager:          sseManager,
 		wsManager:           wsManager,
 		notificationHandler: notificationHdl,
 	}, nil
@@ -230,6 +235,7 @@ func registerRoutes(
 
 	notifications := e.Group("/notifications", middleware.Authorize(tokenSvc))
 	notifications.GET("", notificationHdl.GetNotifications)
+	notifications.GET("/stream", notificationHdl.StreamNotifications)
 	notifications.PUT("/:id/read", notificationHdl.MarkAsRead)
 	notifications.PUT("/read-all", notificationHdl.MarkAllAsRead)
 
@@ -261,6 +267,13 @@ func (a *application) shutdown(ctx context.Context, lgr *logger.Logger) error {
 
 	if err := a.wsManager.Close(); err != nil {
 		lgr.Error(ctx, "failed to close websocket manager", "error", err)
+		if shutdownErr == nil {
+			shutdownErr = err
+		}
+	}
+
+	if err := a.sseManager.Close(); err != nil {
+		lgr.Error(ctx, "failed to close sse manager", "error", err)
 		if shutdownErr == nil {
 			shutdownErr = err
 		}

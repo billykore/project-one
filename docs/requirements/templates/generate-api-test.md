@@ -36,6 +36,14 @@ For EVERY endpoint, there must be at least:
 
 ### Part 2: Postman Collection
 
+After saving the completed test case table to `test/api/test-cases.md`, generate the Postman Collection by running:
+
+```bash
+python3 scripts/generate-postman-collection.py
+```
+
+Use the generated `test/api/postman-collection.json` as the Postman Collection output below. Do not write the collection JSON manually.
+
 After the test case table, generate ONE Postman Collection v2.1 file (JSON format) that:
 
 - Represents each test case above as a single Postman request

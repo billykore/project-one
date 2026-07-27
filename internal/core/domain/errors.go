@@ -63,4 +63,8 @@ var (
 	ErrPasswordTooShort = errors.New("password too short")
 	// ErrCommentTooShort is returned when a comment does not meet the minimum length requirement.
 	ErrCommentTooShort = errors.New("comment must be at least 1 character")
+	// ErrPostIDMustBeANumber is returned when a post ID provided in a request is not a valid number.
+	ErrPostIDMustBeANumber = errors.New("post ID must be a number")
+	// ErrInvalidPostID is returned when a post ID provided in a request is invalid (e.g., negative or zero).
+	ErrInvalidPostID = errors.New("invalid post ID")
 )

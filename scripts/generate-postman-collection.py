@@ -237,10 +237,15 @@ def _parse_request_params(tc: dict, swagger_entry: dict | None) -> dict:
     if raw.lower() in ("no body", "no query params", ""):
         return result
 
-    # ---- Special case: Header injection for invalid tokens ----
+    # ---- Special case: Header injection for auth variations ----
     header_match = re.search(r"Header:\s*`([^`]+)`", raw)
     if header_match:
-        result["headers"].append({"key": "Authorization", "value": "Bearer invalid_token"})
+        header_spec = header_match.group(1).strip()
+        if ":" in header_spec:
+            key, value = header_spec.split(":", 1)
+            result["headers"].append({"key": key.strip(), "value": value.strip()})
+        else:
+            result["headers"].append({"key": "Authorization", "value": header_spec})
 
     # ---- Parse path params ----
     # Pattern: Path: `id=X`, Path: `username=Y`
@@ -424,6 +429,14 @@ def _generate_test_script(tc: dict, status, expected_response: str, body_str: st
                 parts.append(f'    pm.expect(r).to.have.property("{key}");')
             parts.append("});")
 
+    # Detect SSE / stream responses by content type expectation
+    elif "event-stream" in resp.lower():
+        parts.append(
+            'pm.test("Response is event-stream", function () {'
+            "\n    pm.expect(pm.response.headers.get(\"Content-Type\") || \"\").to.include(\"text/event-stream\");"
+            "\n});"
+        )
+
     # Detect "(no schema, success)" or "(object)" or "JSON object"
     elif (
         "(no schema" in resp.lower()
@@ -502,7 +515,7 @@ def build_collection(test_cases: list[dict], swagger_index: dict) -> dict:
     """Build the Postman Collection v2.1 JSON structure."""
     collection = {
         "info": {
-            "name": "User Service API - Test Cases",
+            "name": "Project One API - Test Cases",
             "description": (
                 "Postman collection auto-generated from "
                 "test/api/test-cases.md and api/swagger/swagger.yaml"
@@ -512,8 +525,8 @@ def build_collection(test_cases: list[dict], swagger_index: dict) -> dict:
         "variable": [
             {"key": "base_url", "value": "http://localhost:8080"},
             {"key": "token", "value": ""},
-            {"key": "test_email", "value": "test@example.com"},
-            {"key": "test_password", "value": "password123"},
+            {"key": "test_email", "value": "geralt@gmail.com"},
+            {"key": "test_password", "value": "p@ssw0Rd"},
         ],
         "item": [],
     }

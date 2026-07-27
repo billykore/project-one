@@ -634,6 +634,30 @@ paths:
       summary: Mark all notifications as read
       tags:
       - notifications
+  /notifications/stream:
+    get:
+      description: Stream new notifications for the authenticated user with Server-Sent
+        Events.
+      produces:
+      - text/event-stream
+      responses:
+        "200":
+          description: SSE stream opened
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ProblemDetail'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ProblemDetail'
+      security:
+      - BearerAuth: []
+      summary: Stream notifications
+      tags:
+      - notifications
   /posts:
     get:
       description: Retrieve all posts for the authenticated user.

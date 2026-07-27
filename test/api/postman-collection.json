@@ -1,6 +1,6 @@
 {
   "info": {
-    "name": "Project One Service API - Test Cases",
+    "name": "Project One API - Test Cases",
     "description": "Postman collection auto-generated from test/api/test-cases.md and api/swagger/swagger.yaml",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
@@ -51,7 +51,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"email\":\"user@example.com\",\"password\":\"securepass123\"}"
+              "raw": "\"email\":\"user@example.com\",\"password\":\"securepass123\"}"
             }
           },
           "response": [],
@@ -92,7 +92,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"password\":\"securepass123\"}"
+              "raw": "\"password\":\"securepass123\"}"
             }
           },
           "response": [],
@@ -133,7 +133,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"email\":123,\"password\":\"securepass123\"}"
+              "raw": "\"email\":123,\"password\":\"securepass123\"}"
             }
           },
           "response": [],
@@ -174,7 +174,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{}"
+              "raw": "}"
             }
           },
           "response": [],
@@ -215,7 +215,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"email\":\"user@example.com\",\"password\":\"securepass123\"}"
+              "raw": "\"email\":\"user@example.com\",\"password\":\"securepass123\"}"
             }
           },
           "response": [],
@@ -261,7 +261,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"email\":\"newuser@example.com\",\"first_name\":\"John\",\"last_name\":\"Doe\",\"password\":\"securepass123\",\"username\":\"johndoe\"}"
+              "raw": "\"email\":\"newuser@example.com\",\"first_name\":\"John\",\"last_name\":\"Doe\",\"password\":\"securepass123\",\"username\":\"johndoe\"}"
             }
           },
           "response": [],
@@ -302,7 +302,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"first_name\":\"John\",\"last_name\":\"Doe\",\"password\":\"securepass123\",\"username\":\"johndoe\"}"
+              "raw": "\"first_name\":\"John\",\"last_name\":\"Doe\",\"password\":\"securepass123\",\"username\":\"johndoe\"}"
             }
           },
           "response": [],
@@ -343,7 +343,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"email\":\"newuser@example.com\",\"first_name\":\"John\",\"last_name\":\"Doe\",\"password\":\"short\",\"username\":\"johndoe\"}"
+              "raw": "\"email\":\"newuser@example.com\",\"first_name\":\"John\",\"last_name\":\"Doe\",\"password\":\"short\",\"username\":\"johndoe\"}"
             }
           },
           "response": [],
@@ -384,7 +384,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"email\":\"a@b.co\",\"first_name\":\"abc\",\"last_name\":\"abc\",\"password\":\"12345678\",\"username\":\"abc\"}"
+              "raw": "\"email\":\"a@b.co\",\"first_name\":\"abc\",\"last_name\":\"abc\",\"password\":\"12345678\",\"username\":\"abc\"}"
             }
           },
           "response": [],
@@ -425,7 +425,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"email\":\"newuser2@example.com\",\"first_name\":\"Jane\",\"last_name\":\"Doe\",\"password\":\"securepass123\",\"username\":\"janedoe\"}"
+              "raw": "\"email\":\"newuser2@example.com\",\"first_name\":\"Jane\",\"last_name\":\"Doe\",\"password\":\"securepass123\",\"username\":\"janedoe\"}"
             }
           },
           "response": [],
@@ -1531,7 +1531,89 @@
           ]
         },
         {
-          "name": "TC-NOTIF-ALL-002 - Mark all when there are no notifications",
+          "name": "TC-NOTIF-ALL-002 - Invalid bearer token",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer invalid_token"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications/read-all",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "notifications",
+                "read-all"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {\n    pm.response.to.have.status(401);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-NOTIF-ALL-003 - Malformed authorization header",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Basic abc"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications/read-all",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "notifications",
+                "read-all"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {\n    pm.response.to.have.status(401);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-NOTIF-ALL-004 - Mark all when there are no unread notifications",
           "request": {
             "method": "PUT",
             "header": [
@@ -1575,7 +1657,7 @@
           ]
         },
         {
-          "name": "TC-NOTIF-ALL-003 - Missing authorization header",
+          "name": "TC-NOTIF-ALL-005 - Missing authorization header",
           "request": {
             "method": "PUT",
             "header": [
@@ -1612,7 +1694,7 @@
           ]
         },
         {
-          "name": "TC-NOTIF-ALL-004 - Validate response schema matches MessageResponse",
+          "name": "TC-NOTIF-ALL-006 - Validate response schema matches MessageResponse",
           "request": {
             "method": "PUT",
             "header": [
@@ -1649,6 +1731,262 @@
               "script": {
                 "exec": [
                   "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"message\");\n    pm.expect(r.message).to.be.a(\"string\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "notifications/stream",
+      "item": [
+        {
+          "name": "TC-NOTIF-STR-001 - Open SSE stream with valid auth",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications/stream",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "notifications",
+                "stream"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is event-stream\", function () {\n    pm.expect(pm.response.headers.get(\"Content-Type\") || \"\").to.include(\"text/event-stream\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-NOTIF-STR-002 - Invalid bearer token",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer invalid_token"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications/stream",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "notifications",
+                "stream"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {\n    pm.response.to.have.status(401);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-NOTIF-STR-003 - Malformed authorization header",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Basic abc"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications/stream",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "notifications",
+                "stream"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {\n    pm.response.to.have.status(401);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-NOTIF-STR-004 - Stream opens with no queued notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications/stream",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "notifications",
+                "stream"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is event-stream\", function () {\n    pm.expect(pm.response.headers.get(\"Content-Type\") || \"\").to.include(\"text/event-stream\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-NOTIF-STR-005 - Missing authorization header",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications/stream",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "notifications",
+                "stream"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {\n    pm.response.to.have.status(401);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-NOTIF-STR-006 - Validate stream content type",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications/stream",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "notifications",
+                "stream"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is event-stream\", function () {\n    pm.expect(pm.response.headers.get(\"Content-Type\") || \"\").to.include(\"text/event-stream\");\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -1942,7 +2280,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"content\":\"This is a valid post content\",\"title\":\"My Post Title\"}"
+              "raw": "\"content\":\"This is a valid post content\",\"title\":\"My Post Title\"}"
             }
           },
           "response": [],
@@ -1989,7 +2327,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"content\":\"This is a valid post content\"}"
+              "raw": "\"content\":\"This is a valid post content\"}"
             }
           },
           "response": [],
@@ -2036,7 +2374,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"content\":\"short\",\"title\":\"My Title\"}"
+              "raw": "\"content\":\"short\",\"title\":\"My Title\"}"
             }
           },
           "response": [],
@@ -2083,7 +2421,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"content\":\"1234567890\",\"title\":\"Min Content\"}"
+              "raw": "\"content\":\"1234567890\",\"title\":\"Min Content\"}"
             }
           },
           "response": [],
@@ -2123,7 +2461,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"content\":\"Valid content here\",\"title\":\"My Title\"}"
+              "raw": "\"content\":\"Valid content here\",\"title\":\"My Title\"}"
             }
           },
           "response": [],
@@ -2170,7 +2508,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"content\":\"Schema validation post content\",\"title\":\"Schema Check\"}"
+              "raw": "\"content\":\"Schema validation post content\",\"title\":\"Schema Check\"}"
             }
           },
           "response": [],
@@ -3805,6 +4143,10 @@
                   "type": "string"
                 }
               ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"content\":\"Great post!\",\"id\":{{post_id}}}"
             }
           },
           "response": [],
@@ -3850,6 +4192,10 @@
                   "type": "string"
                 }
               ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"id\":{{post_id}}}"
             }
           },
           "response": [],
@@ -3944,6 +4290,10 @@
                   "type": "string"
                 }
               ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"content\":\"\",\"id\":{{post_id}}}"
             }
           },
           "response": [],
@@ -4031,6 +4381,10 @@
                   "type": "string"
                 }
               ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"content\":\"Contract test comment\",\"id\":{{post_id}}}"
             }
           },
           "response": [],
@@ -6072,7 +6426,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"first_name\":\"Johnny\",\"last_name\":\"Doe\",\"username\":\"johnnydoe\"}"
+              "raw": "\"first_name\":\"Johnny\",\"last_name\":\"Doe\",\"username\":\"johnnydoe\"}"
             }
           },
           "response": [],
@@ -6120,7 +6474,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"last_name\":\"Doe\",\"username\":\"johndoe\"}"
+              "raw": "\"last_name\":\"Doe\",\"username\":\"johndoe\"}"
             }
           },
           "response": [],
@@ -6168,7 +6522,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"first_name\":\"John\",\"last_name\":\"Doe\",\"username\":\"ab\"}"
+              "raw": "\"first_name\":\"John\",\"last_name\":\"Doe\",\"username\":\"ab\"}"
             }
           },
           "response": [],
@@ -6216,7 +6570,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"first_name\":\"abc\",\"last_name\":\"abc\",\"username\":\"abc\"}"
+              "raw": "\"first_name\":\"abc\",\"last_name\":\"abc\",\"username\":\"abc\"}"
             }
           },
           "response": [],
@@ -6257,7 +6611,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"first_name\":\"John\",\"last_name\":\"Doe\",\"username\":\"johndoe\"}"
+              "raw": "\"first_name\":\"John\",\"last_name\":\"Doe\",\"username\":\"johndoe\"}"
             }
           },
           "response": [],
@@ -6305,7 +6659,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"first_name\":\"Jane\",\"last_name\":\"Doe\",\"username\":\"janedoe\"}"
+              "raw": "\"first_name\":\"Jane\",\"last_name\":\"Doe\",\"username\":\"janedoe\"}"
             }
           },
           "response": [],
@@ -6358,7 +6712,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"old_password\":\"oldpass123\",\"new_password\":\"newpass456\"}"
+              "raw": "\"old_password\":\"oldpass123\",\"new_password\":\"newpass456\"}"
             }
           },
           "response": [],
@@ -6406,7 +6760,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"old_password\":\"oldpass123\"}"
+              "raw": "\"old_password\":\"oldpass123\"}"
             }
           },
           "response": [],
@@ -6454,7 +6808,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"old_password\":\"oldpass123\",\"new_password\":\"short\"}"
+              "raw": "\"old_password\":\"oldpass123\",\"new_password\":\"short\"}"
             }
           },
           "response": [],
@@ -6502,7 +6856,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"old_password\":\"oldpass123\",\"new_password\":\"12345678\"}"
+              "raw": "\"old_password\":\"oldpass123\",\"new_password\":\"12345678\"}"
             }
           },
           "response": [],
@@ -6543,7 +6897,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"old_password\":\"oldpass123\",\"new_password\":\"newpass456\"}"
+              "raw": "\"old_password\":\"oldpass123\",\"new_password\":\"newpass456\"}"
             }
           },
           "response": [],
@@ -6591,7 +6945,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"old_password\":\"oldpass123\",\"new_password\":\"newpass789\"}"
+              "raw": "\"old_password\":\"oldpass123\",\"new_password\":\"newpass789\"}"
             }
           },
           "response": [],

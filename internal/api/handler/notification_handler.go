@@ -8,7 +8,9 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
+	sseadapter "github.com/billykore/project-one/internal/adapters/sse"
 	wsadapter "github.com/billykore/project-one/internal/adapters/websocket"
 	"github.com/billykore/project-one/internal/api/dto"
 	"github.com/billykore/project-one/internal/core/domain"
@@ -22,24 +24,30 @@ type NotificationHandler struct {
 	log        ports.Logger
 	subscriber ports.Subscriber
 	uc         ports.NotificationUseCase
+	userUc     ports.UserUseCase
 	validator  ports.Validator
 	wsManager  *wsadapter.Manager
+	sseManager *sseadapter.Manager
 }
 
 func NewNotificationHandler(
 	log ports.Logger,
 	subscriber ports.Subscriber,
 	notificationUc ports.NotificationUseCase,
+	userUc ports.UserUseCase,
 	validator ports.Validator,
 	wsManager *wsadapter.Manager,
+	sseManager *sseadapter.Manager,
 ) *NotificationHandler {
 	// ponytail: nil checks removed — Go panics at method call site on nil pointer
 	return &NotificationHandler{
 		log:        log,
 		subscriber: subscriber,
 		uc:         notificationUc,
+		userUc:     userUc,
 		validator:  validator,
 		wsManager:  wsManager,
+		sseManager: sseManager,
 	}
 }
 
@@ -75,32 +83,104 @@ func (h *NotificationHandler) Listen(ctx context.Context) error {
 			"type", notification.Type,
 		)
 
-		err := h.wsManager.Send(&dto.NotificationResponse{
-			ID:            notification.ID,
-			UserID:        notification.UserID,
-			ActorID:       notification.ActorID,
-			ActorUsername: notification.ActorUsername,
-			Type:          string(notification.Type),
-			PostID:        notification.PostID,
-			CommentID:     notification.CommentID,
-			IsRead:        notification.IsRead,
-			CreatedAt:     notification.CreatedAt,
-			Title:         dto.NotificationTitle(notification.Type),
-			Body:          dto.NotificationBody(notification.Type, notification.ActorUsername),
-		})
+		resp := notificationResponseFromDomain(notification)
+
+		var streamed bool
+
+		err := h.wsManager.Send(resp)
 		if err != nil {
-			// User not being connected is a normal condition (user is offline);
-			// only log actual send failures as warnings.
-			if errors.Is(err, wsadapter.ErrUserNotConnected) {
-				h.log.Debug(ctx, "user not connected to websocket, skipping stream", "userID", notification.UserID)
-			} else {
+			if !errors.Is(err, wsadapter.ErrUserNotConnected) {
 				h.log.Warn(ctx, "failed to stream notification to websocket", "userID", notification.UserID, "error", err)
 			}
+		} else {
+			streamed = true
 		}
 
-		h.log.Info(ctx, "notification streamed to websocket", "userID", notification.UserID, "type", notification.Type)
+		err = h.sseManager.Send(resp)
+		if err != nil {
+			if !errors.Is(err, sseadapter.ErrUserNotConnected) {
+				h.log.Warn(ctx, "failed to stream notification to sse", "userID", notification.UserID, "error", err)
+			}
+		} else {
+			streamed = true
+		}
+
+		if streamed {
+			h.log.Info(ctx, "notification streamed to realtime clients", "userID", notification.UserID, "type", notification.Type)
+		}
+
 		return nil
 	})
+}
+
+// StreamNotifications handles the GET /notifications/stream endpoint.
+//
+//	@Summary		Stream notifications
+//	@Description	Stream new notifications for the authenticated user with Server-Sent Events.
+//	@Tags			notifications
+//	@Produce		text/event-stream
+//	@Success		200	{string}	string	"SSE stream opened"
+//	@Failure		401	{object}	dto.ProblemDetail
+//	@Failure		500	{object}	dto.ProblemDetail
+//	@Security		BearerAuth
+//	@Router			/notifications/stream [get]
+func (h *NotificationHandler) StreamNotifications(c echo.Context) error {
+	username, ok := c.Get("username").(string)
+	if !ok {
+		h.log.Error(c.Request().Context(), "StreamNotifications failed", "error", "Username not found in context")
+		return echo.ErrUnauthorized
+	}
+
+	user, err := h.userUc.GetUser(c.Request().Context(), username)
+	if err != nil {
+		h.log.Error(c.Request().Context(), "StreamNotifications failed", "username", username, "error", "User not found")
+		return echo.ErrUnauthorized
+	}
+
+	flusher, ok := c.Response().Writer.(http.Flusher)
+	if !ok {
+		return echo.NewHTTPError(http.StatusInternalServerError, "streaming unsupported")
+	}
+
+	c.Response().Header().Set(echo.HeaderContentType, "text/event-stream")
+	c.Response().Header().Set(echo.HeaderCacheControl, "no-cache")
+	c.Response().Header().Set(echo.HeaderConnection, "keep-alive")
+	c.Response().Header().Set("X-Accel-Buffering", "no")
+	c.Response().WriteHeader(http.StatusOK)
+	flusher.Flush()
+
+	msgCh := h.sseManager.Register(user.ID)
+	defer h.sseManager.Unregister(user.ID, msgCh)
+
+	keepAlive := time.NewTicker(30 * time.Second)
+	defer keepAlive.Stop()
+
+	ctx := c.Request().Context()
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case <-keepAlive.C:
+			if _, err := c.Response().Write([]byte(": keepalive\n\n")); err != nil {
+				h.log.Error(ctx, "failed to write keepalive", "userID", user.ID, "error", err)
+				return nil
+			}
+			flusher.Flush()
+		case msg, ok := <-msgCh:
+			if !ok {
+				return nil
+			}
+			payload, err := json.Marshal(msg)
+			if err != nil {
+				h.log.Warn(ctx, "failed to marshal sse notification", "userID", user.ID, "error", err)
+				continue
+			}
+			if _, err := fmt.Fprintf(c.Response(), "event: notification\ndata: %s\n\n", payload); err != nil {
+				return nil
+			}
+			flusher.Flush()
+		}
+	}
 }
 
 // GetNotifications handles the GET /notifications endpoint.
@@ -146,21 +226,9 @@ func (h *NotificationHandler) GetNotifications(c echo.Context) error {
 		return err
 	}
 
-	resp := make([]dto.NotificationResponse, len(notifications))
+	resp := make([]*dto.NotificationResponse, len(notifications))
 	for i, n := range notifications {
-		resp[i] = dto.NotificationResponse{
-			ID:            n.ID,
-			UserID:        n.UserID,
-			ActorID:       n.ActorID,
-			ActorUsername: n.ActorUsername,
-			Type:          string(n.Type),
-			PostID:        n.PostID,
-			CommentID:     n.CommentID,
-			IsRead:        n.IsRead,
-			CreatedAt:     n.CreatedAt,
-			Title:         dto.NotificationTitle(n.Type),
-			Body:          dto.NotificationBody(n.Type, n.ActorUsername),
-		}
+		resp[i] = notificationResponseFromDetail(n)
 	}
 
 	h.log.Info(c.Request().Context(), "GetNotifications succeeded", "username", username, "count", len(resp))
@@ -230,4 +298,36 @@ func (h *NotificationHandler) MarkAllAsRead(c echo.Context) error {
 
 	h.log.Info(c.Request().Context(), "MarkAllAsRead succeeded", "username", username)
 	return c.JSON(http.StatusOK, dto.MessageResponse{Message: "All notifications marked as read"})
+}
+
+func notificationResponseFromDomain(notification domain.Notification) *dto.NotificationResponse {
+	return &dto.NotificationResponse{
+		ID:            notification.ID,
+		UserID:        notification.UserID,
+		ActorID:       notification.ActorID,
+		ActorUsername: notification.ActorUsername,
+		Type:          string(notification.Type),
+		PostID:        notification.PostID,
+		CommentID:     notification.CommentID,
+		IsRead:        notification.IsRead,
+		CreatedAt:     notification.CreatedAt,
+		Title:         dto.NotificationTitle(notification.Type),
+		Body:          dto.NotificationBody(notification.Type, notification.ActorUsername),
+	}
+}
+
+func notificationResponseFromDetail(notification *domain.NotificationDetail) *dto.NotificationResponse {
+	return &dto.NotificationResponse{
+		ID:            notification.ID,
+		UserID:        notification.UserID,
+		ActorID:       notification.ActorID,
+		ActorUsername: notification.ActorUsername,
+		Type:          string(notification.Type),
+		PostID:        notification.PostID,
+		CommentID:     notification.CommentID,
+		IsRead:        notification.IsRead,
+		CreatedAt:     notification.CreatedAt,
+		Title:         dto.NotificationTitle(notification.Type),
+		Body:          dto.NotificationBody(notification.Type, notification.ActorUsername),
+	}
 }

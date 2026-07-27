@@ -63,6 +63,45 @@ The backend follows **Clean Architecture** principles to ensure separation of co
 
 The frontend uses the **Next.js App Router** with layouts, pages, and components in the `web/app` directory, and API clients / utilities in `web/lib`.
 
+```mermaid
+flowchart LR
+    browser["Browser"]
+
+    subgraph frontend["Next.js Frontend (`web/`)"]
+        app_router["App Router pages and layouts"]
+        ui["React components and hooks"]
+        api_clients["REST / WebSocket clients"]
+    end
+
+    subgraph backend["Go Backend"]
+        handlers["Echo handlers and middleware (`internal/api`)"]
+        usecases["Use cases (`internal/core/usecase`)"]
+        ports["Ports (`internal/core/ports`)"]
+        adapters["Adapters (`internal/adapters`)"]
+        domain["Domain models (`internal/core/domain`)"]
+    end
+
+    db[("PostgreSQL")]
+    broker[("RabbitMQ")]
+    live["WebSocket / SSE managers"]
+
+    browser --> app_router
+    app_router --> ui
+    ui --> api_clients
+    api_clients -->|HTTP / JSON| handlers
+    browser <-. live notifications .-> live
+
+    handlers --> usecases
+    usecases --> domain
+    usecases --> ports
+    ports --> adapters
+
+    adapters --> db
+    usecases -->|publish events| broker
+    broker -->|consume events| handlers
+    handlers --> live
+```
+
 ---
 
 ## 🛠️ Getting Started

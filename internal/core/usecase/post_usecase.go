@@ -194,7 +194,7 @@ func (uc *postUseCase) publishLikeNotification(ctx context.Context, post *domain
 
 func (uc *postUseCase) LikePost(ctx context.Context, postID int, username string) (int, error) {
 	if postID <= 0 {
-		return 0, domain.ErrInvalidPost
+		return 0, domain.ErrInvalidPostID
 	}
 	if username == "" {
 		return 0, domain.ErrInvalidUsername

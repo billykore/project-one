@@ -123,6 +123,9 @@ func Load(path string) (*Config, error) {
 	if cfg.Database.Host == "" || cfg.Database.User == "" || cfg.Database.DBName == "" {
 		return nil, fmt.Errorf("database host, user, and dbname cannot be empty")
 	}
+	if cfg.MessageBroker.Type != "kafka" && cfg.MessageBroker.Type != "rabbitmq" {
+		return nil, fmt.Errorf("unsupported message broker type: %s", cfg.MessageBroker.Type)
+	}
 
 	return &cfg, nil
 }

@@ -47,6 +47,19 @@ jwt:
   expiration_time: 1h
 app:
   port: 8080
+message_broker:
+  type: "rabbitmq"
+  kafka:
+    brokers:
+      - "localhost:9092"
+    topic_prefix: "project1"
+    consumer_group: "notification-consumer"
+    tls_enabled: false
+  rabbitmq:
+    url: "amqp://guest:guest@localhost:5672/"
+    exchange: "project1.notifications"
+    queue: "notifications"
+
 `)
 	yamlContent = []byte(strings.ReplaceAll(string(yamlContent), "\t", "  "))
 	err := os.WriteFile(filepath.Join(tempDir, "config.yaml"), yamlContent, 0644)
@@ -66,6 +79,9 @@ app:
 	assert.Equal(t, "/tmp/test-public.pem", cfg.JWT.PublicKeyPath)
 	assert.Equal(t, time.Hour, cfg.JWT.ExpirationTime)
 	assert.Equal(t, 8080, cfg.App.Port)
+	assert.Equal(t, "amqp://guest:guest@localhost:5672/", cfg.MessageBroker.RabbitMQ.URL)
+	assert.Equal(t, "project1.notifications", cfg.MessageBroker.RabbitMQ.Exchange)
+	assert.Equal(t, "notifications", cfg.MessageBroker.RabbitMQ.Queue)
 }
 
 func TestLoad_SuccessFromEnv(t *testing.T) {
@@ -82,6 +98,10 @@ func TestLoad_SuccessFromEnv(t *testing.T) {
 	t.Setenv("JWT_PUBLIC_KEY_PATH", "/env/public.pem")
 	t.Setenv("JWT_EXPIRATION_TIME", "2h") // Viper can parse duration strings
 	t.Setenv("APP_PORT", "9000")
+	t.Setenv("MESSAGE_BROKER_TYPE", "rabbitmq")
+	t.Setenv("MESSAGE_BROKER_RABBITMQ_URL", "amqp://guest:guest@localhost:5672/")
+	t.Setenv("MESSAGE_BROKER_RABBITMQ_EXCHANGE", "project1.notifications")
+	t.Setenv("MESSAGE_BROKER_RABBITMQ_QUEUE", "notifications")
 
 	cfg, err := config.Load(tempDir)
 	assert.NoError(t, err)
@@ -127,6 +147,10 @@ app:
 	t.Setenv("JWT_PRIVATE_KEY_PATH", "/env/override-private.pem")
 	t.Setenv("JWT_PUBLIC_KEY_PATH", "/env/override-public.pem")
 	t.Setenv("APP_PORT", "9001")
+	t.Setenv("MESSAGE_BROKER_TYPE", "rabbitmq")
+	t.Setenv("MESSAGE_BROKER_RABBITMQ_URL", "amqp://guest:guest@localhost:5672/")
+	t.Setenv("MESSAGE_BROKER_RABBITMQ_EXCHANGE", "project1.notifications")
+	t.Setenv("MESSAGE_BROKER_RABBITMQ_QUEUE", "notifications")
 
 	cfg, err := config.Load(tempDir)
 	assert.NoError(t, err)
