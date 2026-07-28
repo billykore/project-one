@@ -5,6 +5,7 @@ import Link from "next/link";
 import { handleApiResponse } from "@/lib/errors";
 import NotificationDropdown from "@/components/notification/notification-dropdown";
 import ProfileDropdown from "@/components/layout/profile-dropdown";
+import SearchBar from "@/components/layout/search-bar";
 import { NavbarActionsSkeleton } from "@/components/ui/page-skeleton";
 
 interface User {
@@ -65,6 +66,11 @@ export default function Navbar({ pageTitle, rightActions }: NavbarProps) {
             </span>
           </>
         )}
+      </div>
+
+      {/* Center: Search bar */}
+      <div className="flex-1 flex justify-center mx-4">
+        <SearchBar />
       </div>
 
       {/* Right side: Nav links and dropdowns */}
