@@ -35,6 +35,21 @@ export class ApiError extends Error {
 
 export async function handleApiResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
+    // Global 401 handling: redirect to login, preserving the current path for post-login redirect.
+    if (response.status === 401 && typeof window !== "undefined") {
+      const currentPath = window.location.pathname;
+      if (currentPath !== "/login") {
+        window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
+      }
+      throw new ApiError({
+        type: "about:blank",
+        title: "Unauthorized",
+        status: 401,
+        detail: "Session expired. Redirecting to login...",
+        instance: currentPath,
+      });
+    }
+
     let problem: ProblemDetail = {
       type: "about:blank",
       title: "Unknown Error",

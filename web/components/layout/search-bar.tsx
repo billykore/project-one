@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, type FormEvent, type KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
+import { handleApiResponse } from "@/lib/errors";
 import type { SearchResponse } from "@/lib/types/search.types";
 
 const DEBOUNCE_MS = 300;
@@ -44,13 +45,12 @@ export default function SearchBar() {
         const res = await fetch(`/api/users/search?q=${encodeURIComponent(trimmed)}&limit=${MAX_SUGGESTIONS}`, {
           signal: controller.signal,
         });
-        if (!res.ok) return;
-        const { data } = (await res.json()) as SearchResponse;
+        const { data } = await handleApiResponse<SearchResponse>(res);
         setSuggestions(data);
         setShowDropdown(data.length > 0);
         setActiveIndex(-1);
       } catch {
-        // ponytail: abort errors are expected; ignore silently
+        // ponytail: abort errors and 401 redirects are handled silently
       } finally {
         if (!controller.signal.aborted) setLoading(false);
       }
