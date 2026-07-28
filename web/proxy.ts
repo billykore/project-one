@@ -17,6 +17,7 @@ export function proxy(request: NextRequest) {
   if (!request.cookies.has("access_token")) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
+    loginUrl.searchParams.set("reason", "session_expired");
     return NextResponse.redirect(loginUrl);
   }
 
