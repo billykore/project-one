@@ -121,6 +121,7 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 	val := validator.New()
 
 	userRepo := repository.NewUserRepository(db)
+	userSearchRepo := repository.NewUserSearchRepository(db)
 	userTokenRepo := repository.NewUserTokenRepository(db)
 	postRepo := repository.NewPostRepository(db)
 	followRepo := repository.NewFollowRepository(db)
@@ -132,7 +133,7 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 	hasherSvc := hasher.NewBcryptHasher()
 
 	loginUc := usecase.NewLoginUseCase(userRepo, tokenSvc, userTokenRepo, hasherSvc, lgr)
-	userUc := usecase.NewUserUseCase(userRepo, hasherSvc)
+	userUc := usecase.NewUserUseCase(userRepo, hasherSvc, userSearchRepo)
 	postUc := usecase.NewPostUseCase(postRepo, likeRepo, userRepo, publisher, lgr)
 	followUc := usecase.NewFollowUseCase(followRepo, userRepo, publisher, lgr)
 	commentUc := usecase.NewCommentUseCase(commentRepo, postRepo, userRepo, publisher)
@@ -182,6 +183,7 @@ func registerRoutes(
 	auth.POST("/logout", userHdl.HandleLogout, middleware.Authorize(tokenSvc))
 
 	users := e.Group("/users")
+	users.GET("/search", userHdl.SearchUsers)
 	users.GET("/:username", userHdl.GetUser)
 	users.GET("/:username/posts", userHdl.GetUserPosts)
 

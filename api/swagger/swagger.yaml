@@ -269,6 +269,24 @@ definitions:
       message:
         type: string
     type: object
+  dto.SearchUsersItem:
+    properties:
+      name:
+        type: string
+      username:
+        type: string
+    type: object
+  dto.SearchUsersResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dto.SearchUsersItem'
+        type: array
+      has_more:
+        type: boolean
+      next_cursor:
+        type: string
+    type: object
   dto.UnfollowResponse:
     properties:
       message:
@@ -1290,6 +1308,43 @@ paths:
       security:
       - BearerAuth: []
       summary: Update user profile
+      tags:
+      - users
+  /users/search:
+    get:
+      consumes:
+      - application/json
+      description: Search users by username using prefix and fuzzy matching.
+      parameters:
+      - description: Search query (min 3 characters)
+        in: query
+        name: q
+        required: true
+        type: string
+      - description: Pagination cursor from previous response
+        in: query
+        name: cursor
+        type: string
+      - description: Max results (1-20, default 10)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SearchUsersResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ProblemDetail'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ProblemDetail'
+      summary: Search users
       tags:
       - users
 securityDefinitions:

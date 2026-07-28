@@ -101,3 +101,23 @@ type UpdateProfileResponse struct {
 	Message  string `json:"message"`
 	Username string `json:"username"`
 }
+
+// SearchUsersRequest holds query parameters for the user search endpoint.
+type SearchUsersRequest struct {
+	Q      string `query:"q" validate:"required,min=3"`
+	Cursor string `query:"cursor"`
+	Limit  int    `query:"limit" validate:"omitempty,min=1,max=20"`
+}
+
+// SearchUsersItem is a single search result item.
+type SearchUsersItem struct {
+	Username string `json:"username"`
+	Name     string `json:"name"`
+}
+
+// SearchUsersResponse wraps the search results with cursor pagination.
+type SearchUsersResponse struct {
+	Data       []SearchUsersItem `json:"data"`
+	NextCursor string            `json:"next_cursor"`
+	HasMore    bool              `json:"has_more"`
+}

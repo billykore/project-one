@@ -49,7 +49,7 @@ func TestLookupError_Unknown(t *testing.T) {
 	assert.Equal(t, http.StatusInternalServerError, m.Status)
 	assert.Equal(t, domain.CodeInternal, m.Code)
 	assert.Equal(t, "Internal Server Error", m.Title)
-	assert.Equal(t, "Internal server error", m.Detail)
+	assert.Equal(t, "Something went wrong", m.Detail)
 	assert.Empty(t, m.TypeSlug) // unknown → about:blank
 }
 

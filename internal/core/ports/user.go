@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/billykore/project-one/internal/core/domain"
+	vo "github.com/billykore/project-one/internal/core/valueobject"
 )
 
 // UserRepository is a driven port for user persistence.
@@ -34,4 +35,18 @@ type UserUseCase interface {
 	ChangePassword(ctx context.Context, username, oldPassword, newPassword string) error
 	// UpdateProfile updates the authenticated user's profile fields (first_name, last_name, username).
 	UpdateProfile(ctx context.Context, username string, user *domain.User) error
+	// SearchUsers searches for users by username prefix/fuzzy match.
+	// query must be at least 3 characters; limit is clamped to 1–20.
+	// cursor is an opaque pagination cursor (nil for first page).
+	// Returns results, nextCursor (nil if no more pages), and hasMore.
+	SearchUsers(ctx context.Context, query string, cursor *vo.Cursor, limit int) ([]domain.SearchResult, *vo.Cursor, bool, error)
+}
+
+// UserSearchRepository is a driven port for user search operations.
+type UserSearchRepository interface {
+	// Search returns users matching the query using trigram and prefix matching.
+	// Results are ordered by relevance: exact match → prefix match → trigram similarity.
+	// cursor is an opaque pagination cursor (nil for first page).
+	// Returns results, nextCursor (nil if no more pages), and hasMore.
+	Search(ctx context.Context, query string, cursor *vo.Cursor, limit int) ([]domain.SearchResult, *vo.Cursor, bool, error)
 }

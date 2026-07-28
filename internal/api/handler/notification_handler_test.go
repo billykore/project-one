@@ -15,6 +15,7 @@ import (
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
 	"github.com/billykore/project-one/internal/core/ports/mocks"
+	vo "github.com/billykore/project-one/internal/core/valueobject"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -170,6 +171,10 @@ func (u staticUserUseCase) ChangePassword(context.Context, string, string, strin
 
 func (u staticUserUseCase) UpdateProfile(context.Context, string, *domain.User) error {
 	return nil
+}
+
+func (u staticUserUseCase) SearchUsers(context.Context, string, *vo.Cursor, int) ([]domain.SearchResult, *vo.Cursor, bool, error) {
+	return nil, nil, false, nil
 }
 
 var _ ports.UserUseCase = staticUserUseCase{}

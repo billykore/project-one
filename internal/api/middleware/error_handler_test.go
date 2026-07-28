@@ -67,7 +67,7 @@ func TestErrorHandler_UnknownDefaultsTo500(t *testing.T) {
 	assert.Equal(t, "Internal Server Error", body["title"])
 	assert.Equal(t, float64(500), body["status"])
 	// In production, detail must be the generic default, not assert.AnError's message
-	assert.Equal(t, "Internal server error", body["detail"])
+	assert.Equal(t, "Something went wrong", body["detail"])
 	assert.Equal(t, "INTERNAL", body["code"])
 }
 

@@ -21,3 +21,15 @@ type User struct {
 	// UpdatedAt is the timestamp when the user was last updated.
 	UpdatedAt time.Time
 }
+
+// SearchResult is a lightweight value object for user search results.
+type SearchResult struct {
+	Username  string
+	FirstName string
+	LastName  string
+}
+
+// Name returns the concatenated full name.
+func (s SearchResult) Name() string {
+	return s.FirstName + " " + s.LastName
+}

@@ -14,6 +14,7 @@ import (
 	reflect "reflect"
 
 	domain "github.com/billykore/project-one/internal/core/domain"
+	valueobject "github.com/billykore/project-one/internal/core/valueobject"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -195,6 +196,23 @@ func (mr *MockUserUseCaseMockRecorder) Register(ctx, user any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockUserUseCase)(nil).Register), ctx, user)
 }
 
+// SearchUsers mocks base method.
+func (m *MockUserUseCase) SearchUsers(ctx context.Context, query string, cursor *valueobject.Cursor, limit int) ([]domain.SearchResult, *valueobject.Cursor, bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchUsers", ctx, query, cursor, limit)
+	ret0, _ := ret[0].([]domain.SearchResult)
+	ret1, _ := ret[1].(*valueobject.Cursor)
+	ret2, _ := ret[2].(bool)
+	ret3, _ := ret[3].(error)
+	return ret0, ret1, ret2, ret3
+}
+
+// SearchUsers indicates an expected call of SearchUsers.
+func (mr *MockUserUseCaseMockRecorder) SearchUsers(ctx, query, cursor, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchUsers", reflect.TypeOf((*MockUserUseCase)(nil).SearchUsers), ctx, query, cursor, limit)
+}
+
 // UpdateProfile mocks base method.
 func (m *MockUserUseCase) UpdateProfile(ctx context.Context, username string, user *domain.User) error {
 	m.ctrl.T.Helper()
@@ -207,4 +225,45 @@ func (m *MockUserUseCase) UpdateProfile(ctx context.Context, username string, us
 func (mr *MockUserUseCaseMockRecorder) UpdateProfile(ctx, username, user any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfile", reflect.TypeOf((*MockUserUseCase)(nil).UpdateProfile), ctx, username, user)
+}
+
+// MockUserSearchRepository is a mock of UserSearchRepository interface.
+type MockUserSearchRepository struct {
+	ctrl     *gomock.Controller
+	recorder *MockUserSearchRepositoryMockRecorder
+	isgomock struct{}
+}
+
+// MockUserSearchRepositoryMockRecorder is the mock recorder for MockUserSearchRepository.
+type MockUserSearchRepositoryMockRecorder struct {
+	mock *MockUserSearchRepository
+}
+
+// NewMockUserSearchRepository creates a new mock instance.
+func NewMockUserSearchRepository(ctrl *gomock.Controller) *MockUserSearchRepository {
+	mock := &MockUserSearchRepository{ctrl: ctrl}
+	mock.recorder = &MockUserSearchRepositoryMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockUserSearchRepository) EXPECT() *MockUserSearchRepositoryMockRecorder {
+	return m.recorder
+}
+
+// Search mocks base method.
+func (m *MockUserSearchRepository) Search(ctx context.Context, query string, cursor *valueobject.Cursor, limit int) ([]domain.SearchResult, *valueobject.Cursor, bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Search", ctx, query, cursor, limit)
+	ret0, _ := ret[0].([]domain.SearchResult)
+	ret1, _ := ret[1].(*valueobject.Cursor)
+	ret2, _ := ret[2].(bool)
+	ret3, _ := ret[3].(error)
+	return ret0, ret1, ret2, ret3
+}
+
+// Search indicates an expected call of Search.
+func (mr *MockUserSearchRepositoryMockRecorder) Search(ctx, query, cursor, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Search", reflect.TypeOf((*MockUserSearchRepository)(nil).Search), ctx, query, cursor, limit)
 }

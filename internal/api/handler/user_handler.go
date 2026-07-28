@@ -9,6 +9,7 @@ import (
 	"github.com/billykore/project-one/internal/api/dto"
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
+	vo "github.com/billykore/project-one/internal/core/valueobject"
 	"github.com/labstack/echo/v4"
 )
 
@@ -426,6 +427,69 @@ func toUserResponse(user *domain.User) dto.UserResponse {
 		Email:    user.Email,
 		Name:     user.FirstName + " " + user.LastName,
 	}
+}
+
+// SearchUsers handles the GET /users/search endpoint.
+//
+//	@Summary		Search users
+//	@Description	Search users by username using prefix and fuzzy matching.
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			q		query		string	true	"Search query (min 3 characters)"
+//	@Param			cursor	query		string	false	"Pagination cursor from previous response"
+//	@Param			limit	query		int		false	"Max results (1-20, default 10)"
+//	@Success		200		{object}	dto.SearchUsersResponse
+//	@Failure		400		{object}	dto.ProblemDetail
+//	@Failure		500		{object}	dto.ProblemDetail
+//	@Router			/users/search [get]
+func (h *UserHandler) SearchUsers(c echo.Context) error {
+	var req dto.SearchUsersRequest
+	if err := c.Bind(&req); err != nil {
+		h.log.Error(c.Request().Context(), "SearchUsers failed", "error", "Invalid query parameters")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid query parameters")
+	}
+
+	if req.Limit == 0 {
+		req.Limit = 10
+	}
+
+	if err := h.validator.Validate(req); err != nil {
+		h.log.Error(c.Request().Context(), "SearchUsers failed", "validation_error", err)
+		return err
+	}
+
+	cursor, err := vo.DecodeCursor(req.Cursor)
+	if err != nil && req.Cursor != "" {
+		h.log.Error(c.Request().Context(), "SearchUsers failed", "error", "Invalid cursor")
+		return domain.ErrInvalidCursor
+	}
+	var cursorPtr *vo.Cursor
+	if req.Cursor != "" {
+		cursorPtr = &cursor
+	}
+
+	results, nextCursor, hasMore, err := h.userUseCase.SearchUsers(c.Request().Context(), req.Q, cursorPtr, req.Limit)
+	if err != nil {
+		h.log.Error(c.Request().Context(), "SearchUsers failed", "query", req.Q, "error", err)
+		return err
+	}
+
+	items := make([]dto.SearchUsersItem, 0, len(results))
+	for _, r := range results {
+		items = append(items, dto.SearchUsersItem{
+			Username: r.Username,
+			Name:     r.Name(),
+		})
+	}
+
+	nextCursorStr := ""
+	if nextCursor != nil {
+		nextCursorStr = nextCursor.Encode()
+	}
+
+	h.log.Info(c.Request().Context(), "SearchUsers succeeded", "query", req.Q, "results", len(items))
+	return c.JSON(http.StatusOK, dto.SearchUsersResponse{Data: items, NextCursor: nextCursorStr, HasMore: hasMore})
 }
 
 // GetUserPosts handles the GET /users/:username/posts endpoint.

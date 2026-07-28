@@ -67,4 +67,8 @@ var (
 	ErrPostIDMustBeANumber = errors.New("post ID must be a number")
 	// ErrInvalidPostID is returned when a post ID provided in a request is invalid (e.g., negative or zero).
 	ErrInvalidPostID = errors.New("invalid post ID")
+	// ErrSearchQueryTooShort is returned when a search query doesn't meet the minimum length (3 characters).
+	ErrSearchQueryTooShort = errors.New("search query too short")
+	// ErrInvalidCursor is returned when a cursor provided in a request is invalid.
+	ErrInvalidCursor = errors.New("invalid cursor")
 )

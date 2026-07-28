@@ -8,24 +8,30 @@ import (
 
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
+	vo "github.com/billykore/project-one/internal/core/valueobject"
 )
 
 type userUseCase struct {
-	userRepo ports.UserRepository
-	hasher   ports.Hasher
+	userRepo       ports.UserRepository
+	userSearchRepo ports.UserSearchRepository
+	hasher         ports.Hasher
 }
 
 // NewUserUseCase creates a new instance of ports.UserUseCase.
-func NewUserUseCase(userRepo ports.UserRepository, hasher ports.Hasher) ports.UserUseCase {
+func NewUserUseCase(userRepo ports.UserRepository, hasher ports.Hasher, userSearchRepo ports.UserSearchRepository) ports.UserUseCase {
 	if userRepo == nil {
 		panic("NewUserUseCase: userRepo is required")
 	}
 	if hasher == nil {
 		panic("NewUserUseCase: hasher is required")
 	}
+	if userSearchRepo == nil {
+		panic("NewUserUseCase: userSearchRepo is required")
+	}
 	return &userUseCase{
-		userRepo: userRepo,
-		hasher:   hasher,
+		userRepo:       userRepo,
+		hasher:         hasher,
+		userSearchRepo: userSearchRepo,
 	}
 }
 
@@ -149,4 +155,20 @@ func (s *userUseCase) UpdateProfile(ctx context.Context, username string, update
 	}
 
 	return nil
+}
+
+// SearchUsers searches for users by username prefix/fuzzy match.
+// query must be at least 3 characters.
+func (s *userUseCase) SearchUsers(ctx context.Context, query string, cursor *vo.Cursor, limit int) ([]domain.SearchResult, *vo.Cursor, bool, error) {
+	query = strings.ToLower(strings.TrimSpace(query))
+	if len(query) < 3 {
+		return nil, nil, false, domain.ErrSearchQueryTooShort
+	}
+
+	results, nextCursor, hasMore, err := s.userSearchRepo.Search(ctx, query, cursor, limit)
+	if err != nil {
+		return nil, nil, false, fmt.Errorf("search users: %w", err)
+	}
+
+	return results, nextCursor, hasMore, nil
 }

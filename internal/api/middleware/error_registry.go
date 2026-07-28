@@ -47,6 +47,8 @@ var errorMappings = map[error]ErrorMapping{
 	domain.ErrNotificationNotFound:   {http.StatusNotFound, domain.CodeNotFound, "not-found", "Not Found", "Notification not found"},
 	domain.ErrInvalidNotification:    {http.StatusBadRequest, domain.CodeInvalidArgument, "invalid-argument", "Bad Request", "Invalid notification"},
 	domain.ErrPostIDMustBeANumber:    {http.StatusBadRequest, domain.CodeInvalidArgument, "invalid-argument", "Bad Request", "Post ID must be a number"},
+	domain.ErrSearchQueryTooShort:    {http.StatusBadRequest, domain.CodeInvalidArgument, "invalid-argument", "Bad Request", "Search query must be at least 3 characters"},
+	domain.ErrInvalidCursor:          {http.StatusBadRequest, domain.CodeInvalidArgument, "invalid-argument", "Bad Request", "Invalid cursor"},
 }
 
 var defaultMapping = ErrorMapping{
@@ -54,7 +56,7 @@ var defaultMapping = ErrorMapping{
 	Code:     domain.CodeInternal,
 	TypeSlug: "",
 	Title:    "Internal Server Error",
-	Detail:   "Internal server error",
+	Detail:   "Something went wrong",
 }
 
 // LookupError walks the error chain with errors.Is and returns the matching ErrorMapping.

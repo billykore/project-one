@@ -6,6 +6,7 @@ import (
 
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports/mocks"
+	vo "github.com/billykore/project-one/internal/core/valueobject"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
@@ -16,7 +17,8 @@ func TestUserUseCase_GetUserProfile(t *testing.T) {
 
 	mockRepo := mocks.NewMockUserRepository(ctrl)
 	mockHasher := mocks.NewMockHasher(ctrl)
-	svc := NewUserUseCase(mockRepo, mockHasher)
+	mockSearchRepo := mocks.NewMockUserSearchRepository(ctrl)
+	svc := NewUserUseCase(mockRepo, mockHasher, mockSearchRepo)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -51,7 +53,8 @@ func TestUserUseCase_Register(t *testing.T) {
 
 	mockRepo := mocks.NewMockUserRepository(ctrl)
 	mockHasher := mocks.NewMockHasher(ctrl)
-	svc := NewUserUseCase(mockRepo, mockHasher)
+	mockSearchRepo := mocks.NewMockUserSearchRepository(ctrl)
+	svc := NewUserUseCase(mockRepo, mockHasher, mockSearchRepo)
 
 	ctx := context.Background()
 
@@ -129,7 +132,8 @@ func TestUserUseCase_ChangePassword(t *testing.T) {
 
 	mockRepo := mocks.NewMockUserRepository(ctrl)
 	mockHasher := mocks.NewMockHasher(ctrl)
-	svc := NewUserUseCase(mockRepo, mockHasher)
+	mockSearchRepo := mocks.NewMockUserSearchRepository(ctrl)
+	svc := NewUserUseCase(mockRepo, mockHasher, mockSearchRepo)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -192,7 +196,8 @@ func TestUserUseCase_UpdateProfile(t *testing.T) {
 
 	mockRepo := mocks.NewMockUserRepository(ctrl)
 	mockHasher := mocks.NewMockHasher(ctrl)
-	svc := NewUserUseCase(mockRepo, mockHasher)
+	mockSearchRepo := mocks.NewMockUserSearchRepository(ctrl)
+	svc := NewUserUseCase(mockRepo, mockHasher, mockSearchRepo)
 
 	ctx := context.Background()
 	oldUsername := "olduser"
@@ -305,5 +310,74 @@ func TestUserUseCase_UpdateProfile(t *testing.T) {
 
 		err := svc.UpdateProfile(ctx, "nonexistent", updatedUser)
 		assert.ErrorIs(t, err, domain.ErrUserNotFound)
+	})
+}
+
+func TestUserUseCase_SearchUsers(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mocks.NewMockUserRepository(ctrl)
+	mockHasher := mocks.NewMockHasher(ctrl)
+	mockSearchRepo := mocks.NewMockUserSearchRepository(ctrl)
+	svc := NewUserUseCase(mockRepo, mockHasher, mockSearchRepo)
+
+	ctx := context.Background()
+
+	t.Run("success - returns search results", func(t *testing.T) {
+		expected := []domain.SearchResult{
+			{Username: "billy", FirstName: "Billy", LastName: "Kore"},
+			{Username: "billie", FirstName: "Billie", LastName: "Eilish"},
+		}
+		mockSearchRepo.EXPECT().Search(ctx, "bil", nil, 10).Return(expected, nil, false, nil)
+
+		results, nextCursor, hasMore, err := svc.SearchUsers(ctx, "bil", nil, 10)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, results)
+		assert.Nil(t, nextCursor)
+		assert.False(t, hasMore)
+	})
+
+	t.Run("success - empty results", func(t *testing.T) {
+		mockSearchRepo.EXPECT().Search(ctx, "xyz", nil, 10).Return([]domain.SearchResult{}, nil, false, nil)
+
+		results, _, _, err := svc.SearchUsers(ctx, "xyz", nil, 10)
+		assert.NoError(t, err)
+		assert.Empty(t, results)
+	})
+
+	t.Run("success - with cursor and has_more", func(t *testing.T) {
+		expected := []domain.SearchResult{
+			{Username: "bilbo", FirstName: "Bilbo", LastName: "Baggins"},
+		}
+		cursor := &vo.Cursor{ID: 10}
+		nextCursor := &vo.Cursor{ID: 15}
+		mockSearchRepo.EXPECT().Search(ctx, "bil", cursor, 5).Return(expected, nextCursor, true, nil)
+
+		results, nc, hm, err := svc.SearchUsers(ctx, "bil", cursor, 5)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, results)
+		assert.Equal(t, nextCursor, nc)
+		assert.True(t, hm)
+	})
+
+	t.Run("query too short - 2 chars", func(t *testing.T) {
+		results, _, _, err := svc.SearchUsers(ctx, "ab", nil, 10)
+		assert.ErrorIs(t, err, domain.ErrSearchQueryTooShort)
+		assert.Nil(t, results)
+	})
+
+	t.Run("query too short - empty", func(t *testing.T) {
+		results, _, _, err := svc.SearchUsers(ctx, "", nil, 10)
+		assert.ErrorIs(t, err, domain.ErrSearchQueryTooShort)
+		assert.Nil(t, results)
+	})
+
+	t.Run("repository error propagated", func(t *testing.T) {
+		mockSearchRepo.EXPECT().Search(ctx, "bil", nil, 10).Return(nil, nil, false, domain.ErrRepositoryFailure)
+
+		results, _, _, err := svc.SearchUsers(ctx, "bil", nil, 10)
+		assert.ErrorIs(t, err, domain.ErrRepositoryFailure)
+		assert.Nil(t, results)
 	})
 }
