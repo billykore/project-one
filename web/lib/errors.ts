@@ -39,7 +39,7 @@ export async function handleApiResponse<T>(response: Response): Promise<T> {
     if (response.status === 401 && typeof window !== "undefined") {
       const currentPath = window.location.pathname;
       if (currentPath !== "/login") {
-        window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
+        window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}&reason=session_expired`;
       }
       throw new ApiError({
         type: "about:blank",

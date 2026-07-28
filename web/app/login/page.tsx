@@ -18,9 +18,9 @@ interface LoginErrors {
 export default function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ registered?: string; redirect?: string }>;
+  searchParams: Promise<{ registered?: string; redirect?: string; reason?: string }>;
 }) {
-  const { registered, redirect: redirectUrl } = use(searchParams);
+  const { registered, redirect: redirectUrl, reason } = use(searchParams);
   const router = useRouter();
   const { showError } = useErrorModal();
   const [formData, setFormData] = useState<LoginRequestBody>({
@@ -156,6 +156,27 @@ export default function LoginPage({
             </div>
             <span className="text-lg font-semibold text-gray-900 dark:text-white tracking-tight">Project1</span>
           </div>
+
+          {/* Session expired banner */}
+          {reason === "session_expired" && (
+            <div className="animate-in fade-in slide-in-from-top-4 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950">
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900">
+                  <svg className="h-4 w-4 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                    Session expired
+                  </p>
+                  <p className="text-xs text-amber-600/80 dark:text-amber-400/80 font-light">
+                    Your session has expired. Please sign in again to continue.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Registration success banner */}
           {registered === "true" && (
