@@ -51,7 +51,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "\"email\":\"user@example.com\",\"password\":\"securepass123\"}"
+              "raw": "{\"email\":\"user@example.com\",\"password\":\"securepass123\"}"
             }
           },
           "response": [],
@@ -92,7 +92,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "\"password\":\"securepass123\"}"
+              "raw": "{\"password\":\"securepass123\"}"
             }
           },
           "response": [],
@@ -133,7 +133,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "\"email\":123,\"password\":\"securepass123\"}"
+              "raw": "{\"email\":123,\"password\":\"securepass123\"}"
             }
           },
           "response": [],
@@ -171,10 +171,6 @@
             },
             "auth": {
               "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "}"
             }
           },
           "response": [],
@@ -215,7 +211,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "\"email\":\"user@example.com\",\"password\":\"securepass123\"}"
+              "raw": "{\"email\":\"user@example.com\",\"password\":\"securepass123\"}"
             }
           },
           "response": [],
@@ -261,7 +257,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "\"email\":\"newuser@example.com\",\"first_name\":\"John\",\"last_name\":\"Doe\",\"password\":\"securepass123\",\"username\":\"johndoe\"}"
+              "raw": "{\"email\":\"newuser@example.com\",\"first_name\":\"John\",\"last_name\":\"Doe\",\"password\":\"securepass123\",\"username\":\"johndoe\"}"
             }
           },
           "response": [],
@@ -302,7 +298,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "\"first_name\":\"John\",\"last_name\":\"Doe\",\"password\":\"securepass123\",\"username\":\"johndoe\"}"
+              "raw": "{\"first_name\":\"John\",\"last_name\":\"Doe\",\"password\":\"securepass123\",\"username\":\"johndoe\"}"
             }
           },
           "response": [],
@@ -343,7 +339,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "\"email\":\"newuser@example.com\",\"first_name\":\"John\",\"last_name\":\"Doe\",\"password\":\"short\",\"username\":\"johndoe\"}"
+              "raw": "{\"email\":\"newuser@example.com\",\"first_name\":\"John\",\"last_name\":\"Doe\",\"password\":\"short\",\"username\":\"johndoe\"}"
             }
           },
           "response": [],
@@ -384,7 +380,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "\"email\":\"a@b.co\",\"first_name\":\"abc\",\"last_name\":\"abc\",\"password\":\"12345678\",\"username\":\"abc\"}"
+              "raw": "{\"email\":\"a@b.co\",\"first_name\":\"abc\",\"last_name\":\"abc\",\"password\":\"12345678\",\"username\":\"abc\"}"
             }
           },
           "response": [],
@@ -425,7 +421,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "\"email\":\"newuser2@example.com\",\"first_name\":\"Jane\",\"last_name\":\"Doe\",\"password\":\"securepass123\",\"username\":\"janedoe\"}"
+              "raw": "{\"email\":\"newuser2@example.com\",\"first_name\":\"Jane\",\"last_name\":\"Doe\",\"password\":\"securepass123\",\"username\":\"janedoe\"}"
             }
           },
           "response": [],
@@ -2280,7 +2276,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "\"content\":\"This is a valid post content\",\"title\":\"My Post Title\"}"
+              "raw": "{\"content\":\"This is a valid post content\",\"title\":\"My Post Title\"}"
             }
           },
           "response": [],
@@ -2327,7 +2323,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "\"content\":\"This is a valid post content\"}"
+              "raw": "{\"content\":\"This is a valid post content\"}"
             }
           },
           "response": [],
@@ -2374,7 +2370,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "\"content\":\"short\",\"title\":\"My Title\"}"
+              "raw": "{\"content\":\"short\",\"title\":\"My Title\"}"
             }
           },
           "response": [],
@@ -2421,7 +2417,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "\"content\":\"1234567890\",\"title\":\"Min Content\"}"
+              "raw": "{\"content\":\"1234567890\",\"title\":\"Min Content\"}"
             }
           },
           "response": [],
@@ -2461,7 +2457,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "\"content\":\"Valid content here\",\"title\":\"My Title\"}"
+              "raw": "{\"content\":\"Valid content here\",\"title\":\"My Title\"}"
             }
           },
           "response": [],
@@ -2508,7 +2504,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "\"content\":\"Schema validation post content\",\"title\":\"Schema Check\"}"
+              "raw": "{\"content\":\"Schema validation post content\",\"title\":\"Schema Check\"}"
             }
           },
           "response": [],
@@ -6426,7 +6422,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "\"first_name\":\"Johnny\",\"last_name\":\"Doe\",\"username\":\"johnnydoe\"}"
+              "raw": "{\"first_name\":\"Johnny\",\"last_name\":\"Doe\",\"username\":\"johnnydoe\"}"
             }
           },
           "response": [],
@@ -6474,7 +6470,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "\"last_name\":\"Doe\",\"username\":\"johndoe\"}"
+              "raw": "{\"last_name\":\"Doe\",\"username\":\"johndoe\"}"
             }
           },
           "response": [],
@@ -6522,7 +6518,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "\"first_name\":\"John\",\"last_name\":\"Doe\",\"username\":\"ab\"}"
+              "raw": "{\"first_name\":\"John\",\"last_name\":\"Doe\",\"username\":\"ab\"}"
             }
           },
           "response": [],
@@ -6570,7 +6566,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "\"first_name\":\"abc\",\"last_name\":\"abc\",\"username\":\"abc\"}"
+              "raw": "{\"first_name\":\"abc\",\"last_name\":\"abc\",\"username\":\"abc\"}"
             }
           },
           "response": [],
@@ -6611,7 +6607,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "\"first_name\":\"John\",\"last_name\":\"Doe\",\"username\":\"johndoe\"}"
+              "raw": "{\"first_name\":\"John\",\"last_name\":\"Doe\",\"username\":\"johndoe\"}"
             }
           },
           "response": [],
@@ -6659,7 +6655,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "\"first_name\":\"Jane\",\"last_name\":\"Doe\",\"username\":\"janedoe\"}"
+              "raw": "{\"first_name\":\"Jane\",\"last_name\":\"Doe\",\"username\":\"janedoe\"}"
             }
           },
           "response": [],
@@ -6712,7 +6708,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "\"old_password\":\"oldpass123\",\"new_password\":\"newpass456\"}"
+              "raw": "{\"old_password\":\"oldpass123\",\"new_password\":\"newpass456\"}"
             }
           },
           "response": [],
@@ -6760,7 +6756,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "\"old_password\":\"oldpass123\"}"
+              "raw": "{\"old_password\":\"oldpass123\"}"
             }
           },
           "response": [],
@@ -6808,7 +6804,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "\"old_password\":\"oldpass123\",\"new_password\":\"short\"}"
+              "raw": "{\"old_password\":\"oldpass123\",\"new_password\":\"short\"}"
             }
           },
           "response": [],
@@ -6856,7 +6852,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "\"old_password\":\"oldpass123\",\"new_password\":\"12345678\"}"
+              "raw": "{\"old_password\":\"oldpass123\",\"new_password\":\"12345678\"}"
             }
           },
           "response": [],
@@ -6897,7 +6893,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "\"old_password\":\"oldpass123\",\"new_password\":\"newpass456\"}"
+              "raw": "{\"old_password\":\"oldpass123\",\"new_password\":\"newpass456\"}"
             }
           },
           "response": [],
@@ -6945,7 +6941,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "\"old_password\":\"oldpass123\",\"new_password\":\"newpass789\"}"
+              "raw": "{\"old_password\":\"oldpass123\",\"new_password\":\"newpass789\"}"
             }
           },
           "response": [],

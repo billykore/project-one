@@ -11,6 +11,8 @@ Usage:
 """
 
 import argparse
+import csv
+import io
 import json
 import re
 import sys
@@ -60,26 +62,9 @@ def parse_md_table(md_path: Path) -> list[dict]:
 
 
 def _split_table_row(line: str) -> list[str]:
-    """Split a markdown table row into cells, respecting backtick boundaries."""
-    cells = []
-    current = []
-    in_backtick = False
-
-    for ch in line:
-        if ch == "`":
-            in_backtick = not in_backtick
-            current.append(ch)
-        elif ch == "|" and not in_backtick:
-            cells.append("".join(current))
-            current = []
-        else:
-            current.append(ch)
-
-    # Don't forget trailing content (last cell before newline)
-    if current:
-        cells.append("".join(current))
-
-    return cells
+    """Split a markdown table row into cells."""
+    # ponytail: csv.reader handles | splitting + backtick quoting, no custom state machine
+    return next(csv.reader(io.StringIO(line), delimiter="|"))
 
 
 # ---------------------------------------------------------------------------
@@ -131,59 +116,26 @@ def load_swagger(spec_path: Path) -> dict:
 # Request body/params parser
 # ---------------------------------------------------------------------------
 
-def _extract_backtick_balanced(raw: str, start: int) -> tuple[str | None, int]:
-    """
-    Extract content between backticks starting at `start` (pointing to first
-    char after the opening backtick). Uses brace-balancing so nested JSON
-    objects do not prematurely close the backtick span. Returns (content, end_pos)
-    where end_pos is the index of the closing backtick, or (None, -1) on failure.
-    """
-    depth = 0
-    min_depth = 0  # track how far below 0 we go
-    in_str = False
-    escape = False
-    for i in range(start, len(raw)):
-        ch = raw[i]
-        if ch == "`" and not in_str and depth <= 0:
-            # Accept backtick as closing when depth ≤ 0 (balanced or over-closed)
-            return raw[start:i], i
-        if escape:
-            escape = False
-            continue
-        if ch == "\\":
-            escape = True
-            continue
-        if ch == '"' and not escape:
-            in_str = not in_str
-        if not in_str:
-            if ch == "{":
-                depth += 1
-            elif ch == "}":
-                depth -= 1
-                min_depth = min(min_depth, depth)
-    return None, -1
-
-
 def _extract_json_body(raw: str) -> tuple[str | None, str]:
     """
     Extract JSON body and query string from the raw request column.
     Returns (body_json_string_or_None, query_string).
     """
+    # ponytail: simple regex for backtick-wrapped content; markdown cells never
+    # contain a bare backtick inside a body/query snippet
     body = None
-    query = ""
-
-    # ---- Parse "Body:" explicitly (preferred) ----
-    body_match = re.search(r"Body:\s*`", raw)
-    if body_match:
-        body, _ = _extract_backtick_balanced(raw, body_match.end())
-
-    # ---- Fallback: plain JSON in backticks (no "Body:" prefix) ----
+    for prefix in ("Body: `", "Body:`"):
+        m = re.search(re.escape(prefix) + r"([^`]+)`", raw)
+        if m:
+            body = m.group(1).strip()
+            break
     if body is None:
-        json_match = re.search(r"`(\{)", raw)
-        if json_match:
-            body, _ = _extract_backtick_balanced(raw, json_match.end())
+        m = re.search(r"`(\{[^`]+\})`", raw)
+        if m:
+            body = m.group(1)
 
     # ---- Parse "Query:" pattern ----
+    query = ""
     query_match = re.search(r"Query:\s*`([^`]+)`", raw)
     if query_match:
         query = query_match.group(1).strip()
@@ -211,25 +163,11 @@ def _parse_request_params(tc: dict, swagger_entry: dict | None) -> dict:
     }
 
     # ---- Determine if this test has auth ----
+    # ponytail: trust swagger for auth, only override is precondition=="none"
     precondition = tc["precondition"].lower()
-    type_label = tc["type"].lower()
-    is_auth_required = True
-
-    # No auth if: precondition is "none", OR type is security and mentions "missing authorization"
-    if precondition == "none":
+    is_auth_required = precondition != "none"
+    if swagger_entry and not swagger_entry["requires_auth"]:
         is_auth_required = False
-    if type_label == "security":
-        if "missing authorization" in tc["scenario"].lower():
-            is_auth_required = False
-        if "invalid" in tc["scenario"].lower() and "token" in tc["scenario"].lower():
-            is_auth_required = False
-
-    # Override with swagger info if available
-    if swagger_entry:
-        if not swagger_entry["requires_auth"]:
-            is_auth_required = False
-        # If swagger says it needs auth but our precondition says None → still
-        # keep requires_auth true (test is about hitting it without auth)
 
     result["requires_auth"] = is_auth_required
 
