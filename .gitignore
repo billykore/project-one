@@ -37,5 +37,5 @@
 .antigravitycli
 
 */__debug*
-/test/coverage
-/scripts/__pycache__
+*/**/__pycache__/
+*.py[cod]
