@@ -1,6 +1,10 @@
-.PHONY: build run test test-cover mock vet lint clean docs help migrate-create migrate-up migrate-down check githooks compose-up compose-down compose-start compose-stop
+.PHONY: build run test test-cover mock vet lint clean docs help migrate-create migrate-up migrate-down check githooks compose-up compose-down compose-start compose-stop seed-users seed-deps
 
 COMPOSE_FILE := deployments/docker-compose.yml
+
+# Python user seeding script
+SEED_SCRIPT := db/seeds/users_seed.py
+SEED_REQ := db/seeds/requirements.txt
 
 ## githooks: Configure git to use local githooks directory
 githooks:
@@ -93,6 +97,20 @@ migrate-down:
 	@command -v migrate >/dev/null 2>&1 || { echo "Error: 'migrate' command not found." >&2; exit 1; }
 	@if [ -z "$(dsn)" ]; then echo "Error: DSN is required. Example: make migrate-down dsn=..." >&2; exit 1; fi
 	migrate -path db/migrations -database "$(dsn)" down $(steps)
+
+## seed-deps: Install Python dependencies for user seeding
+seed-deps:
+	@command -v pip3 >/dev/null 2>&1 || { echo "Error: 'pip3' command not found." >&2; exit 1; }
+	pip3 install -r $(SEED_REQ)
+
+## seed-users: Generate user seeds using Python script (e.g., make seed-users dsn="postgres://user:pass@host:port/db?sslmode=disable")
+seed-users: seed-deps
+	@command -v python3 >/dev/null 2>&1 || { echo "Error: 'python3' command not found." >&2; exit 1; }
+	@if [ -n "$(dsn)" ]; then \
+		DATABASE_URL="$(dsn)" python3 $(SEED_SCRIPT); \
+	else \
+		python3 $(SEED_SCRIPT); \
+	fi
 
 ## compose-up: Start containers (docker compose up -d)
 compose-up:
