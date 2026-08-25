@@ -225,7 +225,7 @@ def _parse_request_params(tc: dict, swagger_entry: dict | None) -> dict:
 # Status code parsing
 # ---------------------------------------------------------------------------
 
-def _parse_expected_status(raw: str) -> int | str:
+def _parse_expected_status(raw: str) -> int | str | list[int]:
     """Parse expected status: '200', '201', '400 or 404', etc."""
     raw = raw.strip()
     # Try simple integer
