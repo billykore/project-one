@@ -1,10 +1,23 @@
 import Link from "next/link";
 import { serverFetch } from "@/lib/server-fetch";
 import { handleApiResponse } from "@/lib/errors";
+import Navbar from "@/components/layout/navbar";
+import SiteFooter from "@/components/layout/site-footer";
+import { Avatar } from "@/components/ui/avatar";
 import type { SearchResponse } from "@/lib/types/search.types";
 
 interface SearchPageProps {
   searchParams: Promise<{ q?: string }>;
+}
+
+function SearchLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex min-h-screen flex-col bg-paper">
+      <Navbar pageTitle="Search" />
+      <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8 sm:px-6 sm:py-10">{children}</main>
+      <SiteFooter />
+    </div>
+  );
 }
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
@@ -12,10 +25,13 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
   if (!q || q.trim().length === 0) {
     return (
-      <main className="mx-auto max-w-2xl px-4 py-12">
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Search Users</h1>
-        <p className="mt-4 text-gray-500 dark:text-gray-400">Enter a search term to find users.</p>
-      </main>
+      <SearchLayout>
+        <p className="meta">Search</p>
+        <h1 className="mt-2 text-2xl font-semibold text-ink">Find someone</h1>
+        <p className="prose-lead mt-2">
+          Type a name or username into the search box above.
+        </p>
+      </SearchLayout>
     );
   }
 
@@ -24,53 +40,45 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   if (!res.ok) {
     // ponytail: generic error; per-error-type messaging if users complain
     return (
-      <main className="mx-auto max-w-2xl px-4 py-12">
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-          Search results for &ldquo;{q}&rdquo;
-        </h1>
-        <p className="mt-4 text-gray-500 dark:text-gray-400">
-          Something went wrong. Please try again.
-        </p>
-      </main>
+      <SearchLayout>
+        <p className="meta">Results for &ldquo;{q}&rdquo;</p>
+        <h1 className="mt-2 text-2xl font-semibold text-ink">Search is unavailable</h1>
+        <p className="prose-lead mt-2">The server didn&apos;t answer. Try again in a moment.</p>
+      </SearchLayout>
     );
   }
 
   const { data: results } = await handleApiResponse<SearchResponse>(res);
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-12">
-      <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-        Search results for &ldquo;{q}&rdquo;
-      </h1>
+    <SearchLayout>
+      <p className="meta">
+        {results.length === 1 ? "1 result" : `${results.length} results`} for &ldquo;{q}&rdquo;
+      </p>
+      <h1 className="mt-2 text-2xl font-semibold text-ink">People</h1>
 
       {results.length === 0 ? (
-        <p className="mt-4 text-gray-500 dark:text-gray-400">
-          No users found matching &ldquo;{q}&rdquo;.
+        <p className="prose-lead mt-3">
+          Nobody here matches &ldquo;{q}&rdquo;. Try a different spelling.
         </p>
       ) : (
-        <ul className="mt-6 divide-y divide-gray-200 dark:divide-gray-800">
+        <ul className="mt-6 divide-y divide-rule border-t border-rule">
           {results.map((user) => (
             <li key={user.username}>
               <Link
                 href={`/${user.username}`}
-                className="flex items-center gap-3 py-3 transition-colors hover:bg-gray-50 dark:hover:bg-gray-900 rounded-lg px-2 -mx-2"
+                className="-mx-3 flex items-center gap-3 rounded-sm px-3 py-3.5 transition-colors hover:bg-sunken"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-indigo-500 to-purple-600 text-sm font-medium text-white">
-                  {user.name.charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    {user.name}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    @{user.username}
-                  </p>
+                <Avatar name={user.name} />
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-ink">{user.name}</p>
+                  <p className="meta truncate normal-case">@{user.username}</p>
                 </div>
               </Link>
             </li>
           ))}
         </ul>
       )}
-    </main>
+    </SearchLayout>
   );
 }

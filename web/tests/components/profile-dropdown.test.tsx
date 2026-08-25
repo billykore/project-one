@@ -125,7 +125,7 @@ describe("ProfileDropdown", () => {
     });
 
     const logoutBtn = Array.from(container.querySelectorAll("button")).find(
-      (btn) => btn.textContent?.includes("Log Out")
+      (btn) => btn.textContent?.includes("Log out")
     );
     expect(logoutBtn).not.toBeUndefined();
 
@@ -140,7 +140,7 @@ describe("ProfileDropdown", () => {
     // Dropdown is closed, modal is open
     expect(container.querySelector("a[href='/']")).toBeNull();
     expect(container.querySelector("h3[id='modal-title']")).not.toBeNull();
-    expect(container.textContent).toContain("Confirm Logout");
+    expect(container.textContent).toContain("Log out of Project One?");
   });
 
   it("triggers API logout and redirects to login when confirmed", async () => {
@@ -160,7 +160,7 @@ describe("ProfileDropdown", () => {
     });
 
     const logoutBtn = Array.from(container.querySelectorAll("button")).find(
-      (btn) => btn.textContent?.includes("Log Out")
+      (btn) => btn.textContent?.includes("Log out")
     );
 
     // Open confirmation modal
@@ -169,7 +169,7 @@ describe("ProfileDropdown", () => {
     });
 
     const confirmBtn = Array.from(container.querySelectorAll("button")).find(
-      (btn) => btn.textContent === "Logout"
+      (btn) => btn.textContent === "Log out"
     );
     expect(confirmBtn).not.toBeUndefined();
 

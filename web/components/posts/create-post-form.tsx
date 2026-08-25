@@ -6,6 +6,7 @@ import { createPostAction } from "@/app/posts/create/actions";
 import { FormState } from "@/lib/types/create-post.types";
 import { InputField } from "@/components/ui/input";
 import { TextAreaField } from "@/components/ui/textarea";
+import { Spinner } from "@/components/ui/modal";
 
 const initialState: FormState = {
   message: null,
@@ -16,70 +17,56 @@ export function CreatePostForm() {
   const [state, formAction, isPending] = useActionState(createPostAction, initialState);
 
   return (
-    <div className="w-full max-w-2xl space-y-8 rounded-2xl bg-white p-8 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800 sm:p-10">
-      <div className="space-y-1">
-        <h2 className="text-2xl/[1.2] font-semibold tracking-tight text-gray-900 dark:text-white">
-          Create a New Post
-        </h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 font-light">
-          Share your thoughts with the community.
+    <div className="panel w-full max-w-2xl p-6 sm:p-9">
+      <header className="border-b border-rule pb-6">
+        <p className="meta">New entry</p>
+        <h1 className="mt-2 text-3xl font-semibold text-ink">Write a post</h1>
+        <p className="prose-lead mt-2">
+          A title, the piece itself, and a few tags so people can find it.
         </p>
-      </div>
-      <form action={formAction} className="space-y-5" noValidate>
+      </header>
+
+      <form action={formAction} className="mt-7 space-y-6" noValidate>
         <InputField
           label="Title"
           id="title"
           type="text"
-          placeholder="Enter post title"
+          placeholder="What are you calling this?"
           error={state.errors?.title}
         />
 
         <TextAreaField
-          label="Content"
+          label="Post"
           id="content"
-          placeholder="What's on your mind? (min 10 characters)"
+          placeholder="Write at least a couple of sentences."
           error={state.errors?.content}
-          rows={6}
+          rows={10}
         />
 
-        <InputField
-          label="Tags"
-          id="tags"
-          type="text"
-          placeholder="e.g. news, technology, life (comma separated)"
-          error={state.errors?.tags}
-        />
+        <div>
+          <InputField
+            label="Tags"
+            id="tags"
+            type="text"
+            placeholder="systems, cities, reading"
+            error={state.errors?.tags}
+          />
+          <p className="meta mt-1.5 normal-case">Separate tags with commas</p>
+        </div>
 
         {state.message && (
-          <div className="animate-in fade-in rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-950">
-            <p className="text-sm text-red-600 dark:text-red-400">{state.message}</p>
-          </div>
+          <p className="notice notice-bad enter" role="alert">
+            {state.message}
+          </p>
         )}
 
-        <div className="flex items-center gap-3 pt-1">
-          <Link
-            href="/"
-            className="flex-1 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-center text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-          >
+        <div className="flex items-center justify-end gap-2 border-t border-rule pt-6">
+          <Link href="/" className="btn btn-quiet btn-lg">
             Cancel
           </Link>
-          <button
-            type="submit"
-            disabled={isPending}
-            className={`flex-1 inline-flex items-center justify-center rounded-lg px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-950
-              ${
-                isPending
-                  ? "cursor-not-allowed bg-indigo-400"
-                  : "bg-linear-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 hover:shadow-md hover:shadow-indigo-500/20 active:scale-[0.98]"
-              }`}
-          >
-            {isPending && (
-              <svg className="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-            )}
-            {isPending ? "Creating…" : "Create Post"}
+          <button type="submit" disabled={isPending} className="btn btn-primary btn-lg">
+            {isPending && <Spinner />}
+            {isPending ? "Publishing" : "Publish post"}
           </button>
         </div>
       </form>

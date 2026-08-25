@@ -54,13 +54,11 @@ export function CommentItem({ comment, currentUser, onEdit, onDelete }: CommentI
   };
 
   return (
-    <div className="border-b border-gray-100 py-4 last:border-0 dark:border-gray-800">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <span className="font-semibold text-sm text-gray-900 dark:text-white">
-            {comment.username}
-          </span>
-          <span className="text-xs text-gray-500">
+    <div className="py-4">
+      <div className="mb-2 flex items-baseline justify-between gap-3">
+        <div className="flex items-baseline gap-2.5">
+          <span className="meta font-medium text-ink">{comment.username}</span>
+          <span className="meta">
             {new Date(comment.created_at).toLocaleDateString(undefined, {
               year: 'numeric',
               month: 'short',
@@ -71,7 +69,7 @@ export function CommentItem({ comment, currentUser, onEdit, onDelete }: CommentI
           </span>
         </div>
         {canManage && !isEditing && (
-          <div className="flex items-center gap-2 text-xs">
+          <div className="flex shrink-0 items-center gap-1">
             <button
               onClick={() => {
                 setEditContent(comment.content);
@@ -79,24 +77,23 @@ export function CommentItem({ comment, currentUser, onEdit, onDelete }: CommentI
                 setError(null);
               }}
               disabled={isDeleting}
-              className="text-indigo-600 hover:text-indigo-800 font-medium disabled:opacity-50 dark:text-indigo-400 dark:hover:text-indigo-300"
+              className="btn btn-ghost btn-sm"
             >
               Edit
             </button>
-            <span className="text-gray-300 dark:text-zinc-700">|</span>
             <button
               onClick={handleDelete}
               disabled={isDeleting}
-              className="text-red-600 hover:text-red-800 font-medium disabled:opacity-50 dark:text-red-400 dark:hover:text-red-300"
+              className="btn btn-ghost btn-sm text-ember hover:text-ember"
             >
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isDeleting ? "Deleting" : "Delete"}
             </button>
           </div>
         )}
       </div>
 
       {isEditing ? (
-        <div className="space-y-3 mt-1">
+        <div className="mt-1 space-y-3">
           <Textarea
             value={editContent}
             onChange={(e) => setEditContent(e.target.value)}
@@ -104,11 +101,11 @@ export function CommentItem({ comment, currentUser, onEdit, onDelete }: CommentI
             rows={2}
           />
           {error && (
-            <p className="text-xs text-red-600 dark:text-red-400" role="alert">
+            <p className="font-mono text-xs text-ember" role="alert">
               {error}
             </p>
           )}
-          <div className="flex gap-2 justify-end">
+          <div className="flex justify-end gap-2">
             <button
               onClick={() => {
                 setIsEditing(false);
@@ -116,26 +113,24 @@ export function CommentItem({ comment, currentUser, onEdit, onDelete }: CommentI
                 setError(null);
               }}
               disabled={isSaving}
-              className="px-3 py-1.5 text-xs font-medium rounded border border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              className="btn btn-quiet btn-sm"
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
               disabled={isSaving || !editContent.trim()}
-              className="px-3 py-1.5 text-xs font-medium rounded text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 disabled:opacity-50"
+              className="btn btn-primary btn-sm"
             >
-              {isSaving ? "Saving..." : "Save"}
+              {isSaving ? "Saving" : "Save changes"}
             </button>
           </div>
         </div>
       ) : (
         <div>
-          <p className="text-sm text-gray-700 dark:text-zinc-300 whitespace-pre-wrap">
-            {comment.content}
-          </p>
+          <p className="prose-body text-base whitespace-pre-wrap">{comment.content}</p>
           {error && (
-            <p className="text-xs text-red-600 mt-1 dark:text-red-400" role="alert">
+            <p className="mt-1 font-mono text-xs text-ember" role="alert">
               {error}
             </p>
           )}

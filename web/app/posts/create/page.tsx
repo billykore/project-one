@@ -1,22 +1,21 @@
 import { Metadata } from "next";
 import { CreatePostForm } from "@/components/posts/create-post-form";
 import Navbar from "@/components/layout/navbar";
+import SiteFooter from "@/components/layout/site-footer";
 
 export const metadata: Metadata = {
-  title: "Create Post | Project One",
-  description: "Create a new post and share it with the world.",
+  title: "Write a post | Project One",
+  description: "Write something and publish it to your followers.",
 };
 
 export default function CreatePostPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50 font-sans dark:bg-gray-950">
-      <Navbar pageTitle="Create Post" />
-      <main className="flex flex-1 items-center justify-center p-6 sm:p-8">
+    <div className="flex min-h-screen flex-col bg-paper">
+      <Navbar pageTitle="Write" />
+      <main className="flex flex-1 items-start justify-center px-4 py-8 sm:px-6 sm:py-12">
         <CreatePostForm />
       </main>
-      <footer className="py-6 text-center text-xs text-gray-400 dark:text-gray-600">
-        &copy; {new Date().getFullYear()} Project One. All rights reserved.
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

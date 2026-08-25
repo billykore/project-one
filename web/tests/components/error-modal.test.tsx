@@ -82,9 +82,9 @@ describe("ErrorModal", () => {
     expect(dialog).not.toBeNull();
     expect(dialog?.getAttribute("aria-modal")).toBe("true");
     expect(container.textContent).toContain("Test error");
-    expect(container.textContent).toContain("Something went wrong");
+    expect(container.textContent).toContain("That didn't go through");
     expect(container.textContent).toContain("Try again");
-    expect(container.textContent).toContain("Go back home");
+    expect(container.textContent).toContain("Go home");
   });
 
   it("closes modal when backdrop is clicked", async () => {

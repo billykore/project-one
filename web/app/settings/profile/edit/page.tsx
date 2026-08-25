@@ -36,16 +36,13 @@ export default async function EditProfilePage() {
     }
     // For other errors, render a minimal error state.
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-black">
-        <div className="rounded-xl border border-zinc-200 bg-white p-8 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-red-600 dark:text-red-400 font-medium">
-            Failed to load profile data. Please try again.
-          </p>
-          <Link
-            href="/"
-            className="mt-4 inline-block text-sm font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
-          >
-            Go to home
+      <div className="flex min-h-screen items-center justify-center bg-paper p-4">
+        <div className="panel measure border-t-2 border-t-ember p-8">
+          <p className="meta">Profile unavailable</p>
+          <h1 className="mt-2 text-2xl font-semibold text-ink">We couldn&apos;t load your details</h1>
+          <p className="prose-lead mt-3">The server didn&apos;t answer. Try again in a moment.</p>
+          <Link href="/" className="btn btn-primary mt-6">
+            Go home
           </Link>
         </div>
       </div>
@@ -55,19 +52,21 @@ export default async function EditProfilePage() {
   const { firstName, lastName } = parseName(user.name);
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50 font-sans dark:bg-black text-gray-900 dark:text-zinc-100 transition-colors duration-200">
-      {/* Simple Navbar-like top bar */}
-      <header className="border-b border-zinc-200 bg-white/80 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/80">
-        <div className="mx-auto flex max-w-6xl items-center px-6 py-4">
-          <a href={`/${username}`} className="text-sm font-medium text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors">
-            &larr; Back to Profile
-          </a>
-          <h1 className="ml-4 text-lg font-bold text-zinc-900 dark:text-zinc-50">Edit Profile</h1>
+    <div className="flex min-h-screen flex-col bg-paper">
+      <header className="border-b border-rule bg-paper/92 backdrop-blur-sm">
+        <div className="mx-auto flex w-full max-w-6xl items-baseline gap-2.5 px-4 py-3 sm:px-6">
+          <span className="font-body text-lg leading-none font-semibold tracking-tight text-ink">
+            Project One
+          </span>
+          <span aria-hidden="true" className="meta text-faint">/</span>
+          <span className="meta">Edit profile</span>
+          <Link href={`/${username}`} className="meta ml-auto hover:text-accent">
+            Back to profile
+          </Link>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="flex flex-1 items-start justify-center p-6 pt-10 md:p-8 md:pt-12">
+      <main className="flex flex-1 items-start justify-center px-4 py-10 sm:px-6 sm:py-14">
         <EditProfileForm
           initialFirstName={firstName}
           initialLastName={lastName}

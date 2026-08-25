@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, type FormEvent, type KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import { handleApiResponse } from "@/lib/errors";
+import { Avatar } from "@/components/ui/avatar";
 import type { SearchResponse } from "@/lib/types/search.types";
 
 const DEBOUNCE_MS = 300;
@@ -116,8 +117,8 @@ export default function SearchBar() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-center">
-      <div ref={containerRef} className="relative">
+    <form onSubmit={handleSubmit} className="flex w-full items-center">
+      <div ref={containerRef} className="relative w-full">
         <input
           ref={inputRef}
           type="text"
@@ -125,15 +126,15 @@ export default function SearchBar() {
           onChange={(e) => handleChange(e.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={() => { if (suggestions.length > 0) setShowDropdown(true); }}
-          placeholder="Search users..."
+          placeholder="Find someone"
           aria-label="Search users"
           autoComplete="off"
-          className="w-48 rounded-lg border border-gray-300 bg-gray-50 py-1.5 pl-9 pr-3 text-sm text-gray-900 placeholder-gray-400 transition-all focus:border-indigo-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500 dark:focus:border-indigo-500 dark:focus:ring-indigo-800 sm:w-56"
+          className="field w-full py-1.5 pr-3 pl-9"
         />
         <button
           type="submit"
           aria-label="Search"
-          className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-400"
+          className="absolute top-1/2 left-2 -translate-y-1/2 text-faint transition-colors hover:text-accent"
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
@@ -142,13 +143,13 @@ export default function SearchBar() {
 
         {/* Suggestion dropdown */}
         {showDropdown && (
-          <div className="absolute left-0 top-full z-50 mt-1 w-full rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900">
+          <div className="pop enter-pop absolute top-full left-0 z-50 mt-1.5 w-full overflow-hidden">
             {loading ? (
               <div className="flex items-center justify-center py-3">
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent" />
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-accent border-t-transparent" />
               </div>
             ) : suggestions.length === 0 ? (
-              <p className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400">No users found</p>
+              <p className="meta px-3 py-2.5">No one by that name</p>
             ) : (
               <ul role="listbox">
                 {suggestions.map((user, i) => (
@@ -157,18 +158,14 @@ export default function SearchBar() {
                     role="option"
                     aria-selected={i === activeIndex}
                     onClick={() => navigateToProfile(user.username)}
-                    className={`flex items-center gap-3 px-3 py-2 cursor-pointer text-sm transition-colors ${
-                      i === activeIndex
-                        ? "bg-indigo-50 dark:bg-indigo-950"
-                        : "hover:bg-gray-50 dark:hover:bg-gray-800"
+                    className={`flex cursor-pointer items-center gap-3 px-3 py-2 text-sm transition-colors ${
+                      i === activeIndex ? "bg-accent-soft" : "hover:bg-sunken"
                     }`}
                   >
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-linear-to-br from-indigo-500 to-purple-600 text-xs font-medium text-white">
-                      {user.name.charAt(0).toUpperCase()}
-                    </div>
+                    <Avatar name={user.name} size="sm" />
                     <div className="min-w-0">
-                      <p className="truncate font-medium text-gray-900 dark:text-white">{user.name}</p>
-                      <p className="truncate text-xs text-gray-500 dark:text-gray-400">@{user.username}</p>
+                      <p className="truncate font-medium text-ink">{user.name}</p>
+                      <p className="meta truncate">@{user.username}</p>
                     </div>
                   </li>
                 ))}

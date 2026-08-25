@@ -118,8 +118,8 @@ export default function PostInteractionSection({
   };
 
   return (
-    <div className="mt-8 border-t border-gray-200 pt-8 dark:border-zinc-800 space-y-6">
-      <div className="flex items-center justify-between space-x-4">
+    <div className="mt-10 space-y-8 border-t border-rule pt-8">
+      <div className="flex items-center justify-between gap-4">
         <LikeButton
           isLiked={isLiked}
           likeCount={likeCount}
@@ -132,14 +132,14 @@ export default function PostInteractionSection({
         )}
       </div>
 
-      <div className="space-y-4">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-zinc-50">
-          Comments ({comments.length})
-        </h3>
+      <div className="space-y-5">
+        <h2 className="rubric">
+          {comments.length === 1 ? "1 comment" : `${comments.length} comments`}
+        </h2>
         {currentUser ? (
           <CommentForm onSubmit={handleAddComment} />
         ) : (
-          <p className="text-sm text-gray-500">Please log in to add comments.</p>
+          <p className="meta normal-case">Log in to join the conversation.</p>
         )}
         <CommentList
           comments={comments}

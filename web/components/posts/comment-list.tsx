@@ -19,14 +19,12 @@ export function CommentList({
 }: CommentListProps) {
   if (comments.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500 dark:text-zinc-400">
-        <p className="text-sm">No comments yet. Be the first to share your thoughts!</p>
-      </div>
+      <p className="meta py-8 text-center">No comments yet &mdash; say the first thing</p>
     );
   }
 
   return (
-    <div className="space-y-1">
+    <div className="divide-y divide-rule border-t border-rule">
       {comments.map((comment) => (
         <CommentItem
           key={comment.id}

@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
+import { Spinner } from "@/components/ui/modal";
 
 interface CommentFormProps {
   onSubmit: (content: string) => Promise<void>;
@@ -37,7 +38,7 @@ export function CommentForm({ onSubmit }: CommentFormProps) {
         </label>
         <Textarea
           id="comment-content"
-          placeholder="Add a comment..."
+          placeholder="Add to the conversation"
           value={content}
           onChange={(e) => setContent(e.target.value)}
           disabled={isSubmitting}
@@ -46,7 +47,7 @@ export function CommentForm({ onSubmit }: CommentFormProps) {
         />
       </div>
       {error && (
-        <p className="text-sm text-red-600 dark:text-red-400" role="alert">
+        <p className="font-mono text-xs text-ember" role="alert">
           {error}
         </p>
       )}
@@ -54,13 +55,10 @@ export function CommentForm({ onSubmit }: CommentFormProps) {
         <button
           type="submit"
           disabled={isSubmitting || !content.trim()}
-          className={`inline-flex items-center rounded-lg px-4 py-2 text-sm font-medium text-white shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-950 ${
-            isSubmitting || !content.trim()
-              ? "cursor-not-allowed bg-indigo-400 opacity-70"
-              : "bg-linear-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 hover:shadow-md hover:shadow-indigo-500/20 active:scale-[0.98]"
-          }`}
+          className="btn btn-primary"
         >
-          {isSubmitting ? "Posting..." : "Post Comment"}
+          {isSubmitting && <Spinner />}
+          {isSubmitting ? "Posting" : "Post comment"}
         </button>
       </div>
     </form>

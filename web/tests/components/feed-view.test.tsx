@@ -78,7 +78,7 @@ describe("FeedView", () => {
       hasMore: false,
     });
 
-    expect(container.textContent).toContain("No posts yet");
+    expect(container.textContent).toContain("Your feed is empty");
     expect(container.querySelector('a[href="/posts/create"]')).not.toBeNull();
     expect(container.querySelector('a[href="/posts"]')).not.toBeNull();
     expect(container.querySelector("[data-feed-sentinel='true']")).toBeNull();
@@ -117,7 +117,7 @@ describe("FeedView", () => {
 
     expect(fetchMock).toHaveBeenCalledWith("/api/feeds?limit=10&cursor=abc%2B%3D%26");
     expect(container.textContent).toContain("Loaded post");
-    expect(container.textContent).toContain("You're all caught up");
+    expect(container.textContent).toContain("End of feed");
 
     await act(async () => {
       root.unmount();
@@ -165,7 +165,7 @@ describe("FeedView", () => {
     expect(container.textContent).toContain('Feed unavailable');
 
     const retryButton = Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "Retry",
+      (button) => button.textContent === "Try again",
     );
     expect(retryButton).not.toBeUndefined();
 

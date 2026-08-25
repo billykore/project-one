@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import Link from "next/link";
 import { FollowerInfo } from "@/lib/types/profile.types";
+import { Modal } from "@/components/ui/modal";
 
 interface FollowListModalProps {
   isOpen: boolean;
@@ -12,66 +13,39 @@ interface FollowListModalProps {
 }
 
 export default function FollowListModal({ isOpen, onClose, title, users }: FollowListModalProps) {
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen) {
-        onClose();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
   return (
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity"
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="modal-title"
+    <Modal
+      open={isOpen}
+      onClose={onClose}
+      rubric={users.length === 1 ? "1 person" : `${users.length} people`}
+      title={title}
+      footer={
+        <button onClick={onClose} className="btn btn-quiet">
+          Close
+        </button>
+      }
     >
-      <div 
-        className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 transform transition-all"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex justify-between items-center mb-4">
-          <h3 id="modal-title" className="text-lg font-bold text-gray-900 dark:text-zinc-50">{title}</h3>
-          <button 
-            onClick={onClose} 
-            className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 cursor-pointer text-lg font-bold"
-            aria-label="Close modal"
-          >
-            ✕
-          </button>
-        </div>
-        <div className="max-h-60 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800 pr-1">
-          {users.length === 0 ? (
-            <p className="py-8 text-center text-sm text-zinc-500 dark:text-zinc-400">No users found.</p>
-          ) : (
-            users.map((u) => (
-              <div key={u.username} className="flex justify-between items-center py-3">
-                <div>
-                  <Link
-                    href={`/${u.username}`}
-                    onClick={onClose}
-                    className="font-medium text-indigo-600 hover:underline dark:text-indigo-400 transition-colors"
-                  >
-                    {u.name}
-                  </Link>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">@{u.username}</p>
-                </div>
-                {u.is_mutual && (
-                  <span className="text-[10px] bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-full dark:bg-zinc-800 dark:text-zinc-400 font-medium">
-                    Mutual
-                  </span>
-                )}
+      <div className="mt-4 max-h-72 divide-y divide-rule overflow-y-auto border-t border-rule">
+        {users.length === 0 ? (
+          <p className="meta py-8 text-center">Nobody here yet</p>
+        ) : (
+          users.map((u) => (
+            <div key={u.username} className="flex items-center justify-between gap-3 py-3">
+              <div className="min-w-0">
+                <Link
+                  href={`/${u.username}`}
+                  onClick={onClose}
+                  className="link block truncate text-sm font-medium"
+                >
+                  {u.name}
+                </Link>
+                <p className="meta truncate normal-case">@{u.username}</p>
               </div>
-            ))
-          )}
-        </div>
+              {u.is_mutual && <span className="meta shrink-0">Mutual</span>}
+            </div>
+          ))
+        )}
       </div>
-    </div>
+    </Modal>
   );
 }

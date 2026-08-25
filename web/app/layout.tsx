@@ -1,22 +1,34 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Archivo, Newsreader, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { ErrorModalProvider } from "@/hooks/use-error-modal";
 import ErrorModal from "@/components/layout/error-modal";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+/* Display and UI: a sturdy grotesque that holds up at small sizes. */
+const archivo = Archivo({
+  variable: "--font-archivo",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+/* Reading: a low-contrast text serif for the words people came for. */
+const newsreader = Newsreader({
+  variable: "--font-newsreader",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  style: ["normal", "italic"],
+});
+
+/* Margin voice: handles, timestamps, tags, counts, labels. */
+const plexMono = IBM_Plex_Mono({
+  variable: "--font-plex-mono",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
   title: "Project One",
-  description: "A full-featured social media platform",
+  description: "Write something. Read what everyone else wrote.",
 };
 
 export default function RootLayout({
@@ -27,9 +39,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${archivo.variable} ${newsreader.variable} ${plexMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 font-sans">
+      <body className="min-h-full flex flex-col bg-paper text-ink">
         <ErrorModalProvider>
           {children}
           <ErrorModal />

@@ -39,10 +39,7 @@ export const InputField: React.FC<InputFieldProps> = ({
   
   return (
     <div className="space-y-1.5">
-      <label
-        htmlFor={id}
-        className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-      >
+      <label htmlFor={id} className="meta block">
         {label}
       </label>
       <div className="relative">
@@ -51,14 +48,7 @@ export const InputField: React.FC<InputFieldProps> = ({
           name={id}
           type={resolvedType}
           autoComplete={autoComplete}
-          className={`block w-full rounded-lg border bg-white px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 shadow-sm transition-all duration-200 outline-none
-            dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500
-            ${showPasswordToggle ? "pr-10" : ""}
-            ${
-              error
-                ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
-                : "border-gray-200 hover:border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:hover:border-gray-600 dark:focus:border-indigo-400"
-            }`}
+          className={`field ${showPasswordToggle ? "pr-10" : ""}`}
           placeholder={placeholder}
           value={value}
           onChange={onChange}
@@ -69,7 +59,7 @@ export const InputField: React.FC<InputFieldProps> = ({
           <button
             type="button"
             onClick={togglePassword}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors focus:outline-none"
+            className="absolute top-1/2 right-3 -translate-y-1/2 text-faint transition-colors hover:text-ink"
             aria-label={passwordVisible ? "Hide password" : "Show password"}
             tabIndex={-1}
           >
@@ -89,7 +79,7 @@ export const InputField: React.FC<InputFieldProps> = ({
         )}
       </div>
       {errorMessage && (
-        <p className="text-xs text-red-500 mt-1" id={`${id}-error`} aria-live="polite">
+        <p className="mt-1 font-mono text-xs text-ember" id={`${id}-error`} aria-live="polite">
           {errorMessage}
         </p>
       )}

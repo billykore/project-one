@@ -12,7 +12,7 @@ export default function NotificationList({
   onItemClick: (id: string) => void;
 }) {
   if (items.length === 0) {
-    return <div className="p-4 text-center text-sm text-gray-500 dark:text-zinc-400">No notifications</div>;
+    return <p className="meta px-4 py-8 text-center">Nothing new</p>;
   }
 
   return (

@@ -5,6 +5,7 @@ import { Post } from "@/lib/types/post.types";
 import PostInteractionSection from "@/components/posts/post-interaction-section";
 import { cookies } from "next/headers";
 import Navbar from "@/components/layout/navbar";
+import SiteFooter from "@/components/layout/site-footer";
 
 async function getPost(id: string) {
   try {
@@ -34,74 +35,82 @@ export default async function PostDetailPage({ params }: PageProps) {
   const cookieStore = await cookies();
   const isAuthenticated = cookieStore.has("access_token");
 
-  return (
-    <div className="flex min-h-screen flex-col bg-gray-50 font-sans dark:bg-gray-950">
-      <Navbar pageTitle="Post Details" />
+  const published = new Date(post.created_at);
+  const wasUpdated = post.updated_at !== post.created_at;
 
-      <main className="mx-auto w-full max-w-3xl flex-1 p-6 sm:p-8">
-        <article className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800 sm:p-10">
-          <header className="mb-8 border-b border-gray-100 pb-8 dark:border-gray-800">
-            <h1 className="text-3xl font-semibold tracking-tight text-gray-900 dark:text-white sm:text-4xl/[1.2]">
+  return (
+    <div className="flex min-h-screen flex-col bg-paper">
+      <Navbar pageTitle="Post" />
+
+      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8 sm:px-6 sm:py-12">
+        <article>
+          <header className="border-b border-rule pb-8">
+            <h1 className="text-3xl font-semibold text-ink sm:text-[2.75rem] sm:leading-[1.1]">
               {post.title}
             </h1>
-            <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
-              {post.author && (
-                <>
-                  <span className="inline-flex items-center gap-1.5 font-medium text-gray-700 dark:text-gray-300">
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    {post.author}
-                  </span>
-                  <span className="text-gray-300 dark:text-gray-700">·</span>
-                </>
-              )}
-              <time dateTime={post.created_at}>
-                {new Date(post.created_at).toLocaleDateString(undefined, {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </time>
-              {post.updated_at !== post.created_at && (
-                <span className="italic text-gray-400">
-                  (Updated: {new Date(post.updated_at).toLocaleDateString()})
-                </span>
-              )}
-            </div>
-            {post.tags && post.tags.length > 0 && (
-              <div className="mt-5 flex flex-wrap gap-2">
-                {post.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-700/10 dark:bg-indigo-950 dark:text-indigo-300 dark:ring-indigo-300/10"
-                  >
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-            )}
           </header>
 
-          <div className="prose prose-gray max-w-none dark:prose-invert">
-            <p className="whitespace-pre-wrap text-base leading-relaxed text-gray-700 dark:text-gray-300">
-              {post.content}
-            </p>
-          </div>
+          <div className="grid gap-8 pt-8 lg:grid-cols-[9rem_minmax(0,1fr)] lg:gap-12">
+            {/* The margin: attribution, dates, filing marks. */}
+            <aside className="flex flex-wrap items-baseline gap-x-5 gap-y-3 lg:sticky lg:top-24 lg:block lg:self-start lg:space-y-4">
+              {post.author && (
+                <div>
+                  <p className="meta">Written by</p>
+                  <a href={`/${post.author}`} className="meta mt-0.5 block font-medium text-ink hover:text-accent">
+                    {post.author}
+                  </a>
+                </div>
+              )}
+              <div>
+                <p className="meta">Published</p>
+                <time dateTime={post.created_at} className="meta mt-0.5 block text-ink">
+                  {published.toLocaleDateString(undefined, {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </time>
+              </div>
+              {wasUpdated && (
+                <div>
+                  <p className="meta">Revised</p>
+                  <time dateTime={post.updated_at} className="meta mt-0.5 block text-ink">
+                    {new Date(post.updated_at).toLocaleDateString(undefined, {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </time>
+                </div>
+              )}
+              {post.tags && post.tags.length > 0 && (
+                <div>
+                  <p className="meta">Filed under</p>
+                  <div className="mt-1 flex flex-wrap gap-x-2.5 gap-y-1">
+                    {post.tags.map((tag) => (
+                      <span key={tag} className="tag">{tag}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </aside>
 
-          <PostInteractionSection
-            postId={post.id}
-            postAuthor={post.author}
-            initialComments={post.comments}
-            isGuest={!isAuthenticated}
-            initialLikeCount={post.like_count}
-          />
+            <div className="min-w-0">
+              <div className="prose-body max-w-[38rem] whitespace-pre-wrap">{post.content}</div>
+
+              <PostInteractionSection
+                postId={post.id}
+                postAuthor={post.author}
+                initialComments={post.comments}
+                isGuest={!isAuthenticated}
+                initialLikeCount={post.like_count}
+              />
+            </div>
+          </div>
         </article>
       </main>
 
-      <footer className="py-6 text-center text-xs text-gray-400 dark:text-gray-600">
-        &copy; {new Date().getFullYear()} Project One. All rights reserved.
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

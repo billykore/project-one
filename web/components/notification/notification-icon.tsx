@@ -17,16 +17,28 @@ export default function NotificationIcon({
       aria-haspopup="true"
       aria-expanded={isOpen}
       onClick={onClick}
-      className="relative h-9 w-9 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800 focus:outline-none"
+      className={`relative flex h-8 w-8 items-center justify-center rounded-sm border transition-colors ${
+        isOpen ? 'border-rule-strong bg-sunken' : 'border-transparent hover:bg-sunken'
+      }`}
     >
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-5 w-5 text-gray-700 dark:text-zinc-200">
-        <path d="M12 2a6 6 0 00-6 6v3.586L4.293 14.293A1 1 0 005 16h14a1 1 0 00.707-1.707L18 11.586V8a6 6 0 00-6-6z" fill="currentColor" />
-        <path d="M9.293 18.707A2 2 0 0011 20h2a2 2 0 001.707-1.293" stroke="currentColor" strokeWidth="0" />
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-[18px] w-[18px] text-ink"
+        aria-hidden="true"
+      >
+        <path d="M18 8A6 6 0 0 0 6 8c0 3.6-.9 5.3-1.9 6.4a.8.8 0 0 0 .6 1.3h14.6a.8.8 0 0 0 .6-1.3C18.9 13.3 18 11.6 18 8Z" />
+        <path d="M10 19a2 2 0 0 0 4 0" />
       </svg>
 
       {unreadCount > 0 && (
-        <span className="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] h-5 w-5">
-          {unreadCount}
+        <span className="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-xs bg-ember px-1 font-mono text-[0.6rem] leading-none font-semibold text-paper">
+          {unreadCount > 99 ? '99+' : unreadCount}
         </span>
       )}
     </button>

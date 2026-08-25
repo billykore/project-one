@@ -35,7 +35,7 @@ describe('PageSkeleton components', () => {
 
     const cards = Array.from(container.querySelectorAll('div')).filter((node) => {
       const className = node.getAttribute('class') ?? '';
-      return className.includes('rounded-2xl bg-white p-6 shadow-sm');
+      return className.includes('entry flex flex-col p-5');
     });
     expect(cards).toHaveLength(3);
   });

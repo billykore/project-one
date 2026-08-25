@@ -1,53 +1,464 @@
 @import "tailwindcss";
 
-@theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --color-background: var(--color-gray-50);
-  --color-foreground: var(--color-gray-900);
-}
+/* ============================================================================
+   Marginalia — the design system for Project One.
 
-body {
-  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+   The product is a reading community: people publish titled, tagged entries
+   and read each other. So the interface borrows from an annotated reading
+   copy. Content sits in a comfortable measure and is set in a text serif.
+   Everything *about* the content — who wrote it, when, its tags, its counts —
+   speaks in a small mono voice in the margin, the way marginal notes and
+   folio numbers do. Colour is a reader's pen: used rarely, and only on the
+   thing that was actually marked.
 
-/* Smooth page transitions */
-@keyframes fade-in {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+   Three type roles, three chromatic tokens, one radius scale, no shadows on
+   anything that isn't floating above the page.
+   ========================================================================= */
 
-.animate-in {
-  animation: fade-in 0.2s ease-out;
-}
+:root {
+  color-scheme: light;
 
-/* Modern scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
+  /* Grounds and rules --------------------------------------------------- */
+  --paper: #f0f0eb;         /* page ground: cool laid paper */
+  --surface: #fafaf7;       /* entries, panels, fields */
+  --surface-sunken: #e5e5de; /* wells, skeletons, hovered rows */
+  --rule: #dcdcd4;          /* hairlines and field borders */
+  --rule-strong: #c4c4ba;   /* borders that need to hold their own */
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
+  /* Ink ----------------------------------------------------------------- */
+  --ink: #17191a;           /* body and headings */
+  --ink-muted: #5f6360;     /* margin voice, secondary copy */
+  --ink-faint: #797d79;     /* placeholders, disabled, punctuation */
 
-::-webkit-scrollbar-thumb {
-  background: var(--color-gray-300);
-  border-radius: 3px;
-}
+  /* Pen — pine. Interactive, primary, confirmed. ------------------------- */
+  --accent: #1f5140;
+  --accent-hover: #163b2f;
+  --accent-ink: #fafaf7;    /* text on solid accent and ember fills */
+  --accent-soft: #dde9e3;   /* accent tint backgrounds */
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-gray-400);
+  /* Pen — sienna. Marked, liked, destroyed, failed. ---------------------- */
+  --ember: #b4441f;
+  --ember-hover: #933414;
+  --ember-soft: #f6e3da;
+
+  /* Pen — ochre. Noticed, pending, expired. ----------------------------- */
+  --sand: #8a6d2f;
+  --sand-soft: #f2ead6;
+
+  /* Only things that genuinely float get a shadow. */
+  --pop-shadow: 0 1px 2px rgb(23 25 26 / 0.06), 0 12px 28px -12px rgb(23 25 26 / 0.24);
 }
 
 @media (prefers-color-scheme: dark) {
-  ::-webkit-scrollbar-thumb {
-    background: var(--color-zinc-700);
+  :root {
+    color-scheme: dark;
+
+    --paper: #121412;
+    --surface: #191c19;
+    --surface-sunken: #0d0f0d;
+    --rule: #2a2e2a;
+    --rule-strong: #3c423c;
+
+    --ink: #e9eae4;
+    --ink-muted: #9aa09a;
+    --ink-faint: #7b817b;
+
+    /* Pine lifts to a sage on a dark ground so links and labels stay
+       readable, and so dark text on an accent fill clears 4.5:1. */
+    --accent: #7fc3a3;
+    --accent-hover: #9bd6b9;
+    --accent-ink: #0d1a14;
+    --accent-soft: #18291f;
+
+    --ember: #e27a56;
+    --ember-hover: #ee9070;
+    --ember-soft: #2a1712;
+
+    --sand: #d3ac63;
+    --sand-soft: #262013;
+
+    --pop-shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 16px 32px -14px rgb(0 0 0 / 0.7);
+  }
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-sunken: var(--surface-sunken);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+
+  --color-ink: var(--ink);
+  --color-muted: var(--ink-muted);
+  --color-faint: var(--ink-faint);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+
+  --color-ember: var(--ember);
+  --color-ember-hover: var(--ember-hover);
+  --color-ember-soft: var(--ember-soft);
+
+  --color-sand: var(--sand);
+  --color-sand-soft: var(--sand-soft);
+
+  /* Display: a sturdy grotesque, set tight. Headings, buttons, UI.
+     Body: a low-contrast text serif, for the words people came to read.
+     Mono: the margin voice — handles, timestamps, tags, counts, labels. */
+  --font-display: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-newsreader), Georgia, "Times New Roman", serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", monospace;
+
+  --shadow-pop: var(--pop-shadow);
+}
+
+/* Geometry: a printerly radius scale. Nothing here is a pill. */
+@theme {
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+  --radius-md: 5px;
+  --radius-lg: 8px;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-display);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
-  ::-webkit-scrollbar-thumb:hover {
-    background: var(--color-zinc-600);
+  body {
+    background-color: var(--paper);
+    color: var(--ink);
+  }
+
+  /* Headings are the grotesque, set tight and dark. */
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.019em;
+    text-wrap: balance;
+  }
+
+  /* One focus treatment everywhere: a pen stroke around the target. */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: var(--radius-xs);
+  }
+
+  ::selection {
+    background: var(--accent-soft);
+    color: var(--ink);
+  }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: var(--rule-strong);
+    border: 3px solid var(--paper);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: var(--ink-faint); }
+}
+
+@layer components {
+  /* -- The margin voice --------------------------------------------------
+     Small, mono, letter-spaced, uppercase. Everything that is *about* the
+     content rather than the content itself is set this way. */
+  .meta {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    line-height: 1.45;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
+  .meta-lg {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1.5;
+    letter-spacing: 0.07em;
+    color: var(--ink-muted);
+  }
+
+  /* Prose: the actual words. Serif, generous measure, real leading. */
+  .prose-body {
+    font-family: var(--font-body);
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: var(--ink);
+  }
+
+  .prose-lead {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.65;
+    color: var(--ink-muted);
+  }
+
+  /* -- Entry: the signature device ---------------------------------------
+     A post, a comment, a notification, a search result — every record in
+     the app is an "entry": a surface with a margin rail down its left edge
+     that inks in when you point at it, like running a finger down a page. */
+  .entry {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-md);
+    transition: border-color 160ms ease, background-color 160ms ease;
+  }
+
+  .entry::before {
+    content: "";
+    position: absolute;
+    inset-block: -1px;
+    inset-inline-start: -1px;
+    width: 3px;
+    border-start-start-radius: var(--radius-md);
+    border-end-start-radius: var(--radius-md);
+    background: var(--rule-strong);
+    transition: background-color 160ms ease;
+  }
+
+  .entry:hover,
+  .entry:focus-within {
+    border-color: var(--rule-strong);
+  }
+
+  .entry:hover::before,
+  .entry:focus-within::before {
+    background: var(--accent);
+  }
+
+  .entry-marked::before { background: var(--accent); }
+
+  /* A flat panel: same surface, no rail. Forms, cards, empty states. */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-md);
+  }
+
+  /* -- Buttons -----------------------------------------------------------
+     Solid flat fills. No borders, no shadows, no gradients — a control is a
+     block of color, and its weight says how much it wants to be pressed. The
+     label is the grotesque at small size with a touch of tracking. */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-family: var(--font-display);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.005em;
+    padding: 0.5625rem 0.95rem;
+    border-radius: var(--radius-sm);
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+  }
+
+  .btn:disabled,
+  .btn[aria-disabled="true"] {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+  .btn-primary:not(:disabled):hover { background: var(--accent-hover); }
+
+  /* The secondary block: present, but plainly the lesser of two choices.
+     Derived by stepping the surface toward the ink rather than by using the
+     sunken token, so it reads as a block on the page ground and on a panel,
+     in both themes. */
+  .btn-quiet {
+    background: color-mix(in oklab, var(--surface) 88%, var(--ink));
+    color: var(--ink);
+  }
+  .btn-quiet:not(:disabled):hover {
+    background: color-mix(in oklab, var(--surface) 79%, var(--ink));
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink-muted);
+  }
+  .btn-ghost:not(:disabled):hover {
+    background: var(--surface-sunken);
+    color: var(--ink);
+  }
+
+  .btn-danger {
+    background: var(--ember);
+    color: var(--accent-ink);
+  }
+  .btn-danger:not(:disabled):hover { background: var(--ember-hover); }
+
+  /* Marked: a toggle that is currently on — a tinted block, not an outline. */
+  .btn-marked {
+    background: var(--ember-soft);
+    color: var(--ember);
+  }
+  .btn-marked:not(:disabled):hover {
+    background: color-mix(in oklab, var(--ember-soft) 88%, var(--ember));
+  }
+
+  .btn-sm { padding: 0.35rem 0.65rem; font-size: 0.75rem; }
+  .btn-lg { padding: 0.7rem 1.15rem; font-size: 0.875rem; }
+  .btn-block { width: 100%; }
+
+  /* -- Fields ------------------------------------------------------------ */
+  .field {
+    display: block;
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--rule-strong);
+    border-radius: var(--radius-sm);
+    padding: 0.55rem 0.75rem;
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    color: var(--ink);
+    transition: border-color 140ms ease, background-color 140ms ease;
+  }
+
+  .field::placeholder { color: var(--ink-faint); }
+  .field:hover:not(:disabled) { border-color: var(--ink-faint); }
+  .field:focus { outline: none; border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  .field:disabled { background: var(--surface-sunken); color: var(--ink-faint); cursor: not-allowed; }
+  .field[aria-invalid="true"] { border-color: var(--ember); }
+  .field[aria-invalid="true"]:focus { box-shadow: inset 0 0 0 1px var(--ember); }
+
+  /* Long-form input is read as prose, so it is set as prose. */
+  .field-prose {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.65;
+  }
+
+  /* -- Tags --------------------------------------------------------------
+     Tags are filing marks, not badges. Mono, bracketed, no pill. */
+  .tag {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.04em;
+    color: var(--ink-muted);
+    transition: color 140ms ease;
+  }
+  .tag::before { content: "["; color: var(--ink-faint); }
+  .tag::after { content: "]"; color: var(--ink-faint); }
+  a.tag:hover { color: var(--accent); }
+
+  /* -- Initials mark -----------------------------------------------------
+     A squared-off block carrying someone's first letter. Deliberately not a
+     circle: nothing in this interface pretends to be a face. */
+  .mark {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: background-color 140ms ease;
+  }
+  button.mark:hover {
+    background: color-mix(in oklab, var(--accent-soft) 86%, var(--accent));
+  }
+
+  /* -- Links -------------------------------------------------------------
+     Underline offset far enough to clear descenders in the serif. */
+  .link {
+    color: var(--accent);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    text-decoration-color: color-mix(in oklab, var(--accent) 35%, transparent);
+    transition: text-decoration-color 140ms ease;
+  }
+  .link:hover { text-decoration-color: var(--accent); }
+
+  /* -- Floating surfaces: dropdowns, modals, panels ---------------------- */
+  .pop {
+    background: var(--surface);
+    border: 1px solid var(--rule-strong);
+    border-radius: var(--radius-md);
+    box-shadow: var(--pop-shadow);
+  }
+
+  /* -- Notices: one shape, three voices ---------------------------------- */
+  .notice {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.75rem 0.9rem;
+    border-radius: var(--radius-sm);
+    border-inline-start: 3px solid;
+    font-size: 0.875rem;
+  }
+  .notice-good   { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); }
+  .notice-notice { background: var(--sand-soft);   border-color: var(--sand);   color: var(--ink); }
+  .notice-bad    { background: var(--ember-soft);  border-color: var(--ember);  color: var(--ink); }
+
+  /* -- Section headings: a rule that runs out to the margin -------------- */
+  .rubric {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+  .rubric::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+  }
+}
+
+@layer utilities {
+  /* The reading measure: ~68 characters of the body serif. */
+  .measure { max-width: 34rem; }
+
+  .enter {
+    animation: enter 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .enter-pop {
+    animation: enter-pop 140ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@keyframes enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes enter-pop {
+  from { opacity: 0; transform: translateY(-4px) scale(0.99); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

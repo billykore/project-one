@@ -3,27 +3,18 @@
 import React from 'react';
 import type { ConnectionState } from '@/lib/notifications-sse';
 
+const CONNECTION: Record<ConnectionState | 'offline', { label: string; dot: string; pulse: boolean }> = {
+  connected: { label: 'Live', dot: 'bg-accent', pulse: false },
+  reconnecting: { label: 'Reconnecting', dot: 'bg-sand', pulse: true },
+  offline: { label: 'Offline', dot: 'bg-faint', pulse: false },
+};
+
 function ConnectionIndicator({ state }: { state: ConnectionState }) {
-  if (state === 'connected') {
-    return (
-      <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
-        <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-        Live
-      </span>
-    );
-  }
-  if (state === 'reconnecting') {
-    return (
-      <span className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
-        <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
-        Reconnecting
-      </span>
-    );
-  }
+  const { label, dot, pulse } = CONNECTION[state] ?? CONNECTION.offline;
   return (
-    <span className="flex items-center gap-1 text-xs text-gray-400 dark:text-zinc-500">
-      <span className="h-1.5 w-1.5 rounded-full bg-gray-400 dark:bg-zinc-500" />
-      Offline
+    <span className="meta flex items-center gap-1.5">
+      <span className={`h-1.5 w-1.5 rounded-full ${dot} ${pulse ? 'animate-pulse' : ''}`} aria-hidden="true" />
+      {label}
     </span>
   );
 }
@@ -40,18 +31,16 @@ export default function NotificationPanel({
   connectionState?: ConnectionState;
 }) {
   return (
-    <div className="absolute right-0 mt-2 w-80 sm:w-96 z-50">
-      <div className="rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 shadow-lg overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-zinc-800">
-          <div className="flex items-center gap-2">
-            <div className="font-semibold text-gray-900 dark:text-zinc-50">Notifications</div>
-            <ConnectionIndicator state={connectionState} />
-          </div>
+    <div className="absolute right-0 z-50 mt-2 w-80 sm:w-96">
+      <div className="pop enter-pop overflow-hidden">
+        <div className="flex items-center justify-between border-b border-rule px-4 py-3">
+          <h2 className="text-sm font-semibold text-ink">Notifications</h2>
+          <ConnectionIndicator state={connectionState} />
         </div>
         <div>{children}</div>
         {unreadCount > 0 && (
-          <div className="p-3 border-t border-gray-100 dark:border-zinc-800">
-            <button onClick={onMarkAll} className="w-full rounded-md bg-indigo-600 text-white px-3 py-2 text-sm">
+          <div className="border-t border-rule p-2">
+            <button onClick={onMarkAll} className="btn btn-ghost btn-block">
               Mark all as read
             </button>
           </div>

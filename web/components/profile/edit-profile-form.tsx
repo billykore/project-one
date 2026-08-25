@@ -87,32 +87,33 @@ export default function EditProfileForm({
 
   return (
     <div className="mx-auto w-full max-w-lg">
-      <div className="rounded-2xl border border-zinc-200 bg-white/80 p-6 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/80">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-zinc-50 mb-1">Edit Profile</h2>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">
-          Update your first name, last name, or username.
+      <div className="panel p-6 sm:p-8">
+        <p className="meta">Your details</p>
+        <h1 className="mt-2 text-2xl font-semibold text-ink">Edit profile</h1>
+        <p className="prose-lead mt-2 mb-6">
+          Your name and username are shown on everything you post.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <InputField
-            label="First Name"
+            label="First name"
             id="first_name"
             type="text"
             value={form.first_name}
             onChange={handleChange}
             error={errors.first_name}
-            placeholder="Enter your first name"
+            placeholder="Ada"
             autoComplete="given-name"
           />
 
           <InputField
-            label="Last Name"
+            label="Last name"
             id="last_name"
             type="text"
             value={form.last_name}
             onChange={handleChange}
             error={errors.last_name}
-            placeholder="Enter your last name"
+            placeholder="Lovelace"
             autoComplete="family-name"
           />
 
@@ -123,30 +124,23 @@ export default function EditProfileForm({
             value={form.username}
             onChange={handleChange}
             error={errors.username}
-            placeholder="Enter your username"
+            placeholder="ada"
             autoComplete="username"
           />
 
           {serverError && (
-            <div className="rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/10 dark:text-red-400" role="alert">
+            <p className="notice notice-bad" role="alert">
               {serverError}
-            </div>
+            </p>
           )}
 
-          <div className="flex gap-3 pt-2">
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex-1 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 cursor-pointer dark:bg-indigo-500 dark:hover:bg-indigo-600"
-            >
-              {isSubmitting ? "Saving..." : "Save Changes"}
-            </button>
-            <Link
-              href={`/${initialUsername}`}
-              className="flex-1 rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-700 text-center shadow-sm transition duration-200 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2"
-            >
+          <div className="flex justify-end gap-2 border-t border-rule pt-5">
+            <Link href={`/${initialUsername}`} className="btn btn-quiet btn-lg">
               Cancel
             </Link>
+            <button type="submit" disabled={isSubmitting} className="btn btn-primary btn-lg">
+              {isSubmitting ? "Saving" : "Save changes"}
+            </button>
           </div>
         </form>
       </div>
