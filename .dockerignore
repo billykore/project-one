@@ -3,6 +3,12 @@ bin/
 test/
 .git/
 .githooks/
+deployments/
+configs/config.yaml
+configs/keys/
+**/.env*
+**/.DS_Store
+**/__debug*
 *.md
 LICENSE
 Makefile

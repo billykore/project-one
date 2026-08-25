@@ -177,6 +177,10 @@ func registerRoutes(
 	notificationHdl *handler.NotificationHandler,
 	feedHdl *handler.FeedHandler,
 ) {
+	e.GET("/status", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, map[string]string{"status": "ok"})
+	})
+
 	auth := e.Group("/auth")
 	auth.POST("/register", userHdl.HandleRegister)
 	auth.POST("/login", userHdl.HandleLogin)

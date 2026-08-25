@@ -1,6 +1,6 @@
 .PHONY: build run test test-cover mock vet lint clean docs help migrate-create migrate-up migrate-down check githooks compose-up compose-down compose-start compose-stop seed-users seed-deps
 
-COMPOSE_FILE := deployments/docker-compose.yml
+COMPOSE_FILE := deployments/compose.yml
 
 # Python user seeding script
 SEED_SCRIPT := db/seeds/users_seed.py
@@ -114,7 +114,7 @@ seed-users: seed-deps
 
 ## compose-up: Start containers (docker compose up -d)
 compose-up:
-	docker compose -f $(COMPOSE_FILE) up -d
+	docker compose -f $(COMPOSE_FILE) up -d --build
 
 ## compose-down: Stop and remove containers (docker compose down)
 compose-down:

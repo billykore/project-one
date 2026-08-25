@@ -1,0 +1,102 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-project1}
+      POSTGRES_USER: ${POSTGRES_USER:-project1}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-project1}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ../db/migrations:/migrations:ro
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:4-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-project1}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-project1}
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  keys:
+    image: alpine:3.22
+    command: >-
+      sh -c "cp /source/jwt-private.pem /source/jwt-public.pem /keys/ &&
+      chown 65532:65532 /keys/*.pem && chmod 600 /keys/*.pem"
+    volumes:
+      - ../configs/keys:/source:ro
+      - jwt-keys:/keys
+    restart: "no"
+
+  backend:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      APP_PORT: "8080"
+      APP_ENV: development
+      DATABASE_HOST: postgres
+      DATABASE_PORT: "5432"
+      DATABASE_USER: ${POSTGRES_USER:-project1}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-project1}
+      DATABASE_DBNAME: ${POSTGRES_DB:-project1}
+      DATABASE_SSLMODE: disable
+      JWT_PRIVATE_KEY_PATH: "/keys/jwt-private.pem"
+      JWT_PUBLIC_KEY_PATH: "/keys/jwt-public.pem"
+      JWT_EXPIRATION_TIME: 24h
+      MESSAGE_BROKER_TYPE: rabbitmq
+      MESSAGE_BROKER_RABBITMQ_URL: amqp://${RABBITMQ_USER:-project1}:${RABBITMQ_PASSWORD:-project1}@rabbitmq:5672/
+      MESSAGE_BROKER_RABBITMQ_EXCHANGE: project1.notifications
+      MESSAGE_BROKER_RABBITMQ_QUEUE: notifications
+    volumes:
+      - jwt-keys:/keys:ro
+    depends_on:
+      keys:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/status"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ../web
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      API_URL: http://backend:8080
+      NODE_ENV: development
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  rabbitmq-data:
+  jwt-keys:

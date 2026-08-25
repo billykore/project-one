@@ -1,14 +1,17 @@
-# Stage 1: Build
-FROM golang:1.26-alpine AS builder
+FROM golang:1.26.2-alpine AS builder
 WORKDIR /src
+
 COPY go.mod go.sum ./
 RUN go mod download
-COPY . .
-RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o /bin/main ./cmd
+COPY api ./api
+COPY cmd ./cmd
+COPY internal ./internal
+RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /server ./cmd
 
-# Stage 2: Runtime
-FROM alpine:3.21
-RUN apk add --no-cache ca-certificates
-COPY --from=builder /bin/main /bin/main
+FROM scratch
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /server /server
+
+USER 65532:65532
 EXPOSE 8080
-ENTRYPOINT ["/bin/main"]
+ENTRYPOINT ["/server"]
