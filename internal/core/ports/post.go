@@ -32,7 +32,7 @@ type PostRepository interface {
 // PostUseCase is a driving port for post-related application logic.
 type PostUseCase interface {
 	// CreatePost creates a new post with the given details.
-	CreatePost(ctx context.Context, username string, title, content string, tags []string) (*domain.Post, error)
+	CreatePost(ctx context.Context, user *domain.User, title, content string, tags []string) (*domain.Post, error)
 	// GetPostByID retrieves a post by its ID.
 	GetPostByID(ctx context.Context, postID int) (*domain.Post, error)
 	// GetPosts retrieves all posts for a specific user.

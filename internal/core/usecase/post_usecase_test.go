@@ -24,7 +24,7 @@ func TestPostUseCase_CreatePost(t *testing.T) {
 	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockUserRepo, mockPublisher, mockLog)
 
 	ctx := context.Background()
-	username := "testuser"
+	user := &domain.User{ID: 42, Username: "testuser"}
 	title := "Test Title"
 	content := "Test Content"
 	tags := []string{"tag1", "tag2"}
@@ -33,27 +33,29 @@ func TestPostUseCase_CreatePost(t *testing.T) {
 		mockRepo.EXPECT().
 			Create(ctx, gomock.Any()).
 			DoAndReturn(func(ctx context.Context, post *domain.Post) error {
+				assert.Equal(t, user.ID, post.UserID)
+				assert.Equal(t, user.Username, post.Username)
 				post.ID = 1
 				return nil
 			})
-		mockLog.EXPECT().Info(ctx, "post created successfully", "postID", gomock.Any(), "username", username)
+		mockLog.EXPECT().Info(ctx, "post created successfully", "postID", gomock.Any(), "username", user.Username)
 
-		post, err := svc.CreatePost(ctx, username, title, content, tags)
+		post, err := svc.CreatePost(ctx, user, title, content, tags)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, post)
 		assert.Equal(t, 1, post.ID)
 		assert.Equal(t, title, post.Title)
-		assert.Equal(t, username, post.Username)
+		assert.Equal(t, user.Username, post.Username)
 	})
 
 	t.Run("repository error", func(t *testing.T) {
 		mockRepo.EXPECT().
 			Create(ctx, gomock.Any()).
 			Return(errors.New("db error"))
-		mockLog.EXPECT().Error(ctx, "failed to create post", "username", username, "error", gomock.Any())
+		mockLog.EXPECT().Error(ctx, "failed to create post", "username", user.Username, "error", gomock.Any())
 
-		post, err := svc.CreatePost(ctx, username, title, content, tags)
+		post, err := svc.CreatePost(ctx, user, title, content, tags)
 
 		assert.Error(t, err)
 		assert.Nil(t, post)

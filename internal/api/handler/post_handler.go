@@ -59,7 +59,7 @@ func (h *PostHandler) CreatePost(c echo.Context) error {
 		return err
 	}
 
-	post, err := h.postUseCase.CreatePost(c.Request().Context(), user.Username, req.Title, req.Content, req.Tags)
+	post, err := h.postUseCase.CreatePost(c.Request().Context(), user, req.Title, req.Content, req.Tags)
 	if err != nil {
 		h.log.Error(c.Request().Context(), "CreatePost failed", "user.Username", user.Username, "error", err)
 		return err

@@ -42,20 +42,21 @@ func NewPostUseCase(
 	}
 }
 
-func (uc *postUseCase) CreatePost(ctx context.Context, username string, title, content string, tags []string) (*domain.Post, error) {
+func (uc *postUseCase) CreatePost(ctx context.Context, user *domain.User, title, content string, tags []string) (*domain.Post, error) {
 	post := &domain.Post{
-		Username: username,
+		UserID:   user.ID,
+		Username: user.Username,
 		Title:    title,
 		Content:  content,
 		Tags:     tags,
 	}
 
 	if err := uc.postRepo.Create(ctx, post); err != nil {
-		uc.log.Error(ctx, "failed to create post", "username", username, "error", err)
+		uc.log.Error(ctx, "failed to create post", "username", user.Username, "error", err)
 		return nil, fmt.Errorf("create post: %w", domain.ErrRepositoryFailure)
 	}
 
-	uc.log.Info(ctx, "post created successfully", "postID", post.ID, "username", username)
+	uc.log.Info(ctx, "post created successfully", "postID", post.ID, "username", user.Username)
 	return post, nil
 }
 

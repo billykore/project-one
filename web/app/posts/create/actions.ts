@@ -16,9 +16,15 @@ export async function createPostAction(
     content: formData.get("content"),
     tags: formData.get("tags"),
   });
-  console.log("createPostAction validation:", validatedFields);
+  console.log("createPostAction validation:", validatedFields.error);
 
   if (!validatedFields.success) {
+    const issue = validatedFields.error.issues
+    if (issue.length > 0) {
+      return {
+        message: issue[0].message,
+      };
+    }
     return {
       message: "Missing Fields. Failed to Create Post.",
     };

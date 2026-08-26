@@ -183,18 +183,18 @@ func (m *MockPostUseCase) EXPECT() *MockPostUseCaseMockRecorder {
 }
 
 // CreatePost mocks base method.
-func (m *MockPostUseCase) CreatePost(ctx context.Context, username, title, content string, tags []string) (*domain.Post, error) {
+func (m *MockPostUseCase) CreatePost(ctx context.Context, user *domain.User, title, content string, tags []string) (*domain.Post, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreatePost", ctx, username, title, content, tags)
+	ret := m.ctrl.Call(m, "CreatePost", ctx, user, title, content, tags)
 	ret0, _ := ret[0].(*domain.Post)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreatePost indicates an expected call of CreatePost.
-func (mr *MockPostUseCaseMockRecorder) CreatePost(ctx, username, title, content, tags any) *gomock.Call {
+func (mr *MockPostUseCaseMockRecorder) CreatePost(ctx, user, title, content, tags any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePost", reflect.TypeOf((*MockPostUseCase)(nil).CreatePost), ctx, username, title, content, tags)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePost", reflect.TypeOf((*MockPostUseCase)(nil).CreatePost), ctx, user, title, content, tags)
 }
 
 // DeletePost mocks base method.

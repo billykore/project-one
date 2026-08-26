@@ -27,6 +27,7 @@ func (m *postModel) TableName() string {
 }
 
 func (m *postModel) fromDomain(p *domain.Post) {
+	m.UserID = p.UserID
 	m.Username = p.Username
 	m.Title = p.Title
 	m.Content = p.Content
