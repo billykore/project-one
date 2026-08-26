@@ -14,6 +14,7 @@ import (
 
 type postModel struct {
 	gorm.Model
+	UserID    int            `gorm:"default:0"`
 	Username  string         `gorm:"size:255;notNull"`
 	Title     string         `gorm:"size:255;notNull"`
 	Content   string         `gorm:"type:text;notNull"`

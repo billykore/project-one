@@ -57,10 +57,10 @@ func (mr *MockTokenServiceMockRecorder) GenerateTokens(ctx, user any) *gomock.Ca
 }
 
 // ValidateToken mocks base method.
-func (m *MockTokenService) ValidateToken(ctx context.Context, token string) (string, error) {
+func (m *MockTokenService) ValidateToken(ctx context.Context, token string) (*domain.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ValidateToken", ctx, token)
-	ret0, _ := ret[0].(string)
+	ret0, _ := ret[0].(*domain.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

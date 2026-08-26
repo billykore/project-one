@@ -144,14 +144,14 @@ func (h *UserHandler) HandleLogin(c echo.Context) error {
 //	@Security		BearerAuth
 //	@Router			/auth/logout [post]
 func (h *UserHandler) HandleLogout(c echo.Context) error {
-	username, ok := c.Get("username").(string)
+	user, ok := currentUser(c)
 	if !ok {
-		h.log.Error(c.Request().Context(), "HandleLogout failed", "error", "Username not found in context")
+		h.log.Error(c.Request().Context(), "HandleLogout failed", "error", "User not found in context")
 		return echo.ErrUnauthorized
 	}
 
-	if err := h.loginUseCase.Logout(c.Request().Context(), username); err != nil {
-		h.log.Error(c.Request().Context(), "HandleLogout failed", "username", username, "error", err)
+	if err := h.loginUseCase.Logout(c.Request().Context(), user.Username); err != nil {
+		h.log.Error(c.Request().Context(), "HandleLogout failed", "username", user.Username, "error", err)
 		return err
 	}
 
@@ -175,7 +175,7 @@ func (h *UserHandler) HandleLogout(c echo.Context) error {
 		MaxAge:   -1,
 	})
 
-	h.log.Info(c.Request().Context(), "HandleLogout succeeded", "username", username)
+	h.log.Info(c.Request().Context(), "HandleLogout succeeded", "username", user.Username)
 	return c.JSON(http.StatusOK, dto.LogoutResponse{
 		Message: "Logged out successfully",
 	})
@@ -240,9 +240,9 @@ func (h *UserHandler) HandleRegister(c echo.Context) error {
 //	@Security		BearerAuth
 //	@Router			/users/{username}/followers [post]
 func (h *UserHandler) HandleFollow(c echo.Context) error {
-	followerUsername, ok := c.Get("username").(string)
+	user, ok := currentUser(c)
 	if !ok {
-		h.log.Error(c.Request().Context(), "HandleFollow failed", "error", "Username not found in context")
+		h.log.Error(c.Request().Context(), "HandleFollow failed", "error", "User not found in context")
 		return echo.ErrUnauthorized
 	}
 
@@ -252,13 +252,13 @@ func (h *UserHandler) HandleFollow(c echo.Context) error {
 		return echo.ErrBadRequest
 	}
 
-	follow, err := h.followUseCase.Follow(c.Request().Context(), followerUsername, followedUsername)
+	follow, err := h.followUseCase.Follow(c.Request().Context(), user.Username, followedUsername)
 	if err != nil {
-		h.log.Error(c.Request().Context(), "HandleFollow failed", "follower", followerUsername, "followed", followedUsername, "error", err)
+		h.log.Error(c.Request().Context(), "HandleFollow failed", "follower", user.Username, "followed", followedUsername, "error", err)
 		return err
 	}
 
-	h.log.Info(c.Request().Context(), "HandleFollow succeeded", "follower", followerUsername, "followed", followedUsername)
+	h.log.Info(c.Request().Context(), "HandleFollow succeeded", "follower", user.Username, "followed", followedUsername)
 	return c.JSON(http.StatusOK, dto.FollowResponse{
 		Message: "You are now following this user.",
 		Data: dto.FollowData{
@@ -283,9 +283,9 @@ func (h *UserHandler) HandleFollow(c echo.Context) error {
 //	@Security		BearerAuth
 //	@Router			/users/{username}/followers [delete]
 func (h *UserHandler) HandleUnfollow(c echo.Context) error {
-	followerUsername, ok := c.Get("username").(string)
+	user, ok := currentUser(c)
 	if !ok {
-		h.log.Error(c.Request().Context(), "HandleUnfollow failed", "error", "Username not found in context")
+		h.log.Error(c.Request().Context(), "HandleUnfollow failed", "error", "User not found in context")
 		return echo.ErrUnauthorized
 	}
 
@@ -295,13 +295,13 @@ func (h *UserHandler) HandleUnfollow(c echo.Context) error {
 		return echo.ErrBadRequest
 	}
 
-	err := h.followUseCase.Unfollow(c.Request().Context(), followerUsername, followedUsername)
+	err := h.followUseCase.Unfollow(c.Request().Context(), user.Username, followedUsername)
 	if err != nil {
-		h.log.Error(c.Request().Context(), "HandleUnfollow failed", "follower", followerUsername, "followed", followedUsername, "error", err)
+		h.log.Error(c.Request().Context(), "HandleUnfollow failed", "follower", user.Username, "followed", followedUsername, "error", err)
 		return err
 	}
 
-	h.log.Info(c.Request().Context(), "HandleUnfollow succeeded", "follower", followerUsername, "followed", followedUsername)
+	h.log.Info(c.Request().Context(), "HandleUnfollow succeeded", "follower", user.Username, "followed", followedUsername)
 	return c.JSON(http.StatusOK, dto.UnfollowResponse{
 		Message: "Successfully unfollowed this user.",
 	})
@@ -558,9 +558,9 @@ func (h *UserHandler) GetUserPosts(c echo.Context) error {
 //	@Security		BearerAuth
 //	@Router			/users/password [put]
 func (h *UserHandler) HandleChangePassword(c echo.Context) error {
-	username, ok := c.Get("username").(string)
+	user, ok := currentUser(c)
 	if !ok {
-		h.log.Error(c.Request().Context(), "HandleChangePassword failed", "error", "Username not found in context")
+		h.log.Error(c.Request().Context(), "HandleChangePassword failed", "error", "User not found in context")
 		return echo.ErrUnauthorized
 	}
 
@@ -570,17 +570,17 @@ func (h *UserHandler) HandleChangePassword(c echo.Context) error {
 	}
 
 	if err := h.validator.Validate(req); err != nil {
-		h.log.Error(c.Request().Context(), "HandleChangePassword failed", "username", username, "validation_error", err)
+		h.log.Error(c.Request().Context(), "HandleChangePassword failed", "username", user.Username, "validation_error", err)
 		return err
 	}
 
-	err := h.userUseCase.ChangePassword(c.Request().Context(), username, req.OldPassword, req.NewPassword)
+	err := h.userUseCase.ChangePassword(c.Request().Context(), user.Username, req.OldPassword, req.NewPassword)
 	if err != nil {
-		h.log.Error(c.Request().Context(), "HandleChangePassword failed", "username", username, "error", err)
+		h.log.Error(c.Request().Context(), "HandleChangePassword failed", "username", user.Username, "error", err)
 		return err
 	}
 
-	h.log.Info(c.Request().Context(), "HandleChangePassword succeeded", "username", username)
+	h.log.Info(c.Request().Context(), "HandleChangePassword succeeded", "username", user.Username)
 	return c.JSON(http.StatusOK, dto.MessageResponse{Message: "Password updated successfully"})
 }
 
@@ -599,37 +599,37 @@ func (h *UserHandler) HandleChangePassword(c echo.Context) error {
 //	@Security		BearerAuth
 //	@Router			/users/profile [put]
 func (h *UserHandler) HandleUpdateProfile(c echo.Context) error {
-	username, ok := c.Get("username").(string)
+	authUser, ok := currentUser(c)
 	if !ok {
-		h.log.Error(c.Request().Context(), "HandleUpdateProfile failed", "error", "Username not found in context")
+		h.log.Error(c.Request().Context(), "HandleUpdateProfile failed", "error", "User not found in context")
 		return echo.ErrUnauthorized
 	}
 
 	var req dto.UpdateProfileRequest
 	if err := c.Bind(&req); err != nil {
-		h.log.Error(c.Request().Context(), "HandleUpdateProfile failed", "username", username, "error", "Failed to bind request body")
+		h.log.Error(c.Request().Context(), "HandleUpdateProfile failed", "username", authUser.Username, "error", "Failed to bind request body")
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
 	if err := h.validator.Validate(req); err != nil {
-		h.log.Error(c.Request().Context(), "HandleUpdateProfile failed", "username", username, "validation_error", err)
+		h.log.Error(c.Request().Context(), "HandleUpdateProfile failed", "username", authUser.Username, "validation_error", err)
 		return err
 	}
 
-	user := &domain.User{
+	updatedUser := &domain.User{
 		FirstName: strings.TrimSpace(req.FirstName),
 		LastName:  strings.TrimSpace(req.LastName),
 		Username:  strings.ToLower(strings.TrimSpace(req.Username)),
 	}
 
-	if err := h.userUseCase.UpdateProfile(c.Request().Context(), username, user); err != nil {
-		h.log.Error(c.Request().Context(), "HandleUpdateProfile failed", "username", username, "error", err)
+	if err := h.userUseCase.UpdateProfile(c.Request().Context(), authUser.Username, updatedUser); err != nil {
+		h.log.Error(c.Request().Context(), "HandleUpdateProfile failed", "username", authUser.Username, "error", err)
 		return err
 	}
 
-	h.log.Info(c.Request().Context(), "HandleUpdateProfile succeeded", "username", username)
+	h.log.Info(c.Request().Context(), "HandleUpdateProfile succeeded", "username", authUser.Username)
 	return c.JSON(http.StatusOK, dto.UpdateProfileResponse{
 		Message:  "Profile updated successfully",
-		Username: user.Username,
+		Username: updatedUser.Username,
 	})
 }

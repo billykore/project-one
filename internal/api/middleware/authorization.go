@@ -34,13 +34,17 @@ func Authorize(tks ports.TokenService) echo.MiddlewareFunc {
 				return echo.ErrUnauthorized
 			}
 
-			username, err := tks.ValidateToken(c.Request().Context(), token)
+			user, err := tks.ValidateToken(c.Request().Context(), token)
 			if err != nil {
 				return echo.ErrUnauthorized
 			}
+			if user == nil {
+				return echo.ErrUnauthorized
+			}
 
-			// Store username for downstream handlers
-			c.Set("username", username)
+			// Store user for downstream handlers
+			c.Set("user", user)
+			c.Set("username", user.Username)
 
 			return next(c)
 		}

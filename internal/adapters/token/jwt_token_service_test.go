@@ -43,9 +43,11 @@ func TestJWTTokenService_GenerateAndValidateWithRSA(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, token)
 
-	username, err := svc.ValidateToken(context.Background(), token.Token)
+	user, err := svc.ValidateToken(context.Background(), token.Token)
 	require.NoError(t, err)
-	assert.Equal(t, "alice", username)
+	require.NotNil(t, user)
+	assert.Equal(t, "alice", user.Username)
+	assert.Equal(t, 0, user.ID)
 	assert.WithinDuration(t, time.Now().Add(time.Hour), token.ExpiresAt, time.Minute)
 }
 
@@ -57,9 +59,9 @@ func TestJWTTokenService_RejectsWrongPublicKey(t *testing.T) {
 	token, err := svc.GenerateTokens(context.Background(), &domain.User{Username: "alice"})
 	require.NoError(t, err)
 
-	username, err := svc.ValidateToken(context.Background(), token.Token)
+	user, err := svc.ValidateToken(context.Background(), token.Token)
 	assert.Error(t, err)
-	assert.Empty(t, username)
+	assert.Nil(t, user)
 }
 
 func TestJWTTokenService_RejectsHS256Token(t *testing.T) {
@@ -72,7 +74,7 @@ func TestJWTTokenService_RejectsHS256Token(t *testing.T) {
 	}).SignedString([]byte("secret"))
 	require.NoError(t, err)
 
-	username, err := svc.ValidateToken(context.Background(), tokenString)
+	user, err := svc.ValidateToken(context.Background(), tokenString)
 	assert.Error(t, err)
-	assert.Empty(t, username)
+	assert.Nil(t, user)
 }

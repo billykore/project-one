@@ -29,6 +29,7 @@ func (s *jwtTokenService) GenerateTokens(_ context.Context, user *domain.User) (
 	// Access token
 	accessExp := time.Now().Add(s.accessExpiration)
 	accessClaims := jwt.MapClaims{
+		"userID":   user.ID,
 		"username": user.Username,
 		"exp":      accessExp.Unix(),
 	}
@@ -45,7 +46,7 @@ func (s *jwtTokenService) GenerateTokens(_ context.Context, user *domain.User) (
 	}, nil
 }
 
-func (s *jwtTokenService) ValidateToken(_ context.Context, tokenString string) (string, error) {
+func (s *jwtTokenService) ValidateToken(_ context.Context, tokenString string) (*domain.User, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, domain.ErrUntrustedToken
@@ -54,18 +55,39 @@ func (s *jwtTokenService) ValidateToken(_ context.Context, tokenString string) (
 	})
 
 	if err != nil || !token.Valid {
-		return "", domain.ErrUntrustedToken
+		return nil, domain.ErrUntrustedToken
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		return "", domain.ErrUntrustedToken
+		return nil, domain.ErrUntrustedToken
+	}
+
+	userID, ok := claimInt(claims["userID"])
+	if !ok {
+		return nil, domain.ErrUntrustedToken
 	}
 
 	username, ok := claims["username"].(string)
 	if !ok {
-		return "", domain.ErrUntrustedToken
+		return nil, domain.ErrUntrustedToken
 	}
 
-	return username, nil
+	return &domain.User{
+		ID:       userID,
+		Username: username,
+	}, nil
+}
+
+func claimInt(value any) (int, bool) {
+	switch v := value.(type) {
+	case int:
+		return v, true
+	case int64:
+		return int(v), true
+	case float64:
+		return int(v), true
+	default:
+		return 0, false
+	}
 }

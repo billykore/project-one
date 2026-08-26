@@ -50,7 +50,7 @@ export async function createPostAction(
       };
     }
     return {
-      message: "Database Error: Failed to Create Post.",
+      message: "Failed to Create Post.",
     };
   }
 

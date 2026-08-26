@@ -10,8 +10,8 @@ import (
 type TokenService interface {
 	// GenerateTokens creates new access and refresh tokens for the given user.
 	GenerateTokens(ctx context.Context, user *domain.User) (accessToken *domain.UserToken, err error)
-	// ValidateToken verifies the token and returns the username.
-	ValidateToken(ctx context.Context, token string) (username string, err error)
+	// ValidateToken verifies the token and returns the authenticated user.
+	ValidateToken(ctx context.Context, token string) (user *domain.User, err error)
 }
 
 // LoginUseCase is a driving port for login-related application logic.

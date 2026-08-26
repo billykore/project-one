@@ -46,7 +46,7 @@ func TestNotificationHandler_StreamNotifications(t *testing.T) {
 	// reading rec.Body concurrently.
 	locked := &lockedWriter{w: rec}
 	c := e.NewContext(req, locked)
-	c.Set("username", "alice")
+	c.Set("user", &domain.User{ID: 42, Username: "alice"})
 
 	errCh := make(chan error, 1)
 	go func() {

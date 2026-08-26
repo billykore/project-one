@@ -111,15 +111,9 @@ func (h *NotificationHandler) Listen(ctx context.Context) error {
 //	@Security		BearerAuth
 //	@Router			/notifications/stream [get]
 func (h *NotificationHandler) StreamNotifications(c echo.Context) error {
-	username, ok := c.Get("username").(string)
+	user, ok := currentUser(c)
 	if !ok {
-		h.log.Error(c.Request().Context(), "StreamNotifications failed", "error", "Username not found in context")
-		return echo.ErrUnauthorized
-	}
-
-	user, err := h.userUc.GetUser(c.Request().Context(), username)
-	if err != nil {
-		h.log.Error(c.Request().Context(), "StreamNotifications failed", "username", username, "error", "User not found")
+		h.log.Error(c.Request().Context(), "StreamNotifications failed", "error", "User not found in context")
 		return echo.ErrUnauthorized
 	}
 
@@ -184,9 +178,9 @@ func (h *NotificationHandler) StreamNotifications(c echo.Context) error {
 //	@Security		BearerAuth
 //	@Router			/notifications [get]
 func (h *NotificationHandler) GetNotifications(c echo.Context) error {
-	username, ok := c.Get("username").(string)
+	user, ok := currentUser(c)
 	if !ok {
-		h.log.Error(c.Request().Context(), "GetNotifications failed", "error", "Username not found in context")
+		h.log.Error(c.Request().Context(), "GetNotifications failed", "error", "User not found in context")
 		return echo.ErrUnauthorized
 	}
 
@@ -206,9 +200,9 @@ func (h *NotificationHandler) GetNotifications(c echo.Context) error {
 		}
 	}
 
-	notifications, err := h.uc.GetNotifications(c.Request().Context(), username, limit, offset)
+	notifications, err := h.uc.GetNotifications(c.Request().Context(), user.Username, limit, offset)
 	if err != nil {
-		h.log.Error(c.Request().Context(), "GetNotifications failed", "username", username, "error", err)
+		h.log.Error(c.Request().Context(), "GetNotifications failed", "username", user.Username, "error", err)
 		return err
 	}
 
@@ -217,7 +211,7 @@ func (h *NotificationHandler) GetNotifications(c echo.Context) error {
 		resp[i] = notificationResponseFromDetail(n)
 	}
 
-	h.log.Info(c.Request().Context(), "GetNotifications succeeded", "username", username, "count", len(resp))
+	h.log.Info(c.Request().Context(), "GetNotifications succeeded", "username", user.Username, "count", len(resp))
 	return c.JSON(http.StatusOK, resp)
 }
 
@@ -236,26 +230,26 @@ func (h *NotificationHandler) GetNotifications(c echo.Context) error {
 //	@Security		BearerAuth
 //	@Router			/notifications/{id}/read [put]
 func (h *NotificationHandler) MarkAsRead(c echo.Context) error {
-	username, ok := c.Get("username").(string)
+	user, ok := currentUser(c)
 	if !ok {
-		h.log.Error(c.Request().Context(), "MarkAsRead failed", "error", "Username not found in context")
+		h.log.Error(c.Request().Context(), "MarkAsRead failed", "error", "User not found in context")
 		return echo.ErrUnauthorized
 	}
 
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil || id <= 0 {
-		h.log.Error(c.Request().Context(), "MarkAsRead failed", "username", username, "error", "Invalid notification ID")
+		h.log.Error(c.Request().Context(), "MarkAsRead failed", "username", user.Username, "error", "Invalid notification ID")
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid notification ID")
 	}
 
-	err = h.uc.MarkAsRead(c.Request().Context(), id, username)
+	err = h.uc.MarkAsRead(c.Request().Context(), id, user.Username)
 	if err != nil {
-		h.log.Error(c.Request().Context(), "MarkAsRead failed", "username", username, "notification_id", id, "error", err)
+		h.log.Error(c.Request().Context(), "MarkAsRead failed", "username", user.Username, "notification_id", id, "error", err)
 		return err
 	}
 
-	h.log.Info(c.Request().Context(), "MarkAsRead succeeded", "username", username, "notification_id", id)
+	h.log.Info(c.Request().Context(), "MarkAsRead succeeded", "username", user.Username, "notification_id", id)
 	return c.JSON(http.StatusOK, dto.MessageResponse{Message: "Notification marked as read"})
 }
 
