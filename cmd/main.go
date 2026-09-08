@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/billykore/project-one/api/swagger"
+	featureflagadapter "github.com/billykore/project-one/internal/adapters/featureflag"
 	"github.com/billykore/project-one/internal/adapters/hasher"
 	"github.com/billykore/project-one/internal/adapters/logger"
 	"github.com/billykore/project-one/internal/adapters/pubsub"
@@ -22,6 +23,7 @@ import (
 	"github.com/billykore/project-one/internal/api/handler"
 	"github.com/billykore/project-one/internal/api/middleware"
 	"github.com/billykore/project-one/internal/config"
+	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
 	"github.com/billykore/project-one/internal/core/usecase"
 	"github.com/labstack/echo/v4"
@@ -124,6 +126,7 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 	userSearchRepo := repository.NewUserSearchRepository(db)
 	userTokenRepo := repository.NewUserTokenRepository(db)
 	postRepo := repository.NewPostRepository(db)
+	featureFlagRepo := repository.NewFeatureFlagRepository(db)
 	followRepo := repository.NewFollowRepository(db)
 	commentRepo := repository.NewCommentRepository(db)
 	likeRepo := repository.NewLikeRepository(db)
@@ -134,7 +137,18 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 
 	loginUc := usecase.NewLoginUseCase(userRepo, tokenSvc, userTokenRepo, hasherSvc, lgr)
 	userUc := usecase.NewUserUseCase(userRepo, hasherSvc, userSearchRepo)
-	postUc := usecase.NewPostUseCase(postRepo, likeRepo, userRepo, publisher, lgr)
+	featureFlagEvaluator, err := featureflagadapter.NewEvaluator(
+		featureFlagRepo,
+		lgr,
+		domain.Environment(cfg.FeatureFlags.Environment),
+		cfg.FeatureFlags.RefreshInterval,
+	)
+	if err != nil {
+		return nil, err
+	}
+	featureFlagEvaluator.StartRefreshLoop(context.Background())
+	featureFlagUc := usecase.NewFeatureFlagUseCase(featureFlagRepo, featureFlagEvaluator, lgr)
+	postUc := usecase.NewPostUseCaseWithFeatureFlags(postRepo, likeRepo, userRepo, publisher, lgr, featureFlagEvaluator)
 	followUc := usecase.NewFollowUseCase(followRepo, userRepo, publisher, lgr)
 	commentUc := usecase.NewCommentUseCase(commentRepo, postRepo, userRepo, publisher)
 	notificationUc := usecase.NewNotificationUseCase(notificationRepo, userRepo, lgr)
@@ -145,6 +159,7 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 	commentHdl := handler.NewCommentHandler(commentUc, val, lgr)
 	notificationHdl := handler.NewNotificationHandler(lgr, subscriber, notificationUc, userUc, val, sseManager)
 	feedHdl := handler.NewFeedHandler(feedUc, lgr)
+	featureFlagHdl := handler.NewFeatureFlagHandler(featureFlagUc, val, cfg.FeatureFlags.Environment)
 
 	e := echo.New()
 	e.Use(echomiddleware.Recover())
@@ -156,7 +171,7 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 		e.GET("/swagger/*", echoSwagger.WrapHandler)
 	}
 
-	registerRoutes(e, tokenSvc, userHdl, postHdl, commentHdl, notificationHdl, feedHdl)
+	registerRoutes(e, tokenSvc, userHdl, postHdl, commentHdl, notificationHdl, feedHdl, featureFlagHdl, cfg.FeatureFlags.Operators, featureFlagEvaluator)
 
 	return &application{
 		echo:                e,
@@ -176,6 +191,9 @@ func registerRoutes(
 	commentHdl *handler.CommentHandler,
 	notificationHdl *handler.NotificationHandler,
 	feedHdl *handler.FeedHandler,
+	featureFlagHdl *handler.FeatureFlagHandler,
+	featureFlagOperators []string,
+	featureFlagEvaluator ports.FeatureFlagEvaluator,
 ) {
 	e.GET("/status", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{"status": "ok"})
@@ -199,9 +217,21 @@ func registerRoutes(
 	usersAuth.POST("/:username/followers", userHdl.HandleFollow)
 	usersAuth.DELETE("/:username/followers", userHdl.HandleUnfollow)
 
+	featureFlags := e.Group("/admin/feature-flags", middleware.Authorize(tokenSvc), middleware.OperatorOnly(featureFlagOperators))
+	featureFlags.GET("", featureFlagHdl.ListFlags)
+	featureFlags.POST("", featureFlagHdl.CreateFlag)
+	featureFlags.GET("/:key", featureFlagHdl.GetFlag)
+	featureFlags.PUT("/:key", featureFlagHdl.UpdateFlag)
+	featureFlags.PATCH("/:key/environment/:environment", featureFlagHdl.SetEnvironment)
+	featureFlags.PUT("/:key/overrides", featureFlagHdl.SetOverrides)
+	featureFlags.POST("/:key/archive", featureFlagHdl.Archive)
+	featureFlags.GET("/:key/audit", featureFlagHdl.ListAudit)
+
+	e.GET("/feature-flags/evaluate", featureFlagHdl.Evaluate, middleware.OptionalAuthorize(tokenSvc))
+
 	e.GET("/posts/:id", postHdl.GetPostByID)
 	posts := e.Group("/posts", middleware.Authorize(tokenSvc))
-	posts.POST("", postHdl.CreatePost)
+	posts.POST("", postHdl.CreatePost, middleware.FeatureFlagGate(featureFlagEvaluator, "post_creation"))
 	posts.GET("", postHdl.GetPosts)
 	posts.PUT("/:id", postHdl.UpdatePost)
 	posts.DELETE("/:id", postHdl.DeletePost)

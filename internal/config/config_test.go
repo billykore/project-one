@@ -59,6 +59,12 @@ message_broker:
     url: "amqp://guest:guest@localhost:5672/"
     exchange: "project1.notifications"
     queue: "notifications"
+feature_flags:
+  environment: "staging"
+  refresh_interval: "15s"
+  operators:
+    - "operator1"
+    - "operator2"
 
 `)
 	yamlContent = []byte(strings.ReplaceAll(string(yamlContent), "\t", "  "))
@@ -82,6 +88,9 @@ message_broker:
 	assert.Equal(t, "amqp://guest:guest@localhost:5672/", cfg.MessageBroker.RabbitMQ.URL)
 	assert.Equal(t, "project1.notifications", cfg.MessageBroker.RabbitMQ.Exchange)
 	assert.Equal(t, "notifications", cfg.MessageBroker.RabbitMQ.Queue)
+	assert.Equal(t, "staging", cfg.FeatureFlags.Environment)
+	assert.Equal(t, 15*time.Second, cfg.FeatureFlags.RefreshInterval)
+	assert.Equal(t, []string{"operator1", "operator2"}, cfg.FeatureFlags.Operators)
 }
 
 func TestLoad_SuccessFromEnv(t *testing.T) {
@@ -265,4 +274,71 @@ func TestLoad_Success_ConfigFileNotFoundAndNoEnvFallback(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, cfg)
 	assert.Contains(t, err.Error(), "JWT private key path cannot be empty")
+}
+
+func TestLoad_FeatureFlagsFromEnv(t *testing.T) {
+	tempDir, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	yamlContent := []byte(`
+database:
+  host: "test_db_host"
+  user: "testuser"
+  dbname: "test_dbname"
+jwt:
+  private_key_path: "/tmp/test-private.pem"
+  public_key_path: "/tmp/test-public.pem"
+  expiration_time: 1h
+message_broker:
+  type: "rabbitmq"
+  rabbitmq:
+    url: "amqp://guest:guest@localhost:5672/"
+    exchange: "project1.notifications"
+    queue: "notifications"
+`)
+	yamlContent = []byte(strings.ReplaceAll(string(yamlContent), "\t", "  "))
+	err := os.WriteFile(filepath.Join(tempDir, "config.yaml"), yamlContent, 0644)
+	assert.NoError(t, err)
+
+	t.Setenv("FEATURE_FLAGS_ENVIRONMENT", "production")
+	t.Setenv("FEATURE_FLAGS_REFRESH_INTERVAL", "45s")
+	t.Setenv("FEATURE_FLAGS_OPERATORS", "op1,op2")
+
+	cfg, err := config.Load(tempDir)
+	assert.NoError(t, err)
+	assert.Equal(t, "production", cfg.FeatureFlags.Environment)
+	assert.Equal(t, 45*time.Second, cfg.FeatureFlags.RefreshInterval)
+	assert.Equal(t, []string{"op1", "op2"}, cfg.FeatureFlags.Operators)
+}
+
+func TestLoad_InvalidFeatureFlagsEnvironment(t *testing.T) {
+	tempDir, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	yamlContent := []byte(`
+database:
+  host: "test_db_host"
+  user: "testuser"
+  dbname: "test_dbname"
+jwt:
+  private_key_path: "/tmp/test-private.pem"
+  public_key_path: "/tmp/test-public.pem"
+  expiration_time: 1h
+message_broker:
+  type: "rabbitmq"
+  rabbitmq:
+    url: "amqp://guest:guest@localhost:5672/"
+    exchange: "project1.notifications"
+    queue: "notifications"
+feature_flags:
+  environment: "outer-space"
+`)
+	yamlContent = []byte(strings.ReplaceAll(string(yamlContent), "\t", "  "))
+	err := os.WriteFile(filepath.Join(tempDir, "config.yaml"), yamlContent, 0644)
+	assert.NoError(t, err)
+
+	cfg, err := config.Load(tempDir)
+	assert.Error(t, err)
+	assert.Nil(t, cfg)
+	assert.Contains(t, err.Error(), "unsupported feature flags environment")
 }

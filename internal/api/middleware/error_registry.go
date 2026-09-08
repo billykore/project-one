@@ -49,6 +49,16 @@ var errorMappings = map[error]ErrorMapping{
 	domain.ErrPostIDMustBeANumber:    {http.StatusBadRequest, domain.CodeInvalidArgument, "invalid-argument", "Bad Request", "Post ID must be a number"},
 	domain.ErrSearchQueryTooShort:    {http.StatusBadRequest, domain.CodeInvalidArgument, "invalid-argument", "Bad Request", "Search query must be at least 3 characters"},
 	domain.ErrInvalidCursor:          {http.StatusBadRequest, domain.CodeInvalidArgument, "invalid-argument", "Bad Request", "Invalid cursor"},
+	domain.ErrFlagNotFound:           {http.StatusNotFound, domain.CodeNotFound, "not-found", "Not Found", "Feature flag not found"},
+	domain.ErrFlagKeyExists:          {http.StatusConflict, domain.CodeAlreadyExists, "already-exists", "Conflict", "Feature flag key already exists"},
+	domain.ErrFlagArchived:           {http.StatusConflict, domain.CodeConflict, "conflict", "Conflict", "Feature flag is archived"},
+	domain.ErrRevisionConflict:       {http.StatusConflict, domain.CodeConflict, "conflict", "Conflict", "Feature flag was changed; refresh and retry"},
+	domain.ErrInvalidFlagMode:        {http.StatusBadRequest, domain.CodeInvalidArgument, "invalid-argument", "Bad Request", "Invalid feature flag mode"},
+	domain.ErrFlagSettingNotFound:    {http.StatusNotFound, domain.CodeNotFound, "not-found", "Not Found", "Feature flag setting not found"},
+	domain.ErrConflictingOverrides:   {http.StatusUnprocessableEntity, domain.CodeInvalidArgument, "invalid-argument", "Unprocessable Entity", "User cannot be both included and excluded"},
+	domain.ErrInvalidArgument:        {http.StatusUnprocessableEntity, domain.CodeInvalidArgument, "invalid-argument", "Unprocessable Entity", "Invalid argument"},
+	domain.ErrOperatorOnly:           {http.StatusForbidden, domain.CodePermissionDenied, "permission-denied", "Forbidden", "Operator access required"},
+	domain.ErrFeatureDisabled:        {http.StatusNotFound, domain.CodeNotFound, "not-found", "Not Found", "Feature not available"},
 }
 
 var defaultMapping = ErrorMapping{

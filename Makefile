@@ -1,4 +1,4 @@
-.PHONY: build run test test-cover mock vet lint clean docs help migrate-create migrate-up migrate-down check githooks compose-up compose-down compose-start compose-stop seed-users seed-deps
+.PHONY: build run test test-cover mock vet lint clean docs docker-build help migrate-create migrate-up migrate-down check githooks compose-up compose-down compose-start compose-stop seed-users seed-deps
 
 COMPOSE_FILE := deployments/compose.yml
 
@@ -13,6 +13,12 @@ githooks:
 
 BUILD_DIR := ./bin
 
+# Docker image name (override with IMAGE_NAME=<name>)
+IMAGE_NAME ?= project-one
+# Image tag is the 12-character short commit hash of HEAD
+COMMIT_SHA := $(shell git rev-parse --short=12 HEAD)
+DOCKER_IMAGE := $(IMAGE_NAME):$(COMMIT_SHA)
+
 # Default config path
 config ?= ./configs
 CONFIG_ARG = -config $(config)
@@ -25,6 +31,12 @@ build:
 ## run: Build and run the application (e.g., make run config="./configs" or make run args="-config ./configs")
 run: build
 	$(BUILD_DIR)/main $(CONFIG_ARG) $(args)
+
+## docker-build: Build the Docker image tagged with the latest commit hash (git rev-parse --short=12 HEAD)
+docker-build:
+	@if [ -z "$(COMMIT_SHA)" ]; then echo "Error: unable to determine git commit hash. Ensure this is a git repository." >&2; exit 1; fi
+	docker build -t $(DOCKER_IMAGE) -f Dockerfile .
+	@echo "Built image: $(DOCKER_IMAGE)"
 
 # Coverage output directory
 COVERAGE_DIR := ./test/coverage

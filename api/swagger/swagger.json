@@ -9,6 +9,305 @@
     "host": "localhost:8080",
     "basePath": "/",
     "paths": {
+        "/admin/feature-flags": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "feature-flags"
+                ],
+                "summary": "List feature flags",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.FeatureFlagListResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "feature-flags"
+                ],
+                "summary": "Create feature flag",
+                "parameters": [
+                    {
+                        "description": "Flag details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateFeatureFlagRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dto.FeatureFlagResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/feature-flags/{key}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "feature-flags"
+                ],
+                "summary": "Get feature flag",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Flag key",
+                        "name": "key",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.FeatureFlagDetailResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "feature-flags"
+                ],
+                "summary": "Update feature flag metadata",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Flag key",
+                        "name": "key",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Flag metadata",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateFeatureFlagRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.FeatureFlagResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/feature-flags/{key}/archive": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "feature-flags"
+                ],
+                "summary": "Archive feature flag",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Flag key",
+                        "name": "key",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Archive reason",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.FeatureFlagArchiveRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/admin/feature-flags/{key}/audit": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "feature-flags"
+                ],
+                "summary": "List feature flag audit history",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Flag key",
+                        "name": "key",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.FeatureFlagAuditListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/feature-flags/{key}/environment/{environment}": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "feature-flags"
+                ],
+                "summary": "Set environment availability",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Flag key",
+                        "name": "key",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Environment",
+                        "name": "environment",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Availability",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.SetFeatureFlagEnvironmentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.FeatureFlagSettingResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/feature-flags/{key}/overrides": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "feature-flags"
+                ],
+                "summary": "Set user overrides",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Flag key",
+                        "name": "key",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Overrides",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.SetFeatureFlagOverridesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "description": "Authenticate a user and return access and refresh tokens via HttpOnly cookies.",
@@ -265,6 +564,34 @@
                         "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/dto.ProblemDetail"
+                        }
+                    }
+                }
+            }
+        },
+        "/feature-flags/evaluate": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "feature-flags"
+                ],
+                "summary": "Evaluate feature flags",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Comma-separated flag keys",
+                        "name": "keys",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.FeatureFlagEvaluateResponse"
                         }
                     }
                 }
@@ -1608,6 +1935,35 @@
                 }
             }
         },
+        "dto.CreateFeatureFlagRequest": {
+            "type": "object",
+            "required": [
+                "key",
+                "name",
+                "owner",
+                "purpose"
+            ],
+            "properties": {
+                "key": {
+                    "type": "string",
+                    "maxLength": 128
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "owner": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "purpose": {
+                    "type": "string"
+                },
+                "safeDefault": {
+                    "type": "boolean"
+                }
+            }
+        },
         "dto.CreatePostRequest": {
             "type": "object",
             "required": [
@@ -1650,6 +2006,200 @@
                 "content": {
                     "type": "string",
                     "minLength": 1
+                }
+            }
+        },
+        "dto.FeatureFlagArchiveRequest": {
+            "type": "object",
+            "required": [
+                "reason"
+            ],
+            "properties": {
+                "reason": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.FeatureFlagAuditListResponse": {
+            "type": "object",
+            "properties": {
+                "hasMore": {
+                    "type": "boolean"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.FeatureFlagAuditResponse"
+                    }
+                },
+                "nextCursor": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.FeatureFlagAuditResponse": {
+            "type": "object",
+            "properties": {
+                "actor": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "environment": {
+                    "type": "string"
+                },
+                "field": {
+                    "type": "string"
+                },
+                "newValue": {
+                    "type": "string"
+                },
+                "previousValue": {
+                    "type": "string"
+                },
+                "reason": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.FeatureFlagDecisionResponse": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.FeatureFlagDetailResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "lifecycle": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "overrides": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.FeatureFlagOverrideResponse"
+                    }
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "purpose": {
+                    "type": "string"
+                },
+                "safeDefault": {
+                    "type": "boolean"
+                },
+                "settings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.FeatureFlagSettingResponse"
+                    }
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.FeatureFlagEvaluateResponse": {
+            "type": "object",
+            "properties": {
+                "decisions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.FeatureFlagDecisionResponse"
+                    }
+                },
+                "environment": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.FeatureFlagListResponse": {
+            "type": "object",
+            "properties": {
+                "flags": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.FeatureFlagResponse"
+                    }
+                }
+            }
+        },
+        "dto.FeatureFlagOverrideResponse": {
+            "type": "object",
+            "properties": {
+                "environment": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.FeatureFlagResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "lifecycle": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "purpose": {
+                    "type": "string"
+                },
+                "safeDefault": {
+                    "type": "boolean"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.FeatureFlagSettingResponse": {
+            "type": "object",
+            "properties": {
+                "environment": {
+                    "type": "string"
+                },
+                "mode": {
+                    "type": "string"
+                },
+                "revision": {
+                    "type": "integer"
+                },
+                "rolloutPercentage": {
+                    "type": "integer"
                 }
             }
         },
@@ -1990,11 +2540,90 @@
                 }
             }
         },
+        "dto.SetFeatureFlagEnvironmentRequest": {
+            "type": "object",
+            "required": [
+                "mode",
+                "reason"
+            ],
+            "properties": {
+                "mode": {
+                    "type": "string"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "revision": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "rolloutPercentage": {
+                    "type": "integer",
+                    "maximum": 100,
+                    "minimum": 0
+                }
+            }
+        },
+        "dto.SetFeatureFlagOverridesRequest": {
+            "type": "object",
+            "required": [
+                "environment",
+                "reason"
+            ],
+            "properties": {
+                "environment": {
+                    "type": "string"
+                },
+                "exclude": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "include": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "reason": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.UnfollowResponse": {
             "type": "object",
             "properties": {
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.UpdateFeatureFlagRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "owner",
+                "purpose",
+                "reason"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "owner": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "purpose": {
+                    "type": "string"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "safeDefault": {
+                    "type": "boolean"
                 }
             }
         },

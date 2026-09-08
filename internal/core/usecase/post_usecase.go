@@ -20,6 +20,7 @@ type postUseCase struct {
 	likeRepo  ports.LikeRepository
 	userRepo  ports.UserRepository
 	publisher ports.Publisher
+	evaluator ports.FeatureFlagEvaluator
 }
 
 // NewPostUseCase creates a new instance of ports.PostUseCase.
@@ -30,6 +31,18 @@ func NewPostUseCase(
 	publisher ports.Publisher,
 	log ports.Logger,
 ) ports.PostUseCase {
+	return NewPostUseCaseWithFeatureFlags(postRepo, likeRepo, userRepo, publisher, log, nil)
+}
+
+// NewPostUseCaseWithFeatureFlags creates the post use case with an optional guarded-action evaluator.
+func NewPostUseCaseWithFeatureFlags(
+	postRepo ports.PostRepository,
+	likeRepo ports.LikeRepository,
+	userRepo ports.UserRepository,
+	publisher ports.Publisher,
+	log ports.Logger,
+	evaluator ports.FeatureFlagEvaluator,
+) ports.PostUseCase {
 	if postRepo == nil || likeRepo == nil || userRepo == nil || publisher == nil || log == nil {
 		panic("NewPostUseCase: dependencies must not be nil")
 	}
@@ -39,10 +52,17 @@ func NewPostUseCase(
 		userRepo:  userRepo,
 		publisher: publisher,
 		log:       log,
+		evaluator: evaluator,
 	}
 }
 
 func (uc *postUseCase) CreatePost(ctx context.Context, user *domain.User, title, content string, tags []string) (*domain.Post, error) {
+	if uc.evaluator != nil {
+		decision := uc.evaluator.Evaluate(ctx, "post_creation", user.Username)
+		if decision.Source == domain.SourceUnknown || !decision.Enabled {
+			return nil, domain.ErrFeatureDisabled
+		}
+	}
 	post := &domain.Post{
 		UserID:   user.ID,
 		Username: user.Username,
