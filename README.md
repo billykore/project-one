@@ -1,220 +1,242 @@
-# Go Backend & Next.js Fullstack App
+# Project One
 
-A robust, production-ready fullstack application featuring a **Go** backend structured with **Clean Architecture** and a modern **Next.js** frontend.
+Project One is a full-stack social publishing application. It combines a Go/Echo API organized with Clean Architecture, a Next.js App Router frontend, PostgreSQL persistence, RabbitMQ-backed notification events, and live browser updates over Server-Sent Events (SSE).
 
-## ✨ Features
+## Features
 
-* **User Management**: Registration and login with Email/Username and Password (JWT-based).
-* **Social Connectivity**: Follow and unfollow users to build a personal feed.
-* **Content Creation**: Create and view posts with real-time feedback.
-* **Notifications**: Frontend notification system with panel and dropdown UI for live updates.
-* **Guest UX**: Read-only guest session guards with disabled post interaction states and tooltips.
-* **Profile Experience**: User profile pages with root-level dynamic routing and dashboard links.
-* **Secure Password Management**: Backend change-password API, validation, and encrypted password storage.
-* **Idempotent Post Likes**: Like/unlike behavior has been refactored for consistent idempotent interactions.
-* **Post Ownership Controls**: Delete post actions are restricted to the author and UI reflects authorization.
-* **Clean Architecture**: Backend strictly follows separation of concerns for testability and maintainability.
-* **Modern Frontend**: Server-side rendering and interactive UI using Next.js 16 and Tailwind 4.
+- Registration, login, logout, and RSA-signed JWT sessions stored in HTTP-only cookies
+- User profiles, profile editing, password changes, user search, and follow relationships
+- Post creation, browsing, editing, deletion, comments, and idempotent likes
+- A cursor-paginated personal feed with infinite scrolling
+- Persistent follow, like, and comment notifications delivered live over SSE
+- RFC 9457 Problem Details error responses with request IDs
+- Swagger/OpenAPI documentation and generated Postman API tests
+- Backend and frontend unit tests, linting, and CI workflows
 
-## 🛠️ Recent Work
-
-Recent repository work includes:
-
-* Adding notification system components and utilities in the frontend.
-* Improving guest session handling and disabled like button UX.
-* Making post detail pages publicly accessible while keeping auth-aware headers.
-* Building user profile routes and profile navigation flows.
-* Implementing a secure change password API endpoint with backend validation.
-* Updating the follow model to include `FollowerID` and `FollowedID` in domain/repository layers.
-* Refactoring likes to be idempotent and restricting delete post options to the author.
-
-## 🚀 Tech Stack
+## Stack
 
 ### Backend
 
-* **Language**: Go 1.26+
-* **Framework**: [Echo](https://echo.labstack.com/) (HTTP)
-* **ORM**: [GORM](https://gorm.io/) with PostgreSQL
-* **Validation**: [Validator v10](https://github.com/go-playground/validator)
-* **Logging**: [Zerolog](https://github.com/rs/zerolog)
-* **Security**: [Bcrypt](https://pkg.go.dev/golang.org/x/crypto/bcrypt), [JWT v5](https://github.com/golang-jwt/jwt)
-* **Testing**: [GoMock](https://github.com/uber/mock), [Testify](https://github.com/stretchr/testify)
-* **API Documentation**: [Swaggo](https://github.com/swaggo/swag)
+- Go 1.26.2
+- Echo 4.15, GORM, and PostgreSQL
+- RabbitMQ for notification events; Kafka and in-memory adapters are also present
+- Viper configuration, `log/slog` structured logging, Validator v10, bcrypt, and JWT v5
+- Testify, GoMock, and Swaggo
 
 ### Frontend
 
-* **Framework**: [Next.js 16.2.4](https://nextjs.org/) (App Router)
-* **Library**: [React 19](https://react.dev/)
-* **Styling**: [Tailwind CSS 4](https://tailwindcss.com/)
-* **Language**: [TypeScript](https://www.typescriptlang.org/)
-* **Components**: UI components built with Radix UI primitives.
+- Next.js 16.2.9 with the App Router
+- React 19.2.4 and TypeScript 5
+- Tailwind CSS 4
+- Vitest and Playwright tooling
 
----
+## Architecture
 
-## 🏗️ Architecture
+The backend keeps business rules independent of delivery and infrastructure concerns:
 
-The backend follows **Clean Architecture** principles to ensure separation of concerns and maintainability:
+- `internal/core/domain`: entities, value objects, and domain errors
+- `internal/core/ports`: interfaces used at architectural boundaries
+- `internal/core/usecase`: application business logic
+- `internal/adapters`: PostgreSQL repositories, token/password services, pub/sub clients, logging, validation, and SSE connection management
+- `internal/api`: Echo handlers, DTOs, and middleware
 
-* **Core/Domain**: Pure Go business entities and sentinel errors. Zero dependencies on external libraries or frameworks.
-* **Core/Ports**: Dependency inversion interfaces defining how the domain interacts with the outside world.
-* **Core/UseCase**: Orchestrates business logic by implementing ports and domain models.
-* **Adapters**: Concrete implementations of ports (GORM repositories, JWT service, Bcrypt hasher, etc.).
-* **API**: Echo handlers, DTOs (Data Transfer Objects), and Middleware.
-
-The frontend uses the **Next.js App Router** with layouts, pages, and components in the `web/app` directory, and API clients / utilities in `web/lib`.
+The frontend uses Next.js route handlers as a same-origin backend-for-frontend (BFF). Browser requests carry the session cookies to `/api/*`; the route handlers forward them to the Go API through the server-only `API_URL` setting.
 
 ```mermaid
 flowchart LR
-    browser["Browser"]
+    browser[Browser]
 
-    subgraph frontend["Next.js Frontend (`web/`)"]
-        app_router["App Router pages and layouts"]
-        ui["React components and hooks"]
-        api_clients["REST / WebSocket clients"]
+    subgraph next[Next.js frontend]
+        pages[App Router pages and components]
+        bff[Route handlers /api/*]
+        sseClient[EventSource client]
     end
 
-    subgraph backend["Go Backend"]
-        handlers["Echo handlers and middleware (`internal/api`)"]
-        usecases["Use cases (`internal/core/usecase`)"]
-        ports["Ports (`internal/core/ports`)"]
-        adapters["Adapters (`internal/adapters`)"]
-        domain["Domain models (`internal/core/domain`)"]
+    subgraph go[Go API]
+        handlers[Echo handlers and middleware]
+        usecases[Use cases]
+        ports[Ports]
+        adapters[Adapters]
+        sse[SSE manager]
     end
 
-    db[("PostgreSQL")]
-    broker[("RabbitMQ")]
-    live["WebSocket / SSE managers"]
+    postgres[(PostgreSQL)]
+    rabbit[(RabbitMQ)]
 
-    browser --> app_router
-    app_router --> ui
-    ui --> api_clients
-    api_clients -->|HTTP / JSON| handlers
-    browser <-. live notifications .-> live
-
+    browser --> pages
+    pages --> bff
+    sseClient -->|GET /api/notifications/stream| bff
+    bff -->|HTTP and cookies| handlers
     handlers --> usecases
-    usecases --> domain
     usecases --> ports
     ports --> adapters
-
-    adapters --> db
-    usecases -->|publish events| broker
-    broker -->|consume events| handlers
-    handlers --> live
+    adapters --> postgres
+    usecases -->|publish| rabbit
+    rabbit -->|consume| handlers
+    handlers --> sse
+    sse -->|text/event-stream| bff
 ```
 
----
+## Quick start with Docker Compose
 
-## 🛠️ Getting Started
+This starts PostgreSQL 17, RabbitMQ 4, the Go API, and the Next.js frontend. You need Docker with Compose and OpenSSL installed.
+
+1. Generate the local RSA key pair used to sign JWTs:
+
+   ```bash
+   mkdir -p configs/keys
+   openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out configs/keys/jwt-private.pem
+   openssl pkey -in configs/keys/jwt-private.pem -pubout -out configs/keys/jwt-public.pem
+   ```
+
+2. Build and start the stack:
+
+   ```bash
+   make compose-up
+   ```
+
+3. Open the services:
+
+   - Frontend: <http://localhost:3000>
+   - API health check: <http://localhost:8080/status>
+   - Swagger UI: <http://localhost:8080/swagger/index.html>
+
+4. Stop the stack when finished:
+
+   ```bash
+   make compose-down
+   ```
+
+On the first start of a new PostgreSQL volume, the container applies every `db/migrations/*.up.sql` file. For an existing volume, apply new migrations explicitly with `make migrate-up`; the initialization script does not rerun.
+
+See [deployments/README.md](deployments/README.md) for service configuration, lifecycle commands, and data-volume behavior.
+
+## Local development
 
 ### Prerequisites
 
-* **Go**: 1.26+
-* **PostgreSQL**: For database storage
-* **Node.js & npm**: For running the Next.js frontend
-* **Additional Tooling** (Required for development commands):
-  * [golang-migrate CLI](https://github.com/golang-migrate/migrate): For database migrations (`make migrate-*`)
-  * [swag CLI](https://github.com/swaggo/swag): For generating Swagger API docs (`make docs`)
-  * [golangci-lint](https://golangci-lint.run/): For static analysis (`make lint`)
+- Go 1.26.2
+- Node.js 24 and npm (Node.js 20 is also used by the lint CI job)
+- PostgreSQL and RabbitMQ
+- OpenSSL
+- Optional command-line tools: `migrate`, `swag`, and `golangci-lint`
+- Python 3 and pip only when using the user seed command
 
-### Backend Setup
+### Backend
 
-1. **Configure**: Copy `configs/config.yaml.example` to `configs/config.yaml` and update your database credentials.
-2. **Migrate**: Run migrations to set up the database schema.
+1. Copy the example configuration:
 
-    ```bash
-    make migrate-up dsn="postgres://user:pass@host:port/db?sslmode=disable"
-    ```
+   ```bash
+   cp configs/config.yaml.example configs/config.yaml
+   ```
 
-3. **Run**: Start the API server on `:8080`.
+2. Generate `configs/keys/jwt-private.pem` and `configs/keys/jwt-public.pem` using the commands in the Docker quick start, then update database and RabbitMQ values in `configs/config.yaml`.
 
-    ```bash
-    make run
-    ```
+3. Apply the migrations:
 
-### Frontend Setup
+   ```bash
+   make migrate-up dsn="postgres://postgres:password@localhost:5432/postgres?sslmode=disable"
+   ```
 
-1. Navigate to the `web/` directory.
-2. Install dependencies: `npm install`
-3. Run development server: `npm run dev`
+4. Start the API at <http://localhost:8080>:
 
-### Developer Commands
+   ```bash
+   make run
+   ```
+
+The configuration file path can be changed with `make run config=/path/to/config-dir`. Bound settings can also be overridden by uppercase, underscore-separated environment variables—for example, `DATABASE_HOST`, `JWT_PRIVATE_KEY_PATH`, or `MESSAGE_BROKER_RABBITMQ_URL`.
+
+### Frontend
+
+In a second terminal:
+
+```bash
+cd web
+npm ci
+API_URL=http://localhost:8080 npm run dev
+```
+
+The frontend is available at <http://localhost:3000>. `API_URL` is server-only and defaults to `http://localhost:8080`; it is not exposed to browser JavaScript.
+
+See [web/README.md](web/README.md) for frontend routes, rendering boundaries, API proxying, and tests.
+
+## Developer commands
 
 | Command | Description |
 | :--- | :--- |
-| `make build` | Compile the backend application binary to `bin/main` |
-| `make run` | Compile and run the backend API server |
-| `make test` | Run all unit tests |
-| `make mock` | Regenerate GoMock interfaces in `internal/core/usecase/mocks/` |
+| `make help` | List documented Make targets |
+| `make build` | Build the backend binary at `bin/main` |
+| `make run` | Build and run the backend |
+| `make test` | Run backend tests with the race detector |
+| `make test-cover` | Run backend tests and write the HTML coverage report |
+| `make mocks` | Regenerate GoMock implementations for all core ports |
 | `make vet` | Run `go vet` |
-| `make lint` | Run static analysis via `golangci-lint` |
-| `make docs` | Regenerate Swagger API documentation |
-| `make migrate-create name=...` | Create a new SQL migration file |
-| `make migrate-up dsn=...` | Run database migrations up |
-| `make migrate-down dsn=...` | Run database migrations down |
-| `make githooks` | Configure git to use local pre-commit, prepare-commit-msg, and pre-push hooks |
-| `make check` | Run docs, vet, lint, and test in one go |
-| `make clean` | Remove backend build artifacts from `bin/` |
+| `make lint` | Run `golangci-lint` |
+| `make docs` | Format Swagger annotations and regenerate `api/swagger` |
+| `make check` | Run docs generation, vet, lint, and backend tests |
+| `make migrate-create name=...` | Create a numbered up/down migration pair |
+| `make migrate-up dsn=...` | Apply migrations; optionally pass `steps=N` |
+| `make migrate-down dsn=...` | Revert migrations; optionally pass `steps=N` |
+| `make seed-users dsn=...` | Install seed dependencies and insert 20 generated users |
+| `make compose-up` | Build and start the Compose stack |
+| `make compose-down` | Stop the stack and remove its containers and network |
+| `make compose-start` | Start existing stopped Compose containers |
+| `make compose-stop` | Stop Compose containers without removing them |
+| `make githooks` | Activate the repository's local Git hooks |
+| `make clean` | Remove backend build artifacts |
 
-### Commit Convention
+The seed command uses the provided DSN as `DATABASE_URL`. Without one, the script falls back to `postgresql://postgres:postgres@localhost:5432/my_go_db`. Seeded rows contain generated fixture data and are intended for development datasets.
 
-All commits must follow the format:
+Frontend checks run from `web/`:
 
-```text
-<type>(<team-code> or <ticket-id>): <description>
+```bash
+npm run lint
+npm test -- --run
+npm run build
 ```
 
-**Valid types:**
+## API and live notifications
 
-| Type       | Description                          |
-| :--------- | :----------------------------------- |
-| `feat`     | A new feature                        |
-| `fix`      | A bug fix                            |
-| `chore`    | Maintenance, dependencies, build etc |
-| `refactor` | Code refactoring (no feature/fix)    |
-| `docs`     | Documentation changes                |
-| `test`     | Adding or updating tests             |
+Swagger artifacts are checked in under `api/swagger/`. Run `make docs` after changing handler annotations. Swagger UI is served at `/swagger/index.html` unless `APP_ENV=production`.
 
-**Examples:**
+The notification flow is:
 
-```text
-feat(auth): add register logic
-fix(api): correct status code
-chore(deps): update dependency version
-refactor(utils): simplify helper function
-docs(readme): update setup instructions
-test(user): add login tests
-```
+1. Follow, like, and comment use cases publish an event to RabbitMQ.
+2. The notification consumer persists the event in PostgreSQL.
+3. Connected clients receive the new notification from `GET /notifications/stream` as SSE.
+4. Clients retrieve notification history from `GET /notifications` and can mark one or all notifications as read.
 
-A `prepare-commit-msg` git hook enforces this convention locally. Run `make githooks` to activate it.
+The SSE endpoint accepts the same `access_token` cookie or `Authorization: Bearer <token>` header as other protected endpoints. The browser connects through the frontend route at `/api/notifications/stream`, which forwards its cookies to the backend. Streams include a keepalive comment every 30 seconds.
 
-### Real-time Notifications (WebSocket)
-
-* Endpoint: `GET /ws`
-* Auth: `Authorization: Bearer <access_token>` during WebSocket handshake
-* Behavior: streams only new notifications for the authenticated user
-* Historical notifications: use `GET /notifications`
-
----
-
-## 📂 Project Structure
+## Project structure
 
 ```text
-├── api/swagger/          # Auto-generated Swagger documentation
-├── bin/                  # Directory containing compiled backend binary
-├── cmd/main.go           # Application entry point
-├── configs/              # Configuration files (config.yaml)
-├── db/migrations/        # SQL migration files
-├── deployments/          # Deployment configurations and templates
-├── docs/                 # Documentation (plans, specifications, and tasks)
-├── githooks/             # Local Git hooks (pre-commit, prepare-commit-msg, pre-push)
-├── internal/
-│   ├── api/              # Handlers, DTOs, and Middlewares
-│   ├── core/
-│   │   ├── domain/       # Business entities
-│   │   ├── ports/        # Interface definitions
-│   │   └── usecase/      # Business logic implementation
-│   ├── adapters/         # Implementation of ports (DB, services)
-│   └── config/           # Application configuration logic
-├── scripts/              # Helper shell scripts for make commands
-└── web/                  # Next.js frontend application
+├── api/swagger/          # Generated OpenAPI documentation
+├── build/                # Packaging and CI placeholders
+├── cmd/                  # Backend entry point and RSA key loading
+├── configs/              # YAML configuration and local JWT keys
+├── db/migrations/        # Versioned PostgreSQL migrations
+├── db/seeds/             # Development user seeding utility
+├── deployments/          # Docker Compose stack and DB initialization
+├── docs/                 # Feature requirements, designs, and plans
+├── githooks/             # Repository Git hooks
+├── internal/             # Backend domain, ports, use cases, adapters, and API
+├── scripts/              # Postman collection generator
+├── specs/                # Spec Kit feature artifacts
+├── test/                 # API collections, reports, screenshots, and coverage
+└── web/                  # Next.js frontend
 ```
+
+## Commit convention
+
+Commit messages use:
+
+```text
+<type>(<scope-or-ticket>): <description>
+```
+
+Valid types are `feat`, `fix`, `chore`, `refactor`, `docs`, and `test`. Run `make githooks` to enable the checks described in [githooks/README.md](githooks/README.md).
+
+## License
+
+See [LICENSE.md](LICENSE.md).

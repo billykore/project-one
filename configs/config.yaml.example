@@ -13,7 +13,7 @@ jwt:
   public_key_path: "./configs/keys/jwt-public.pem"
   expiration_time: 24h
 message_broker:
-  type: "inmemory"
+  type: "rabbitmq"
   kafka:
     brokers:
       - "localhost:9092"
@@ -26,5 +26,5 @@ message_broker:
     queue: "notifications"
 app:
   port: 8080
+  env: "development"
   error_type_base_url: ""
-
