@@ -20,8 +20,8 @@
 
 **Purpose**: Configuration plumbing for the feature-flag capability.
 
-- [ ] T001 Add `FeatureFlagsConfig` struct (fields: `environment`, `refresh_interval`, `operators`) to `internal/config/config.go`; add defaults, `BindEnv` entries, and validation in `Load`; extend `internal/config/config_test.go`
-- [ ] T002 Add `feature_flags` section (`environment`, `refresh_interval`, `operators`) to `configs/config.yaml` and `configs/config.yaml.example`
+- [X] T001 Add `FeatureFlagsConfig` struct (fields: `environment`, `refresh_interval`, `operators`) to `internal/config/config.go`; add defaults, `BindEnv` entries, and validation in `Load`; extend `internal/config/config_test.go`
+- [X] T002 Add `feature_flags` section (`environment`, `refresh_interval`, `operators`) to `configs/config.yaml` and `configs/config.yaml.example`
 
 ---
 
@@ -31,13 +31,13 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T003 [P] Create domain entities and enums (`FeatureFlag`, `EnvironmentSetting`, `UserOverride`, `AuditRecord`, `FeatureFlagDecision`; `LifecycleState`, `Environment`, `AvailabilityMode`, `OverrideType`) in `internal/core/domain/feature_flag.go`
-- [ ] T004 [P] Add feature-flag sentinel errors (e.g., `ErrFlagNotFound`, `ErrFlagKeyExists`, `ErrFlagArchived`, `ErrRevisionConflict`, `ErrInvalidMode`) to `internal/core/domain/errors.go`
-- [ ] T005 [P] Create migrations `000018_create_feature_flags_table`, `000019_create_feature_flag_settings_table`, `000020_create_feature_flag_overrides_table`, `000021_create_feature_flag_audit_logs_table` (up + down files) in `db/migrations/`
-- [ ] T006 Define `FeatureFlagRepository`, `FeatureFlagEvaluator`, and `FeatureFlagUseCase` interfaces in `internal/core/ports/feature_flag.go`
-- [ ] T007 Implement GORM `FeatureFlagRepository` in `internal/adapters/repository/feature_flag_repository.go` (flag/setting/override CRUD, `LoadSnapshot` for the evaluator, revision-based optimistic concurrency, audit append)
-- [ ] T008 Implement in-memory evaluator in `internal/adapters/featureflag/evaluator.go` (FNV-1a bucket assignment, FR-010 precedence, 30s refresh + write-triggered invalidation, safe-default fallback on failure, and structured `slog` recording of evaluation failures with flag, environment, time, and failure category — FR-015)
-- [ ] T009 Run `make mock` to regenerate `internal/core/ports/mocks/`
+- [X] T003 [P] Create domain entities and enums (`FeatureFlag`, `EnvironmentSetting`, `UserOverride`, `AuditRecord`, `FeatureFlagDecision`; `LifecycleState`, `Environment`, `AvailabilityMode`, `OverrideType`) in `internal/core/domain/feature_flag.go`
+- [X] T004 [P] Add feature-flag sentinel errors (e.g., `ErrFlagNotFound`, `ErrFlagKeyExists`, `ErrFlagArchived`, `ErrRevisionConflict`, `ErrInvalidMode`) to `internal/core/domain/errors.go`
+- [X] T005 [P] Create migrations `000018_create_feature_flags_table`, `000019_create_feature_flag_settings_table`, `000020_create_feature_flag_overrides_table`, `000021_create_feature_flag_audit_logs_table` (up + down files) in `db/migrations/`
+- [X] T006 Define `FeatureFlagRepository`, `FeatureFlagEvaluator`, and `FeatureFlagUseCase` interfaces in `internal/core/ports/feature_flag.go`
+- [X] T007 Implement GORM `FeatureFlagRepository` in `internal/adapters/repository/feature_flag_repository.go` (flag/setting/override CRUD, `LoadSnapshot` for the evaluator, revision-based optimistic concurrency, audit append)
+- [X] T008 Implement in-memory evaluator in `internal/adapters/featureflag/evaluator.go` (FNV-1a bucket assignment, FR-010 precedence, 30s refresh + write-triggered invalidation, safe-default fallback on failure, and structured `slog` recording of evaluation failures with flag, environment, time, and failure category — FR-015)
+- [X] T009 Run `make mock` to regenerate `internal/core/ports/mocks/`
 
 **Checkpoint**: Foundation ready — user story implementation can now begin.
 
@@ -53,21 +53,21 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation.**
 
-- [ ] T010 [P] [US1] Unit tests for flag create/toggle/evaluate, validation, and safe-default behavior in `internal/core/usecase/feature_flag_usecase_test.go`
-- [ ] T011 [P] [US1] Unit tests for evaluator precedence (enabled/disabled/safe default), failure fallback, and cache refresh/invalidation propagation within the refresh interval (SC-002) in `internal/adapters/featureflag/evaluator_test.go`
-- [ ] T012 [P] [US1] Integration tests for repository persistence and optimistic concurrency in `internal/adapters/repository/feature_flag_repository_test.go`
+- [X] T010 [P] [US1] Unit tests for flag create/toggle/evaluate, validation, and safe-default behavior in `internal/core/usecase/feature_flag_usecase_test.go`
+- [X] T011 [P] [US1] Unit tests for evaluator precedence (enabled/disabled/safe default), failure fallback, and cache refresh/invalidation propagation within the refresh interval (SC-002) in `internal/adapters/featureflag/evaluator_test.go`
+- [X] T012 [P] [US1] Integration tests for repository persistence and optimistic concurrency in `internal/adapters/repository/feature_flag_repository_test.go`
 
 ### Implementation for User Story 1
 
-- [ ] T013 [US1] Implement `FeatureFlagUseCase` (create, get, list, set availability `enabled_all`/`disabled_all`, evaluate with safe default, validation) in `internal/core/usecase/feature_flag_usecase.go`
-- [ ] T014 [US1] Implement `OperatorOnly` middleware (config allowlist check after `Authorize`) in `internal/api/middleware/feature_flag_operator.go`
-- [ ] T015 [US1] Implement `FeatureFlagHandler` (create, list, get, patch environment) with Swagger annotations in `internal/api/handler/feature_flag_handler.go`
-- [ ] T016 [US1] Implement `GET /feature-flags/evaluate?keys=` endpoint (per-user or anonymous) in `internal/api/handler/feature_flag_handler.go`
-- [ ] T017 [US1] Implement `FeatureFlagGate` route middleware (guarded-feature check with safe default) in `internal/api/middleware/feature_flag_gate.go`, and apply it to one existing route with a matching use-case-level guard check to demonstrate both entry-point and direct-action protection (FR-012)
-- [ ] T018 [US1] Wire repository, evaluator, use case, handler, and middlewares into `newApplication` and `registerRoutes` in `cmd/main.go`
-- [ ] T019 [US1] Add BFF evaluate proxy `web/app/api/feature-flags/route.ts` and client helpers in `web/lib/feature-flags-api.ts`
-- [ ] T020 [US1] Add `FeatureGate` component in `web/components/feature-flag/feature-gate.tsx` and `use-feature-flag` hook in `web/hooks/use-feature-flag.ts`
-- [ ] T021 [US1] Add minimal operator dashboard (list flags + toggle enabled/disabled) in `web/app/admin/feature-flags/page.tsx` with BFF admin proxies under `web/app/api/admin/feature-flags/`
+- [X] T013 [US1] Implement `FeatureFlagUseCase` (create, get, list, set availability `enabled_all`/`disabled_all`, evaluate with safe default, validation) in `internal/core/usecase/feature_flag_usecase.go`
+- [X] T014 [US1] Implement `OperatorOnly` middleware (config allowlist check after `Authorize`) in `internal/api/middleware/feature_flag_operator.go`
+- [X] T015 [US1] Implement `FeatureFlagHandler` (create, list, get, patch environment) with Swagger annotations in `internal/api/handler/feature_flag_handler.go`
+- [X] T016 [US1] Implement `GET /feature-flags/evaluate?keys=` endpoint (per-user or anonymous) in `internal/api/handler/feature_flag_handler.go`
+- [X] T017 [US1] Implement `FeatureFlagGate` route middleware (guarded-feature check with safe default) in `internal/api/middleware/feature_flag_gate.go`, and apply it to one existing route with a matching use-case-level guard check to demonstrate both entry-point and direct-action protection (FR-012)
+- [X] T018 [US1] Wire repository, evaluator, use case, handler, and middlewares into `newApplication` and `registerRoutes` in `cmd/main.go`
+- [X] T019 [US1] Add BFF evaluate proxy `web/app/api/feature-flags/route.ts` and client helpers in `web/lib/feature-flags-api.ts`
+- [X] T020 [US1] Add `FeatureGate` component in `web/components/feature-flag/feature-gate.tsx` and `use-feature-flag` hook in `web/hooks/use-feature-flag.ts`
+- [X] T021 [US1] Add minimal operator dashboard (list flags + toggle enabled/disabled) in `web/app/admin/feature-flags/page.tsx` with BFF admin proxies under `web/app/api/admin/feature-flags/`
 
 **Checkpoint**: User Story 1 fully functional and independently testable — operators can enable/disable features per environment and guard routes/UI.
 
@@ -83,14 +83,14 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation.**
 
-- [ ] T022 [P] [US2] Unit tests for gradual-rollout allocation and override precedence in `internal/core/usecase/feature_flag_usecase_test.go`
-- [ ] T023 [P] [US2] Unit tests for rollout determinism (same user, stable result), override precedence, and bucket-distribution accuracy within 5 percentage points over a simulated 10,000-user audience (SC-004) in `internal/adapters/featureflag/evaluator_test.go`
+- [X] T022 [P] [US2] Unit tests for gradual-rollout allocation and override precedence in `internal/core/usecase/feature_flag_usecase_test.go`
+- [X] T023 [P] [US2] Unit tests for rollout determinism (same user, stable result), override precedence, and bucket-distribution accuracy within 5 percentage points over a simulated 10,000-user audience (SC-004) in `internal/adapters/featureflag/evaluator_test.go`
 
 ### Implementation for User Story 2
 
-- [ ] T024 [US2] Extend `FeatureFlagUseCase` with `gradual` mode and include/exclude override management (conflicting override validation) in `internal/core/usecase/feature_flag_usecase.go`
-- [ ] T025 [US2] Add `PUT /admin/feature-flags/{key}/overrides` endpoint with Swagger annotation in `internal/api/handler/feature_flag_handler.go`
-- [ ] T026 [US2] Add rollout-percentage and override controls to the operator dashboard in `web/app/admin/feature-flags/page.tsx`
+- [X] T024 [US2] Extend `FeatureFlagUseCase` with `gradual` mode and include/exclude override management (conflicting override validation) in `internal/core/usecase/feature_flag_usecase.go`
+- [X] T025 [US2] Add `PUT /admin/feature-flags/{key}/overrides` endpoint with Swagger annotation in `internal/api/handler/feature_flag_handler.go`
+- [X] T026 [US2] Add rollout-percentage and override controls to the operator dashboard in `web/app/admin/feature-flags/page.tsx`
 
 **Checkpoint**: User Stories 1 AND 2 work independently — partial rollouts and overrides are functional on top of the on/off control.
 
@@ -106,13 +106,13 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation.**
 
-- [ ] T027 [P] [US3] Unit tests for archive transitions and audit-record creation in `internal/core/usecase/feature_flag_usecase_test.go`
+- [X] T027 [P] [US3] Unit tests for archive transitions and audit-record creation in `internal/core/usecase/feature_flag_usecase_test.go`
 
 ### Implementation for User Story 3
 
-- [ ] T028 [US3] Extend `FeatureFlagUseCase` with archive transitions and immutable audit-record writing (previous/new value, actor, reason) in `internal/core/usecase/feature_flag_usecase.go`
-- [ ] T029 [US3] Add `POST /admin/feature-flags/{key}/archive` and `GET /admin/feature-flags/{key}/audit` endpoints with Swagger annotations in `internal/api/handler/feature_flag_handler.go`
-- [ ] T030 [US3] Add archive action and audit-history view to the operator dashboard in `web/app/admin/feature-flags/page.tsx`
+- [X] T028 [US3] Extend `FeatureFlagUseCase` with archive transitions and immutable audit-record writing (previous/new value, actor, reason) in `internal/core/usecase/feature_flag_usecase.go`
+- [X] T029 [US3] Add `POST /admin/feature-flags/{key}/archive` and `GET /admin/feature-flags/{key}/audit` endpoints with Swagger annotations in `internal/api/handler/feature_flag_handler.go`
+- [X] T030 [US3] Add archive action and audit-history view to the operator dashboard in `web/app/admin/feature-flags/page.tsx`
 
 **Checkpoint**: All user stories independently functional — flags are governable and auditable end-to-end.
 
@@ -122,10 +122,10 @@
 
 **Purpose**: Hardening and validation across all stories.
 
-- [ ] T031 [P] Add handler unit tests (request validation, authorization, error mapping) in `internal/api/handler/feature_flag_handler_test.go`
-- [ ] T032 [P] Add Vitest tests for `FeatureGate` and `use-feature-flag` in `web/tests/`
-- [ ] T033 Run `make check` (vet + lint + test), `make docs` to regenerate Swagger, and `npm test` in `web/`; fix all failures
-- [ ] T034 Execute the validation scenarios in `specs/005-feature-flags/quickstart.md` and confirm each expected outcome
+- [X] T031 [P] Add handler unit tests (request validation, authorization, error mapping) in `internal/api/handler/feature_flag_handler_test.go`
+- [X] T032 [P] Add Vitest tests for `FeatureGate` and `use-feature-flag` in `web/tests/`
+- [X] T033 Run `make check` (vet + lint + test), `make docs` to regenerate Swagger, and `npm test` in `web/`; fix all failures
+- [X] T034 Execute the validation scenarios in `specs/005-feature-flags/quickstart.md` and confirm each expected outcome
 
 ---
 
@@ -217,3 +217,16 @@ With multiple developers:
 - [Story] label maps each task to its user story for traceability.
 - Verify tests fail before implementing; commit after each task or logical group.
 - Backend gating (gate middleware + use-case checks) is authoritative; the frontend `FeatureGate` only controls presentation.
+
+## Phase 7: Convergence
+
+- [X] T035 Add database-backed integration tests for feature-flag persistence and revision-conflict rejection in `internal/adapters/repository/feature_flag_repository_test.go` per US1/AC2 and FR-017 (requires `FEATURE_FLAGS_TEST_DSN`)
+- [X] T036 Execute the end-to-end validation scenarios in `specs/005-feature-flags/quickstart.md` against configured PostgreSQL and application runtime, recording results for SC-001, SC-002, SC-005, SC-006, SC-007, and SC-008
+- [X] T037 Make guarded actions fail closed when a requested flag is unknown or cannot be evaluated: remove the `SourceUnknown` bypass from `internal/api/middleware/feature_flag_gate.go` and `internal/core/usecase/post_usecase.go`, and add regression tests for FR-012 and FR-014
+- [X] T038 Add an operator-dashboard archive action and confirmation flow in `web/app/admin/feature-flags/page.tsx`, including the matching client/BFF call, so the plan touch-point supports permanent archival per FR-019
+- [X] T039 Add include/exclude user override controls to `web/app/admin/feature-flags/page.tsx` and its client helpers, completing the dashboard support for FR-009 and the T026 task
+- [X] T040 Bound feature-flag snapshot reads in `internal/adapters/repository/feature_flag_repository.go` or document/enforce a bounded maximum with pagination, satisfying Constitution IV's prohibition on unbounded `SELECT` queries
+
+## Phase 8: Convergence
+
+- [X] T041 Run the live feature-flag quickstart validation in `specs/005-feature-flags/quickstart.md` with `FEATURE_FLAGS_TEST_DSN`, applied migrations, and the application stack running; record evidence for T034/T036 and close those prerequisite validation tasks

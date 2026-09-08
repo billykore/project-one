@@ -50,3 +50,32 @@ func Authorize(tks ports.TokenService) echo.MiddlewareFunc {
 		}
 	}
 }
+
+// OptionalAuthorize attaches a user when a valid session is present and treats
+// missing or invalid credentials as anonymous access.
+func OptionalAuthorize(tks ports.TokenService) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			token := requestToken(c)
+			if token == "" {
+				return next(c)
+			}
+			user, err := tks.ValidateToken(c.Request().Context(), token)
+			if err == nil && user != nil {
+				c.Set("user", user)
+				c.Set("username", user.Username)
+			}
+			return next(c)
+		}
+	}
+}
+
+func requestToken(c echo.Context) string {
+	if cookie, err := c.Cookie("access_token"); err == nil && cookie.Value != "" {
+		return cookie.Value
+	}
+	if after, ok := strings.CutPrefix(c.Request().Header.Get("Authorization"), "Bearer "); ok {
+		return after
+	}
+	return c.QueryParam("token")
+}

@@ -14,6 +14,7 @@ type Config struct {
 	Database      DatabaseConfig      `mapstructure:"database"`
 	JWT           JWTConfig           `mapstructure:"jwt"`
 	MessageBroker MessageBrokerConfig `mapstructure:"message_broker"`
+	FeatureFlags  FeatureFlagsConfig  `mapstructure:"feature_flags"`
 }
 
 // AppConfig holds application-level settings.
@@ -65,6 +66,17 @@ type RabbitMQBrokerConfig struct {
 	Queue    string `mapstructure:"queue"`
 }
 
+// FeatureFlagsConfig holds runtime feature-flag settings.
+type FeatureFlagsConfig struct {
+	// Environment is the deployment stage the server is running in:
+	// local, test, staging, or production.
+	Environment string `mapstructure:"environment"`
+	// RefreshInterval is how often the evaluator reloads flag state.
+	RefreshInterval time.Duration `mapstructure:"refresh_interval"`
+	// Operators is the allowlist of usernames permitted to administer flags.
+	Operators []string `mapstructure:"operators"`
+}
+
 // ponytail: uses viper (already-installed dep). BindEnv needed so AutomaticEnv
 // knows which keys to check (it only looks up env vars for registered keys).
 func Load(path string) (*Config, error) {
@@ -77,6 +89,9 @@ func Load(path string) (*Config, error) {
 	v.AutomaticEnv()
 
 	v.SetDefault("app.port", 8080)
+	v.SetDefault("feature_flags.environment", "local")
+	v.SetDefault("feature_flags.refresh_interval", "30s")
+	v.SetDefault("feature_flags.operators", []string{})
 	for _, key := range []string{
 		"app.port",
 		"app.env",
@@ -98,6 +113,9 @@ func Load(path string) (*Config, error) {
 		"message_broker.rabbitmq.url",
 		"message_broker.rabbitmq.exchange",
 		"message_broker.rabbitmq.queue",
+		"feature_flags.environment",
+		"feature_flags.refresh_interval",
+		"feature_flags.operators",
 	} {
 		_ = v.BindEnv(key)
 	}
@@ -125,6 +143,14 @@ func Load(path string) (*Config, error) {
 	}
 	if cfg.MessageBroker.Type != "kafka" && cfg.MessageBroker.Type != "rabbitmq" {
 		return nil, fmt.Errorf("unsupported message broker type: %s", cfg.MessageBroker.Type)
+	}
+	switch cfg.FeatureFlags.Environment {
+	case "local", "test", "staging", "production":
+	default:
+		return nil, fmt.Errorf("unsupported feature flags environment: %s", cfg.FeatureFlags.Environment)
+	}
+	if cfg.FeatureFlags.RefreshInterval <= 0 {
+		cfg.FeatureFlags.RefreshInterval = 30 * time.Second
 	}
 
 	return &cfg, nil

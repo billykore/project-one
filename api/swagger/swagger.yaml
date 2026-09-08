@@ -35,6 +35,27 @@ definitions:
     - content
     - id
     type: object
+  dto.CreateFeatureFlagRequest:
+    properties:
+      key:
+        maxLength: 128
+        type: string
+      name:
+        maxLength: 255
+        type: string
+      owner:
+        maxLength: 255
+        type: string
+      purpose:
+        type: string
+      safeDefault:
+        type: boolean
+    required:
+    - key
+    - name
+    - owner
+    - purpose
+    type: object
   dto.CreatePostRequest:
     properties:
       content:
@@ -64,6 +85,132 @@ definitions:
         type: string
     required:
     - content
+    type: object
+  dto.FeatureFlagArchiveRequest:
+    properties:
+      reason:
+        type: string
+    required:
+    - reason
+    type: object
+  dto.FeatureFlagAuditListResponse:
+    properties:
+      hasMore:
+        type: boolean
+      items:
+        items:
+          $ref: '#/definitions/dto.FeatureFlagAuditResponse'
+        type: array
+      nextCursor:
+        type: integer
+    type: object
+  dto.FeatureFlagAuditResponse:
+    properties:
+      actor:
+        type: string
+      createdAt:
+        type: string
+      environment:
+        type: string
+      field:
+        type: string
+      newValue:
+        type: string
+      previousValue:
+        type: string
+      reason:
+        type: string
+    type: object
+  dto.FeatureFlagDecisionResponse:
+    properties:
+      enabled:
+        type: boolean
+      key:
+        type: string
+      source:
+        type: string
+    type: object
+  dto.FeatureFlagDetailResponse:
+    properties:
+      createdAt:
+        type: string
+      key:
+        type: string
+      lifecycle:
+        type: string
+      name:
+        type: string
+      overrides:
+        items:
+          $ref: '#/definitions/dto.FeatureFlagOverrideResponse'
+        type: array
+      owner:
+        type: string
+      purpose:
+        type: string
+      safeDefault:
+        type: boolean
+      settings:
+        items:
+          $ref: '#/definitions/dto.FeatureFlagSettingResponse'
+        type: array
+      updatedAt:
+        type: string
+    type: object
+  dto.FeatureFlagEvaluateResponse:
+    properties:
+      decisions:
+        items:
+          $ref: '#/definitions/dto.FeatureFlagDecisionResponse'
+        type: array
+      environment:
+        type: string
+    type: object
+  dto.FeatureFlagListResponse:
+    properties:
+      flags:
+        items:
+          $ref: '#/definitions/dto.FeatureFlagResponse'
+        type: array
+    type: object
+  dto.FeatureFlagOverrideResponse:
+    properties:
+      environment:
+        type: string
+      type:
+        type: string
+      username:
+        type: string
+    type: object
+  dto.FeatureFlagResponse:
+    properties:
+      createdAt:
+        type: string
+      key:
+        type: string
+      lifecycle:
+        type: string
+      name:
+        type: string
+      owner:
+        type: string
+      purpose:
+        type: string
+      safeDefault:
+        type: boolean
+      updatedAt:
+        type: string
+    type: object
+  dto.FeatureFlagSettingResponse:
+    properties:
+      environment:
+        type: string
+      mode:
+        type: string
+      revision:
+        type: integer
+      rolloutPercentage:
+        type: integer
     type: object
   dto.FeedResponse:
     properties:
@@ -287,10 +434,65 @@ definitions:
       next_cursor:
         type: string
     type: object
+  dto.SetFeatureFlagEnvironmentRequest:
+    properties:
+      mode:
+        type: string
+      reason:
+        type: string
+      revision:
+        minimum: 0
+        type: integer
+      rolloutPercentage:
+        maximum: 100
+        minimum: 0
+        type: integer
+    required:
+    - mode
+    - reason
+    type: object
+  dto.SetFeatureFlagOverridesRequest:
+    properties:
+      environment:
+        type: string
+      exclude:
+        items:
+          type: string
+        type: array
+      include:
+        items:
+          type: string
+        type: array
+      reason:
+        type: string
+    required:
+    - environment
+    - reason
+    type: object
   dto.UnfollowResponse:
     properties:
       message:
         type: string
+    type: object
+  dto.UpdateFeatureFlagRequest:
+    properties:
+      name:
+        maxLength: 255
+        type: string
+      owner:
+        maxLength: 255
+        type: string
+      purpose:
+        type: string
+      reason:
+        type: string
+      safeDefault:
+        type: boolean
+    required:
+    - name
+    - owner
+    - purpose
+    - reason
     type: object
   dto.UpdatePostRequest:
     properties:
@@ -350,6 +552,190 @@ info:
   title: User Service API
   version: "1.0"
 paths:
+  /admin/feature-flags:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.FeatureFlagListResponse'
+      security:
+      - BearerAuth: []
+      summary: List feature flags
+      tags:
+      - feature-flags
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Flag details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateFeatureFlagRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.FeatureFlagResponse'
+      security:
+      - BearerAuth: []
+      summary: Create feature flag
+      tags:
+      - feature-flags
+  /admin/feature-flags/{key}:
+    get:
+      parameters:
+      - description: Flag key
+        in: path
+        name: key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.FeatureFlagDetailResponse'
+      security:
+      - BearerAuth: []
+      summary: Get feature flag
+      tags:
+      - feature-flags
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Flag key
+        in: path
+        name: key
+        required: true
+        type: string
+      - description: Flag metadata
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateFeatureFlagRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.FeatureFlagResponse'
+      security:
+      - BearerAuth: []
+      summary: Update feature flag metadata
+      tags:
+      - feature-flags
+  /admin/feature-flags/{key}/archive:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Flag key
+        in: path
+        name: key
+        required: true
+        type: string
+      - description: Archive reason
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.FeatureFlagArchiveRequest'
+      responses:
+        "204":
+          description: No Content
+      security:
+      - BearerAuth: []
+      summary: Archive feature flag
+      tags:
+      - feature-flags
+  /admin/feature-flags/{key}/audit:
+    get:
+      parameters:
+      - description: Flag key
+        in: path
+        name: key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.FeatureFlagAuditListResponse'
+      security:
+      - BearerAuth: []
+      summary: List feature flag audit history
+      tags:
+      - feature-flags
+  /admin/feature-flags/{key}/environment/{environment}:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Flag key
+        in: path
+        name: key
+        required: true
+        type: string
+      - description: Environment
+        in: path
+        name: environment
+        required: true
+        type: string
+      - description: Availability
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SetFeatureFlagEnvironmentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.FeatureFlagSettingResponse'
+      security:
+      - BearerAuth: []
+      summary: Set environment availability
+      tags:
+      - feature-flags
+  /admin/feature-flags/{key}/overrides:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Flag key
+        in: path
+        name: key
+        required: true
+        type: string
+      - description: Overrides
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SetFeatureFlagOverridesRequest'
+      responses:
+        "204":
+          description: No Content
+      security:
+      - BearerAuth: []
+      summary: Set user overrides
+      tags:
+      - feature-flags
   /auth/login:
     post:
       consumes:
@@ -519,6 +905,24 @@ paths:
       summary: Edit comment
       tags:
       - comments
+  /feature-flags/evaluate:
+    get:
+      parameters:
+      - description: Comma-separated flag keys
+        in: query
+        name: keys
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.FeatureFlagEvaluateResponse'
+      summary: Evaluate feature flags
+      tags:
+      - feature-flags
   /feeds:
     get:
       description: Returns paginated posts from users the authenticated user follows

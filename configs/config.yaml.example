@@ -28,3 +28,8 @@ app:
   port: 8080
   env: "development"
   error_type_base_url: ""
+feature_flags:
+  environment: "local"
+  refresh_interval: "30s"
+  operators:
+    - "operator1"

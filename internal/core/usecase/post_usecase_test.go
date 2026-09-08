@@ -63,6 +63,23 @@ func TestPostUseCase_CreatePost(t *testing.T) {
 	})
 }
 
+func TestPostUseCase_CreatePost_RejectsUnknownFeatureFlag(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockRepo := mocks.NewMockPostRepository(ctrl)
+	mockLikeRepo := mocks.NewMockLikeRepository(ctrl)
+	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockPublisher := mocks.NewMockPublisher(ctrl)
+	mockLog := mocks.NewMockLogger(ctrl)
+	mockEvaluator := mocks.NewMockFeatureFlagEvaluator(ctrl)
+	mockEvaluator.EXPECT().Evaluate(gomock.Any(), "post_creation", "testuser").Return(domain.FeatureFlagDecision{Source: domain.SourceUnknown})
+
+	svc := NewPostUseCaseWithFeatureFlags(mockRepo, mockLikeRepo, mockUserRepo, mockPublisher, mockLog, mockEvaluator)
+	post, err := svc.CreatePost(context.Background(), &domain.User{ID: 42, Username: "testuser"}, "title", "content", nil)
+
+	assert.Nil(t, post)
+	assert.ErrorIs(t, err, domain.ErrFeatureDisabled)
+}
+
 func TestPostUseCase_GetPostByID(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
