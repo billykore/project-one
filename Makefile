@@ -16,7 +16,7 @@ BUILD_DIR := ./bin
 # Docker image name (override with IMAGE_NAME=<name>)
 IMAGE_NAME ?= project-one
 # Image tag is the 12-character short commit hash of HEAD
-COMMIT_SHA := $(shell git rev-parse --short=12 HEAD)
+COMMIT_SHA := $(shell git rev-parse --short=7 HEAD)
 DOCKER_IMAGE := $(IMAGE_NAME):$(COMMIT_SHA)
 
 # Default config path
