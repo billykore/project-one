@@ -169,6 +169,14 @@ def _parse_request_params(tc: dict, swagger_entry: dict | None) -> dict:
     if swagger_entry and not swagger_entry["requires_auth"]:
         is_auth_required = False
 
+    # Security cases intentionally exercise unauthenticated access. An
+    # explicit Authorization header is also sent as a normal header so an
+    # invalid or malformed token does not get combined with bearer auth.
+    if tc["type"].strip().lower() == "security" and precondition == "none":
+        is_auth_required = False
+    if re.search(r"Header:\s*`Authorization\s*:", raw, re.IGNORECASE):
+        is_auth_required = False
+
     result["requires_auth"] = is_auth_required
 
     # ---- Handle "No body" and "No query params" ----
@@ -433,6 +441,18 @@ def _json_type_to_js(val) -> str | None:
     if isinstance(val, float):
         return "number"
     if isinstance(val, str):
+        # Test-case tables use readable OpenAPI-style markers in addition to
+        # concrete example values, e.g. "integer" and "boolean".
+        type_markers = {
+            "boolean": "boolean",
+            "integer": "number",
+            "number": "number",
+            "object": "object",
+            "array": "array",
+            "string": "string",
+        }
+        if val in type_markers:
+            return type_markers[val]
         return "string"
     if isinstance(val, list):
         return None  # could be array or object
@@ -487,8 +507,9 @@ def build_collection(test_cases: list[dict], swagger_index: dict) -> dict:
             endpoint = tc["endpoint"]
             status = _parse_expected_status(tc["expected_status"])
 
-            # Find swagger entry
-            swagger_key = _find_swagger_key(endpoint, swagger_index)
+            # Find the operation-specific Swagger entry. A path may expose
+            # multiple methods with different authentication requirements.
+            swagger_key = _find_swagger_key(endpoint, method, swagger_index)
             swagger_entry = swagger_index.get(swagger_key)
 
             # Parse request params
@@ -573,30 +594,35 @@ def build_collection(test_cases: list[dict], swagger_index: dict) -> dict:
     return collection
 
 
-def _find_swagger_key(endpoint: str, swagger_index: dict) -> tuple | None:
+def _find_swagger_key(endpoint: str, method: str, swagger_index: dict) -> tuple | None:
     """
     Find the swagger key that matches the test case endpoint.
     Test case endpoints have {placeholder} but swagger paths have {param}.
     Both use {name} syntax so they should match directly,
     but we try exact match first, then fallback.
     """
-    # Try all known (method, path) combos
+    # Try the requested method first. This matters for paths such as
+    # /posts/{id}, where GET is public but PUT and DELETE require auth.
     candidates = []
-    for (method, path) in swagger_index:
+    for (candidate_method, path) in swagger_index:
+        if candidate_method != method.upper():
+            continue
         # Normalize both for comparison
         norm_ep = endpoint.rstrip("/")
         norm_path = path.rstrip("/")
         if norm_ep == norm_path:
-            candidates.append((method, path))
+            candidates.append((candidate_method, path))
 
     # Return the one matching a method in the candidates
     # (same endpoint can have GET/POST/PUT/DELETE)
-    for (method, path) in candidates:
-        return (method, path)
+    for (candidate_method, path) in candidates:
+        return (candidate_method, path)
 
     # Fallback: try matching by base path ignoring path param values
     ep_parts = endpoint.strip("/").split("/")
-    for (method, path) in swagger_index:
+    for (candidate_method, path) in swagger_index:
+        if candidate_method != method.upper():
+            continue
         sw_parts = path.strip("/").split("/")
         if len(ep_parts) != len(sw_parts):
             continue
@@ -609,7 +635,7 @@ def _find_swagger_key(endpoint: str, swagger_index: dict) -> tuple | None:
             match = False
             break
         if match:
-            return (method, path)
+            return (candidate_method, path)
 
     return None
 

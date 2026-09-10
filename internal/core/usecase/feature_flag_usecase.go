@@ -224,8 +224,10 @@ func (uc *featureFlagUseCase) refresh(ctx context.Context) {
 	}
 }
 
+// normalizeFlagKey trims whitespace and converts the key to lowercase for consistent storage and retrieval.
 func normalizeFlagKey(key string) string { return strings.ToLower(strings.TrimSpace(key)) }
 
+// normalizedUsernames trims whitespace from each username and filters out any empty strings.
 func normalizedUsernames(usernames []string) []string {
 	result := make([]string, 0, len(usernames))
 	for _, username := range usernames {
@@ -237,6 +239,7 @@ func normalizedUsernames(usernames []string) []string {
 	return result
 }
 
+// validateFlagMetadata checks that the provided metadata for a feature flag is valid.
 func validateFlagMetadata(key, name, purpose, owner string) error {
 	if key == "" || len(key) > 128 || strings.TrimSpace(name) == "" || strings.TrimSpace(purpose) == "" || strings.TrimSpace(owner) == "" {
 		return domain.ErrInvalidArgument
@@ -244,6 +247,7 @@ func validateFlagMetadata(key, name, purpose, owner string) error {
 	return nil
 }
 
+// validEnvironment checks if the provided environment is one of the recognized environments.
 func validEnvironment(environment domain.Environment) bool {
 	switch environment {
 	case domain.EnvironmentLocal, domain.EnvironmentTest, domain.EnvironmentStaging, domain.EnvironmentProduction:
@@ -253,6 +257,7 @@ func validEnvironment(environment domain.Environment) bool {
 	}
 }
 
+// validMode checks if the provided availability mode is one of the recognized modes.
 func validMode(mode domain.AvailabilityMode) bool {
 	switch mode {
 	case domain.ModeDisabledAll, domain.ModeEnabledAll, domain.ModeGradual:

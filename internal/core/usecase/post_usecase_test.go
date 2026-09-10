@@ -71,7 +71,7 @@ func TestPostUseCase_CreatePost_RejectsUnknownFeatureFlag(t *testing.T) {
 	mockPublisher := mocks.NewMockPublisher(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
 	mockEvaluator := mocks.NewMockFeatureFlagEvaluator(ctrl)
-	mockEvaluator.EXPECT().Evaluate(gomock.Any(), "post_creation", "testuser").Return(domain.FeatureFlagDecision{Source: domain.SourceUnknown})
+	mockEvaluator.EXPECT().Evaluate(gomock.Any(), "post-creation", "testuser").Return(domain.FeatureFlagDecision{Source: domain.SourceUnknown})
 
 	svc := NewPostUseCaseWithFeatureFlags(mockRepo, mockLikeRepo, mockUserRepo, mockPublisher, mockLog, mockEvaluator)
 	post, err := svc.CreatePost(context.Background(), &domain.User{ID: 42, Username: "testuser"}, "title", "content", nil)

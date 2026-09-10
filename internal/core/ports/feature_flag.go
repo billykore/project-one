@@ -51,13 +51,22 @@ type FeatureFlagEvaluator interface {
 
 // FeatureFlagUseCase is a driving port for feature-flag administration and evaluation.
 type FeatureFlagUseCase interface {
+	// CreateFlag creates a new feature flag and persists the initial metadata for the actor.
 	CreateFlag(ctx context.Context, actor, key, name, purpose, owner string, safeDefault bool) (*domain.FeatureFlag, error)
+	// GetFlagDetail returns the full metadata and environment configuration for a flag.
 	GetFlagDetail(ctx context.Context, key string) (*domain.FeatureFlagDetail, error)
+	// ListFlags returns all feature flags in the configured registry.
 	ListFlags(ctx context.Context) ([]domain.FeatureFlag, error)
+	// UpdateFlag updates the mutable metadata for an existing flag and records the change as an audit event.
 	UpdateFlag(ctx context.Context, actor, key, name, purpose, owner string, safeDefault bool, reason string) (*domain.FeatureFlag, error)
+	// SetEnvironment configures a flag's rollout behavior for a specific environment, including mode and percentage.
 	SetEnvironment(ctx context.Context, actor, key string, env domain.Environment, mode domain.AvailabilityMode, percentage, revision int, reason string) (*domain.EnvironmentSetting, error)
+	// SetOverrides replaces the include and exclude user lists for a flag in a given environment.
 	SetOverrides(ctx context.Context, actor, key string, env domain.Environment, includes, excludes []string, reason string) error
+	// Archive marks a flag as archived and prevents future evaluation unless explicitly re-enabled by policy.
 	Archive(ctx context.Context, actor, key, reason string) error
+	// ListAudit returns the audit history for a flag, ordered newest-first with pagination support.
 	ListAudit(ctx context.Context, key string, cursor, limit int) ([]domain.AuditRecord, bool, error)
+	// Evaluate resolves the current decision for a flag for the provided username, respecting overrides and rollout rules.
 	Evaluate(ctx context.Context, key string, username string) domain.FeatureFlagDecision
 }

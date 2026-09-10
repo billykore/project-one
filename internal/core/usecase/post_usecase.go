@@ -58,11 +58,12 @@ func NewPostUseCaseWithFeatureFlags(
 
 func (uc *postUseCase) CreatePost(ctx context.Context, user *domain.User, title, content string, tags []string) (*domain.Post, error) {
 	if uc.evaluator != nil {
-		decision := uc.evaluator.Evaluate(ctx, "post_creation", user.Username)
+		decision := uc.evaluator.Evaluate(ctx, "post-creation", user.Username)
 		if decision.Source == domain.SourceUnknown || !decision.Enabled {
 			return nil, domain.ErrFeatureDisabled
 		}
 	}
+
 	post := &domain.Post{
 		UserID:   user.ID,
 		Username: user.Username,

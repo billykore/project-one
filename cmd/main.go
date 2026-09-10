@@ -231,7 +231,7 @@ func registerRoutes(
 
 	e.GET("/posts/:id", postHdl.GetPostByID)
 	posts := e.Group("/posts", middleware.Authorize(tokenSvc))
-	posts.POST("", postHdl.CreatePost, middleware.FeatureFlagGate(featureFlagEvaluator, "post_creation"))
+	posts.POST("", postHdl.CreatePost, middleware.FeatureFlagGate(featureFlagEvaluator, "post-creation"))
 	posts.GET("", postHdl.GetPosts)
 	posts.PUT("/:id", postHdl.UpdatePost)
 	posts.DELETE("/:id", postHdl.DeletePost)

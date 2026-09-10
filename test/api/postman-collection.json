@@ -651,6 +651,47 @@
               }
             }
           ]
+        },
+        {
+          "name": "TC-LOGOUT-006 - Malformed authorization header",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Basic abc"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {\n    pm.response.to.have.status(401);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
         }
       ]
     },
@@ -901,7 +942,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"data\");\n    pm.expect(r).to.have.property(\"has_more\");\n    pm.expect(r.has_more).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"next_cursor\");\n    pm.expect(r.next_cursor).to.be.a(\"string\");\n});"
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"data\");\n    pm.expect(r).to.have.property(\"has_more\");\n    pm.expect(r.has_more).to.be.a(\"boolean\");\n    pm.expect(r).to.have.property(\"next_cursor\");\n    pm.expect(r.next_cursor).to.be.a(\"string\");\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -2285,7 +2326,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"id\");\n    pm.expect(r.id).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"message\");\n});"
+                  "pm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"id\");\n    pm.expect(r.id).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"message\");\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -2426,7 +2467,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"id\");\n    pm.expect(r.id).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"message\");\n});"
+                  "pm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"id\");\n    pm.expect(r.id).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"message\");\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -2513,7 +2554,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"id\");\n    pm.expect(r.id).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"message\");\n    pm.expect(r.message).to.be.a(\"string\");\n});"
+                  "pm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"id\");\n    pm.expect(r.id).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"message\");\n    pm.expect(r.message).to.be.a(\"string\");\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -2546,14 +2587,7 @@
               ]
             },
             "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
+              "type": "noauth"
             }
           },
           "response": [],
@@ -2701,14 +2735,7 @@
               ]
             },
             "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
+              "type": "noauth"
             }
           },
           "response": [],
@@ -3353,7 +3380,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"like_count\");\n    pm.expect(r.like_count).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"liked\");\n    pm.expect(r.liked).to.be.a(\"string\");\n});"
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"like_count\");\n    pm.expect(r.like_count).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"liked\");\n    pm.expect(r.liked).to.be.a(\"boolean\");\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -3571,7 +3598,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"like_count\");\n    pm.expect(r.like_count).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"liked\");\n    pm.expect(r.liked).to.be.a(\"string\");\n});"
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"like_count\");\n    pm.expect(r.like_count).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"liked\");\n    pm.expect(r.liked).to.be.a(\"boolean\");\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -3616,7 +3643,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"like_count\");\n    pm.expect(r.like_count).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"liked\");\n    pm.expect(r.liked).to.be.a(\"boolean\");\n});"
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"like_count\");\n    pm.expect(r.like_count).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"liked\");\n    pm.expect(r.liked).to.be.a(\"boolean\");\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -3751,7 +3778,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"like_count\");\n    pm.expect(r.like_count).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"liked\");\n    pm.expect(r.liked).to.be.a(\"boolean\");\n});"
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"like_count\");\n    pm.expect(r.like_count).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"liked\");\n    pm.expect(r.liked).to.be.a(\"boolean\");\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -3834,7 +3861,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"like_count\");\n    pm.expect(r.like_count).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"liked\");\n    pm.expect(r.liked).to.be.a(\"string\");\n});"
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"like_count\");\n    pm.expect(r.like_count).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"liked\");\n    pm.expect(r.liked).to.be.a(\"boolean\");\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -3879,7 +3906,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"like_count\");\n    pm.expect(r.like_count).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"liked\");\n    pm.expect(r.liked).to.be.a(\"boolean\");\n});"
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"like_count\");\n    pm.expect(r.like_count).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"liked\");\n    pm.expect(r.liked).to.be.a(\"boolean\");\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -4014,7 +4041,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"like_count\");\n    pm.expect(r.like_count).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"liked\");\n    pm.expect(r.liked).to.be.a(\"boolean\");\n});"
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"like_count\");\n    pm.expect(r.like_count).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"liked\");\n    pm.expect(r.liked).to.be.a(\"boolean\");\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -4097,7 +4124,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"like_count\");\n    pm.expect(r.like_count).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"liked\");\n    pm.expect(r.liked).to.be.a(\"string\");\n});"
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"like_count\");\n    pm.expect(r.like_count).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"liked\");\n    pm.expect(r.liked).to.be.a(\"boolean\");\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -6951,6 +6978,2652 @@
               "script": {
                 "exec": [
                   "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"message\");\n    pm.expect(r.message).to.be.a(\"string\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "admin/feature-flags",
+      "item": [
+        {
+          "name": "TC-FF-LIST-001 - List feature flags with valid admin auth",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"flags\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-LIST-002 - Invalid bearer token",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer invalid_token"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {\n    pm.response.to.have.status(401);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-LIST-003 - Malformed authorization header",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Basic abc"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {\n    pm.response.to.have.status(401);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-LIST-004 - List when no feature flags exist",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"flags\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-LIST-005 - Missing authorization header",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {\n    pm.response.to.have.status(401);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-LIST-006 - Validate response schema matches FeatureFlagListResponse",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"flags\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-CREATE-001 - Create feature flag with valid data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"key\":\"editor_v2\",\"name\":\"Editor V2\",\"owner\":\"platform\",\"purpose\":\"Enable the new editor\",\"safeDefault\":false}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"createdAt\");\n    pm.expect(r.createdAt).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"key\");\n    pm.expect(r.key).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"lifecycle\");\n    pm.expect(r.lifecycle).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"name\");\n    pm.expect(r.name).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"owner\");\n    pm.expect(r.owner).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"purpose\");\n    pm.expect(r.purpose).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"safeDefault\");\n    pm.expect(r.safeDefault).to.be.a(\"boolean\");\n    pm.expect(r).to.have.property(\"updatedAt\");\n    pm.expect(r.updatedAt).to.be.a(\"string\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-CREATE-002 - Missing required field key",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Editor V2\",\"owner\":\"platform\",\"purpose\":\"Enable the new editor\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\n    pm.response.to.have.status(400);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-CREATE-003 - safeDefault has wrong data type",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"key\":\"editor_v2\",\"name\":\"Editor V2\",\"owner\":\"platform\",\"purpose\":\"Enable the new editor\",\"safeDefault\":\"false\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\n    pm.response.to.have.status(400);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-CREATE-004 - Create flag with maximum key length",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"key\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"name\":\"Boundary Flag\",\"owner\":\"platform\",\"purpose\":\"Boundary value\",\"safeDefault\":true}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"createdAt\");\n    pm.expect(r.createdAt).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"key\");\n    pm.expect(r.key).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"lifecycle\");\n    pm.expect(r.lifecycle).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"name\");\n    pm.expect(r.name).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"owner\");\n    pm.expect(r.owner).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"purpose\");\n    pm.expect(r.purpose).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"safeDefault\");\n    pm.expect(r.safeDefault).to.be.a(\"boolean\");\n    pm.expect(r).to.have.property(\"updatedAt\");\n    pm.expect(r.updatedAt).to.be.a(\"string\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-CREATE-005 - Missing authorization header",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"key\":\"editor_v2\",\"name\":\"Editor V2\",\"owner\":\"platform\",\"purpose\":\"Enable the new editor\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {\n    pm.response.to.have.status(401);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-CREATE-006 - Validate response schema matches FeatureFlagResponse",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"key\":\"contract_flag\",\"name\":\"Contract Flag\",\"owner\":\"platform\",\"purpose\":\"Validate response\",\"safeDefault\":false}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"createdAt\");\n    pm.expect(r.createdAt).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"key\");\n    pm.expect(r.key).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"lifecycle\");\n    pm.expect(r.lifecycle).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"name\");\n    pm.expect(r.name).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"owner\");\n    pm.expect(r.owner).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"purpose\");\n    pm.expect(r.purpose).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"safeDefault\");\n    pm.expect(r.safeDefault).to.be.a(\"boolean\");\n    pm.expect(r).to.have.property(\"updatedAt\");\n    pm.expect(r.updatedAt).to.be.a(\"string\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "admin/feature-flags/{key}",
+      "item": [
+        {
+          "name": "TC-FF-GET-001 - Get existing feature flag",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"createdAt\");\n    pm.expect(r.createdAt).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"key\");\n    pm.expect(r.key).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"lifecycle\");\n    pm.expect(r.lifecycle).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"name\");\n    pm.expect(r.name).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"overrides\");\n    pm.expect(r).to.have.property(\"owner\");\n    pm.expect(r.owner).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"purpose\");\n    pm.expect(r.purpose).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"safeDefault\");\n    pm.expect(r.safeDefault).to.be.a(\"boolean\");\n    pm.expect(r).to.have.property(\"settings\");\n    pm.expect(r).to.have.property(\"updatedAt\");\n    pm.expect(r.updatedAt).to.be.a(\"string\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-GET-002 - Get non-existent feature flag",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/missing_flag",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "missing_flag"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {\n    pm.response.to.have.status(404);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-GET-003 - Feature flag key has wrong data type",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/12345",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "12345"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {\n    pm.response.to.have.status(404);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-GET-004 - Get feature flag with maximum-length key",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"createdAt\");\n    pm.expect(r.createdAt).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"key\");\n    pm.expect(r.key).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"lifecycle\");\n    pm.expect(r.lifecycle).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"name\");\n    pm.expect(r.name).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"overrides\");\n    pm.expect(r).to.have.property(\"owner\");\n    pm.expect(r.owner).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"purpose\");\n    pm.expect(r.purpose).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"safeDefault\");\n    pm.expect(r.safeDefault).to.be.a(\"boolean\");\n    pm.expect(r).to.have.property(\"settings\");\n    pm.expect(r).to.have.property(\"updatedAt\");\n    pm.expect(r.updatedAt).to.be.a(\"string\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-GET-005 - Missing authorization header",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {\n    pm.response.to.have.status(401);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-GET-006 - Validate response schema matches FeatureFlagDetailResponse",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"createdAt\");\n    pm.expect(r.createdAt).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"key\");\n    pm.expect(r.key).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"lifecycle\");\n    pm.expect(r.lifecycle).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"name\");\n    pm.expect(r.name).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"overrides\");\n    pm.expect(r).to.have.property(\"owner\");\n    pm.expect(r.owner).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"purpose\");\n    pm.expect(r.purpose).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"safeDefault\");\n    pm.expect(r.safeDefault).to.be.a(\"boolean\");\n    pm.expect(r).to.have.property(\"settings\");\n    pm.expect(r).to.have.property(\"updatedAt\");\n    pm.expect(r.updatedAt).to.be.a(\"string\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-UPD-001 - Update feature flag metadata with valid data",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Editor V2 Updated\",\"owner\":\"platform\",\"purpose\":\"Updated purpose\",\"reason\":\"Align metadata\",\"safeDefault\":true}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"createdAt\");\n    pm.expect(r.createdAt).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"key\");\n    pm.expect(r.key).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"lifecycle\");\n    pm.expect(r.lifecycle).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"name\");\n    pm.expect(r.name).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"owner\");\n    pm.expect(r.owner).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"purpose\");\n    pm.expect(r.purpose).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"safeDefault\");\n    pm.expect(r.safeDefault).to.be.a(\"boolean\");\n    pm.expect(r).to.have.property(\"updatedAt\");\n    pm.expect(r.updatedAt).to.be.a(\"string\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-UPD-002 - Missing required field name",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"owner\":\"platform\",\"purpose\":\"Updated purpose\",\"reason\":\"Missing name\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\n    pm.response.to.have.status(400);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-UPD-003 - safeDefault has wrong data type",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Editor V2\",\"owner\":\"platform\",\"purpose\":\"Updated purpose\",\"reason\":\"Wrong type\",\"safeDefault\":1}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\n    pm.response.to.have.status(400);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-UPD-004 - Update with safeDefault false boundary value",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Editor V2\",\"owner\":\"platform\",\"purpose\":\"Boundary value\",\"reason\":\"Disable by default\",\"safeDefault\":false}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"createdAt\");\n    pm.expect(r.createdAt).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"key\");\n    pm.expect(r.key).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"lifecycle\");\n    pm.expect(r.lifecycle).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"name\");\n    pm.expect(r.name).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"owner\");\n    pm.expect(r.owner).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"purpose\");\n    pm.expect(r.purpose).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"safeDefault\");\n    pm.expect(r.safeDefault).to.be.a(\"boolean\");\n    pm.expect(r).to.have.property(\"updatedAt\");\n    pm.expect(r.updatedAt).to.be.a(\"string\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-UPD-005 - Missing authorization header",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Editor V2\",\"owner\":\"platform\",\"purpose\":\"Updated purpose\",\"reason\":\"Unauthorized\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {\n    pm.response.to.have.status(401);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-UPD-006 - Validate response schema matches FeatureFlagResponse",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Contract Flag\",\"owner\":\"platform\",\"purpose\":\"Validate response\",\"reason\":\"Contract test\",\"safeDefault\":true}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"createdAt\");\n    pm.expect(r.createdAt).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"key\");\n    pm.expect(r.key).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"lifecycle\");\n    pm.expect(r.lifecycle).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"name\");\n    pm.expect(r.name).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"owner\");\n    pm.expect(r.owner).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"purpose\");\n    pm.expect(r.purpose).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"safeDefault\");\n    pm.expect(r.safeDefault).to.be.a(\"boolean\");\n    pm.expect(r).to.have.property(\"updatedAt\");\n    pm.expect(r.updatedAt).to.be.a(\"string\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "admin/feature-flags/{key}/archive",
+      "item": [
+        {
+          "name": "TC-FF-ARCH-001 - Archive an active feature flag",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2/archive",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2",
+                "archive"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"reason\":\"No longer needed\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () {\n    pm.response.to.have.status(204);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-ARCH-002 - Missing required archive reason",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2/archive",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2",
+                "archive"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\n    pm.response.to.have.status(400);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-ARCH-003 - Archive reason has wrong data type",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2/archive",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2",
+                "archive"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"reason\":123}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\n    pm.response.to.have.status(400);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-ARCH-004 - Archive an already archived feature flag",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/archived_flag/archive",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "archived_flag",
+                "archive"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"reason\":\"Repeat archive\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\n    pm.response.to.have.status(400);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-ARCH-005 - Missing authorization header",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2/archive",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2",
+                "archive"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"reason\":\"Unauthorized\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {\n    pm.response.to.have.status(401);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-ARCH-006 - Validate archive response is empty 204 content",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2/archive",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2",
+                "archive"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"reason\":\"Contract test\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () {\n    pm.response.to.have.status(204);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "admin/feature-flags/{key}/audit",
+      "item": [
+        {
+          "name": "TC-FF-AUDIT-001 - List audit history for an existing feature flag",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2/audit?limit=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2",
+                "audit"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"hasMore\");\n    pm.expect(r.hasMore).to.be.a(\"boolean\");\n    pm.expect(r).to.have.property(\"items\");\n    pm.expect(r).to.have.property(\"nextCursor\");\n    pm.expect(r.nextCursor).to.be.a(\"number\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-AUDIT-002 - Cursor has wrong data type",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2/audit?cursor=abc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2",
+                "audit"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\n    pm.response.to.have.status(400);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-AUDIT-003 - Limit has wrong data type",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2/audit?limit=abc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2",
+                "audit"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\n    pm.response.to.have.status(400);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-AUDIT-004 - Audit history is empty",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/new_flag/audit?limit=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "new_flag",
+                "audit"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"hasMore\");\n    pm.expect(r.hasMore).to.be.a(\"boolean\");\n    pm.expect(r).to.have.property(\"items\");\n    pm.expect(r).to.have.property(\"nextCursor\");\n    pm.expect(r.nextCursor).to.be.a(\"number\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-AUDIT-005 - Missing authorization header",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2/audit",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2",
+                "audit"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {\n    pm.response.to.have.status(401);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-AUDIT-006 - Validate response schema matches FeatureFlagAuditListResponse",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2/audit?limit=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2",
+                "audit"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"hasMore\");\n    pm.expect(r.hasMore).to.be.a(\"boolean\");\n    pm.expect(r).to.have.property(\"items\");\n    pm.expect(r).to.have.property(\"nextCursor\");\n    pm.expect(r.nextCursor).to.be.a(\"number\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "admin/feature-flags/{key}/environment/{environment}",
+      "item": [
+        {
+          "name": "TC-FF-ENV-001 - Set environment availability with valid data",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2/environment/production",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2",
+                "environment",
+                "production"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"mode\":\"enabled\",\"reason\":\"Release approved\",\"rolloutPercentage\":100,\"revision\":0}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"environment\");\n    pm.expect(r.environment).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"mode\");\n    pm.expect(r.mode).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"revision\");\n    pm.expect(r.revision).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"rolloutPercentage\");\n    pm.expect(r.rolloutPercentage).to.be.a(\"number\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-ENV-002 - Missing required field mode",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2/environment/production",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2",
+                "environment",
+                "production"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"reason\":\"Missing mode\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\n    pm.response.to.have.status(400);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-ENV-003 - rolloutPercentage has wrong data type",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2/environment/production",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2",
+                "environment",
+                "production"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"mode\":\"enabled\",\"reason\":\"Wrong type\",\"rolloutPercentage\":\"100\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\n    pm.response.to.have.status(400);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-ENV-004 - Set rollout percentage to boundary value zero",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2/environment/production",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2",
+                "environment",
+                "production"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"mode\":\"gradual\",\"reason\":\"Boundary rollout\",\"rolloutPercentage\":0,\"revision\":0}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"environment\");\n    pm.expect(r.environment).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"mode\");\n    pm.expect(r.mode).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"revision\");\n    pm.expect(r.revision).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"rolloutPercentage\");\n    pm.expect(r.rolloutPercentage).to.be.a(\"number\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-ENV-005 - Missing authorization header",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2/environment/production",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2",
+                "environment",
+                "production"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"mode\":\"enabled\",\"reason\":\"Unauthorized\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {\n    pm.response.to.have.status(401);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-ENV-006 - Validate response schema matches FeatureFlagSettingResponse",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2/environment/production",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2",
+                "environment",
+                "production"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"mode\":\"enabled\",\"reason\":\"Contract test\",\"rolloutPercentage\":100,\"revision\":0}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"environment\");\n    pm.expect(r.environment).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"mode\");\n    pm.expect(r.mode).to.be.a(\"string\");\n    pm.expect(r).to.have.property(\"revision\");\n    pm.expect(r.revision).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"rolloutPercentage\");\n    pm.expect(r.rolloutPercentage).to.be.a(\"number\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "admin/feature-flags/{key}/overrides",
+      "item": [
+        {
+          "name": "TC-FF-OVR-001 - Set user overrides with valid data",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2/overrides",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2",
+                "overrides"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"environment\":\"production\",\"include\":[\"alice\"],\"exclude\":[\"bob\"],\"reason\":\"Targeted rollout\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () {\n    pm.response.to.have.status(204);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-OVR-002 - Missing required field environment",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2/overrides",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2",
+                "overrides"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"include\":[\"alice\"],\"reason\":\"Missing environment\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\n    pm.response.to.have.status(400);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-OVR-003 - include has wrong data type",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2/overrides",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2",
+                "overrides"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"environment\":\"production\",\"include\":\"alice\",\"reason\":\"Wrong type\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\n    pm.response.to.have.status(400);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-OVR-004 - Set empty include and exclude lists",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2/overrides",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2",
+                "overrides"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"environment\":\"production\",\"include\":[],\"exclude\":[],\"reason\":\"Clear overrides\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () {\n    pm.response.to.have.status(204);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-OVR-005 - Missing authorization header",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2/overrides",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2",
+                "overrides"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"environment\":\"production\",\"reason\":\"Unauthorized\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {\n    pm.response.to.have.status(401);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-OVR-006 - Validate override response is empty 204 content",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2/overrides",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "feature-flags",
+                "editor_v2",
+                "overrides"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"environment\":\"production\",\"reason\":\"Contract test\"}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () {\n    pm.response.to.have.status(204);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "feature-flags/evaluate",
+      "item": [
+        {
+          "name": "TC-FF-EVAL-001 - Evaluate one or more feature flags",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/feature-flags/evaluate?keys=editor_v2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "feature-flags",
+                "evaluate"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"decisions\");\n    pm.expect(r).to.have.property(\"environment\");\n    pm.expect(r.environment).to.be.a(\"string\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-EVAL-002 - Missing required keys query parameter",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/feature-flags/evaluate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "feature-flags",
+                "evaluate"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\n    pm.response.to.have.status(400);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-EVAL-003 - Empty key in comma-separated keys",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/feature-flags/evaluate?keys=editor_v2,,billing",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "feature-flags",
+                "evaluate"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\n    pm.response.to.have.status(400);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-EVAL-004 - Evaluate an unknown feature flag key",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/feature-flags/evaluate?keys=unknown_flag",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "feature-flags",
+                "evaluate"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"decisions\");\n    pm.expect(r).to.have.property(\"environment\");\n    pm.expect(r.environment).to.be.a(\"string\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-FF-EVAL-005 - Validate response schema matches FeatureFlagEvaluateResponse",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/feature-flags/evaluate?keys=editor_v2,billing",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "feature-flags",
+                "evaluate"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"decisions\");\n    pm.expect(r).to.have.property(\"environment\");\n    pm.expect(r.environment).to.be.a(\"string\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "users/search",
+      "item": [
+        {
+          "name": "TC-SEARCH-001 - Search users with valid query",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/search?q=ger&limit=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "search"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"data\");\n    pm.expect(r).to.have.property(\"has_more\");\n    pm.expect(r.has_more).to.be.a(\"boolean\");\n    pm.expect(r).to.have.property(\"next_cursor\");\n    pm.expect(r.next_cursor).to.be.a(\"string\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-SEARCH-002 - Missing required search query",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/search?limit=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "search"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\n    pm.response.to.have.status(400);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-SEARCH-003 - limit has wrong data type",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/search?q=ger&limit=abc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "search"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {\n    pm.response.to.have.status(400);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-SEARCH-004 - Search query at minimum length with maximum page size",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/search?q=abc&limit=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "search"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"data\");\n    pm.expect(r).to.have.property(\"has_more\");\n    pm.expect(r.has_more).to.be.a(\"boolean\");\n    pm.expect(r).to.have.property(\"next_cursor\");\n    pm.expect(r.next_cursor).to.be.a(\"string\");\n});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-SEARCH-005 - Validate response schema matches SearchUsersResponse",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/search?q=ger&limit=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "search"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"data\");\n    pm.expect(r).to.have.property(\"has_more\");\n    pm.expect(r.has_more).to.be.a(\"boolean\");\n    pm.expect(r).to.have.property(\"next_cursor\");\n    pm.expect(r.next_cursor).to.be.a(\"string\");\n});"
                 ],
                 "type": "text/javascript"
               }
