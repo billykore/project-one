@@ -148,7 +148,7 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 	}
 	featureFlagEvaluator.StartRefreshLoop(context.Background())
 	featureFlagUc := usecase.NewFeatureFlagUseCase(featureFlagRepo, featureFlagEvaluator, lgr)
-	postUc := usecase.NewPostUseCaseWithFeatureFlags(postRepo, likeRepo, userRepo, publisher, lgr, featureFlagEvaluator)
+	postUc := usecase.NewPostUseCase(postRepo, likeRepo, userRepo, publisher, lgr, featureFlagEvaluator)
 	followUc := usecase.NewFollowUseCase(followRepo, userRepo, publisher, lgr)
 	commentUc := usecase.NewCommentUseCase(commentRepo, postRepo, userRepo, publisher)
 	notificationUc := usecase.NewNotificationUseCase(notificationRepo, userRepo, lgr)

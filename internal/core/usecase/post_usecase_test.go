@@ -21,7 +21,8 @@ func TestPostUseCase_CreatePost(t *testing.T) {
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
 	mockPublisher := mocks.NewMockPublisher(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockUserRepo, mockPublisher, mockLog)
+	mockEvaluator := mocks.NewMockFeatureFlagEvaluator(ctrl)
+	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockUserRepo, mockPublisher, mockLog, mockEvaluator)
 
 	ctx := context.Background()
 	user := &domain.User{ID: 42, Username: "testuser"}
@@ -39,6 +40,7 @@ func TestPostUseCase_CreatePost(t *testing.T) {
 				return nil
 			})
 		mockLog.EXPECT().Info(ctx, "post created successfully", "postID", gomock.Any(), "username", user.Username)
+		mockEvaluator.EXPECT().Evaluate(ctx, "post-creation", user.Username).Return(domain.FeatureFlagDecision{Key: "post-creation", Enabled: true, Source: domain.SourceEnabledAll})
 
 		post, err := svc.CreatePost(ctx, user, title, content, tags)
 
@@ -54,6 +56,7 @@ func TestPostUseCase_CreatePost(t *testing.T) {
 			Create(ctx, gomock.Any()).
 			Return(errors.New("db error"))
 		mockLog.EXPECT().Error(ctx, "failed to create post", "username", user.Username, "error", gomock.Any())
+		mockEvaluator.EXPECT().Evaluate(ctx, "post-creation", user.Username).Return(domain.FeatureFlagDecision{Key: "post-creation", Enabled: true, Source: domain.SourceEnabledAll})
 
 		post, err := svc.CreatePost(ctx, user, title, content, tags)
 
@@ -73,7 +76,7 @@ func TestPostUseCase_CreatePost_RejectsUnknownFeatureFlag(t *testing.T) {
 	mockEvaluator := mocks.NewMockFeatureFlagEvaluator(ctrl)
 	mockEvaluator.EXPECT().Evaluate(gomock.Any(), "post-creation", "testuser").Return(domain.FeatureFlagDecision{Source: domain.SourceUnknown})
 
-	svc := NewPostUseCaseWithFeatureFlags(mockRepo, mockLikeRepo, mockUserRepo, mockPublisher, mockLog, mockEvaluator)
+	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockUserRepo, mockPublisher, mockLog, mockEvaluator)
 	post, err := svc.CreatePost(context.Background(), &domain.User{ID: 42, Username: "testuser"}, "title", "content", nil)
 
 	assert.Nil(t, post)
@@ -89,7 +92,8 @@ func TestPostUseCase_GetPostByID(t *testing.T) {
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
 	mockPublisher := mocks.NewMockPublisher(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockUserRepo, mockPublisher, mockLog)
+	mockEvaluator := mocks.NewMockFeatureFlagEvaluator(ctrl)
+	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockUserRepo, mockPublisher, mockLog, mockEvaluator)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -144,7 +148,8 @@ func TestPostUseCase_GetPosts(t *testing.T) {
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
 	mockPublisher := mocks.NewMockPublisher(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockUserRepo, mockPublisher, mockLog)
+	mockEvaluator := mocks.NewMockFeatureFlagEvaluator(ctrl)
+	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockUserRepo, mockPublisher, mockLog, mockEvaluator)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -202,7 +207,8 @@ func TestPostUseCase_UpdatePost(t *testing.T) {
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
 	mockPublisher := mocks.NewMockPublisher(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockUserRepo, mockPublisher, mockLog)
+	mockEvaluator := mocks.NewMockFeatureFlagEvaluator(ctrl)
+	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockUserRepo, mockPublisher, mockLog, mockEvaluator)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -296,7 +302,8 @@ func TestPostUseCase_DeletePost(t *testing.T) {
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
 	mockPublisher := mocks.NewMockPublisher(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockUserRepo, mockPublisher, mockLog)
+	mockEvaluator := mocks.NewMockFeatureFlagEvaluator(ctrl)
+	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockUserRepo, mockPublisher, mockLog, mockEvaluator)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -338,7 +345,8 @@ func TestPostUseCase_LikePost(t *testing.T) {
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
 	mockPublisher := mocks.NewMockPublisher(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockUserRepo, mockPublisher, mockLog)
+	mockEvaluator := mocks.NewMockFeatureFlagEvaluator(ctrl)
+	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockUserRepo, mockPublisher, mockLog, mockEvaluator)
 
 	ctx := context.Background()
 	username := "testuser"
@@ -389,7 +397,8 @@ func TestPostUseCase_UnlikePost(t *testing.T) {
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
 	mockPublisher := mocks.NewMockPublisher(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
-	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockUserRepo, mockPublisher, mockLog)
+	mockEvaluator := mocks.NewMockFeatureFlagEvaluator(ctrl)
+	svc := NewPostUseCase(mockRepo, mockLikeRepo, mockUserRepo, mockPublisher, mockLog, mockEvaluator)
 
 	ctx := context.Background()
 	username := "testuser"
