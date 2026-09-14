@@ -8,6 +8,7 @@ import (
 
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
+	vo "github.com/billykore/project-one/internal/core/valueobject"
 	"gorm.io/gorm"
 )
 
@@ -86,16 +87,13 @@ func (r *notificationRepository) GetByID(ctx context.Context, id int) (*domain.N
 	return m.toDomain(), nil
 }
 
-func (r *notificationRepository) GetByUserID(ctx context.Context, userID int, limit, offset int) ([]*domain.Notification, error) {
+func (r *notificationRepository) GetByUserID(ctx context.Context, userID int, cursor *vo.Cursor, limit int) ([]*domain.Notification, error) {
 	var models []notificationModel
-	query := r.db.WithContext(ctx).Where("user_id = ?", userID).Order("created_at DESC")
-	if limit > 0 {
-		query = query.Limit(limit)
+	query := r.db.WithContext(ctx).Where("user_id = ?", userID)
+	if cursor != nil && !cursor.CreatedAt.IsZero() && cursor.ID > 0 {
+		query = query.Where("(created_at, id) < (?, ?)", cursor.CreatedAt, cursor.ID)
 	}
-	if offset > 0 {
-		query = query.Offset(offset)
-	}
-	if err := query.Find(&models).Error; err != nil {
+	if err := query.Order("created_at DESC, id DESC").Limit(limit).Find(&models).Error; err != nil {
 		return nil, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
 

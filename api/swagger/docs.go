@@ -96,6 +96,18 @@ const docTemplate = `{
                         "name": "key",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Pagination cursor from the previous response",
+                        "name": "cursor",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page (1-100, default 20)",
+                        "name": "limit",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -680,15 +692,15 @@ const docTemplate = `{
                 "summary": "Get notifications",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Limit",
-                        "name": "limit",
+                        "type": "string",
+                        "description": "Pagination cursor from the previous response",
+                        "name": "cursor",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "Offset",
-                        "name": "offset",
+                        "description": "Items per page (1-100, default 10)",
+                        "name": "limit",
                         "in": "query"
                     }
                 ],
@@ -696,10 +708,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dto.NotificationResponse"
-                            }
+                            "$ref": "#/definitions/dto.NotificationsListResponse"
                         }
                     },
                     "401": {
@@ -866,15 +875,15 @@ const docTemplate = `{
                 "summary": "Get user posts",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Limit",
-                        "name": "limit",
+                        "type": "string",
+                        "description": "Pagination cursor from the previous response",
+                        "name": "cursor",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "Offset",
-                        "name": "offset",
+                        "description": "Items per page (1-100, default 10)",
+                        "name": "limit",
                         "in": "query"
                     }
                 ],
@@ -882,10 +891,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dto.PostResponse"
-                            }
+                            "$ref": "#/definitions/dto.PostsListResponse"
                         }
                     },
                     "401": {
@@ -1614,15 +1620,15 @@ const docTemplate = `{
                 "summary": "Get followers list",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Limit for pagination",
-                        "name": "limit",
+                        "type": "string",
+                        "description": "Pagination cursor from the previous response",
+                        "name": "cursor",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "Offset for pagination",
-                        "name": "offset",
+                        "description": "Items per page (1-100, default 10)",
+                        "name": "limit",
                         "in": "query"
                     }
                 ],
@@ -1630,10 +1636,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dto.FollowerResponse"
-                            }
+                            "$ref": "#/definitions/dto.FollowersListResponse"
                         }
                     },
                     "400": {
@@ -1789,15 +1792,15 @@ const docTemplate = `{
                 "summary": "Get following list",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Limit for pagination",
-                        "name": "limit",
+                        "type": "string",
+                        "description": "Pagination cursor from the previous response",
+                        "name": "cursor",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "Offset for pagination",
-                        "name": "offset",
+                        "description": "Items per page (1-100, default 10)",
+                        "name": "limit",
                         "in": "query"
                     }
                 ],
@@ -1805,10 +1808,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dto.FollowingResponse"
-                            }
+                            "$ref": "#/definitions/dto.FollowingListResponse"
                         }
                     },
                     "400": {
@@ -1851,15 +1851,15 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "type": "integer",
-                        "description": "Limit",
-                        "name": "limit",
+                        "type": "string",
+                        "description": "Pagination cursor from the previous response",
+                        "name": "cursor",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "Offset",
-                        "name": "offset",
+                        "description": "Items per page (1-100, default 10)",
+                        "name": "limit",
                         "in": "query"
                     }
                 ],
@@ -1867,10 +1867,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dto.PostResponse"
-                            }
+                            "$ref": "#/definitions/dto.PostsListResponse"
                         }
                     },
                     "400": {
@@ -2029,17 +2026,17 @@ const docTemplate = `{
         "dto.FeatureFlagAuditListResponse": {
             "type": "object",
             "properties": {
-                "hasMore": {
-                    "type": "boolean"
-                },
-                "items": {
+                "data": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dto.FeatureFlagAuditResponse"
                     }
                 },
-                "nextCursor": {
-                    "type": "integer"
+                "has_more": {
+                    "type": "boolean"
+                },
+                "next_cursor": {
+                    "type": "string"
                 }
             }
         },
@@ -2265,6 +2262,40 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.FollowersListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.FollowerResponse"
+                    }
+                },
+                "has_more": {
+                    "type": "boolean"
+                },
+                "next_cursor": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.FollowingListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.FollowingResponse"
+                    }
+                },
+                "has_more": {
+                    "type": "boolean"
+                },
+                "next_cursor": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.FollowingResponse": {
             "type": "object",
             "properties": {
@@ -2374,6 +2405,23 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.NotificationsListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.NotificationResponse"
+                    }
+                },
+                "has_more": {
+                    "type": "boolean"
+                },
+                "next_cursor": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.PostItem": {
             "type": "object",
             "properties": {
@@ -2443,6 +2491,23 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.PostsListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.PostResponse"
+                    }
+                },
+                "has_more": {
+                    "type": "boolean"
+                },
+                "next_cursor": {
                     "type": "string"
                 }
             }

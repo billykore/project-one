@@ -95,18 +95,17 @@ func (r *postRepository) GetByIDOnly(ctx context.Context, id int) (*domain.Post,
 	return m.toDomain(), nil
 }
 
-func (r *postRepository) GetUserPosts(ctx context.Context, username string, limit, offset int) ([]*domain.Post, error) {
+func (r *postRepository) GetUserPosts(ctx context.Context, username string, cursor *vo.Cursor, limit int) ([]*domain.Post, error) {
 	var models []postModel
-	query := r.db.WithContext(ctx).Where("username = ?", username)
+	query := r.db.WithContext(ctx).
+		Where("username = ?", username).
+		Where("deleted_at IS NULL")
 
-	if limit > 0 {
-		query = query.Limit(limit)
-	}
-	if offset > 0 {
-		query = query.Offset(offset)
+	if cursor != nil && !cursor.CreatedAt.IsZero() && cursor.ID > 0 {
+		query = query.Where("(created_at, id) < (?, ?)", cursor.CreatedAt, cursor.ID)
 	}
 
-	if err := query.Find(&models).Error; err != nil {
+	if err := query.Order("created_at DESC, id DESC").Limit(limit).Find(&models).Error; err != nil {
 		return nil, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
 

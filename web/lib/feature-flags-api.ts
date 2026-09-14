@@ -49,8 +49,8 @@ export type FeatureFlagAuditEntry = {
 
 export async function fetchFeatureFlagAudit(key: string): Promise<FeatureFlagAuditEntry[]> {
   const response = await fetch(`/api/admin/feature-flags/${encodeURIComponent(key)}/audit`);
-  const payload = await handleApiResponse<{ items?: FeatureFlagAuditEntry[] }>(response);
-  return payload.items ?? [];
+  const payload = await handleApiResponse<{ data?: FeatureFlagAuditEntry[] }>(response);
+  return payload.data ?? [];
 }
 
 export async function setFeatureFlagOverrides(

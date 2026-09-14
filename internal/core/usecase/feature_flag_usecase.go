@@ -8,6 +8,7 @@ import (
 
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
+	vo "github.com/billykore/project-one/internal/core/valueobject"
 )
 
 type featureFlagUseCase struct {
@@ -194,7 +195,7 @@ func (uc *featureFlagUseCase) Archive(ctx context.Context, actor, key, reason st
 	return nil
 }
 
-func (uc *featureFlagUseCase) ListAudit(ctx context.Context, key string, cursor, limit int) ([]domain.AuditRecord, bool, error) {
+func (uc *featureFlagUseCase) ListAudit(ctx context.Context, key string, cursor *vo.Cursor, limit int) ([]domain.AuditRecord, bool, error) {
 	flag, err := uc.repository.GetByKey(ctx, normalizeFlagKey(key))
 	if err != nil {
 		return nil, false, err

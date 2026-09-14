@@ -78,8 +78,8 @@ func (u *feedUseCase) GetFeed(ctx context.Context, username string, cursor *vo.C
 		result.Posts = posts[:limit]
 	}
 
-	// Build next cursor from last post.
-	if len(result.Posts) > 0 {
+	// Only return a cursor when another page exists.
+	if result.HasMore && len(result.Posts) > 0 {
 		last := result.Posts[len(result.Posts)-1]
 		result.NextCursor = &vo.Cursor{
 			CreatedAt: last.CreatedAt,

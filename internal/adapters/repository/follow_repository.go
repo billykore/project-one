@@ -8,6 +8,7 @@ import (
 
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
+	vo "github.com/billykore/project-one/internal/core/valueobject"
 	"gorm.io/gorm"
 )
 
@@ -49,32 +50,34 @@ func (r *followRepository) Create(ctx context.Context, follow *domain.Follow) er
 	return nil
 }
 
-func (r *followRepository) GetFollowing(ctx context.Context, followerUsername string, limit, offset int) ([]domain.Following, error) {
+func (r *followRepository) GetFollowing(ctx context.Context, followerUsername string, cursor *vo.Cursor, limit int) ([]domain.Following, error) {
 	var results []domain.Following
-	err := r.db.WithContext(ctx).Table("follows").
+	query := r.db.WithContext(ctx).Table("follows").
 		Select("users.username, users.first_name, users.last_name, follows.created_at AS followed_at, (mutual.follower_username IS NOT NULL) AS is_mutual").
 		Joins("INNER JOIN users ON users.username = follows.followed_username").
 		Joins("LEFT JOIN follows AS mutual ON mutual.follower_username = follows.followed_username AND mutual.followed_username = follows.follower_username").
-		Where("follows.follower_username = ?", followerUsername).
-		Order("follows.created_at DESC, follows.followed_username DESC").
-		Limit(limit).Offset(offset).
-		Scan(&results).Error
+		Where("follows.follower_username = ?", followerUsername)
+	if cursor != nil && !cursor.CreatedAt.IsZero() && cursor.Key != "" {
+		query = query.Where("(follows.created_at < ?) OR (follows.created_at = ? AND follows.followed_username < ?)", cursor.CreatedAt, cursor.CreatedAt, cursor.Key)
+	}
+	err := query.Order("follows.created_at DESC, follows.followed_username DESC").Limit(limit).Scan(&results).Error
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
 	return results, nil
 }
 
-func (r *followRepository) GetFollowers(ctx context.Context, followedUsername string, limit, offset int) ([]domain.Follower, error) {
+func (r *followRepository) GetFollowers(ctx context.Context, followedUsername string, cursor *vo.Cursor, limit int) ([]domain.Follower, error) {
 	var results []domain.Follower
-	err := r.db.WithContext(ctx).Table("follows").
+	query := r.db.WithContext(ctx).Table("follows").
 		Select("users.username, users.first_name, users.last_name, follows.created_at AS followed_at, (mutual.follower_username IS NOT NULL) AS is_mutual").
 		Joins("INNER JOIN users ON users.username = follows.follower_username").
 		Joins("LEFT JOIN follows AS mutual ON mutual.follower_username = follows.follower_username AND mutual.followed_username = follows.followed_username").
-		Where("follows.followed_username = ?", followedUsername).
-		Order("follows.created_at DESC, follows.follower_username DESC").
-		Limit(limit).Offset(offset).
-		Scan(&results).Error
+		Where("follows.followed_username = ?", followedUsername)
+	if cursor != nil && !cursor.CreatedAt.IsZero() && cursor.Key != "" {
+		query = query.Where("(follows.created_at < ?) OR (follows.created_at = ? AND follows.follower_username < ?)", cursor.CreatedAt, cursor.CreatedAt, cursor.Key)
+	}
+	err := query.Order("follows.created_at DESC, follows.follower_username DESC").Limit(limit).Scan(&results).Error
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}

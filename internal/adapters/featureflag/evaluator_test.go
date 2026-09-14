@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/billykore/project-one/internal/core/domain"
+	vo "github.com/billykore/project-one/internal/core/valueobject"
 )
 
 type evaluatorRepository struct {
@@ -37,7 +38,7 @@ func (r *evaluatorRepository) SetOverrides(context.Context, int, domain.Environm
 	return nil
 }
 func (r *evaluatorRepository) AppendAudit(context.Context, *domain.AuditRecord) error { return nil }
-func (r *evaluatorRepository) ListAudit(context.Context, int, int, int) ([]domain.AuditRecord, bool, error) {
+func (r *evaluatorRepository) ListAudit(context.Context, int, *vo.Cursor, int) ([]domain.AuditRecord, bool, error) {
 	return nil, false, nil
 }
 func (r *evaluatorRepository) LoadSnapshot(context.Context, domain.Environment) ([]domain.FlagSnapshot, error) {

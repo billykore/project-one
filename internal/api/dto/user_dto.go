@@ -40,8 +40,8 @@ type UserResponse struct {
 
 // GetFollowingRequest is the query parameters for getting following list.
 type GetFollowingRequest struct {
-	Limit  int `query:"limit" validate:"omitempty,min=1,max=100"`
-	Offset int `query:"offset" validate:"omitempty,min=0"`
+	Cursor string `query:"cursor"`
+	Limit  int    `query:"limit" validate:"omitempty,min=1,max=100"`
 }
 
 // FollowingResponse is the response body for a user being followed.
@@ -52,10 +52,17 @@ type FollowingResponse struct {
 	IsMutual   bool   `json:"is_mutual"`
 }
 
+// FollowingListResponse wraps a cursor-paginated following list.
+type FollowingListResponse struct {
+	Data       []FollowingResponse `json:"data"`
+	NextCursor string              `json:"next_cursor"`
+	HasMore    bool                `json:"has_more"`
+}
+
 // GetFollowersRequest is the query parameters for getting followers list.
 type GetFollowersRequest struct {
-	Limit  int `query:"limit" validate:"omitempty,min=1,max=100"`
-	Offset int `query:"offset" validate:"omitempty,min=0"`
+	Cursor string `query:"cursor"`
+	Limit  int    `query:"limit" validate:"omitempty,min=1,max=100"`
 }
 
 // FollowerResponse is the response body for a user following.
@@ -64,6 +71,13 @@ type FollowerResponse struct {
 	Name       string `json:"name"`
 	FollowedAt string `json:"followed_at"`
 	IsMutual   bool   `json:"is_mutual"`
+}
+
+// FollowersListResponse wraps a cursor-paginated followers list.
+type FollowersListResponse struct {
+	Data       []FollowerResponse `json:"data"`
+	NextCursor string             `json:"next_cursor"`
+	HasMore    bool               `json:"has_more"`
 }
 
 // UnfollowResponse is the response body for a successful unfollow action.
@@ -120,4 +134,11 @@ type SearchUsersResponse struct {
 	Data       []SearchUsersItem `json:"data"`
 	NextCursor string            `json:"next_cursor"`
 	HasMore    bool              `json:"has_more"`
+}
+
+// PostsListResponse wraps a cursor-paginated post list.
+type PostsListResponse struct {
+	Data       []PostResponse `json:"data"`
+	NextCursor string         `json:"next_cursor"`
+	HasMore    bool           `json:"has_more"`
 }

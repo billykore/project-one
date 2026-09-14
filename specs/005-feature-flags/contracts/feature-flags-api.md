@@ -136,13 +136,14 @@ Archive the flag.
 
 ### `GET /admin/feature-flags/{key}/audit?cursor=...&limit=20`
 
-Cursor-paginated audit history (newest first).
+Cursor-paginated audit history (newest first). `cursor` is the opaque value
+returned by the preceding response; clients must not interpret or construct it.
 
 **Response `200`**
 
 ```json
 {
-  "items": [
+  "data": [
     {
       "field": "rollout_percentage",
       "environment": "production",
@@ -153,8 +154,8 @@ Cursor-paginated audit history (newest first).
       "createdAt": "2026-09-08T11:30:00Z"
     }
   ],
-  "nextCursor": null,
-  "hasMore": false
+  "next_cursor": "",
+  "has_more": false
 }
 ```
 

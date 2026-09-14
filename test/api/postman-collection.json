@@ -965,7 +965,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/notifications?limit=10&offset=0",
+              "raw": "{{base_url}}/notifications?limit=10",
               "host": [
                 "{{base_url}}"
               ],
@@ -990,7 +990,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is an array\", function () {\n    pm.expect(pm.response.json()).to.be.an(\"array\");\n});"
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -1084,7 +1084,7 @@
           ]
         },
         {
-          "name": "TC-NOTIF-004 - Zero offset and zero limit",
+          "name": "TC-NOTIF-004 - Zero limit",
           "request": {
             "method": "GET",
             "header": [
@@ -1094,7 +1094,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/notifications?limit=0&offset=0",
+              "raw": "{{base_url}}/notifications?limit=0",
               "host": [
                 "{{base_url}}"
               ],
@@ -1119,7 +1119,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is an array\", function () {\n    pm.expect(pm.response.json()).to.be.an(\"array\");\n});"
+                  "pm.test(\"Status code is 400\", function () {\n    pm.response.to.have.status(400);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -1163,7 +1163,7 @@
           ]
         },
         {
-          "name": "TC-NOTIF-006 - Validate response schema matches NotificationResponse array",
+          "name": "TC-NOTIF-006 - Validate response schema matches NotificationsListResponse",
           "request": {
             "method": "GET",
             "header": [
@@ -1198,7 +1198,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is an array\", function () {\n    pm.expect(pm.response.json()).to.be.an(\"array\");\n});"
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"data\");\n    pm.expect(r).to.have.property(\"has_more\");\n    pm.expect(r.has_more).to.be.a(\"boolean\");\n    pm.expect(r).to.have.property(\"next_cursor\");\n    pm.expect(r.next_cursor).to.be.a(\"string\");\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -2046,7 +2046,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/posts?limit=10&offset=0",
+              "raw": "{{base_url}}/posts?limit=10",
               "host": [
                 "{{base_url}}"
               ],
@@ -2071,7 +2071,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is an array\", function () {\n    pm.expect(pm.response.json()).to.be.an(\"array\");\n});"
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -2122,7 +2122,7 @@
           ]
         },
         {
-          "name": "TC-POSTS-003 - Non-integer offset value",
+          "name": "TC-POSTS-003 - Malformed cursor",
           "request": {
             "method": "GET",
             "header": [
@@ -2132,7 +2132,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/posts?offset=abc",
+              "raw": "{{base_url}}/posts?cursor=not-a-cursor",
               "host": [
                 "{{base_url}}"
               ],
@@ -2200,7 +2200,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is an array\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.be.an(\"array\");\n});"
+                  "pm.test(\"Status code is 400\", function () {\n    pm.response.to.have.status(400);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -2244,7 +2244,7 @@
           ]
         },
         {
-          "name": "TC-POSTS-006 - Validate response schema matches PostResponse array",
+          "name": "TC-POSTS-006 - Validate response schema matches PostsListResponse",
           "request": {
             "method": "GET",
             "header": [
@@ -2279,7 +2279,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is an array\", function () {\n    pm.expect(pm.response.json()).to.be.an(\"array\");\n});"
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"data\");\n    pm.expect(r).to.have.property(\"has_more\");\n    pm.expect(r.has_more).to.be.a(\"boolean\");\n    pm.expect(r).to.have.property(\"next_cursor\");\n    pm.expect(r.next_cursor).to.be.a(\"string\");\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -5171,7 +5171,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/users/{user_with_posts}/posts?limit=10&offset=0",
+              "raw": "{{base_url}}/users/{user_with_posts}/posts?limit=10",
               "host": [
                 "{{base_url}}"
               ],
@@ -5191,7 +5191,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is an array\", function () {\n    pm.expect(pm.response.json()).to.be.an(\"array\");\n});"
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -5237,7 +5237,7 @@
           ]
         },
         {
-          "name": "TC-USER-POSTS-003 - Non-integer offset",
+          "name": "TC-USER-POSTS-003 - Malformed cursor",
           "request": {
             "method": "GET",
             "header": [
@@ -5247,7 +5247,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/users/{user_with_posts}/posts?offset=xyz",
+              "raw": "{{base_url}}/users/{user_with_posts}/posts?cursor=not-a-cursor",
               "host": [
                 "{{base_url}}"
               ],
@@ -5305,7 +5305,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is an array\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.be.an(\"array\");\n});"
+                  "pm.test(\"Status code is 400\", function () {\n    pm.response.to.have.status(400);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -5313,7 +5313,7 @@
           ]
         },
         {
-          "name": "TC-USER-POSTS-005 - Validate response schema matches PostResponse array",
+          "name": "TC-USER-POSTS-005 - Validate response schema matches PostsListResponse",
           "request": {
             "method": "GET",
             "header": [
@@ -5343,7 +5343,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is an array\", function () {\n    pm.expect(pm.response.json()).to.be.an(\"array\");\n});"
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"data\");\n    pm.expect(r).to.have.property(\"has_more\");\n    pm.expect(r.has_more).to.be.a(\"boolean\");\n    pm.expect(r).to.have.property(\"next_cursor\");\n    pm.expect(r.next_cursor).to.be.a(\"string\");\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -5892,7 +5892,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/users/{own_username}/followers?limit=10&offset=0",
+              "raw": "{{base_url}}/users/{own_username}/followers?limit=10",
               "host": [
                 "{{base_url}}"
               ],
@@ -5919,7 +5919,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is an array\", function () {\n    pm.expect(pm.response.json()).to.be.an(\"array\");\n});"
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -5972,7 +5972,7 @@
           ]
         },
         {
-          "name": "TC-FOLLOWERS-003 - Non-integer offset",
+          "name": "TC-FOLLOWERS-003 - Malformed cursor",
           "request": {
             "method": "GET",
             "header": [
@@ -5982,7 +5982,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/users/{own_username}/followers?offset=abc",
+              "raw": "{{base_url}}/users/{own_username}/followers?cursor=not-a-cursor",
               "host": [
                 "{{base_url}}"
               ],
@@ -6054,7 +6054,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is an array\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.be.an(\"array\");\n});"
+                  "pm.test(\"Status code is 400\", function () {\n    pm.response.to.have.status(400);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -6100,7 +6100,7 @@
           ]
         },
         {
-          "name": "TC-FOLLOWERS-006 - Validate response schema matches FollowerResponse array",
+          "name": "TC-FOLLOWERS-006 - Validate response schema matches FollowersListResponse",
           "request": {
             "method": "GET",
             "header": [
@@ -6137,7 +6137,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is an array\", function () {\n    pm.expect(pm.response.json()).to.be.an(\"array\");\n});"
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"data\");\n    pm.expect(r).to.have.property(\"has_more\");\n    pm.expect(r.has_more).to.be.a(\"boolean\");\n    pm.expect(r).to.have.property(\"next_cursor\");\n    pm.expect(r.next_cursor).to.be.a(\"string\");\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -6160,7 +6160,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/users/{own_username}/following?limit=10&offset=0",
+              "raw": "{{base_url}}/users/{own_username}/following?limit=10",
               "host": [
                 "{{base_url}}"
               ],
@@ -6187,7 +6187,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is an array\", function () {\n    pm.expect(pm.response.json()).to.be.an(\"array\");\n});"
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -6240,7 +6240,7 @@
           ]
         },
         {
-          "name": "TC-FOLLOWING-003 - Non-integer offset",
+          "name": "TC-FOLLOWING-003 - Malformed cursor",
           "request": {
             "method": "GET",
             "header": [
@@ -6250,7 +6250,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/users/{own_username}/following?offset=xxx",
+              "raw": "{{base_url}}/users/{own_username}/following?cursor=not-a-cursor",
               "host": [
                 "{{base_url}}"
               ],
@@ -6322,7 +6322,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is an array\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.be.an(\"array\");\n});"
+                  "pm.test(\"Status code is 400\", function () {\n    pm.response.to.have.status(400);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is ProblemDetail\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r).to.have.property(\"title\");\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"type\");\n    pm.expect(r).to.have.property(\"title\");\n    pm.expect(r).to.have.property(\"status\");\n    pm.expect(r.status).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"detail\");\n    pm.expect(r).to.have.property(\"instance\");\n    pm.expect(r).to.have.property(\"request_id\");\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -6368,7 +6368,7 @@
           ]
         },
         {
-          "name": "TC-FOLLOWING-006 - Validate response schema matches FollowingResponse array",
+          "name": "TC-FOLLOWING-006 - Validate response schema matches FollowingListResponse",
           "request": {
             "method": "GET",
             "header": [
@@ -6405,7 +6405,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is an array\", function () {\n    pm.expect(pm.response.json()).to.be.an(\"array\");\n});"
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"data\");\n    pm.expect(r).to.have.property(\"has_more\");\n    pm.expect(r.has_more).to.be.a(\"boolean\");\n    pm.expect(r).to.have.property(\"next_cursor\");\n    pm.expect(r.next_cursor).to.be.a(\"string\");\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -8418,7 +8418,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"hasMore\");\n    pm.expect(r.hasMore).to.be.a(\"boolean\");\n    pm.expect(r).to.have.property(\"items\");\n    pm.expect(r).to.have.property(\"nextCursor\");\n    pm.expect(r.nextCursor).to.be.a(\"number\");\n});"
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"data\");\n    pm.expect(r).to.have.property(\"has_more\");\n    pm.expect(r.has_more).to.be.a(\"boolean\");\n    pm.expect(r).to.have.property(\"next_cursor\");\n    pm.expect(r.next_cursor).to.be.a(\"string\");\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -8426,7 +8426,7 @@
           ]
         },
         {
-          "name": "TC-FF-AUDIT-002 - Cursor has wrong data type",
+          "name": "TC-FF-AUDIT-002 - Malformed cursor",
           "request": {
             "method": "GET",
             "header": [
@@ -8436,7 +8436,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/admin/feature-flags/editor_v2/audit?cursor=abc",
+              "raw": "{{base_url}}/admin/feature-flags/editor_v2/audit?cursor=not-a-cursor",
               "host": [
                 "{{base_url}}"
               ],
@@ -8556,7 +8556,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"hasMore\");\n    pm.expect(r.hasMore).to.be.a(\"boolean\");\n    pm.expect(r).to.have.property(\"items\");\n    pm.expect(r).to.have.property(\"nextCursor\");\n    pm.expect(r.nextCursor).to.be.a(\"number\");\n});"
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"data\");\n    pm.expect(r).to.have.property(\"has_more\");\n    pm.expect(r.has_more).to.be.a(\"boolean\");\n    pm.expect(r).to.have.property(\"next_cursor\");\n    pm.expect(r.next_cursor).to.be.a(\"string\");\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -8641,7 +8641,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"hasMore\");\n    pm.expect(r.hasMore).to.be.a(\"boolean\");\n    pm.expect(r).to.have.property(\"items\");\n    pm.expect(r).to.have.property(\"nextCursor\");\n    pm.expect(r.nextCursor).to.be.a(\"number\");\n});"
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"data\");\n    pm.expect(r).to.have.property(\"has_more\");\n    pm.expect(r.has_more).to.be.a(\"boolean\");\n    pm.expect(r).to.have.property(\"next_cursor\");\n    pm.expect(r.next_cursor).to.be.a(\"string\");\n});"
                 ],
                 "type": "text/javascript"
               }

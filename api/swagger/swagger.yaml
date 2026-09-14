@@ -95,14 +95,14 @@ definitions:
     type: object
   dto.FeatureFlagAuditListResponse:
     properties:
-      hasMore:
-        type: boolean
-      items:
+      data:
         items:
           $ref: '#/definitions/dto.FeatureFlagAuditResponse'
         type: array
-      nextCursor:
-        type: integer
+      has_more:
+        type: boolean
+      next_cursor:
+        type: string
     type: object
   dto.FeatureFlagAuditResponse:
     properties:
@@ -248,6 +248,28 @@ definitions:
       username:
         type: string
     type: object
+  dto.FollowersListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dto.FollowerResponse'
+        type: array
+      has_more:
+        type: boolean
+      next_cursor:
+        type: string
+    type: object
+  dto.FollowingListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dto.FollowingResponse'
+        type: array
+      has_more:
+        type: boolean
+      next_cursor:
+        type: string
+    type: object
   dto.FollowingResponse:
     properties:
       followed_at:
@@ -319,6 +341,17 @@ definitions:
       user_id:
         type: integer
     type: object
+  dto.NotificationsListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dto.NotificationResponse'
+        type: array
+      has_more:
+        type: boolean
+      next_cursor:
+        type: string
+    type: object
   dto.PostItem:
     properties:
       author:
@@ -365,6 +398,17 @@ definitions:
       title:
         type: string
       updated_at:
+        type: string
+    type: object
+  dto.PostsListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dto.PostResponse'
+        type: array
+      has_more:
+        type: boolean
+      next_cursor:
         type: string
     type: object
   dto.ProblemDetail:
@@ -596,6 +640,14 @@ paths:
         name: key
         required: true
         type: string
+      - description: Pagination cursor from the previous response
+        in: query
+        name: cursor
+        type: string
+      - description: Items per page (1-100, default 20)
+        in: query
+        name: limit
+        type: integer
       produces:
       - application/json
       responses:
@@ -966,13 +1018,13 @@ paths:
       - application/json
       description: Retrieve notifications for the authenticated user.
       parameters:
-      - description: Limit
+      - description: Pagination cursor from the previous response
+        in: query
+        name: cursor
+        type: string
+      - description: Items per page (1-100, default 10)
         in: query
         name: limit
-        type: integer
-      - description: Offset
-        in: query
-        name: offset
         type: integer
       produces:
       - application/json
@@ -980,9 +1032,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/dto.NotificationResponse'
-            type: array
+            $ref: '#/definitions/dto.NotificationsListResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1084,13 +1134,13 @@ paths:
     get:
       description: Retrieve all posts for the authenticated user.
       parameters:
-      - description: Limit
+      - description: Pagination cursor from the previous response
+        in: query
+        name: cursor
+        type: string
+      - description: Items per page (1-100, default 10)
         in: query
         name: limit
-        type: integer
-      - description: Offset
-        in: query
-        name: offset
         type: integer
       produces:
       - application/json
@@ -1098,9 +1148,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/dto.PostResponse'
-            type: array
+            $ref: '#/definitions/dto.PostsListResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1492,13 +1540,13 @@ paths:
       - application/json
       description: Get the list of users following the currently authenticated user.
       parameters:
-      - description: Limit for pagination
+      - description: Pagination cursor from the previous response
+        in: query
+        name: cursor
+        type: string
+      - description: Items per page (1-100, default 10)
         in: query
         name: limit
-        type: integer
-      - description: Offset for pagination
-        in: query
-        name: offset
         type: integer
       produces:
       - application/json
@@ -1506,9 +1554,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/dto.FollowerResponse'
-            type: array
+            $ref: '#/definitions/dto.FollowersListResponse'
         "400":
           description: Bad Request
           schema:
@@ -1571,13 +1617,13 @@ paths:
       description: Get the list of users being followed by the currently authenticated
         user.
       parameters:
-      - description: Limit for pagination
+      - description: Pagination cursor from the previous response
+        in: query
+        name: cursor
+        type: string
+      - description: Items per page (1-100, default 10)
         in: query
         name: limit
-        type: integer
-      - description: Offset for pagination
-        in: query
-        name: offset
         type: integer
       produces:
       - application/json
@@ -1585,9 +1631,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/dto.FollowingResponse'
-            type: array
+            $ref: '#/definitions/dto.FollowingListResponse'
         "400":
           description: Bad Request
           schema:
@@ -1614,13 +1658,13 @@ paths:
         name: username
         required: true
         type: string
-      - description: Limit
+      - description: Pagination cursor from the previous response
+        in: query
+        name: cursor
+        type: string
+      - description: Items per page (1-100, default 10)
         in: query
         name: limit
-        type: integer
-      - description: Offset
-        in: query
-        name: offset
         type: integer
       produces:
       - application/json
@@ -1628,9 +1672,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/dto.PostResponse'
-            type: array
+            $ref: '#/definitions/dto.PostsListResponse'
         "400":
           description: Bad Request
           schema:

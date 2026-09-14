@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/billykore/project-one/internal/core/domain"
+	vo "github.com/billykore/project-one/internal/core/valueobject"
 )
 
 // FeatureFlagRepository is a driven port for feature-flag persistence.
@@ -35,7 +36,7 @@ type FeatureFlagRepository interface {
 	// AppendAudit appends an immutable audit record.
 	AppendAudit(ctx context.Context, record *domain.AuditRecord) error
 	// ListAudit returns a page of audit records for a flag (newest first).
-	ListAudit(ctx context.Context, flagID int, cursor int, limit int) ([]domain.AuditRecord, bool, error)
+	ListAudit(ctx context.Context, flagID int, cursor *vo.Cursor, limit int) ([]domain.AuditRecord, bool, error)
 
 	// LoadSnapshot loads the environment-scoped evaluation data for all flags.
 	LoadSnapshot(ctx context.Context, env domain.Environment) ([]domain.FlagSnapshot, error)
@@ -66,7 +67,7 @@ type FeatureFlagUseCase interface {
 	// Archive marks a flag as archived and prevents future evaluation unless explicitly re-enabled by policy.
 	Archive(ctx context.Context, actor, key, reason string) error
 	// ListAudit returns the audit history for a flag, ordered newest-first with pagination support.
-	ListAudit(ctx context.Context, key string, cursor, limit int) ([]domain.AuditRecord, bool, error)
+	ListAudit(ctx context.Context, key string, cursor *vo.Cursor, limit int) ([]domain.AuditRecord, bool, error)
 	// Evaluate resolves the current decision for a flag for the provided username, respecting overrides and rollout rules.
 	Evaluate(ctx context.Context, key string, username string) domain.FeatureFlagDecision
 }

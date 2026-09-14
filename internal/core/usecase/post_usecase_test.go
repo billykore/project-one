@@ -154,35 +154,35 @@ func TestPostUseCase_GetPosts(t *testing.T) {
 	ctx := context.Background()
 	username := "testuser"
 	limit := 10
-	offset := 0
 
 	t.Run("success", func(t *testing.T) {
 		expectedPosts := []*domain.Post{
 			{ID: 1, Username: username, Title: "Post 1"},
 			{ID: 2, Username: username, Title: "Post 2"},
 		}
-		mockRepo.EXPECT().GetUserPosts(ctx, username, limit, offset).Return(expectedPosts, nil)
+		mockRepo.EXPECT().GetUserPosts(ctx, username, nil, limit+1).Return(expectedPosts, nil)
 
-		posts, err := svc.GetPosts(ctx, username, limit, offset)
+		posts, err := svc.GetPosts(ctx, username, nil, limit)
 
 		assert.NoError(t, err)
-		assert.Equal(t, expectedPosts, posts)
+		assert.Equal(t, expectedPosts, posts.Posts)
+		assert.False(t, posts.HasMore)
 	})
 
 	t.Run("empty results", func(t *testing.T) {
-		mockRepo.EXPECT().GetUserPosts(ctx, username, limit, offset).Return([]*domain.Post{}, nil)
+		mockRepo.EXPECT().GetUserPosts(ctx, username, nil, limit+1).Return([]*domain.Post{}, nil)
 
-		posts, err := svc.GetPosts(ctx, username, limit, offset)
+		posts, err := svc.GetPosts(ctx, username, nil, limit)
 
 		assert.NoError(t, err)
-		assert.Empty(t, posts)
+		assert.Empty(t, posts.Posts)
 	})
 
 	t.Run("repository error", func(t *testing.T) {
-		mockRepo.EXPECT().GetUserPosts(ctx, username, limit, offset).Return(nil, errors.New("db error"))
+		mockRepo.EXPECT().GetUserPosts(ctx, username, nil, limit+1).Return(nil, errors.New("db error"))
 		mockLog.EXPECT().Error(ctx, "failed to get posts for user", "username", username, "error", gomock.Any())
 
-		posts, err := svc.GetPosts(ctx, username, limit, offset)
+		posts, err := svc.GetPosts(ctx, username, nil, limit)
 
 		assert.Error(t, err)
 		assert.Nil(t, posts)
@@ -190,9 +190,9 @@ func TestPostUseCase_GetPosts(t *testing.T) {
 	})
 
 	t.Run("pagination defaults", func(t *testing.T) {
-		mockRepo.EXPECT().GetUserPosts(ctx, username, 10, 0).Return([]*domain.Post{}, nil)
+		mockRepo.EXPECT().GetUserPosts(ctx, username, nil, 11).Return([]*domain.Post{}, nil)
 
-		_, err := svc.GetPosts(ctx, username, 0, -1)
+		_, err := svc.GetPosts(ctx, username, nil, 0)
 
 		assert.NoError(t, err)
 	})

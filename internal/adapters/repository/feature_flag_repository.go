@@ -9,6 +9,7 @@ import (
 
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
+	vo "github.com/billykore/project-one/internal/core/valueobject"
 	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
 )
@@ -299,13 +300,13 @@ func (r *featureFlagRepository) AppendAudit(ctx context.Context, record *domain.
 	return nil
 }
 
-func (r *featureFlagRepository) ListAudit(ctx context.Context, flagID int, cursor int, limit int) ([]domain.AuditRecord, bool, error) {
+func (r *featureFlagRepository) ListAudit(ctx context.Context, flagID int, cursor *vo.Cursor, limit int) ([]domain.AuditRecord, bool, error) {
 	if limit <= 0 {
 		limit = 20
 	}
 	query := r.db.WithContext(ctx).Where("flag_id = ?", flagID)
-	if cursor > 0 {
-		query = query.Where("id < ?", cursor)
+	if cursor != nil && cursor.ID > 0 {
+		query = query.Where("id < ?", cursor.ID)
 	}
 	var models []featureFlagAuditModel
 	if err := query.Order("id desc").Limit(limit + 1).Find(&models).Error; err != nil {

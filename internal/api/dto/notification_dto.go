@@ -20,6 +20,13 @@ type NotificationResponse struct {
 	Body          string    `json:"body,omitempty"`
 }
 
+// NotificationsListResponse wraps a cursor-paginated notification list.
+type NotificationsListResponse struct {
+	Data       []NotificationResponse `json:"data"`
+	NextCursor string                 `json:"next_cursor"`
+	HasMore    bool                   `json:"has_more"`
+}
+
 func NotificationTitle(notificationType domain.NotificationType) string {
 	switch notificationType {
 	case domain.NotificationTypeFollow:

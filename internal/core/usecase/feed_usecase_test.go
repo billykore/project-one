@@ -49,8 +49,7 @@ func TestFeedUseCase_GetFeed_ReturnsPostsForUserAndFollowed(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Len(t, result.Posts, 2)
 		assert.False(t, result.HasMore)
-		assert.NotNil(t, result.NextCursor)
-		assert.Equal(t, 2, result.NextCursor.ID)
+		assert.Nil(t, result.NextCursor)
 	})
 }
 

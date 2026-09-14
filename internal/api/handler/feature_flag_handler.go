@@ -8,6 +8,7 @@ import (
 	"github.com/billykore/project-one/internal/api/dto"
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
+	vo "github.com/billykore/project-one/internal/core/valueobject"
 	"github.com/labstack/echo/v4"
 )
 
@@ -77,8 +78,10 @@ func (h *FeatureFlagHandler) CreateFlag(c echo.Context) error {
 //	@Summary	Get feature flag
 //	@Tags		feature-flags
 //	@Produce	json
-//	@Param		key	path		string	true	"Flag key"
-//	@Success	200	{object}	dto.FeatureFlagDetailResponse
+//	@Param		key		path		string	true	"Flag key"
+//	@Param		cursor	query		string	false	"Pagination cursor from the previous response"
+//	@Param		limit	query		int		false	"Items per page (1-100, default 20)"
+//	@Success	200		{object}	dto.FeatureFlagDetailResponse
 //	@Security	BearerAuth
 //	@Router		/admin/feature-flags/{key} [get]
 func (h *FeatureFlagHandler) GetFlag(c echo.Context) error {
@@ -232,32 +235,36 @@ func (h *FeatureFlagHandler) Archive(c echo.Context) error {
 //	@Security	BearerAuth
 //	@Router		/admin/feature-flags/{key}/audit [get]
 func (h *FeatureFlagHandler) ListAudit(c echo.Context) error {
-	cursor, err := strconv.Atoi(c.QueryParam("cursor"))
-	if err != nil && c.QueryParam("cursor") != "" {
-		return echo.ErrBadRequest
+	var cursor *vo.Cursor
+	if cursorStr := c.QueryParam("cursor"); cursorStr != "" {
+		decoded, err := vo.DecodeCursor(cursorStr)
+		if err != nil {
+			return domain.ErrInvalidCursor
+		}
+		cursor = &decoded
 	}
-	limit, err := strconv.Atoi(c.QueryParam("limit"))
-	if err != nil && c.QueryParam("limit") != "" {
-		return echo.ErrBadRequest
-	}
-	if limit <= 0 || limit > 100 {
-		limit = 20
+	limit := 20
+	if limitStr := c.QueryParam("limit"); limitStr != "" {
+		parsed, err := strconv.Atoi(limitStr)
+		if err != nil || parsed < 1 || parsed > 100 {
+			return echo.ErrBadRequest
+		}
+		limit = parsed
 	}
 	records, hasMore, err := h.useCase.ListAudit(c.Request().Context(), c.Param("key"), cursor, limit)
 	if err != nil {
 		return err
 	}
-	response := dto.FeatureFlagAuditListResponse{Items: make([]dto.FeatureFlagAuditResponse, 0, len(records)), HasMore: hasMore}
+	response := dto.FeatureFlagAuditListResponse{Data: make([]dto.FeatureFlagAuditResponse, 0, len(records)), HasMore: hasMore}
 	if len(records) > 0 && hasMore {
-		next := records[len(records)-1].ID
-		response.NextCursor = &next
+		response.NextCursor = (&vo.Cursor{ID: records[len(records)-1].ID}).Encode()
 	}
 	for _, record := range records {
 		environment := ""
 		if record.Environment != nil {
 			environment = string(*record.Environment)
 		}
-		response.Items = append(response.Items, dto.FeatureFlagAuditResponse{
+		response.Data = append(response.Data, dto.FeatureFlagAuditResponse{
 			Field: record.Field, Environment: environment, PreviousValue: record.PreviousValue,
 			NewValue: record.NewValue, Actor: record.Actor, Reason: record.Reason, CreatedAt: record.CreatedAt,
 		})

@@ -7,6 +7,7 @@ import (
 	"github.com/billykore/project-one/internal/api/dto"
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
+	vo "github.com/billykore/project-one/internal/core/valueobject"
 	"github.com/labstack/echo/v4"
 )
 
@@ -134,9 +135,9 @@ func (h *PostHandler) GetPostByID(c echo.Context) error {
 //	@Description	Retrieve all posts for the authenticated user.
 //	@Tags			posts
 //	@Produce		json
-//	@Param			limit	query		int	false	"Limit"
-//	@Param			offset	query		int	false	"Offset"
-//	@Success		200		{array}		dto.PostResponse
+//	@Param			cursor	query		string	false	"Pagination cursor from the previous response"
+//	@Param			limit	query		int		false	"Items per page (1-100, default 10)"
+//	@Success		200		{object}	dto.PostsListResponse
 //	@Failure		401		{object}	dto.ProblemDetail
 //	@Failure		500		{object}	dto.ProblemDetail
 //	@Security		BearerAuth
@@ -148,21 +149,31 @@ func (h *PostHandler) GetPosts(c echo.Context) error {
 		return echo.ErrUnauthorized
 	}
 
-	limit, _ := strconv.Atoi(c.QueryParam("limit"))
-	offset, _ := strconv.Atoi(c.QueryParam("offset"))
-
-	if limit == 0 {
-		limit = 10 // default limit
+	limit := 10
+	if limitStr := c.QueryParam("limit"); limitStr != "" {
+		parsed, err := strconv.Atoi(limitStr)
+		if err != nil || parsed < 1 || parsed > 100 {
+			return echo.ErrBadRequest
+		}
+		limit = parsed
+	}
+	var cursor *vo.Cursor
+	if cursorStr := c.QueryParam("cursor"); cursorStr != "" {
+		decoded, err := vo.DecodeCursor(cursorStr)
+		if err != nil {
+			return domain.ErrInvalidCursor
+		}
+		cursor = &decoded
 	}
 
-	posts, err := h.postUseCase.GetPosts(c.Request().Context(), user.Username, limit, offset)
+	posts, err := h.postUseCase.GetPosts(c.Request().Context(), user.Username, cursor, limit)
 	if err != nil {
 		h.log.Error(c.Request().Context(), "GetPosts failed", "username", user.Username, "error", err)
 		return err
 	}
 
-	response := make([]dto.PostResponse, 0, len(posts))
-	for _, p := range posts {
+	response := make([]dto.PostResponse, 0, len(posts.Posts))
+	for _, p := range posts.Posts {
 		response = append(response, dto.PostResponse{
 			ID:        p.ID,
 			Title:     p.Title,
@@ -175,7 +186,11 @@ func (h *PostHandler) GetPosts(c echo.Context) error {
 	}
 
 	h.log.Info(c.Request().Context(), "GetPosts succeeded", "username", user.Username, "count", len(response))
-	return c.JSON(http.StatusOK, response)
+	nextCursor := ""
+	if posts.NextCursor != nil {
+		nextCursor = posts.NextCursor.Encode()
+	}
+	return c.JSON(http.StatusOK, dto.PostsListResponse{Data: response, NextCursor: nextCursor, HasMore: posts.HasMore})
 }
 
 // UpdatePost handles the PUT /posts/:id endpoint.

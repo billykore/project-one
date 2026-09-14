@@ -10,6 +10,7 @@ import (
 
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
+	vo "github.com/billykore/project-one/internal/core/valueobject"
 )
 
 const postNotificationTopic = "notifications"
@@ -85,23 +86,27 @@ func (uc *postUseCase) GetPostByID(ctx context.Context, id int) (*domain.Post, e
 	return post, nil
 }
 
-func (uc *postUseCase) GetPosts(ctx context.Context, username string, limit, offset int) ([]*domain.Post, error) {
+func (uc *postUseCase) GetPosts(ctx context.Context, username string, cursor *vo.Cursor, limit int) (*ports.PostsPage, error) {
 	if limit <= 0 {
 		limit = 10
 	}
 	if limit > 100 {
 		limit = 100
 	}
-	if offset < 0 {
-		offset = 0
-	}
-
-	posts, err := uc.postRepo.GetUserPosts(ctx, username, limit, offset)
+	posts, err := uc.postRepo.GetUserPosts(ctx, username, cursor, limit+1)
 	if err != nil {
 		uc.log.Error(ctx, "failed to get posts for user", "username", username, "error", err)
 		return nil, fmt.Errorf("get posts for user: %w", domain.ErrRepositoryFailure)
 	}
-	return posts, nil
+
+	page := &ports.PostsPage{Posts: posts}
+	if len(posts) > limit {
+		page.HasMore = true
+		page.Posts = posts[:limit]
+		last := page.Posts[len(page.Posts)-1]
+		page.NextCursor = &vo.Cursor{CreatedAt: last.CreatedAt, ID: last.ID}
+	}
+	return page, nil
 }
 
 func (uc *postUseCase) UpdatePost(ctx context.Context, username string, postID int, title, content string) (*domain.Post, error) {

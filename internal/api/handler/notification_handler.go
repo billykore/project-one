@@ -14,6 +14,7 @@ import (
 	"github.com/billykore/project-one/internal/api/dto"
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
+	vo "github.com/billykore/project-one/internal/core/valueobject"
 	"github.com/labstack/echo/v4"
 )
 
@@ -170,9 +171,9 @@ func (h *NotificationHandler) StreamNotifications(c echo.Context) error {
 //	@Tags			notifications
 //	@Accept			json
 //	@Produce		json
-//	@Param			limit	query		int	false	"Limit"
-//	@Param			offset	query		int	false	"Offset"
-//	@Success		200		{array}		dto.NotificationResponse
+//	@Param			cursor	query		string	false	"Pagination cursor from the previous response"
+//	@Param			limit	query		int		false	"Items per page (1-100, default 10)"
+//	@Success		200		{object}	dto.NotificationsListResponse
 //	@Failure		401		{object}	dto.ProblemDetail
 //	@Failure		500		{object}	dto.ProblemDetail
 //	@Security		BearerAuth
@@ -184,35 +185,40 @@ func (h *NotificationHandler) GetNotifications(c echo.Context) error {
 		return echo.ErrUnauthorized
 	}
 
-	limitStr := c.QueryParam("limit")
-	offsetStr := c.QueryParam("offset")
-
 	limit := 10
-	if limitStr != "" {
-		if val, err := strconv.Atoi(limitStr); err == nil && val > 0 {
-			limit = val
+	if limitStr := c.QueryParam("limit"); limitStr != "" {
+		value, err := strconv.Atoi(limitStr)
+		if err != nil || value < 1 || value > 100 {
+			return echo.ErrBadRequest
 		}
+		limit = value
 	}
-	offset := 0
-	if offsetStr != "" {
-		if val, err := strconv.Atoi(offsetStr); err == nil && val >= 0 {
-			offset = val
+	var cursor *vo.Cursor
+	if cursorStr := c.QueryParam("cursor"); cursorStr != "" {
+		decoded, err := vo.DecodeCursor(cursorStr)
+		if err != nil {
+			return domain.ErrInvalidCursor
 		}
+		cursor = &decoded
 	}
 
-	notifications, err := h.uc.GetNotifications(c.Request().Context(), user.Username, limit, offset)
+	notifications, err := h.uc.GetNotifications(c.Request().Context(), user.Username, cursor, limit)
 	if err != nil {
 		h.log.Error(c.Request().Context(), "GetNotifications failed", "username", user.Username, "error", err)
 		return err
 	}
 
-	resp := make([]*dto.NotificationResponse, len(notifications))
-	for i, n := range notifications {
-		resp[i] = notificationResponseFromDetail(n)
+	resp := make([]dto.NotificationResponse, 0, len(notifications.Notifications))
+	for _, n := range notifications.Notifications {
+		resp = append(resp, *notificationResponseFromDetail(n))
 	}
 
 	h.log.Info(c.Request().Context(), "GetNotifications succeeded", "username", user.Username, "count", len(resp))
-	return c.JSON(http.StatusOK, resp)
+	nextCursor := ""
+	if notifications.NextCursor != nil {
+		nextCursor = notifications.NextCursor.Encode()
+	}
+	return c.JSON(http.StatusOK, dto.NotificationsListResponse{Data: resp, NextCursor: nextCursor, HasMore: notifications.HasMore})
 }
 
 // MarkAsRead handles the PUT /notifications/:id/read endpoint.

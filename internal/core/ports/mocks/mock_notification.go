@@ -14,6 +14,8 @@ import (
 	reflect "reflect"
 
 	domain "github.com/billykore/project-one/internal/core/domain"
+	ports "github.com/billykore/project-one/internal/core/ports"
+	valueobject "github.com/billykore/project-one/internal/core/valueobject"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -71,18 +73,18 @@ func (mr *MockNotificationRepositoryMockRecorder) GetByID(ctx, id any) *gomock.C
 }
 
 // GetByUserID mocks base method.
-func (m *MockNotificationRepository) GetByUserID(ctx context.Context, userID, limit, offset int) ([]*domain.Notification, error) {
+func (m *MockNotificationRepository) GetByUserID(ctx context.Context, userID int, cursor *valueobject.Cursor, limit int) ([]*domain.Notification, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByUserID", ctx, userID, limit, offset)
+	ret := m.ctrl.Call(m, "GetByUserID", ctx, userID, cursor, limit)
 	ret0, _ := ret[0].([]*domain.Notification)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetByUserID indicates an expected call of GetByUserID.
-func (mr *MockNotificationRepositoryMockRecorder) GetByUserID(ctx, userID, limit, offset any) *gomock.Call {
+func (mr *MockNotificationRepositoryMockRecorder) GetByUserID(ctx, userID, cursor, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByUserID", reflect.TypeOf((*MockNotificationRepository)(nil).GetByUserID), ctx, userID, limit, offset)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByUserID", reflect.TypeOf((*MockNotificationRepository)(nil).GetByUserID), ctx, userID, cursor, limit)
 }
 
 // MarkAllAsRead mocks base method.
@@ -138,18 +140,18 @@ func (m *MockNotificationUseCase) EXPECT() *MockNotificationUseCaseMockRecorder 
 }
 
 // GetNotifications mocks base method.
-func (m *MockNotificationUseCase) GetNotifications(ctx context.Context, username string, limit, offset int) ([]*domain.NotificationDetail, error) {
+func (m *MockNotificationUseCase) GetNotifications(ctx context.Context, username string, cursor *valueobject.Cursor, limit int) (*ports.NotificationsPage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetNotifications", ctx, username, limit, offset)
-	ret0, _ := ret[0].([]*domain.NotificationDetail)
+	ret := m.ctrl.Call(m, "GetNotifications", ctx, username, cursor, limit)
+	ret0, _ := ret[0].(*ports.NotificationsPage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetNotifications indicates an expected call of GetNotifications.
-func (mr *MockNotificationUseCaseMockRecorder) GetNotifications(ctx, username, limit, offset any) *gomock.Call {
+func (mr *MockNotificationUseCaseMockRecorder) GetNotifications(ctx, username, cursor, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNotifications", reflect.TypeOf((*MockNotificationUseCase)(nil).GetNotifications), ctx, username, limit, offset)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNotifications", reflect.TypeOf((*MockNotificationUseCase)(nil).GetNotifications), ctx, username, cursor, limit)
 }
 
 // MarkAllAsRead mocks base method.

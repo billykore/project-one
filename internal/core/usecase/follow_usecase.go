@@ -8,6 +8,7 @@ import (
 
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
+	vo "github.com/billykore/project-one/internal/core/valueobject"
 )
 
 const followNotificationTopic = "notifications"
@@ -117,17 +118,13 @@ func (u *followUseCase) Unfollow(ctx context.Context, followerUsername, followed
 	return nil
 }
 
-func (u *followUseCase) GetFollowing(ctx context.Context, followerUsername string, limit, offset int) ([]domain.Following, error) {
+func (u *followUseCase) GetFollowing(ctx context.Context, followerUsername string, cursor *vo.Cursor, limit int) (*ports.FollowingPage, error) {
 	if limit <= 0 {
 		limit = 10
 	}
 	if limit > 100 {
 		limit = 100
 	}
-	if offset < 0 {
-		offset = 0
-	}
-
 	follower, err := u.userRepo.GetUserByUsername(ctx, followerUsername)
 	if err != nil {
 		return nil, fmt.Errorf("get follower by username: %w", err)
@@ -136,25 +133,28 @@ func (u *followUseCase) GetFollowing(ctx context.Context, followerUsername strin
 		return nil, domain.ErrUserNotFound
 	}
 
-	following, err := u.followRepo.GetFollowing(ctx, follower.Username, limit, offset)
+	following, err := u.followRepo.GetFollowing(ctx, follower.Username, cursor, limit+1)
 	if err != nil {
 		return nil, fmt.Errorf("get following: %w", err)
 	}
 
-	return following, nil
+	page := &ports.FollowingPage{Data: following}
+	if len(following) > limit {
+		page.HasMore = true
+		page.Data = following[:limit]
+		last := page.Data[len(page.Data)-1]
+		page.NextCursor = &vo.Cursor{CreatedAt: last.FollowedAt, Key: last.Username}
+	}
+	return page, nil
 }
 
-func (u *followUseCase) GetFollowers(ctx context.Context, followedUsername string, limit, offset int) ([]domain.Follower, error) {
+func (u *followUseCase) GetFollowers(ctx context.Context, followedUsername string, cursor *vo.Cursor, limit int) (*ports.FollowersPage, error) {
 	if limit <= 0 {
 		limit = 10
 	}
 	if limit > 100 {
 		limit = 100
 	}
-	if offset < 0 {
-		offset = 0
-	}
-
 	followed, err := u.userRepo.GetUserByUsername(ctx, followedUsername)
 	if err != nil {
 		return nil, fmt.Errorf("get followed by username: %w", err)
@@ -163,10 +163,17 @@ func (u *followUseCase) GetFollowers(ctx context.Context, followedUsername strin
 		return nil, domain.ErrUserNotFound
 	}
 
-	followers, err := u.followRepo.GetFollowers(ctx, followed.Username, limit, offset)
+	followers, err := u.followRepo.GetFollowers(ctx, followed.Username, cursor, limit+1)
 	if err != nil {
 		return nil, fmt.Errorf("get followers: %w", err)
 	}
 
-	return followers, nil
+	page := &ports.FollowersPage{Data: followers}
+	if len(followers) > limit {
+		page.HasMore = true
+		page.Data = followers[:limit]
+		last := page.Data[len(page.Data)-1]
+		page.NextCursor = &vo.Cursor{CreatedAt: last.FollowedAt, Key: last.Username}
+	}
+	return page, nil
 }

@@ -14,6 +14,8 @@ import (
 	reflect "reflect"
 
 	domain "github.com/billykore/project-one/internal/core/domain"
+	ports "github.com/billykore/project-one/internal/core/ports"
+	valueobject "github.com/billykore/project-one/internal/core/valueobject"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -85,33 +87,33 @@ func (mr *MockFollowRepositoryMockRecorder) GetFollowedUsernames(ctx, followerUs
 }
 
 // GetFollowers mocks base method.
-func (m *MockFollowRepository) GetFollowers(ctx context.Context, followedUsername string, limit, offset int) ([]domain.Follower, error) {
+func (m *MockFollowRepository) GetFollowers(ctx context.Context, followedUsername string, cursor *valueobject.Cursor, limit int) ([]domain.Follower, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetFollowers", ctx, followedUsername, limit, offset)
+	ret := m.ctrl.Call(m, "GetFollowers", ctx, followedUsername, cursor, limit)
 	ret0, _ := ret[0].([]domain.Follower)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetFollowers indicates an expected call of GetFollowers.
-func (mr *MockFollowRepositoryMockRecorder) GetFollowers(ctx, followedUsername, limit, offset any) *gomock.Call {
+func (mr *MockFollowRepositoryMockRecorder) GetFollowers(ctx, followedUsername, cursor, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFollowers", reflect.TypeOf((*MockFollowRepository)(nil).GetFollowers), ctx, followedUsername, limit, offset)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFollowers", reflect.TypeOf((*MockFollowRepository)(nil).GetFollowers), ctx, followedUsername, cursor, limit)
 }
 
 // GetFollowing mocks base method.
-func (m *MockFollowRepository) GetFollowing(ctx context.Context, followerUsername string, limit, offset int) ([]domain.Following, error) {
+func (m *MockFollowRepository) GetFollowing(ctx context.Context, followerUsername string, cursor *valueobject.Cursor, limit int) ([]domain.Following, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetFollowing", ctx, followerUsername, limit, offset)
+	ret := m.ctrl.Call(m, "GetFollowing", ctx, followerUsername, cursor, limit)
 	ret0, _ := ret[0].([]domain.Following)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetFollowing indicates an expected call of GetFollowing.
-func (mr *MockFollowRepositoryMockRecorder) GetFollowing(ctx, followerUsername, limit, offset any) *gomock.Call {
+func (mr *MockFollowRepositoryMockRecorder) GetFollowing(ctx, followerUsername, cursor, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFollowing", reflect.TypeOf((*MockFollowRepository)(nil).GetFollowing), ctx, followerUsername, limit, offset)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFollowing", reflect.TypeOf((*MockFollowRepository)(nil).GetFollowing), ctx, followerUsername, cursor, limit)
 }
 
 // MockFollowUseCase is a mock of FollowUseCase interface.
@@ -154,33 +156,33 @@ func (mr *MockFollowUseCaseMockRecorder) Follow(ctx, followerUsername, followedU
 }
 
 // GetFollowers mocks base method.
-func (m *MockFollowUseCase) GetFollowers(ctx context.Context, followedUsername string, limit, offset int) ([]domain.Follower, error) {
+func (m *MockFollowUseCase) GetFollowers(ctx context.Context, followedUsername string, cursor *valueobject.Cursor, limit int) (*ports.FollowersPage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetFollowers", ctx, followedUsername, limit, offset)
-	ret0, _ := ret[0].([]domain.Follower)
+	ret := m.ctrl.Call(m, "GetFollowers", ctx, followedUsername, cursor, limit)
+	ret0, _ := ret[0].(*ports.FollowersPage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetFollowers indicates an expected call of GetFollowers.
-func (mr *MockFollowUseCaseMockRecorder) GetFollowers(ctx, followedUsername, limit, offset any) *gomock.Call {
+func (mr *MockFollowUseCaseMockRecorder) GetFollowers(ctx, followedUsername, cursor, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFollowers", reflect.TypeOf((*MockFollowUseCase)(nil).GetFollowers), ctx, followedUsername, limit, offset)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFollowers", reflect.TypeOf((*MockFollowUseCase)(nil).GetFollowers), ctx, followedUsername, cursor, limit)
 }
 
 // GetFollowing mocks base method.
-func (m *MockFollowUseCase) GetFollowing(ctx context.Context, followerUsername string, limit, offset int) ([]domain.Following, error) {
+func (m *MockFollowUseCase) GetFollowing(ctx context.Context, followerUsername string, cursor *valueobject.Cursor, limit int) (*ports.FollowingPage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetFollowing", ctx, followerUsername, limit, offset)
-	ret0, _ := ret[0].([]domain.Following)
+	ret := m.ctrl.Call(m, "GetFollowing", ctx, followerUsername, cursor, limit)
+	ret0, _ := ret[0].(*ports.FollowingPage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetFollowing indicates an expected call of GetFollowing.
-func (mr *MockFollowUseCaseMockRecorder) GetFollowing(ctx, followerUsername, limit, offset any) *gomock.Call {
+func (mr *MockFollowUseCaseMockRecorder) GetFollowing(ctx, followerUsername, cursor, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFollowing", reflect.TypeOf((*MockFollowUseCase)(nil).GetFollowing), ctx, followerUsername, limit, offset)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFollowing", reflect.TypeOf((*MockFollowUseCase)(nil).GetFollowing), ctx, followerUsername, cursor, limit)
 }
 
 // Unfollow mocks base method.

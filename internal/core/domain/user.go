@@ -27,6 +27,8 @@ type SearchResult struct {
 	Username  string
 	FirstName string
 	LastName  string
+	Rank      int
+	Score     float64
 }
 
 // Name returns the concatenated full name.

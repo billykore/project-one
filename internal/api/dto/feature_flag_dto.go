@@ -106,7 +106,7 @@ type FeatureFlagAuditResponse struct {
 
 // FeatureFlagAuditListResponse contains a page of audit records.
 type FeatureFlagAuditListResponse struct {
-	Items      []FeatureFlagAuditResponse `json:"items"`
-	NextCursor *int                       `json:"nextCursor"`
-	HasMore    bool                       `json:"hasMore"`
+	Data       []FeatureFlagAuditResponse `json:"data"`
+	NextCursor string                     `json:"next_cursor"`
+	HasMore    bool                       `json:"has_more"`
 }

@@ -88,7 +88,6 @@ func TestNotificationUseCase_GetNotifications(t *testing.T) {
 	ctx := context.Background()
 	username := "testuser"
 	limit := 10
-	offset := 0
 
 	user := &domain.User{
 		ID:       1,
@@ -107,7 +106,7 @@ func TestNotificationUseCase_GetNotifications(t *testing.T) {
 			nil, // Nil notification to test skipping without dereferencing/panicking
 			{ID: 106, UserID: 1, ActorID: 1, Type: domain.NotificationTypeComment}, // Notification where actor is the current user (ID 1), should use pre-populated cache
 		}
-		mockRepo.EXPECT().GetByUserID(ctx, user.ID, limit, offset).Return(notifications, nil)
+		mockRepo.EXPECT().GetByUserID(ctx, user.ID, nil, limit+1).Return(notifications, nil)
 
 		// Actor 2: lookup succeeds once
 		actor2 := &domain.User{ID: 2, Username: "actor2"}
@@ -120,23 +119,23 @@ func TestNotificationUseCase_GetNotifications(t *testing.T) {
 		// Actor 4: lookup fails with ErrUserNotFound, should only be called once due to caching of soft failure
 		mockUserRepo.EXPECT().GetUserByID(ctx, 4).Return(nil, domain.ErrUserNotFound).Times(1)
 
-		results, err := uc.GetNotifications(ctx, username, limit, offset)
+		results, err := uc.GetNotifications(ctx, username, nil, limit)
 		assert.NoError(t, err)
-		assert.Len(t, results, 6)
+		assert.Len(t, results.Notifications, 6)
 
-		assert.Equal(t, "actor2", results[0].ActorUsername)
-		assert.Equal(t, "actor2", results[1].ActorUsername)
-		assert.Equal(t, "actor3", results[2].ActorUsername)
-		assert.Equal(t, "", results[3].ActorUsername)
-		assert.Equal(t, "", results[4].ActorUsername)
-		assert.Equal(t, username, results[5].ActorUsername)
+		assert.Equal(t, "actor2", results.Notifications[0].ActorUsername)
+		assert.Equal(t, "actor2", results.Notifications[1].ActorUsername)
+		assert.Equal(t, "actor3", results.Notifications[2].ActorUsername)
+		assert.Equal(t, "", results.Notifications[3].ActorUsername)
+		assert.Equal(t, "", results.Notifications[4].ActorUsername)
+		assert.Equal(t, username, results.Notifications[5].ActorUsername)
 	})
 
 	t.Run("user repo error", func(t *testing.T) {
 		expectedErr := errors.New("db error")
 		mockUserRepo.EXPECT().GetUserByUsername(ctx, username).Return(nil, expectedErr)
 
-		results, err := uc.GetNotifications(ctx, username, limit, offset)
+		results, err := uc.GetNotifications(ctx, username, nil, limit)
 		assert.ErrorIs(t, err, expectedErr)
 		assert.Nil(t, results)
 	})
@@ -144,7 +143,7 @@ func TestNotificationUseCase_GetNotifications(t *testing.T) {
 	t.Run("nil user from repo", func(t *testing.T) {
 		mockUserRepo.EXPECT().GetUserByUsername(ctx, username).Return(nil, nil)
 
-		results, err := uc.GetNotifications(ctx, username, limit, offset)
+		results, err := uc.GetNotifications(ctx, username, nil, limit)
 		assert.ErrorIs(t, err, domain.ErrUserNotFound)
 		assert.Nil(t, results)
 	})
@@ -152,9 +151,9 @@ func TestNotificationUseCase_GetNotifications(t *testing.T) {
 	t.Run("notification repo error", func(t *testing.T) {
 		expectedErr := errors.New("db error")
 		mockUserRepo.EXPECT().GetUserByUsername(ctx, username).Return(user, nil)
-		mockRepo.EXPECT().GetByUserID(ctx, user.ID, limit, offset).Return(nil, expectedErr)
+		mockRepo.EXPECT().GetByUserID(ctx, user.ID, nil, limit+1).Return(nil, expectedErr)
 
-		results, err := uc.GetNotifications(ctx, username, limit, offset)
+		results, err := uc.GetNotifications(ctx, username, nil, limit)
 		assert.ErrorIs(t, err, expectedErr)
 		assert.Nil(t, results)
 	})
@@ -165,12 +164,12 @@ func TestNotificationUseCase_GetNotifications(t *testing.T) {
 		notifications := []*domain.Notification{
 			{ID: 101, UserID: 1, ActorID: 5, Type: domain.NotificationTypeFollow},
 		}
-		mockRepo.EXPECT().GetByUserID(ctx, user.ID, limit, offset).Return(notifications, nil)
+		mockRepo.EXPECT().GetByUserID(ctx, user.ID, nil, limit+1).Return(notifications, nil)
 
 		expectedErr := errors.New("connection failed")
 		mockUserRepo.EXPECT().GetUserByID(ctx, 5).Return(nil, expectedErr)
 
-		results, err := uc.GetNotifications(ctx, username, limit, offset)
+		results, err := uc.GetNotifications(ctx, username, nil, limit)
 		assert.ErrorIs(t, err, expectedErr)
 		assert.Nil(t, results)
 	})

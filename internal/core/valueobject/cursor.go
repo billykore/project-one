@@ -11,6 +11,9 @@ import (
 type Cursor struct {
 	CreatedAt time.Time `json:"c"`
 	ID        int       `json:"i"`
+	Key       string    `json:"k,omitempty"`
+	Rank      int       `json:"r,omitempty"`
+	Score     float64   `json:"s,omitempty"`
 }
 
 // Encode returns the base64-encoded JSON representation of the cursor.

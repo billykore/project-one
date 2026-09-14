@@ -14,6 +14,7 @@ import (
 	reflect "reflect"
 
 	domain "github.com/billykore/project-one/internal/core/domain"
+	valueobject "github.com/billykore/project-one/internal/core/valueobject"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -129,7 +130,7 @@ func (mr *MockFeatureFlagRepositoryMockRecorder) List(ctx any) *gomock.Call {
 }
 
 // ListAudit mocks base method.
-func (m *MockFeatureFlagRepository) ListAudit(ctx context.Context, flagID, cursor, limit int) ([]domain.AuditRecord, bool, error) {
+func (m *MockFeatureFlagRepository) ListAudit(ctx context.Context, flagID int, cursor *valueobject.Cursor, limit int) ([]domain.AuditRecord, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAudit", ctx, flagID, cursor, limit)
 	ret0, _ := ret[0].([]domain.AuditRecord)
@@ -366,7 +367,7 @@ func (mr *MockFeatureFlagUseCaseMockRecorder) GetFlagDetail(ctx, key any) *gomoc
 }
 
 // ListAudit mocks base method.
-func (m *MockFeatureFlagUseCase) ListAudit(ctx context.Context, key string, cursor, limit int) ([]domain.AuditRecord, bool, error) {
+func (m *MockFeatureFlagUseCase) ListAudit(ctx context.Context, key string, cursor *valueobject.Cursor, limit int) ([]domain.AuditRecord, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListAudit", ctx, key, cursor, limit)
 	ret0, _ := ret[0].([]domain.AuditRecord)

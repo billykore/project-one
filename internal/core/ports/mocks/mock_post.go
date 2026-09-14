@@ -14,6 +14,7 @@ import (
 	reflect "reflect"
 
 	domain "github.com/billykore/project-one/internal/core/domain"
+	ports "github.com/billykore/project-one/internal/core/ports"
 	valueobject "github.com/billykore/project-one/internal/core/valueobject"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -116,18 +117,18 @@ func (mr *MockPostRepositoryMockRecorder) GetFeed(ctx, usernames, cursor, limit 
 }
 
 // GetUserPosts mocks base method.
-func (m *MockPostRepository) GetUserPosts(ctx context.Context, username string, limit, offset int) ([]*domain.Post, error) {
+func (m *MockPostRepository) GetUserPosts(ctx context.Context, username string, cursor *valueobject.Cursor, limit int) ([]*domain.Post, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserPosts", ctx, username, limit, offset)
+	ret := m.ctrl.Call(m, "GetUserPosts", ctx, username, cursor, limit)
 	ret0, _ := ret[0].([]*domain.Post)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetUserPosts indicates an expected call of GetUserPosts.
-func (mr *MockPostRepositoryMockRecorder) GetUserPosts(ctx, username, limit, offset any) *gomock.Call {
+func (mr *MockPostRepositoryMockRecorder) GetUserPosts(ctx, username, cursor, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserPosts", reflect.TypeOf((*MockPostRepository)(nil).GetUserPosts), ctx, username, limit, offset)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserPosts", reflect.TypeOf((*MockPostRepository)(nil).GetUserPosts), ctx, username, cursor, limit)
 }
 
 // IncrementLikeCount mocks base method.
@@ -243,18 +244,18 @@ func (mr *MockPostUseCaseMockRecorder) GetPostByID(ctx, postID any) *gomock.Call
 }
 
 // GetPosts mocks base method.
-func (m *MockPostUseCase) GetPosts(ctx context.Context, username string, limit, offset int) ([]*domain.Post, error) {
+func (m *MockPostUseCase) GetPosts(ctx context.Context, username string, cursor *valueobject.Cursor, limit int) (*ports.PostsPage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPosts", ctx, username, limit, offset)
-	ret0, _ := ret[0].([]*domain.Post)
+	ret := m.ctrl.Call(m, "GetPosts", ctx, username, cursor, limit)
+	ret0, _ := ret[0].(*ports.PostsPage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetPosts indicates an expected call of GetPosts.
-func (mr *MockPostUseCaseMockRecorder) GetPosts(ctx, username, limit, offset any) *gomock.Call {
+func (mr *MockPostUseCaseMockRecorder) GetPosts(ctx, username, cursor, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPosts", reflect.TypeOf((*MockPostUseCase)(nil).GetPosts), ctx, username, limit, offset)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPosts", reflect.TypeOf((*MockPostUseCase)(nil).GetPosts), ctx, username, cursor, limit)
 }
 
 // LikePost mocks base method.

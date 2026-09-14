@@ -15,8 +15,8 @@ type PostRepository interface {
 	GetByID(ctx context.Context, username string, id int) (*domain.Post, error)
 	// GetByIDOnly retrieves a post by its ID without checking owner.
 	GetByIDOnly(ctx context.Context, id int) (*domain.Post, error)
-	// GetUserPosts retrieves all posts for a specific user.
-	GetUserPosts(ctx context.Context, username string, limit, offset int) ([]*domain.Post, error)
+	// GetUserPosts retrieves a page of posts for a specific user, newest first.
+	GetUserPosts(ctx context.Context, username string, cursor *vo.Cursor, limit int) ([]*domain.Post, error)
 	// Update updates an existing post in the repository.
 	Update(ctx context.Context, username string, post *domain.Post) error
 	// Delete removes a post from the repository.
@@ -29,14 +29,21 @@ type PostRepository interface {
 	GetFeed(ctx context.Context, usernames []string, cursor *vo.Cursor, limit int) ([]*domain.Post, error)
 }
 
+// PostsPage is a cursor-paginated post result.
+type PostsPage struct {
+	Posts      []*domain.Post
+	NextCursor *vo.Cursor
+	HasMore    bool
+}
+
 // PostUseCase is a driving port for post-related application logic.
 type PostUseCase interface {
 	// CreatePost creates a new post with the given details.
 	CreatePost(ctx context.Context, user *domain.User, title, content string, tags []string) (*domain.Post, error)
 	// GetPostByID retrieves a post by its ID.
 	GetPostByID(ctx context.Context, postID int) (*domain.Post, error)
-	// GetPosts retrieves all posts for a specific user.
-	GetPosts(ctx context.Context, username string, limit, offset int) ([]*domain.Post, error)
+	// GetPosts retrieves a cursor-paginated page of posts for a specific user.
+	GetPosts(ctx context.Context, username string, cursor *vo.Cursor, limit int) (*PostsPage, error)
 	// UpdatePost updates an existing post for a specific user.
 	UpdatePost(ctx context.Context, username string, postID int, title, content string) (*domain.Post, error)
 	// DeletePost removes a post for a specific user.

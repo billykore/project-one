@@ -314,9 +314,9 @@ func (h *UserHandler) HandleUnfollow(c echo.Context) error {
 //	@Tags			users
 //	@Accept			json
 //	@Produce		json
-//	@Param			limit	query		int	false	"Limit for pagination"
-//	@Param			offset	query		int	false	"Offset for pagination"
-//	@Success		200		{array}		dto.FollowingResponse
+//	@Param			cursor	query		string	false	"Pagination cursor from the previous response"
+//	@Param			limit	query		int		false	"Items per page (1-100, default 10)"
+//	@Success		200		{object}	dto.FollowingListResponse
 //	@Failure		400		{object}	dto.ProblemDetail
 //	@Failure		401		{object}	dto.ProblemDetail
 //	@Failure		500		{object}	dto.ProblemDetail
@@ -334,25 +334,46 @@ func (h *UserHandler) GetFollowing(c echo.Context) error {
 		h.log.Error(c.Request().Context(), "GetFollowing failed", "error", "Invalid query parameters")
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid query parameters")
 	}
+	if limitStr := c.QueryParam("limit"); limitStr != "" {
+		limit, err := strconv.Atoi(limitStr)
+		if err != nil || limit < 1 || limit > 100 {
+			return echo.ErrBadRequest
+		}
+		req.Limit = limit
+	} else {
+		req.Limit = 10
+	}
 
 	if err := h.validator.Validate(req); err != nil {
 		h.log.Error(c.Request().Context(), "GetFollowing failed", "validation_error", err)
 		return err
 	}
 
-	following, err := h.followUseCase.GetFollowing(c.Request().Context(), followerUsername, req.Limit, req.Offset)
+	var cursor *vo.Cursor
+	if req.Cursor != "" {
+		decoded, err := vo.DecodeCursor(req.Cursor)
+		if err != nil {
+			return domain.ErrInvalidCursor
+		}
+		cursor = &decoded
+	}
+	following, err := h.followUseCase.GetFollowing(c.Request().Context(), followerUsername, cursor, req.Limit)
 	if err != nil {
 		h.log.Error(c.Request().Context(), "GetFollowing failed", "follower", followerUsername, "error", err)
 		return err
 	}
 
-	res := make([]dto.FollowingResponse, 0, len(following))
-	for _, f := range following {
+	res := make([]dto.FollowingResponse, 0, len(following.Data))
+	for _, f := range following.Data {
 		res = append(res, toFollowingResponse(f))
 	}
 
 	h.log.Info(c.Request().Context(), "GetFollowing succeeded", "follower", followerUsername, "count", len(res))
-	return c.JSON(http.StatusOK, res)
+	nextCursor := ""
+	if following.NextCursor != nil {
+		nextCursor = following.NextCursor.Encode()
+	}
+	return c.JSON(http.StatusOK, dto.FollowingListResponse{Data: res, NextCursor: nextCursor, HasMore: following.HasMore})
 }
 
 // GetFollowers handles the GET /users/:username/followers endpoint.
@@ -362,9 +383,9 @@ func (h *UserHandler) GetFollowing(c echo.Context) error {
 //	@Tags			users
 //	@Accept			json
 //	@Produce		json
-//	@Param			limit	query		int	false	"Limit for pagination"
-//	@Param			offset	query		int	false	"Offset for pagination"
-//	@Success		200		{array}		dto.FollowerResponse
+//	@Param			cursor	query		string	false	"Pagination cursor from the previous response"
+//	@Param			limit	query		int		false	"Items per page (1-100, default 10)"
+//	@Success		200		{object}	dto.FollowersListResponse
 //	@Failure		400		{object}	dto.ProblemDetail
 //	@Failure		401		{object}	dto.ProblemDetail
 //	@Failure		500		{object}	dto.ProblemDetail
@@ -382,25 +403,46 @@ func (h *UserHandler) GetFollowers(c echo.Context) error {
 		h.log.Error(c.Request().Context(), "GetFollowers failed", "error", "Invalid query parameters")
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid query parameters")
 	}
+	if limitStr := c.QueryParam("limit"); limitStr != "" {
+		limit, err := strconv.Atoi(limitStr)
+		if err != nil || limit < 1 || limit > 100 {
+			return echo.ErrBadRequest
+		}
+		req.Limit = limit
+	} else {
+		req.Limit = 10
+	}
 
 	if err := h.validator.Validate(req); err != nil {
 		h.log.Error(c.Request().Context(), "GetFollowers failed", "validation_error", err)
 		return err
 	}
 
-	followers, err := h.followUseCase.GetFollowers(c.Request().Context(), followedUsername, req.Limit, req.Offset)
+	var cursor *vo.Cursor
+	if req.Cursor != "" {
+		decoded, err := vo.DecodeCursor(req.Cursor)
+		if err != nil {
+			return domain.ErrInvalidCursor
+		}
+		cursor = &decoded
+	}
+	followers, err := h.followUseCase.GetFollowers(c.Request().Context(), followedUsername, cursor, req.Limit)
 	if err != nil {
 		h.log.Error(c.Request().Context(), "GetFollowers failed", "followed", followedUsername, "error", err)
 		return err
 	}
 
-	res := make([]dto.FollowerResponse, 0, len(followers))
-	for _, f := range followers {
+	res := make([]dto.FollowerResponse, 0, len(followers.Data))
+	for _, f := range followers.Data {
 		res = append(res, toFollowerResponse(f))
 	}
 
 	h.log.Info(c.Request().Context(), "GetFollowers succeeded", "followed", followedUsername, "count", len(res))
-	return c.JSON(http.StatusOK, res)
+	nextCursor := ""
+	if followers.NextCursor != nil {
+		nextCursor = followers.NextCursor.Encode()
+	}
+	return c.JSON(http.StatusOK, dto.FollowersListResponse{Data: res, NextCursor: nextCursor, HasMore: followers.HasMore})
 }
 
 func toFollowingResponse(f domain.Following) dto.FollowingResponse {
@@ -450,7 +492,13 @@ func (h *UserHandler) SearchUsers(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid query parameters")
 	}
 
-	if req.Limit == 0 {
+	if limitStr := c.QueryParam("limit"); limitStr != "" {
+		limit, err := strconv.Atoi(limitStr)
+		if err != nil || limit < 1 || limit > 20 {
+			return echo.ErrBadRequest
+		}
+		req.Limit = limit
+	} else {
 		req.Limit = 10
 	}
 
@@ -499,9 +547,9 @@ func (h *UserHandler) SearchUsers(c echo.Context) error {
 //	@Tags			users
 //	@Produce		json
 //	@Param			username	path		string	true	"Username"
-//	@Param			limit		query		int		false	"Limit"
-//	@Param			offset		query		int		false	"Offset"
-//	@Success		200			{array}		dto.PostResponse
+//	@Param			cursor		query		string	false	"Pagination cursor from the previous response"
+//	@Param			limit		query		int		false	"Items per page (1-100, default 10)"
+//	@Success		200			{object}	dto.PostsListResponse
 //	@Failure		400			{object}	dto.ProblemDetail
 //	@Failure		500			{object}	dto.ProblemDetail
 //	@Router			/users/{username}/posts [get]
@@ -513,21 +561,31 @@ func (h *UserHandler) GetUserPosts(c echo.Context) error {
 		return echo.ErrBadRequest
 	}
 
-	limit, _ := strconv.Atoi(c.QueryParam("limit"))
-	offset, _ := strconv.Atoi(c.QueryParam("offset"))
-
-	if limit == 0 {
-		limit = 10 // default limit
+	limit := 10
+	if limitStr := c.QueryParam("limit"); limitStr != "" {
+		parsed, err := strconv.Atoi(limitStr)
+		if err != nil || parsed < 1 || parsed > 100 {
+			return echo.ErrBadRequest
+		}
+		limit = parsed
+	}
+	var cursor *vo.Cursor
+	if cursorStr := c.QueryParam("cursor"); cursorStr != "" {
+		decoded, err := vo.DecodeCursor(cursorStr)
+		if err != nil {
+			return domain.ErrInvalidCursor
+		}
+		cursor = &decoded
 	}
 
-	posts, err := h.postUseCase.GetPosts(c.Request().Context(), username, limit, offset)
+	posts, err := h.postUseCase.GetPosts(c.Request().Context(), username, cursor, limit)
 	if err != nil {
 		h.log.Error(c.Request().Context(), "GetUserPosts failed", "username", username, "error", err)
 		return err
 	}
 
-	response := make([]dto.PostResponse, 0, len(posts))
-	for _, p := range posts {
+	response := make([]dto.PostResponse, 0, len(posts.Posts))
+	for _, p := range posts.Posts {
 		response = append(response, dto.PostResponse{
 			ID:        p.ID,
 			Title:     p.Title,
@@ -540,7 +598,11 @@ func (h *UserHandler) GetUserPosts(c echo.Context) error {
 	}
 
 	h.log.Info(c.Request().Context(), "GetUserPosts succeeded", "username", username, "count", len(response))
-	return c.JSON(http.StatusOK, response)
+	nextCursor := ""
+	if posts.NextCursor != nil {
+		nextCursor = posts.NextCursor.Encode()
+	}
+	return c.JSON(http.StatusOK, dto.PostsListResponse{Data: response, NextCursor: nextCursor, HasMore: posts.HasMore})
 }
 
 // HandleChangePassword handles the PUT /users/password endpoint.

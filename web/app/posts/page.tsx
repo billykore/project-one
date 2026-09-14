@@ -9,8 +9,8 @@ import SiteFooter from "@/components/layout/site-footer";
 async function getPosts() {
   try {
     const res = await serverFetch("/api/posts");
-    const posts = await handleApiResponse<Post[]>(res);
-    return Array.isArray(posts) ? posts : [];
+    const page = await handleApiResponse<{ data: Post[] }>(res);
+    return page.data ?? [];
   } catch (err) {
     if (err instanceof ApiError && err.status === 401) {
       redirect("/login");
