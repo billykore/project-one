@@ -1,4 +1,4 @@
-.PHONY: build run test test-cover mock vet lint clean docs docker-build help migrate-create migrate-up migrate-down check githooks compose-up compose-down compose-start compose-stop seed-users seed-deps
+.PHONY: build run test test-cover mock vet lint clean docs docker-build help migrate-create migrate-up migrate-down check githooks compose-up compose-down compose-start compose-stop seed-users seed-posts seed-deps
 
 COMPOSE_FILE := deployments/compose.yml
 
@@ -92,10 +92,10 @@ docs:
 	swag fmt
 	swag init -g cmd/main.go -o api/swagger
 
-## migrate-create: Create a new migration file (e.g., make migrate-create name=create_users_table)
-migrate-create:
+## migration-create: Create a new migration file (e.g., make migration-create name=create_users_table)
+migration-create:
 	@command -v migrate >/dev/null 2>&1 || { echo "Error: 'migrate' command not found." >&2; exit 1; }
-	@if [ -z "$(name)" ]; then echo "Error: Name is required. Example: make migrate-create name=create_users_table" >&2; exit 1; fi
+	@if [ -z "$(name)" ]; then echo "Error: Name is required. Example: make migration-create name=create_users_table" >&2; exit 1; fi
 	migrate create -ext sql -dir db/migrations -seq $(name)
 
 ## migrate-up: Run migrations up (e.g., make migrate-up dsn="postgres://user:pass@host:port/db?sslmode=disable")
@@ -122,6 +122,15 @@ seed-users: seed-deps
 		DATABASE_URL="$(dsn)" python3 $(SEED_SCRIPT); \
 	else \
 		python3 $(SEED_SCRIPT); \
+	fi
+
+## seed-posts: Generate 100,000 post seeds using Python script (e.g., make seed-posts dsn="postgres://user:pass@host:port/db?sslmode=disable")
+seed-posts: seed-deps
+	@command -v python3 >/dev/null 2>&1 || { echo "Error: 'python3' command not found." >&2; exit 1; }
+	@if [ -n "$(dsn)" ]; then \
+		DATABASE_URL="$(dsn)" python3 db/seeds/posts_seed.py; \
+	else \
+		python3 db/seeds/posts_seed.py; \
 	fi
 
 ## compose-up: Start containers (docker compose up -d)

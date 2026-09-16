@@ -120,7 +120,7 @@ See [deployments/README.md](deployments/README.md) for service configuration, li
 - PostgreSQL and RabbitMQ
 - OpenSSL
 - Optional command-line tools: `migrate`, `swag`, and `golangci-lint`
-- Python 3 and pip only when using the user seed command
+- Python 3 and pip only when using the seed commands
 
 ### Backend
 
@@ -178,6 +178,7 @@ See [web/README.md](web/README.md) for frontend routes, rendering boundaries, AP
 | `make migrate-up dsn=...` | Apply migrations; optionally pass `steps=N` |
 | `make migrate-down dsn=...` | Revert migrations; optionally pass `steps=N` |
 | `make seed-users dsn=...` | Install seed dependencies and insert 20 generated users |
+| `make seed-posts dsn=...` | Install seed dependencies and insert 100,000 generated posts |
 | `make compose-up` | Build and start the Compose stack |
 | `make compose-down` | Stop the stack and remove its containers and network |
 | `make compose-start` | Start existing stopped Compose containers |
@@ -185,7 +186,7 @@ See [web/README.md](web/README.md) for frontend routes, rendering boundaries, AP
 | `make githooks` | Activate the repository's local Git hooks |
 | `make clean` | Remove backend build artifacts |
 
-The seed command uses the provided DSN as `DATABASE_URL`. Without one, the script falls back to `postgresql://postgres:postgres@localhost:5432/my_go_db`. Seeded rows contain generated fixture data and are intended for development datasets.
+The seed commands use the provided DSN as `DATABASE_URL`. Without one, the scripts fall back to `postgresql://postgres:postgres@localhost:5432/my_go_db`. Seeded rows contain generated fixture data and are intended for development datasets. Set `POST_COUNT` or `BATCH_SIZE` to override the post seeder defaults.
 
 Frontend checks run from `web/`:
 
