@@ -5,7 +5,7 @@ All notable changes to Project One are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.2.0] - 2026-09-18
+## [3.2.0] - 2026-09-18 (82c3fa4)
 
 ### Added
 
@@ -20,7 +20,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Standardized API response handling across posts, users, followers, following, and notifications, including cursor-paginated response types and forwarded query parameters in frontend proxy routes.
 - Updated Swagger definitions, the Postman collection, and API test-case documentation to match the new response structures.
 
-## [3.1.0] - 2026-09-12
+## [3.1.0] - 2026-09-12 (a48663a)
 
 ### Changed
 
@@ -29,7 +29,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Standardized Docker image tags on the first seven characters of the commit hash.
 - Create CHANGELOG.md
 
-## [3.0.0] - 2026-09-08
+## [3.0.0] - 2026-09-08 (775a29e)
 
 ### Added
 
@@ -42,7 +42,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Added a Docker image build target that tags images with the commit hash.
 - Switched the Docker runtime image to Alpine and updated deployment documentation.
 
-## [2.2.0] - 2026-08-26
+## [2.2.0] - 2026-08-26 (41bda8d)
 
 ### Added
 
@@ -55,7 +55,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Refactored authenticated-user context handling across API handlers and services.
 - Updated the frontend styling with the new design system.
 
-## [2.1.0] - 2026-07-28
+## [2.1.0] - 2026-07-28 (1419d43)
 
 ### Added
 
@@ -66,7 +66,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 - Improved authentication redirects and added a session-expired message after a 401 response.
 
-## [2.0.0] - 2026-07-27
+## [2.0.0] - 2026-07-27 (8182eac)
 
 ### Added
 
@@ -79,7 +79,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Migrated frontend notification streaming from WebSocket to SSE.
 - Centralized API error handling and improved structured logging.
 
-## [1.1.0] - 2026-07-14
+## [1.1.0] - 2026-07-14 (b573169)
 
 ### Added
 
@@ -90,37 +90,37 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 - Consolidated error mapping and clarified production stack-trace behavior.
 
-## [1.0.0] - 2026-07-06
+## [1.0.0] - 2026-07-06 (cfa6e47)
 
 ### Added
 
 - Feeds homepage with the initial personal-feed experience.
 
-## [0.5.0] - 2026-06-17
+## [0.5.0] - 2026-06-17 (c3ac434)
 
 ### Added
 
 - Frontend notification system.
 
-## [0.4.0] - 2026-05-27
+## [0.4.0] - 2026-05-27 (5d01f41)
 
 ### Added
 
 - Comments, reactions, and post ownership controls.
 
-## [0.3.0] - 2026-05-15
+## [0.3.0] - 2026-05-15 (104c47c)
 
 ### Added
 
 - Social graph features and user profiles.
 
-## [0.2.0] - 2026-05-08
+## [0.2.0] - 2026-05-08 (72d06ae)
 
 ### Added
 
 - Post management and user post listings.
 
-## [0.1.0] - 2026-04-30
+## [0.1.0] - 2026-04-30 (f602a2f)
 
 ### Added
 
