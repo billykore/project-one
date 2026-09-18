@@ -1132,7 +1132,6 @@ paths:
       - notifications
   /posts:
     get:
-      description: Retrieve all posts for the authenticated user.
       parameters:
       - description: Pagination cursor from the previous response
         in: query
@@ -1165,7 +1164,6 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a new post for the authenticated user.
       parameters:
       - description: Post details
         in: body
@@ -1199,7 +1197,6 @@ paths:
       - posts
   /posts/{id}:
     delete:
-      description: Soft delete a post for the authenticated user.
       parameters:
       - description: Post ID
         in: path
@@ -1210,8 +1207,7 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/dto.PostResponse'
         "400":
           description: Bad Request
           schema:
@@ -1234,7 +1230,6 @@ paths:
       tags:
       - posts
     get:
-      description: Retrieve a specific post by its ID.
       parameters:
       - description: Post ID
         in: path
@@ -1266,7 +1261,6 @@ paths:
     put:
       consumes:
       - application/json
-      description: Update an existing post for the authenticated user.
       parameters:
       - description: Post ID
         in: path
@@ -1315,7 +1309,6 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a new comment on a post.
       parameters:
       - description: Post ID
         in: path
@@ -1357,7 +1350,6 @@ paths:
       - comments
   /posts/{id}/likes:
     delete:
-      description: Unlike a post idempotently.
       parameters:
       - description: Post ID
         in: path
@@ -1394,7 +1386,6 @@ paths:
       - posts
       - likes
     get:
-      description: Get the like count and the current user's like status for a post.
       parameters:
       - description: Post ID
         in: path
@@ -1431,7 +1422,6 @@ paths:
       - posts
       - likes
     post:
-      description: Like a post idempotently.
       parameters:
       - description: Post ID
         in: path

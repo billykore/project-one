@@ -427,6 +427,22 @@ def _generate_test_script(tc: dict, status, expected_response: str, body_str: st
             "}"
         )
 
+    # ---- Post ID extraction for comment requests that chain off a created post ----
+    is_create_post_endpoint = tc["method"] == "POST" and tc["endpoint"] == "/posts"
+    if (
+        is_create_post_endpoint
+        and is_positive_or_edge
+        and not is_contract_test
+        and str(status) == "201"
+    ):
+        parts.append(
+            "// Extract post id so later requests can chain off it\n"
+            "const created = pm.response.json();\n"
+            "if (created && created.id) {\n"
+            '    pm.collectionVariables.set("post_id", created.id);\n'
+            "}"
+        )
+
     return "\n".join(parts)
 
 
@@ -485,6 +501,7 @@ def build_collection(test_cases: list[dict], swagger_index: dict) -> dict:
             {"key": "token", "value": ""},
             {"key": "test_email", "value": "geralt@gmail.com"},
             {"key": "test_password", "value": "p@ssw0Rd"},
+            {"key": "post_id", "value": ""},
         ],
         "item": [],
     }

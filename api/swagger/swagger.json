@@ -859,7 +859,6 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Retrieve all posts for the authenticated user.",
                 "produces": [
                     "application/json"
                 ],
@@ -908,7 +907,6 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Create a new post for the authenticated user.",
                 "consumes": [
                     "application/json"
                 ],
@@ -960,7 +958,6 @@
         },
         "/posts/{id}": {
             "get": {
-                "description": "Retrieve a specific post by its ID.",
                 "produces": [
                     "application/json"
                 ],
@@ -1010,7 +1007,6 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Update an existing post for the authenticated user.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1084,7 +1080,6 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Soft delete a post for the authenticated user.",
                 "tags": [
                     "posts"
                 ],
@@ -1102,8 +1097,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/dto.PostResponse"
                         }
                     },
                     "400": {
@@ -1140,7 +1134,6 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Create a new comment on a post.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1208,7 +1201,6 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get the like count and the current user's like status for a post.",
                 "produces": [
                     "application/json"
                 ],
@@ -1265,7 +1257,6 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Like a post idempotently.",
                 "produces": [
                     "application/json"
                 ],
@@ -1322,7 +1313,6 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Unlike a post idempotently.",
                 "produces": [
                     "application/json"
                 ],

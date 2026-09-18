@@ -17,7 +17,7 @@ func TestFeedUseCase_GetFeed_ReturnsPostsForUserAndFollowed(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	postRepo := mocks.NewMockPostRepository(ctrl)
+	postRepo := mocks.NewMockPostQueryRepository(ctrl)
 	followRepo := mocks.NewMockFollowRepository(ctrl)
 	userRepo := mocks.NewMockUserRepository(ctrl)
 	logger := mocks.NewMockLogger(ctrl)
@@ -57,7 +57,7 @@ func TestFeedUseCase_GetFeed_DetectsHasMore(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	postRepo := mocks.NewMockPostRepository(ctrl)
+	postRepo := mocks.NewMockPostQueryRepository(ctrl)
 	followRepo := mocks.NewMockFollowRepository(ctrl)
 	userRepo := mocks.NewMockUserRepository(ctrl)
 	logger := mocks.NewMockLogger(ctrl)
@@ -102,7 +102,7 @@ func TestFeedUseCase_GetFeed_UserNotFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	postRepo := mocks.NewMockPostRepository(ctrl)
+	postRepo := mocks.NewMockPostQueryRepository(ctrl)
 	followRepo := mocks.NewMockFollowRepository(ctrl)
 	userRepo := mocks.NewMockUserRepository(ctrl)
 	logger := mocks.NewMockLogger(ctrl)
@@ -124,7 +124,7 @@ func TestFeedUseCase_GetFeed_EmptyFeed(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	postRepo := mocks.NewMockPostRepository(ctrl)
+	postRepo := mocks.NewMockPostQueryRepository(ctrl)
 	followRepo := mocks.NewMockFollowRepository(ctrl)
 	userRepo := mocks.NewMockUserRepository(ctrl)
 	logger := mocks.NewMockLogger(ctrl)
@@ -153,7 +153,7 @@ func TestFeedUseCase_GetFeed_WithCursor(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	postRepo := mocks.NewMockPostRepository(ctrl)
+	postRepo := mocks.NewMockPostQueryRepository(ctrl)
 	followRepo := mocks.NewMockFollowRepository(ctrl)
 	userRepo := mocks.NewMockUserRepository(ctrl)
 	logger := mocks.NewMockLogger(ctrl)
@@ -190,7 +190,7 @@ func TestFeedUseCase_GetFeed_ClampsLimit(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	postRepo := mocks.NewMockPostRepository(ctrl)
+	postRepo := mocks.NewMockPostQueryRepository(ctrl)
 	followRepo := mocks.NewMockFollowRepository(ctrl)
 	userRepo := mocks.NewMockUserRepository(ctrl)
 	logger := mocks.NewMockLogger(ctrl)

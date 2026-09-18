@@ -865,7 +865,6 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Retrieve all posts for the authenticated user.",
                 "produces": [
                     "application/json"
                 ],
@@ -914,7 +913,6 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Create a new post for the authenticated user.",
                 "consumes": [
                     "application/json"
                 ],
@@ -966,7 +964,6 @@ const docTemplate = `{
         },
         "/posts/{id}": {
             "get": {
-                "description": "Retrieve a specific post by its ID.",
                 "produces": [
                     "application/json"
                 ],
@@ -1016,7 +1013,6 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Update an existing post for the authenticated user.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1090,7 +1086,6 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Soft delete a post for the authenticated user.",
                 "tags": [
                     "posts"
                 ],
@@ -1108,8 +1103,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/dto.PostResponse"
                         }
                     },
                     "400": {
@@ -1146,7 +1140,6 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Create a new comment on a post.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1214,7 +1207,6 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get the like count and the current user's like status for a post.",
                 "produces": [
                     "application/json"
                 ],
@@ -1271,7 +1263,6 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Like a post idempotently.",
                 "produces": [
                     "application/json"
                 ],
@@ -1328,7 +1319,6 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Unlike a post idempotently.",
                 "produces": [
                     "application/json"
                 ],

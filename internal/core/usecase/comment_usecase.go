@@ -13,7 +13,7 @@ import (
 
 type commentUseCase struct {
 	commentRepo ports.CommentRepository
-	postRepo    ports.PostRepository
+	postRepo    ports.PostCommandRepository
 	userRepo    ports.UserRepository
 	publisher   ports.Publisher
 }
@@ -21,7 +21,7 @@ type commentUseCase struct {
 // NewCommentUseCase creates a new instance of ports.CommentUseCase.
 func NewCommentUseCase(
 	commentRepo ports.CommentRepository,
-	postRepo ports.PostRepository,
+	postRepo ports.PostCommandRepository,
 	userRepo ports.UserRepository,
 	publisher ports.Publisher,
 ) ports.CommentUseCase {
@@ -49,7 +49,7 @@ func (uc *commentUseCase) AddComment(ctx context.Context, postID int, username s
 	}
 
 	// 2. Verify post exists
-	post, err := uc.postRepo.GetByIDOnly(ctx, postID)
+	post, err := uc.postRepo.Load(ctx, postID)
 	if err != nil {
 		return fmt.Errorf("failed to fetch post for comment: %w", err)
 	}

@@ -18,7 +18,7 @@ func TestCommentUseCase_AddComment(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockCommentRepo := mocks.NewMockCommentRepository(ctrl)
-	mockPostRepo := mocks.NewMockPostRepository(ctrl)
+	mockPostRepo := mocks.NewMockPostCommandRepository(ctrl)
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
 	mockPublisher := mocks.NewMockPublisher(ctrl)
 
@@ -31,7 +31,7 @@ func TestCommentUseCase_AddComment(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		mockPostRepo.EXPECT().
-			GetByIDOnly(ctx, int(postID)).
+			Load(ctx, int(postID)).
 			Return(&domain.Post{ID: int(postID), Username: "postowner"}, nil)
 
 		mockCommentRepo.EXPECT().
@@ -66,7 +66,7 @@ func TestCommentUseCase_AddComment(t *testing.T) {
 
 	t.Run("post not found", func(t *testing.T) {
 		mockPostRepo.EXPECT().
-			GetByIDOnly(ctx, int(postID)).
+			Load(ctx, int(postID)).
 			Return(nil, domain.ErrPostNotFound)
 
 		err := svc.AddComment(ctx, postID, username, content)
@@ -76,7 +76,7 @@ func TestCommentUseCase_AddComment(t *testing.T) {
 
 	t.Run("repository error on create", func(t *testing.T) {
 		mockPostRepo.EXPECT().
-			GetByIDOnly(ctx, int(postID)).
+			Load(ctx, int(postID)).
 			Return(&domain.Post{ID: int(postID)}, nil)
 
 		mockCommentRepo.EXPECT().
@@ -94,7 +94,7 @@ func TestCommentUseCase_GetCommentsByPostID(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockCommentRepo := mocks.NewMockCommentRepository(ctrl)
-	mockPostRepo := mocks.NewMockPostRepository(ctrl)
+	mockPostRepo := mocks.NewMockPostCommandRepository(ctrl)
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
 	mockPublisher := mocks.NewMockPublisher(ctrl)
 
@@ -130,7 +130,7 @@ func TestCommentUseCase_EditComment(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockCommentRepo := mocks.NewMockCommentRepository(ctrl)
-	mockPostRepo := mocks.NewMockPostRepository(ctrl)
+	mockPostRepo := mocks.NewMockPostCommandRepository(ctrl)
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
 	mockPublisher := mocks.NewMockPublisher(ctrl)
 
@@ -254,7 +254,7 @@ func TestCommentUseCase_DeleteComment(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockCommentRepo := mocks.NewMockCommentRepository(ctrl)
-	mockPostRepo := mocks.NewMockPostRepository(ctrl)
+	mockPostRepo := mocks.NewMockPostCommandRepository(ctrl)
 	mockUserRepo := mocks.NewMockUserRepository(ctrl)
 	mockPublisher := mocks.NewMockPublisher(ctrl)
 

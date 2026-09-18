@@ -20,6 +20,10 @@
     {
       "key": "test_password",
       "value": "p@ssw0Rd"
+    },
+    {
+      "key": "post_id",
+      "value": ""
     }
   ],
   "item": [
@@ -2326,7 +2330,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"id\");\n    pm.expect(r.id).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"message\");\n});"
+                  "pm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"id\");\n    pm.expect(r.id).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"message\");\n});\n// Extract post id so later requests can chain off it\nconst created = pm.response.json();\nif (created && created.id) {\n    pm.collectionVariables.set(\"post_id\", created.id);\n}"
                 ],
                 "type": "text/javascript"
               }
@@ -2467,7 +2471,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"id\");\n    pm.expect(r.id).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"message\");\n});"
+                  "pm.test(\"Status code is 201\", function () {\n    pm.response.to.have.status(201);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"id\");\n    pm.expect(r.id).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"message\");\n});\n// Extract post id so later requests can chain off it\nconst created = pm.response.json();\nif (created && created.id) {\n    pm.collectionVariables.set(\"post_id\", created.id);\n}"
                 ],
                 "type": "text/javascript"
               }
@@ -2788,7 +2792,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is valid object\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.be.an(\"object\");\n});"
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"id\");\n    pm.expect(r.id).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"message\");\n});"
                 ],
                 "type": "text/javascript"
               }
@@ -2965,7 +2969,7 @@
           ]
         },
         {
-          "name": "TC-POST-DEL-006 - Validate response schema (200 is object)",
+          "name": "TC-POST-DEL-006 - Validate response schema matches PostResponse",
           "request": {
             "method": "DELETE",
             "header": [
@@ -3001,7 +3005,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response is valid object\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.be.an(\"object\");\n});"
+                  "pm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\npm.test(\"Response time is less than 1000ms\", function () {\n    pm.expect(pm.response.responseTime).to.be.below(1000);\n});\npm.test(\"Response matches expected schema\", function () {\n    const r = pm.response.json();\n    pm.expect(r).to.have.property(\"id\");\n    pm.expect(r.id).to.be.a(\"number\");\n    pm.expect(r).to.have.property(\"message\");\n    pm.expect(r.message).to.be.a(\"string\");\n});"
                 ],
                 "type": "text/javascript"
               }

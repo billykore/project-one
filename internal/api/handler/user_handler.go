@@ -17,7 +17,7 @@ type UserHandler struct {
 	userUseCase   ports.UserUseCase
 	loginUseCase  ports.LoginUseCase
 	followUseCase ports.FollowUseCase
-	postUseCase   ports.PostUseCase
+	postUseCase   ports.PostQueryUseCase
 	validator     ports.Validator
 	log           ports.Logger
 }
@@ -27,7 +27,7 @@ func NewUserHandler(
 	userUseCase ports.UserUseCase,
 	loginUseCase ports.LoginUseCase,
 	followUseCase ports.FollowUseCase,
-	postUseCase ports.PostUseCase,
+	postUseCase ports.PostQueryUseCase,
 	validator ports.Validator,
 	log ports.Logger,
 ) *UserHandler {
@@ -578,14 +578,14 @@ func (h *UserHandler) GetUserPosts(c echo.Context) error {
 		cursor = &decoded
 	}
 
-	posts, err := h.postUseCase.GetPosts(c.Request().Context(), username, cursor, limit)
+	posts, nextCursor, hasMore, err := h.postUseCase.GetPosts(c.Request().Context(), username, cursor, limit)
 	if err != nil {
 		h.log.Error(c.Request().Context(), "GetUserPosts failed", "username", username, "error", err)
 		return err
 	}
 
-	response := make([]dto.PostResponse, 0, len(posts.Posts))
-	for _, p := range posts.Posts {
+	response := make([]dto.PostResponse, 0, len(posts))
+	for _, p := range posts {
 		response = append(response, dto.PostResponse{
 			ID:        p.ID,
 			Title:     p.Title,
@@ -598,11 +598,11 @@ func (h *UserHandler) GetUserPosts(c echo.Context) error {
 	}
 
 	h.log.Info(c.Request().Context(), "GetUserPosts succeeded", "username", username, "count", len(response))
-	nextCursor := ""
-	if posts.NextCursor != nil {
-		nextCursor = posts.NextCursor.Encode()
+	nextCursorValue := ""
+	if nextCursor != nil {
+		nextCursorValue = nextCursor.Encode()
 	}
-	return c.JSON(http.StatusOK, dto.PostsListResponse{Data: response, NextCursor: nextCursor, HasMore: posts.HasMore})
+	return c.JSON(http.StatusOK, dto.PostsListResponse{Data: response, NextCursor: nextCursorValue, HasMore: hasMore})
 }
 
 // HandleChangePassword handles the PUT /users/password endpoint.

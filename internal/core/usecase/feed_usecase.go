@@ -10,7 +10,7 @@ import (
 )
 
 type feedUseCase struct {
-	postRepo   ports.PostRepository
+	postRepo   ports.PostQueryRepository
 	followRepo ports.FollowRepository
 	userRepo   ports.UserRepository
 	log        ports.Logger
@@ -18,7 +18,7 @@ type feedUseCase struct {
 
 // NewFeedUseCase creates a new instance of FeedUseCase.
 func NewFeedUseCase(
-	postRepo ports.PostRepository,
+	postRepo ports.PostQueryRepository,
 	followRepo ports.FollowRepository,
 	userRepo ports.UserRepository,
 	log ports.Logger,
