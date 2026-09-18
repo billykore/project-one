@@ -125,7 +125,8 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 	userRepo := repository.NewUserRepository(db)
 	userSearchRepo := repository.NewUserSearchRepository(db)
 	userTokenRepo := repository.NewUserTokenRepository(db)
-	postRepo := repository.NewPostRepository(db)
+	postCommandRepo := repository.NewPostCommandRepository(db)
+	postQueryRepo := repository.NewPostQueryRepository(db)
 	featureFlagRepo := repository.NewFeatureFlagRepository(db)
 	followRepo := repository.NewFollowRepository(db)
 	commentRepo := repository.NewCommentRepository(db)
@@ -148,14 +149,16 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 	}
 	featureFlagEvaluator.StartRefreshLoop(context.Background())
 	featureFlagUc := usecase.NewFeatureFlagUseCase(featureFlagRepo, featureFlagEvaluator, lgr)
-	postUc := usecase.NewPostUseCase(postRepo, likeRepo, userRepo, publisher, lgr, featureFlagEvaluator)
+	postCommandUc := usecase.NewPostCommandUseCase(postCommandRepo, likeRepo, userRepo, publisher, lgr, featureFlagEvaluator)
+	postQueryUc := usecase.NewPostQueryUseCase(postQueryRepo, likeRepo, lgr)
 	followUc := usecase.NewFollowUseCase(followRepo, userRepo, publisher, lgr)
-	commentUc := usecase.NewCommentUseCase(commentRepo, postRepo, userRepo, publisher)
+	commentUc := usecase.NewCommentUseCase(commentRepo, postCommandRepo, userRepo, publisher)
 	notificationUc := usecase.NewNotificationUseCase(notificationRepo, userRepo, lgr)
-	feedUc := usecase.NewFeedUseCase(postRepo, followRepo, userRepo, lgr)
+	feedUc := usecase.NewFeedUseCase(postQueryRepo, followRepo, userRepo, lgr)
 
-	userHdl := handler.NewUserHandler(userUc, loginUc, followUc, postUc, val, lgr)
-	postHdl := handler.NewPostHandler(postUc, commentUc, val, lgr)
+	userHdl := handler.NewUserHandler(userUc, loginUc, followUc, postQueryUc, val, lgr)
+	postCommandHdl := handler.NewPostCommandHandler(postCommandUc, commentUc, val, lgr)
+	postQueryHdl := handler.NewPostQueryHandler(postQueryUc, commentUc, lgr)
 	commentHdl := handler.NewCommentHandler(commentUc, val, lgr)
 	notificationHdl := handler.NewNotificationHandler(lgr, subscriber, notificationUc, userUc, val, sseManager)
 	feedHdl := handler.NewFeedHandler(feedUc, lgr)
@@ -171,7 +174,7 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 		e.GET("/swagger/*", echoSwagger.WrapHandler)
 	}
 
-	registerRoutes(e, tokenSvc, userHdl, postHdl, commentHdl, notificationHdl, feedHdl, featureFlagHdl, cfg.FeatureFlags.Operators, featureFlagEvaluator)
+	registerRoutes(e, tokenSvc, userHdl, postCommandHdl, postQueryHdl, commentHdl, notificationHdl, feedHdl, featureFlagHdl, cfg.FeatureFlags.Operators, featureFlagEvaluator)
 
 	return &application{
 		echo:                e,
@@ -187,7 +190,8 @@ func registerRoutes(
 	e *echo.Echo,
 	tokenSvc ports.TokenService,
 	userHdl *handler.UserHandler,
-	postHdl *handler.PostHandler,
+	postCommandHdl *handler.PostCommandHandler,
+	postQueryHdl *handler.PostQueryHandler,
 	commentHdl *handler.CommentHandler,
 	notificationHdl *handler.NotificationHandler,
 	feedHdl *handler.FeedHandler,
@@ -229,16 +233,16 @@ func registerRoutes(
 
 	e.GET("/feature-flags/evaluate", featureFlagHdl.Evaluate, middleware.OptionalAuthorize(tokenSvc))
 
-	e.GET("/posts/:id", postHdl.GetPostByID)
+	e.GET("/posts/:id", postQueryHdl.GetPostByID)
 	posts := e.Group("/posts", middleware.Authorize(tokenSvc))
-	posts.POST("", postHdl.CreatePost, middleware.FeatureFlagGate(featureFlagEvaluator, "post-creation"))
-	posts.GET("", postHdl.GetPosts)
-	posts.PUT("/:id", postHdl.UpdatePost)
-	posts.DELETE("/:id", postHdl.DeletePost)
-	posts.POST("/:id/comments", postHdl.CreateComment)
-	posts.POST("/:id/likes", postHdl.LikePost)
-	posts.DELETE("/:id/likes", postHdl.UnlikePost)
-	posts.GET("/:id/likes", postHdl.GetLikeStatus)
+	posts.POST("", postCommandHdl.CreatePost, middleware.FeatureFlagGate(featureFlagEvaluator, "post-creation"))
+	posts.GET("", postQueryHdl.GetPosts)
+	posts.PUT("/:id", postCommandHdl.UpdatePost)
+	posts.DELETE("/:id", postCommandHdl.DeletePost)
+	posts.POST("/:id/comments", postCommandHdl.CreateComment)
+	posts.POST("/:id/likes", postCommandHdl.LikePost)
+	posts.DELETE("/:id/likes", postCommandHdl.UnlikePost)
+	posts.GET("/:id/likes", postQueryHdl.GetLikeStatus)
 
 	comments := e.Group("/comments", middleware.Authorize(tokenSvc))
 	comments.PUT("/:id", commentHdl.EditComment)

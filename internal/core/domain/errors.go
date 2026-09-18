@@ -30,6 +30,8 @@ var (
 	ErrInvalidNotification = errors.New("invalid notification")
 	// ErrPostNotFound is returned when a post cannot be found in the system.
 	ErrPostNotFound = errors.New("post not found")
+	// ErrPostNotOwned is returned when a user tries to modify a post they do not own.
+	ErrPostNotOwned = errors.New("post not owned by user")
 	// ErrInvalidPost is returned when post data is invalid.
 	ErrInvalidPost = errors.New("invalid post data")
 	// ErrEmailAlreadyRegistered is returned when attempting to register an email that is already in use.

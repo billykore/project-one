@@ -7,43 +7,30 @@ import (
 	vo "github.com/billykore/project-one/internal/core/valueobject"
 )
 
-// PostRepository is a driven port for post persistence.
-type PostRepository interface {
-	// Create saves a new post to the repository.
-	Create(ctx context.Context, post *domain.Post) error
-	// GetByID retrieves a post by its ID.
-	GetByID(ctx context.Context, username string, id int) (*domain.Post, error)
-	// GetByIDOnly retrieves a post by its ID without checking owner.
-	GetByIDOnly(ctx context.Context, id int) (*domain.Post, error)
-	// GetUserPosts retrieves a page of posts for a specific user, newest first.
+// PostCommandRepository is the driven port for state-changing post commands.
+type PostCommandRepository interface {
+	// Load returns an aggregate root for a command to act on.
+	Load(ctx context.Context, id int) (*domain.Post, error)
+	// Save persists the aggregate root, whether new or modified.
+	Save(ctx context.Context, post *domain.Post) error
+	// Delete removes an aggregate root selected by application/domain logic.
+	Delete(ctx context.Context, post *domain.Post) error
+}
+
+// PostQueryRepository is the driven port for read-only post queries.
+type PostQueryRepository interface {
+	// GetByID retrieves a post by its identifier.
+	GetByID(ctx context.Context, id int) (*domain.Post, error)
+	// GetUserPosts retrieves a cursor-paginated page of posts for a user.
 	GetUserPosts(ctx context.Context, username string, cursor *vo.Cursor, limit int) ([]*domain.Post, error)
-	// Update updates an existing post in the repository.
-	Update(ctx context.Context, username string, post *domain.Post) error
-	// Delete removes a post from the repository.
-	Delete(ctx context.Context, username string, id int) error
-	// IncrementLikeCount increments or decrements the like count for a post.
-	IncrementLikeCount(ctx context.Context, id int, increment int) error
-	// GetFeed returns posts from the given usernames with cursor-based pagination.
-	// cursorCreatedAt and cursorID are the last post's values from the previous page.
-	// Pass zero values for the first page. limit is the max number of posts to return.
+	// GetFeed retrieves a cursor-paginated page of posts authored by the given users.
 	GetFeed(ctx context.Context, usernames []string, cursor *vo.Cursor, limit int) ([]*domain.Post, error)
 }
 
-// PostsPage is a cursor-paginated post result.
-type PostsPage struct {
-	Posts      []*domain.Post
-	NextCursor *vo.Cursor
-	HasMore    bool
-}
-
-// PostUseCase is a driving port for post-related application logic.
-type PostUseCase interface {
+// PostCommandUseCase is the driving port for state-changing post actions.
+type PostCommandUseCase interface {
 	// CreatePost creates a new post with the given details.
 	CreatePost(ctx context.Context, user *domain.User, title, content string, tags []string) (*domain.Post, error)
-	// GetPostByID retrieves a post by its ID.
-	GetPostByID(ctx context.Context, postID int) (*domain.Post, error)
-	// GetPosts retrieves a cursor-paginated page of posts for a specific user.
-	GetPosts(ctx context.Context, username string, cursor *vo.Cursor, limit int) (*PostsPage, error)
 	// UpdatePost updates an existing post for a specific user.
 	UpdatePost(ctx context.Context, username string, postID int, title, content string) (*domain.Post, error)
 	// DeletePost removes a post for a specific user.
@@ -52,6 +39,14 @@ type PostUseCase interface {
 	LikePost(ctx context.Context, postID int, username string) (likeCount int, err error)
 	// UnlikePost unlikes a post by the given username. If not liked, it behaves idempotently.
 	UnlikePost(ctx context.Context, postID int, username string) (likeCount int, err error)
-	// GetLikeStatus retrieves the like status and total like count for a given post ID and username.
+}
+
+// PostQueryUseCase is the driving port for read-only post actions.
+type PostQueryUseCase interface {
+	// GetPostByID retrieves a post by its identifier.
+	GetPostByID(ctx context.Context, postID int) (*domain.Post, error)
+	// GetPosts retrieves posts and cursor-pagination metadata for a user.
+	GetPosts(ctx context.Context, username string, cursor *vo.Cursor, limit int) (posts []*domain.Post, nextCursor *vo.Cursor, hasMore bool, err error)
+	// GetLikeStatus retrieves whether a user likes a post and its current like count.
 	GetLikeStatus(ctx context.Context, postID int, username string) (liked bool, likeCount int, err error)
 }

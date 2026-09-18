@@ -1,13 +1,7 @@
 package repository
 
 import (
-	"context"
-	"errors"
-	"fmt"
-
 	"github.com/billykore/project-one/internal/core/domain"
-	"github.com/billykore/project-one/internal/core/ports"
-	vo "github.com/billykore/project-one/internal/core/valueobject"
 	"github.com/lib/pq"
 	"gorm.io/gorm"
 )
@@ -22,159 +16,17 @@ type postModel struct {
 	LikeCount int            `gorm:"default:0"`
 }
 
-func (m *postModel) TableName() string {
-	return "posts"
-}
+func (m *postModel) TableName() string { return "posts" }
 
-func (m *postModel) fromDomain(p *domain.Post) {
-	m.UserID = p.UserID
-	m.Username = p.Username
-	m.Title = p.Title
-	m.Content = p.Content
-	m.Tags = pq.StringArray(p.Tags)
-	m.LikeCount = p.LikeCount
+func (m *postModel) fromDomain(post *domain.Post) {
+	m.UserID = post.UserID
+	m.Username = post.Username
+	m.Title = post.Title
+	m.Content = post.Content
+	m.Tags = pq.StringArray(post.Tags)
+	m.LikeCount = post.LikeCount
 }
 
 func (m *postModel) toDomain() *domain.Post {
-	return &domain.Post{
-		ID:        int(m.ID),
-		Username:  m.Username,
-		Title:     m.Title,
-		Content:   m.Content,
-		Tags:      []string(m.Tags),
-		LikeCount: m.LikeCount,
-		CreatedAt: m.CreatedAt,
-		UpdatedAt: m.UpdatedAt,
-	}
-}
-
-type postRepository struct {
-	db *gorm.DB
-}
-
-// NewPostRepository creates a new instance of PostRepository.
-func NewPostRepository(db *gorm.DB) ports.PostRepository {
-	return &postRepository{db: db}
-}
-
-func (r *postRepository) Create(ctx context.Context, post *domain.Post) error {
-	var m postModel
-	m.fromDomain(post)
-	if err := r.db.WithContext(ctx).Create(&m).Error; err != nil {
-		return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
-	}
-	post.ID = int(m.ID)
-	post.CreatedAt = m.CreatedAt
-	post.UpdatedAt = m.UpdatedAt
-	return nil
-}
-
-func (r *postRepository) GetByID(ctx context.Context, username string, id int) (*domain.Post, error) {
-	var m postModel
-	err := r.db.WithContext(ctx).
-		Where("username = ? AND id = ?", username, id).
-		First(&m).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, domain.ErrPostNotFound
-		}
-		return nil, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
-	}
-	return m.toDomain(), nil
-}
-
-func (r *postRepository) GetByIDOnly(ctx context.Context, id int) (*domain.Post, error) {
-	var m postModel
-	err := r.db.WithContext(ctx).First(&m, id).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, domain.ErrPostNotFound
-		}
-		return nil, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
-	}
-	return m.toDomain(), nil
-}
-
-func (r *postRepository) GetUserPosts(ctx context.Context, username string, cursor *vo.Cursor, limit int) ([]*domain.Post, error) {
-	var models []postModel
-	query := r.db.WithContext(ctx).
-		Where("username = ?", username).
-		Where("deleted_at IS NULL")
-
-	if cursor != nil && !cursor.CreatedAt.IsZero() && cursor.ID > 0 {
-		query = query.Where("(created_at, id) < (?, ?)", cursor.CreatedAt, cursor.ID)
-	}
-
-	if err := query.Order("created_at DESC, id DESC").Limit(limit).Find(&models).Error; err != nil {
-		return nil, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
-	}
-
-	posts := make([]*domain.Post, 0, len(models))
-	for _, m := range models {
-		posts = append(posts, m.toDomain())
-	}
-	return posts, nil
-}
-
-func (r *postRepository) Update(ctx context.Context, username string, post *domain.Post) error {
-	var m postModel
-	m.ID = uint(post.ID)
-	m.fromDomain(post)
-	err := r.db.WithContext(ctx).Model(&m).
-		Select("Title", "Content", "Tags").
-		Where("username = ? AND id = ?", username, post.ID).
-		Updates(&m).Error
-	if err != nil {
-		return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
-	}
-	post.UpdatedAt = m.UpdatedAt
-	return nil
-}
-
-func (r *postRepository) Delete(ctx context.Context, username string, id int) error {
-	if err := r.db.WithContext(ctx).Where("username = ? AND id = ?", username, id).Delete(&postModel{}).Error; err != nil {
-		return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
-	}
-	return nil
-}
-
-func (r *postRepository) IncrementLikeCount(ctx context.Context, id int, increment int) error {
-	err := r.db.WithContext(ctx).
-		Model(&postModel{}).
-		Where("id = ?", id).
-		UpdateColumn("like_count", gorm.Expr("like_count + ?", increment)).Error
-	if err != nil {
-		return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
-	}
-	return nil
-}
-
-func (r *postRepository) GetFeed(ctx context.Context, usernames []string, cursor *vo.Cursor, limit int) ([]*domain.Post, error) {
-	if len(usernames) == 0 {
-		return []*domain.Post{}, nil
-	}
-
-	query := r.db.WithContext(ctx).
-		Model(&postModel{}).
-		Where("username IN ?", usernames).
-		Where("deleted_at IS NULL")
-
-	if cursor != nil && !cursor.CreatedAt.IsZero() && cursor.ID > 0 {
-		query = query.Where("(created_at, id) < (?, ?)", cursor.CreatedAt, cursor.ID)
-	}
-
-	var models []postModel
-	err := query.
-		Order("created_at DESC, id DESC").
-		Limit(limit).
-		Find(&models).Error
-	if err != nil {
-		return nil, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
-	}
-
-	posts := make([]*domain.Post, 0, len(models))
-	for _, m := range models {
-		posts = append(posts, m.toDomain())
-	}
-	return posts, nil
+	return &domain.Post{ID: int(m.ID), UserID: m.UserID, Username: m.Username, Title: m.Title, Content: m.Content, Tags: []string(m.Tags), LikeCount: m.LikeCount, CreatedAt: m.CreatedAt, UpdatedAt: m.UpdatedAt}
 }
