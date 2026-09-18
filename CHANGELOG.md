@@ -5,6 +5,21 @@ All notable changes to Project One are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.0] - 2026-09-18
+
+### Added
+
+- Post CQRS specification, design artifacts, and a benchmark script for comparing post operation paths.
+- `seed-posts` command that generates bulk post data for development.
+- Playwright end-to-end login test, wired into the web CI workflow.
+- Cursor value-object tests and pagination repository coverage.
+
+### Changed
+
+- Split post operations into separate command and query paths (CQRS), replacing the single post use case, handler, and repository with dedicated command and query implementations.
+- Standardized API response handling across posts, users, followers, following, and notifications, including cursor-paginated response types and forwarded query parameters in frontend proxy routes.
+- Updated Swagger definitions, the Postman collection, and API test-case documentation to match the new response structures.
+
 ## [3.1.0] - 2026-09-12
 
 ### Changed
@@ -111,6 +126,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 - Full-stack authentication, including registration, login, logout, and session handling.
 
+[3.2.0]: https://github.com/billykore/project-one/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/billykore/project-one/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/billykore/project-one/compare/v2.2.0...v3.0.0
 [2.2.0]: https://github.com/billykore/project-one/compare/v2.1.0...v2.2.0
