@@ -36,3 +36,11 @@ type Subscriber interface {
 // Returning a non-nil error signals that the event was not processed successfully
 // and should be retried or dead-lettered depending on the implementation.
 type EventHandler func(ctx context.Context, event Event) error
+
+// HealthReporter reports the connection health of a message broker client.
+// Broker adapters implement this so readiness can be assessed without
+// publishing a synthetic event or dialing the broker again.
+type HealthReporter interface {
+	// Healthy reports whether the client currently holds a usable broker connection.
+	Healthy() bool
+}

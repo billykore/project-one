@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -15,6 +16,7 @@ type Config struct {
 	JWT           JWTConfig           `mapstructure:"jwt"`
 	MessageBroker MessageBrokerConfig `mapstructure:"message_broker"`
 	FeatureFlags  FeatureFlagsConfig  `mapstructure:"feature_flags"`
+	Monitoring    MonitoringConfig    `mapstructure:"monitoring"`
 }
 
 // AppConfig holds application-level settings.
@@ -77,6 +79,18 @@ type FeatureFlagsConfig struct {
 	Operators []string `mapstructure:"operators"`
 }
 
+// MonitoringConfig holds the dedicated machine credentials that Prometheus uses
+// to scrape /metrics. It is deliberately separate from user authentication.
+// Both fields are empty when scraping is not configured, and /metrics then
+// rejects every request rather than exposing measurements.
+type MonitoringConfig struct {
+	// Username is the fixed machine identity; it is not an application account.
+	Username string `mapstructure:"username"`
+	// PasswordFile is the path of the mounted secret holding the matching
+	// password. The secret content is never logged, returned, or committed.
+	PasswordFile string `mapstructure:"password_file"`
+}
+
 // ponytail: uses viper (already-installed dep). BindEnv needed so AutomaticEnv
 // knows which keys to check (it only looks up env vars for registered keys).
 func Load(path string) (*Config, error) {
@@ -116,6 +130,8 @@ func Load(path string) (*Config, error) {
 		"feature_flags.environment",
 		"feature_flags.refresh_interval",
 		"feature_flags.operators",
+		"monitoring.username",
+		"monitoring.password_file",
 	} {
 		_ = v.BindEnv(key)
 	}
@@ -152,6 +168,31 @@ func Load(path string) (*Config, error) {
 	if cfg.FeatureFlags.RefreshInterval <= 0 {
 		cfg.FeatureFlags.RefreshInterval = 30 * time.Second
 	}
+	if err := validateMonitoring(cfg.Monitoring); err != nil {
+		return nil, err
+	}
 
 	return &cfg, nil
+}
+
+// validateMonitoring fails fast when the monitoring credential is half
+// configured or points at a missing or empty secret file. Leaving both fields
+// empty is valid and disables metrics scraping.
+func validateMonitoring(monitoring MonitoringConfig) error {
+	if (monitoring.Username == "") != (monitoring.PasswordFile == "") {
+		return fmt.Errorf("monitoring username and password_file must be configured together")
+	}
+	if monitoring.PasswordFile == "" {
+		return nil
+	}
+
+	secret, err := os.ReadFile(monitoring.PasswordFile)
+	if err != nil {
+		return fmt.Errorf("failed to read monitoring password file: %w", err)
+	}
+	if strings.TrimSpace(string(secret)) == "" {
+		return fmt.Errorf("monitoring password file %s is empty", monitoring.PasswordFile)
+	}
+
+	return nil
 }

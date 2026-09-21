@@ -14,7 +14,9 @@ import (
 	"github.com/billykore/project-one/api/swagger"
 	featureflagadapter "github.com/billykore/project-one/internal/adapters/featureflag"
 	"github.com/billykore/project-one/internal/adapters/hasher"
+	healthadapter "github.com/billykore/project-one/internal/adapters/health"
 	"github.com/billykore/project-one/internal/adapters/logger"
+	metricsadapter "github.com/billykore/project-one/internal/adapters/metrics"
 	"github.com/billykore/project-one/internal/adapters/pubsub"
 	"github.com/billykore/project-one/internal/adapters/repository"
 	sseadapter "github.com/billykore/project-one/internal/adapters/sse"
@@ -164,7 +166,41 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 	feedHdl := handler.NewFeedHandler(feedUc, lgr)
 	featureFlagHdl := handler.NewFeatureFlagHandler(featureFlagUc, val, cfg.FeatureFlags.Environment)
 
+	sqlDB, err := db.DB()
+	if err != nil {
+		return nil, fmt.Errorf("failed to access database connection for health checks: %w", err)
+	}
+	// ponytail: the notification component reports the subscriber connection
+	// state, not the lazily-connecting publisher, so readiness is meaningful
+	// before the first publish.
+	healthCheckers := []ports.DependencyChecker{
+		healthadapter.NewDatabaseChecker(sqlDB),
+	}
+	if reporter, ok := subscriber.(ports.HealthReporter); ok {
+		healthCheckers = append(healthCheckers, healthadapter.NewNotificationChecker(cfg.MessageBroker.Type, reporter))
+	} else {
+		lgr.Warn(context.Background(), "message broker does not report connection health", "type", cfg.MessageBroker.Type)
+	}
+
+	// The metrics recorder is the health observer, so every readiness
+	// assessment keeps the readiness and dependency gauges current.
+	metricsRecorder := metricsadapter.NewPrometheus()
+
+	monitoringCredential, err := metricsadapter.LoadCredential(cfg.Monitoring.Username, cfg.Monitoring.PasswordFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load monitoring credentials: %w", err)
+	}
+	if monitoringCredential == nil {
+		lgr.Warn(context.Background(), "monitoring credentials are not configured; /metrics rejects every scrape")
+	}
+
+	healthUc := usecase.NewHealthUseCase(healthCheckers, metricsRecorder, 0, lgr)
+	healthHdl := handler.NewHealthHandler(healthUc, lgr)
+
 	e := echo.New()
+	// Registered first so every completed request, including recovered panics,
+	// is observed with the status the error handler will write.
+	e.Use(middleware.Metrics(metricsRecorder))
 	e.Use(echomiddleware.Recover())
 	e.Use(echomiddleware.RequestID())
 	e.Use(echomiddleware.RequestLogger())
@@ -174,7 +210,7 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 		e.GET("/swagger/*", echoSwagger.WrapHandler)
 	}
 
-	registerRoutes(e, tokenSvc, userHdl, postCommandHdl, postQueryHdl, commentHdl, notificationHdl, feedHdl, featureFlagHdl, cfg.FeatureFlags.Operators, featureFlagEvaluator)
+	registerRoutes(e, tokenSvc, userHdl, postCommandHdl, postQueryHdl, commentHdl, notificationHdl, feedHdl, featureFlagHdl, healthHdl, metricsRecorder.Handler(monitoringCredential), cfg.FeatureFlags.Operators, featureFlagEvaluator)
 
 	return &application{
 		echo:                e,
@@ -196,12 +232,16 @@ func registerRoutes(
 	notificationHdl *handler.NotificationHandler,
 	feedHdl *handler.FeedHandler,
 	featureFlagHdl *handler.FeatureFlagHandler,
+	healthHdl *handler.HealthHandler,
+	metricsHandler http.Handler,
 	featureFlagOperators []string,
 	featureFlagEvaluator ports.FeatureFlagEvaluator,
 ) {
-	e.GET("/status", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string]string{"status": "ok"})
-	})
+	// Liveness answers for the process only; readiness reports dependency state.
+	e.GET("/healthz", healthHdl.HandleLiveness)
+	e.GET("/status", healthHdl.HandleReadiness)
+
+	registerMetricsRoute(e, metricsHandler)
 
 	auth := e.Group("/auth")
 	auth.POST("/register", userHdl.HandleRegister)
@@ -256,6 +296,13 @@ func registerRoutes(
 
 	feeds := e.Group("/feeds", middleware.Authorize(tokenSvc))
 	feeds.GET("", feedHdl.HandleGetFeed)
+}
+
+// registerMetricsRoute mounts the authenticated Prometheus scrape handler on
+// the private Compose network path. It is intentionally absent from the public
+// API surface and from the Swagger contract.
+func registerMetricsRoute(e *echo.Echo, handler http.Handler) {
+	e.GET(middleware.SelfScrapeRoute, echo.WrapHandler(handler))
 }
 
 func (a *application) shutdown(ctx context.Context, lgr *logger.Logger) error {

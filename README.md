@@ -10,6 +10,8 @@ Project One is a full-stack social publishing application. It combines a Go/Echo
 - A cursor-paginated personal feed with infinite scrolling
 - Persistent follow, like, and comment notifications delivered live over SSE
 - RFC 9457 Problem Details error responses with request IDs
+- Separate liveness (`/healthz`) and readiness (`/status`) probes with per-dependency state
+- Bounded-label Prometheus metrics on an authenticated `/metrics` endpoint, plus a provisioned Grafana dashboard
 - Swagger/OpenAPI documentation and generated Postman API tests
 - Backend and frontend unit tests, linting, and CI workflows
 
@@ -21,6 +23,7 @@ Project One is a full-stack social publishing application. It combines a Go/Echo
 - Echo 4.15, GORM, and PostgreSQL
 - RabbitMQ for notification events; Kafka and in-memory adapters are also present
 - Viper configuration, `log/slog` structured logging, Validator v10, bcrypt, and JWT v5
+- Official Prometheus Go client with a dedicated registry, bounded labels, and standard Go/process collectors
 - Testify, GoMock, and Swaggo
 
 ### Frontend
@@ -79,7 +82,7 @@ flowchart LR
 
 ## Quick start with Docker Compose
 
-This starts PostgreSQL 17, RabbitMQ 4, the Go API, and the Next.js frontend. You need Docker with Compose and OpenSSL installed.
+This starts PostgreSQL 17, RabbitMQ 4, the Go API, the Next.js frontend, Prometheus, and Grafana. You need Docker with Compose and OpenSSL installed.
 
 1. Generate the local RSA key pair used to sign JWTs:
 
@@ -89,19 +92,30 @@ This starts PostgreSQL 17, RabbitMQ 4, the Go API, and the Next.js frontend. You
    openssl pkey -in configs/keys/jwt-private.pem -pubout -out configs/keys/jwt-public.pem
    ```
 
-2. Build and start the stack:
+2. Create the local monitoring secret and Grafana administrator password. Both are ignored by Git:
+
+   ```bash
+   mkdir -p deployments/observability/secrets
+   printf '%s' '<monitoring-password>' > deployments/observability/secrets/metrics-password
+   export GRAFANA_ADMIN_PASSWORD='<local-grafana-password>'
+   ```
+
+3. Build and start the stack:
 
    ```bash
    make compose-up
    ```
 
-3. Open the services:
+4. Open the services:
 
    - Frontend: <http://localhost:3000>
-   - API health check: <http://localhost:8080/status>
+   - Liveness probe: <http://localhost:8080/healthz>
+   - Readiness probe: <http://localhost:8080/status>
    - Swagger UI: <http://localhost:8080/swagger/index.html>
+   - Prometheus: <http://localhost:9090>
+   - Grafana (Project One Health dashboard): <http://localhost:3001>
 
-4. Stop the stack when finished:
+5. Stop the stack when finished:
 
    ```bash
    make compose-down
@@ -109,7 +123,19 @@ This starts PostgreSQL 17, RabbitMQ 4, the Go API, and the Next.js frontend. You
 
 On the first start of a new PostgreSQL volume, the container applies every `db/migrations/*.up.sql` file. For an existing volume, apply new migrations explicitly with `make migrate-up`; the initialization script does not rerun.
 
-See [deployments/README.md](deployments/README.md) for service configuration, lifecycle commands, and data-volume behavior.
+See [deployments/README.md](deployments/README.md) for service configuration, lifecycle commands, data-volume behavior, and the observability setup.
+
+## Health and metrics
+
+| Route | Authentication | Purpose |
+| :--- | :--- | :--- |
+| `/healthz` | None | Process liveness. Never contacts a dependency, so a starting instance is live before it is ready. |
+| `/status` | None | Readiness report for PostgreSQL and the notification subscriber. Returns `503` and identifies only the affected component when a required dependency is down, unknown, or cannot be assessed in time. |
+| `/metrics` | Monitoring credential | Prometheus text exposition of request counts, request duration, readiness, dependency state, and process start time. |
+
+`/healthz` and `/status` stay non-sensitive and unauthenticated so the deployment probe keeps working; `/metrics` requires the dedicated monitoring credential read from a deployment secret. Metrics carry only bounded labels: the HTTP method, the resolved route template, the status class, and the dependency name. No account identifier, token, session value, request body, query string, or raw dependency error is ever used as a label or returned in a health report.
+
+Set `MONITORING_USERNAME` and `MONITORING_PASSWORD_FILE` to enable scraping; when they are unset, `/metrics` rejects every request. Prometheus scrapes `backend:8080/metrics` and Grafana reads it through the provisioned datasource. Alert rules, long-term storage, tracing, and automated remediation are intentionally out of scope.
 
 ## Local development
 
@@ -145,6 +171,8 @@ See [deployments/README.md](deployments/README.md) for service configuration, li
    ```
 
 The configuration file path can be changed with `make run config=/path/to/config-dir`. Bound settings can also be overridden by uppercase, underscore-separated environment variables—for example, `DATABASE_HOST`, `JWT_PRIVATE_KEY_PATH`, or `MESSAGE_BROKER_RABBITMQ_URL`.
+
+Scraping is optional locally: leave `monitoring.username` and `monitoring.password_file` unset and `/metrics` rejects every request. To enable it, set both (or `MONITORING_USERNAME` and `MONITORING_PASSWORD_FILE`) and point the password file at an existing, non-empty secret file. `configs/config.yaml.example` documents the keys.
 
 ### Frontend
 

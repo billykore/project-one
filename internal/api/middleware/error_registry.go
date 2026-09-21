@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/billykore/project-one/internal/core/domain"
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 )
 
@@ -79,4 +80,20 @@ func LookupError(err error) ErrorMapping {
 		}
 	}
 	return defaultMapping
+}
+
+// StatusForError resolves the HTTP status the ErrorHandler writes for err.
+// The metrics middleware shares this mapping so the observed status class
+// always matches the response the client actually receives.
+func StatusForError(err error) int {
+	if err == nil {
+		return http.StatusOK
+	}
+	if httpErr, ok := errors.AsType[*echo.HTTPError](err); ok {
+		return httpErr.Code
+	}
+	if _, isValidation := errors.AsType[validator.ValidationErrors](err); isValidation {
+		return http.StatusBadRequest
+	}
+	return LookupError(err).Status
 }

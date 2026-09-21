@@ -281,12 +281,54 @@ definitions:
       username:
         type: string
     type: object
+  dto.HealthComponentResponse:
+    properties:
+      checked_at:
+        description: CheckedAt is the RFC 3339 UTC time this component was assessed.
+        example: "2026-09-21T12:00:00Z"
+        type: string
+      name:
+        description: Name is the stable component name, e.g. "database" or "rabbitmq".
+        example: database
+        type: string
+      status:
+        description: Status is one of up, down, or unknown.
+        example: up
+        type: string
+    type: object
+  dto.HealthReportResponse:
+    properties:
+      checked_at:
+        description: CheckedAt is the RFC 3339 UTC time the assessment completed.
+        example: "2026-09-21T12:00:00Z"
+        type: string
+      components:
+        description: Components holds the state of every assessed dependency.
+        items:
+          $ref: '#/definitions/dto.HealthComponentResponse'
+        type: array
+      status:
+        description: Status is ready only when every required component is up.
+        example: ready
+        type: string
+    type: object
   dto.LikeResponse:
     properties:
       like_count:
         type: integer
       liked:
         type: boolean
+    type: object
+  dto.LivenessResponse:
+    properties:
+      checked_at:
+        description: CheckedAt is the RFC 3339 UTC time the probe ran.
+        example: "2026-09-21T12:00:00Z"
+        type: string
+      status:
+        description: Status is always "ok" while the process can respond.
+        example: ok
+        type: string
     type: object
   dto.LoginRequest:
     properties:
@@ -1012,6 +1054,20 @@ paths:
       summary: Get feed
       tags:
       - feeds
+  /healthz:
+    get:
+      description: Reports that the process can respond. It never contacts an external
+        dependency and is not a readiness signal.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.LivenessResponse'
+      summary: Liveness probe
+      tags:
+      - health
   /notifications:
     get:
       consumes:
@@ -1457,6 +1513,24 @@ paths:
       tags:
       - posts
       - likes
+  /status:
+    get:
+      description: Reports whether the application can serve normal user traffic,
+        plus the non-sensitive state and assessment time of every required dependency.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Assessment is ready
+          schema:
+            $ref: '#/definitions/dto.HealthReportResponse'
+        "503":
+          description: Assessment is not ready; the same report body is returned
+          schema:
+            $ref: '#/definitions/dto.HealthReportResponse'
+      summary: Readiness probe
+      tags:
+      - health
   /users/{username}:
     get:
       consumes:

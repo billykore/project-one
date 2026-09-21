@@ -66,6 +66,10 @@ services:
       MESSAGE_BROKER_RABBITMQ_URL: amqp://${RABBITMQ_USER:-project1}:${RABBITMQ_PASSWORD:-project1}@rabbitmq:5672/
       MESSAGE_BROKER_RABBITMQ_EXCHANGE: project1.notifications
       MESSAGE_BROKER_RABBITMQ_QUEUE: notifications
+      MONITORING_USERNAME: projectone-metrics
+      MONITORING_PASSWORD_FILE: /run/secrets/metrics-password
+    secrets:
+      - metrics-password
     volumes:
       - jwt-keys:/keys:ro
     depends_on:
@@ -80,6 +84,34 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v3.7.3
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      # The same mounted secret the backend reads, exposed to the scrape job.
+      - ./observability/secrets/metrics-password:/etc/prometheus/metrics-password:ro
+      - prometheus-data:/prometheus
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:12.2.0
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?set GRAFANA_ADMIN_PASSWORD before starting the observability stack}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
     restart: unless-stopped
 
   frontend:
@@ -99,3 +131,11 @@ volumes:
   postgres-data:
   rabbitmq-data:
   jwt-keys:
+  prometheus-data:
+  grafana-data:
+
+secrets:
+  # Local monitoring credential consumed by both the backend and the
+  # Prometheus scrape job. The file is ignored by version control.
+  metrics-password:
+    file: ./observability/secrets/metrics-password

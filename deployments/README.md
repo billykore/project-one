@@ -11,13 +11,16 @@
 | `keys` | `alpine:3.22` | None | Copies JWT keys into a protected shared volume |
 | `backend` | Root `Dockerfile` | `8080` | Go API and notification consumer; health-checked through `/status` |
 | `frontend` | `web/Dockerfile` | `3000` | Next.js standalone server |
+| `prometheus` | `prom/prometheus:v3.7.3` | `9090` | Scrapes the API `/metrics` endpoint and stores measurements |
+| `grafana` | `grafana/grafana:12.2.0` | `3001` | Serves the provisioned **Project One Health** dashboard |
 
-PostgreSQL, RabbitMQ, and the backend have health checks. The backend starts only after the database and broker are healthy and JWT key preparation has completed; the frontend starts after the backend container is created. The backend probe uses Alpine's built-in `wget` to request `/status`.
+PostgreSQL, RabbitMQ, and the backend have health checks. The backend starts only after the database and broker are healthy and JWT key preparation has completed; Prometheus starts after the backend container is created and Grafana after Prometheus. The frontend starts after the backend container is created. The backend probe uses Alpine's built-in `wget` to request `/status`.
 
 ## Prerequisites
 
 - Docker with Compose support
 - An RSA private/public key pair at `configs/keys/jwt-private.pem` and `configs/keys/jwt-public.pem`
+- A local monitoring password secret and a Grafana administrator password (see [Observability](#observability))
 
 Generate development keys from the repository root:
 
@@ -28,6 +31,54 @@ openssl pkey -in configs/keys/jwt-private.pem -pubout -out configs/keys/jwt-publ
 ```
 
 The key directory is ignored by Git. Do not commit private keys.
+
+## Observability
+
+### Monitoring secret
+
+The backend exposes bounded operational metrics on `/metrics`. Prometheus authenticates with a dedicated monitoring credential that is deliberately separate from user authentication and never appears in source control, configuration files, logs, or metric labels.
+
+Create the local secret before the first `make compose-up`:
+
+```bash
+mkdir -p deployments/observability/secrets
+printf '%s' '<monitoring-password>' > deployments/observability/secrets/metrics-password
+# The Prometheus image runs as an unprivileged user, so the file must stay
+# world-readable. The directory is ignored by Git; do not commit the secret.
+chmod 644 deployments/observability/secrets/metrics-password
+```
+
+The directory is ignored by Git. The same file is mounted into the backend as the `metrics-password` Compose secret (`/run/secrets/metrics-password`) and into Prometheus at `/etc/prometheus/metrics-password`, which `prometheus.yml` reads through `password_file`. The username is the fixed machine identity `projectone-metrics`, set on the backend through `MONITORING_USERNAME` and in the scrape job through `basic_auth.username`.
+
+If `MONITORING_USERNAME` and `MONITORING_PASSWORD_FILE` are unset, or the referenced file is missing or empty, `/metrics` returns `401` for every request and startup fails when only one of the two settings is present.
+
+Set the Grafana administrator password in the invoking shell, because the Compose file requires it:
+
+```bash
+export GRAFANA_ADMIN_PASSWORD='<local-grafana-password>'
+```
+
+### Health probes
+
+| Route | Authentication | Meaning |
+| :--- | :--- | :--- |
+| `/healthz` | None | Process liveness only. Never contacts a dependency. |
+| `/status` | None | Readiness report for the backend, PostgreSQL, and the notification subscriber. Returns `503` and identifies the affected component when any required dependency is not up. |
+
+The `/status` body stays non-sensitive and holds no address, credential, token, account identifier, or raw dependency error, so it remains safe as the container health probe. Callers that need process liveness rather than readiness must use `/healthz`.
+
+### Collecting and viewing measurements
+
+Scrape the API manually with the monitoring credential:
+
+```bash
+curl -u projectone-metrics:'<monitoring-password>' http://localhost:8080/metrics
+curl -o /dev/null -s -w '%{http_code}\n' http://localhost:8080/metrics   # 401 without credentials
+```
+
+Prometheus is at <http://localhost:9090>, where `/targets` shows the `project-one-api` job. Grafana is at <http://localhost:3001>; sign in as `admin` with `GRAFANA_ADMIN_PASSWORD` and open the provisioned **Project One Health** dashboard, which shows readiness, dependency state, request rate, 4xx and 5xx rates, request duration p95, and instance start time. Datasources and dashboards are provisioned from `grafana/provisioning` and `grafana/dashboards`, so no manual setup is required.
+
+`deployments/prometheus.yml` holds the scrape job, `deployments/grafana/provisioning/datasources/project-one-prometheus.yml` the datasource, `deployments/grafana/provisioning/dashboards/project-one-health.yml` the dashboard provider, and `deployments/grafana/dashboards/project-one-health.json` the versioned dashboard. Keep the datasource file's current name: editors apply the Prometheus scrape-configuration schema to any file named exactly `prometheus.yml`, which would flag `apiVersion` and `datasources` as invalid even though Grafana accepts them.
 
 ## Lifecycle
 
@@ -44,10 +95,10 @@ To inspect the stack directly:
 
 ```bash
 docker compose -f deployments/compose.yml ps
-docker compose -f deployments/compose.yml logs -f backend frontend
+docker compose -f deployments/compose.yml logs -f backend frontend prometheus grafana
 ```
 
-The frontend is served at <http://localhost:3000>, and the API is served at <http://localhost:8080>. In non-production mode, Swagger UI is at <http://localhost:8080/swagger/index.html>.
+The frontend is served at <http://localhost:3000>, the API at <http://localhost:8080>, Prometheus at <http://localhost:9090>, and Grafana at <http://localhost:3001>. In non-production mode, Swagger UI is at <http://localhost:8080/swagger/index.html>.
 
 ## Configuration
 
@@ -73,13 +124,15 @@ For schema changes against an existing `postgres-data` volume, run the migration
 make migrate-up dsn='postgres://<user>:<password>@localhost:5432/<database>?sslmode=disable'
 ```
 
-The stack uses three named volumes:
+The stack uses five named volumes:
 
 - `postgres-data` for PostgreSQL data
 - `rabbitmq-data` for broker data
 - `jwt-keys` for the runtime copy of the RSA keys
+- `prometheus-data` for collected measurements
+- `grafana-data` for Grafana state
 
-`make compose-down` preserves these volumes. Running `docker compose -f deployments/compose.yml down -v` deletes all three volumes and permanently removes their local data.
+`make compose-down` preserves these volumes. Running `docker compose -f deployments/compose.yml down -v` deletes all five volumes and permanently removes their local data.
 
 ## Container images
 
