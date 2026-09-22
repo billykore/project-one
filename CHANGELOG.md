@@ -5,6 +5,18 @@ All notable changes to Project One are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0] - 2026-09-22 (5e19658)
+
+### Added
+
+- Separate liveness and readiness health probes with per-dependency status reporting.
+- Authenticated Prometheus metrics with bounded labels for request and dependency observability.
+- Prometheus and Grafana deployment configuration, including a provisioned Project One Health dashboard.
+
+### Changed
+
+- Updated configuration, API documentation, and deployment documentation for health checks and monitoring.
+
 ## [3.2.0] - 2026-09-18 (82c3fa4)
 
 ### Added
@@ -126,6 +138,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 - Full-stack authentication, including registration, login, logout, and session handling.
 
+[4.0.0]: https://github.com/billykore/project-one/compare/v3.2.0...v4.0.0
 [3.2.0]: https://github.com/billykore/project-one/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/billykore/project-one/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/billykore/project-one/compare/v2.2.0...v3.0.0
