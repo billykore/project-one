@@ -1,0 +1,18 @@
+# Grafana datasource provisioning. Grafana reads every *.yml in this directory.
+#
+# Deliberately NOT named prometheus.yml: the YAML language server applies the
+# Prometheus *scrape configuration* schema to any file with that exact basename,
+# which then reports apiVersion and datasources as "not allowed".
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    # Fixed uid so the provisioned dashboard can reference it by identity.
+    uid: prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: false
+    jsonData:
+      timeInterval: 15s

@@ -1,0 +1,19 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # The API exposes bounded operational metrics on /metrics. The route requires
+  # the dedicated monitoring credentials; the password is read from the mounted
+  # deployment secret and never appears in this file.
+  - job_name: project-one-api
+    metrics_path: /metrics
+    scheme: http
+    basic_auth:
+      username: projectone-metrics
+      password_file: /etc/prometheus/metrics-password
+    static_configs:
+      - targets:
+          - backend:8080
+        labels:
+          service: project-one-api

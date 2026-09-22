@@ -342,3 +342,137 @@ feature_flags:
 	assert.Nil(t, cfg)
 	assert.Contains(t, err.Error(), "unsupported feature flags environment")
 }
+
+// baseConfigWithoutMonitoring is the smallest valid configuration; monitoring
+// credentials are optional so every deployment that does not scrape metrics
+// still starts.
+const baseConfigWithoutMonitoring = `
+database:
+  host: "test_db_host"
+  user: "testuser"
+  dbname: "test_dbname"
+jwt:
+  private_key_path: "/tmp/test-private.pem"
+  public_key_path: "/tmp/test-public.pem"
+  expiration_time: 1h
+message_broker:
+  type: "rabbitmq"
+  rabbitmq:
+    url: "amqp://guest:guest@localhost:5672/"
+    exchange: "project1.notifications"
+    queue: "notifications"
+`
+
+// writeConfig writes a config file into a fresh temp directory and returns the directory.
+func writeConfig(t *testing.T, content string) (string, func()) {
+	t.Helper()
+
+	tempDir, cleanup := setupTestEnvironment(t)
+	err := os.WriteFile(filepath.Join(tempDir, "config.yaml"), []byte(content), 0o600)
+	assert.NoError(t, err)
+	return tempDir, cleanup
+}
+
+func TestLoad_MonitoringCredentialsFromFile(t *testing.T) {
+	secretPath := filepath.Join(t.TempDir(), "metrics-password")
+	assert.NoError(t, os.WriteFile(secretPath, []byte("local-monitoring-secret\n"), 0o600))
+
+	tempDir, cleanup := writeConfig(t, baseConfigWithoutMonitoring+`
+monitoring:
+  username: "projectone-metrics"
+  password_file: "`+secretPath+`"
+`)
+	defer cleanup()
+
+	cfg, err := config.Load(tempDir)
+	assert.NoError(t, err)
+	assert.NotNil(t, cfg)
+	assert.Equal(t, "projectone-metrics", cfg.Monitoring.Username)
+	assert.Equal(t, secretPath, cfg.Monitoring.PasswordFile)
+}
+
+func TestLoad_MonitoringCredentialsFromEnv(t *testing.T) {
+	secretPath := filepath.Join(t.TempDir(), "metrics-password")
+	assert.NoError(t, os.WriteFile(secretPath, []byte("env-monitoring-secret"), 0o600))
+
+	tempDir, cleanup := writeConfig(t, baseConfigWithoutMonitoring)
+	defer cleanup()
+
+	t.Setenv("MONITORING_USERNAME", "env-metrics-user")
+	t.Setenv("MONITORING_PASSWORD_FILE", secretPath)
+
+	cfg, err := config.Load(tempDir)
+	assert.NoError(t, err)
+	assert.NotNil(t, cfg)
+	assert.Equal(t, "env-metrics-user", cfg.Monitoring.Username)
+	assert.Equal(t, secretPath, cfg.Monitoring.PasswordFile)
+}
+
+func TestLoad_MonitoringDisabledWhenUnconfigured(t *testing.T) {
+	tempDir, cleanup := writeConfig(t, baseConfigWithoutMonitoring)
+	defer cleanup()
+
+	cfg, err := config.Load(tempDir)
+	assert.NoError(t, err)
+	assert.NotNil(t, cfg)
+	assert.Empty(t, cfg.Monitoring.Username)
+	assert.Empty(t, cfg.Monitoring.PasswordFile)
+}
+
+func TestLoad_MonitoringRejectsMissingPasswordFile(t *testing.T) {
+	tempDir, cleanup := writeConfig(t, baseConfigWithoutMonitoring+`
+monitoring:
+  username: "projectone-metrics"
+  password_file: "/nonexistent/metrics-password"
+`)
+	defer cleanup()
+
+	cfg, err := config.Load(tempDir)
+	assert.Error(t, err)
+	assert.Nil(t, cfg)
+	assert.Contains(t, err.Error(), "monitoring password file")
+}
+
+func TestLoad_MonitoringRejectsEmptyPasswordFile(t *testing.T) {
+	secretPath := filepath.Join(t.TempDir(), "metrics-password")
+	assert.NoError(t, os.WriteFile(secretPath, []byte("\n"), 0o600))
+
+	tempDir, cleanup := writeConfig(t, baseConfigWithoutMonitoring+`
+monitoring:
+  username: "projectone-metrics"
+  password_file: "`+secretPath+`"
+`)
+	defer cleanup()
+
+	cfg, err := config.Load(tempDir)
+	assert.Error(t, err)
+	assert.Nil(t, cfg)
+	assert.Contains(t, err.Error(), "monitoring password file")
+}
+
+func TestLoad_MonitoringRequiresUsernameAndPasswordFileTogether(t *testing.T) {
+	tempDir, cleanup := writeConfig(t, baseConfigWithoutMonitoring+`
+monitoring:
+  username: "projectone-metrics"
+`)
+	defer cleanup()
+
+	cfg, err := config.Load(tempDir)
+	assert.Error(t, err)
+	assert.Nil(t, cfg)
+	assert.Contains(t, err.Error(), "monitoring username and password_file")
+
+	secretPath := filepath.Join(t.TempDir(), "metrics-password")
+	assert.NoError(t, os.WriteFile(secretPath, []byte("secret"), 0o600))
+
+	tempDirPeer, cleanupPeer := writeConfig(t, baseConfigWithoutMonitoring+`
+monitoring:
+  password_file: "`+secretPath+`"
+`)
+	defer cleanupPeer()
+
+	peerCfg, peerErr := config.Load(tempDirPeer)
+	assert.Error(t, peerErr)
+	assert.Nil(t, peerCfg)
+	assert.Contains(t, peerErr.Error(), "monitoring username and password_file")
+}

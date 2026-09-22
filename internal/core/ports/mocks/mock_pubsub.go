@@ -120,3 +120,41 @@ func (mr *MockSubscriberMockRecorder) Subscribe(ctx, topic, handler any) *gomock
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Subscribe", reflect.TypeOf((*MockSubscriber)(nil).Subscribe), ctx, topic, handler)
 }
+
+// MockHealthReporter is a mock of HealthReporter interface.
+type MockHealthReporter struct {
+	ctrl     *gomock.Controller
+	recorder *MockHealthReporterMockRecorder
+	isgomock struct{}
+}
+
+// MockHealthReporterMockRecorder is the mock recorder for MockHealthReporter.
+type MockHealthReporterMockRecorder struct {
+	mock *MockHealthReporter
+}
+
+// NewMockHealthReporter creates a new mock instance.
+func NewMockHealthReporter(ctrl *gomock.Controller) *MockHealthReporter {
+	mock := &MockHealthReporter{ctrl: ctrl}
+	mock.recorder = &MockHealthReporterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockHealthReporter) EXPECT() *MockHealthReporterMockRecorder {
+	return m.recorder
+}
+
+// Healthy mocks base method.
+func (m *MockHealthReporter) Healthy() bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Healthy")
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// Healthy indicates an expected call of Healthy.
+func (mr *MockHealthReporterMockRecorder) Healthy() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Healthy", reflect.TypeOf((*MockHealthReporter)(nil).Healthy))
+}

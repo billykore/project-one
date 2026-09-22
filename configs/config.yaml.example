@@ -33,3 +33,12 @@ feature_flags:
   refresh_interval: "30s"
   operators:
     - "operator1"
+# Dedicated machine credentials for the Prometheus scrape of /metrics.
+# Both keys must be set together, and the referenced secret file must exist and
+# be non-empty, or startup fails. Leave both unset to reject every scrape.
+# Create the local secret with:
+#   mkdir -p deployments/observability/secrets
+#   printf '%s' '<monitoring-password>' > deployments/observability/secrets/metrics-password
+# monitoring:
+#   username: "projectone-metrics"
+#   password_file: "./deployments/observability/secrets/metrics-password"

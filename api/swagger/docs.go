@@ -672,6 +672,26 @@ const docTemplate = `{
                 }
             }
         },
+        "/healthz": {
+            "get": {
+                "description": "Reports that the process can respond. It never contacts an external dependency and is not a readiness signal.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Liveness probe",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.LivenessResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/notifications": {
             "get": {
                 "security": [
@@ -1365,6 +1385,32 @@ const docTemplate = `{
                         "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/dto.ProblemDetail"
+                        }
+                    }
+                }
+            }
+        },
+        "/status": {
+            "get": {
+                "description": "Reports whether the application can serve normal user traffic, plus the non-sensitive state and assessment time of every required dependency.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Readiness probe",
+                "responses": {
+                    "200": {
+                        "description": "Assessment is ready",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HealthReportResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Assessment is not ready; the same report body is returned",
+                        "schema": {
+                            "$ref": "#/definitions/dto.HealthReportResponse"
                         }
                     }
                 }
@@ -2303,6 +2349,48 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.HealthComponentResponse": {
+            "type": "object",
+            "properties": {
+                "checked_at": {
+                    "description": "CheckedAt is the RFC 3339 UTC time this component was assessed.",
+                    "type": "string",
+                    "example": "2026-09-21T12:00:00Z"
+                },
+                "name": {
+                    "description": "Name is the stable component name, e.g. \"database\" or \"rabbitmq\".",
+                    "type": "string",
+                    "example": "database"
+                },
+                "status": {
+                    "description": "Status is one of up, down, or unknown.",
+                    "type": "string",
+                    "example": "up"
+                }
+            }
+        },
+        "dto.HealthReportResponse": {
+            "type": "object",
+            "properties": {
+                "checked_at": {
+                    "description": "CheckedAt is the RFC 3339 UTC time the assessment completed.",
+                    "type": "string",
+                    "example": "2026-09-21T12:00:00Z"
+                },
+                "components": {
+                    "description": "Components holds the state of every assessed dependency.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.HealthComponentResponse"
+                    }
+                },
+                "status": {
+                    "description": "Status is ready only when every required component is up.",
+                    "type": "string",
+                    "example": "ready"
+                }
+            }
+        },
         "dto.LikeResponse": {
             "type": "object",
             "properties": {
@@ -2311,6 +2399,21 @@ const docTemplate = `{
                 },
                 "liked": {
                     "type": "boolean"
+                }
+            }
+        },
+        "dto.LivenessResponse": {
+            "type": "object",
+            "properties": {
+                "checked_at": {
+                    "description": "CheckedAt is the RFC 3339 UTC time the probe ran.",
+                    "type": "string",
+                    "example": "2026-09-21T12:00:00Z"
+                },
+                "status": {
+                    "description": "Status is always \"ok\" while the process can respond.",
+                    "type": "string",
+                    "example": "ok"
                 }
             }
         },

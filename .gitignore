@@ -33,6 +33,10 @@
 /configs/*.yaml
 /configs/keys
 
+# Local observability secrets (monitoring password, Grafana admin password)
+deployments/observability/secrets/
+deployments/observability/*.env
+
 .agents
 .antigravitycli
 

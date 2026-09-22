@@ -38,19 +38,13 @@ func ErrorHandler(log ports.Logger, errorTypeBaseURL string, withStackTrace bool
 		}
 
 		mapping := LookupError(err)
-		status := mapping.Status
+		status := StatusForError(err)
 		code := mapping.Code
-
-		// if the error is already an *echo.HTTPError, use its status code.
-		if httpErr, ok := errors.AsType[*echo.HTTPError](err); ok {
-			status = httpErr.Code
-		}
 
 		// validation errors always map to 400 regardless of sentinel matching.
 		var validationErrs validator.ValidationErrors
 		var hasValidationErrs bool
 		if validationErrs, hasValidationErrs = errors.AsType[validator.ValidationErrors](err); hasValidationErrs {
-			status = 400
 			code = domain.CodeInvalidArgument
 			mapping.Title = "Bad Request"
 			mapping.Detail = "Invalid request"
