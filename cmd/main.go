@@ -203,7 +203,7 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 	e.Use(middleware.Metrics(metricsRecorder))
 	e.Use(echomiddleware.Recover())
 	e.Use(echomiddleware.RequestID())
-	e.Use(echomiddleware.RequestLogger())
+	e.Use(middleware.RequestLogging(lgr))
 	e.HTTPErrorHandler = middleware.ErrorHandler(lgr, cfg.App.ErrorTypeBaseURL, cfg.App.Env == "debug")
 
 	if cfg.App.Env != "production" {

@@ -99,6 +99,39 @@ services:
       - backend
     restart: unless-stopped
 
+  loki:
+    image: grafana/loki:3.7.0
+    command: -config.file=/etc/loki/loki.yml
+    volumes:
+      - ./loki.yml:/etc/loki/loki.yml:ro
+      - loki-data:/loki
+    restart: unless-stopped
+
+  alloy:
+    image: grafana/alloy:v1.19.2
+    command:
+      - run
+      - --stability.level=public-preview
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      LOKI_URL: ${LOKI_URL:-http://loki:3100/loki/api/v1/push}
+      LOKI_TENANT_ID: ${LOKI_TENANT_ID:-}
+      LOKI_BEARER_TOKEN_FILE: ${LOKI_BEARER_TOKEN_FILE:+/run/secrets/loki-bearer-token}
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - alloy-data:/var/lib/alloy/data
+      - type: bind
+        source: ${LOKI_BEARER_TOKEN_FILE:-/dev/null}
+        target: /run/secrets/loki-bearer-token
+        read_only: true
+    depends_on:
+      - loki
+    restart: unless-stopped
+
   grafana:
     image: grafana/grafana:12.2.0
     ports:
@@ -112,6 +145,7 @@ services:
       - grafana-data:/var/lib/grafana
     depends_on:
       - prometheus
+      - loki
     restart: unless-stopped
 
   frontend:
@@ -133,6 +167,8 @@ volumes:
   jwt-keys:
   prometheus-data:
   grafana-data:
+  loki-data:
+  alloy-data:
 
 secrets:
   # Local monitoring credential consumed by both the backend and the

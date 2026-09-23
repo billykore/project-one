@@ -14,10 +14,14 @@ type Logger struct {
 // New creates a new instance of Logger.
 func New() *Logger {
 	// ponytail: simplified logger adapter by using standard library slog instead of zerolog dependency
+	hostname, err := os.Hostname()
+	if err != nil || hostname == "" {
+		hostname = "unknown"
+	}
 	l := slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
 		AddSource: true,
 		Level:     slog.LevelDebug,
-	}))
+	})).With("instance_id", hostname)
 	return &Logger{slog: l}
 }
 
