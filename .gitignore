@@ -37,6 +37,8 @@
 deployments/observability/secrets/
 deployments/observability/*.env
 
+test/coverage
+
 .agents
 .antigravitycli
 
