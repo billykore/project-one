@@ -12,7 +12,9 @@
 | `backend` | Root `Dockerfile` | `8080` | Go API and notification consumer; health-checked through `/status` |
 | `frontend` | `web/Dockerfile` | `3000` | Next.js standalone server |
 | `prometheus` | `prom/prometheus:v3.7.3` | `9090` | Scrapes the API `/metrics` endpoint and stores measurements |
-| `grafana` | `grafana/grafana:12.2.0` | `3001` | Serves the provisioned **Project One Health** dashboard |
+| `loki` | `grafana/loki:3.7.0` | None | Private, seven-day local log store |
+| `alloy` | `grafana/alloy:v1.19.2` | None | Filters and forwards backend container logs |
+| `grafana` | `grafana/grafana:12.2.0` | `3001` | Serves metrics dashboards and Loki Explore |
 
 PostgreSQL, RabbitMQ, and the backend have health checks. The backend starts only after the database and broker are healthy and JWT key preparation has completed; Prometheus starts after the backend container is created and Grafana after Prometheus. The frontend starts after the backend container is created. The backend probe uses Alpine's built-in `wget` to request `/status`.
 
@@ -78,7 +80,42 @@ curl -o /dev/null -s -w '%{http_code}\n' http://localhost:8080/metrics   # 401 w
 
 Prometheus is at <http://localhost:9090>, where `/targets` shows the `project-one-api` job. Grafana is at <http://localhost:3001>; sign in as `admin` with `GRAFANA_ADMIN_PASSWORD` and open the provisioned **Project One Health** dashboard, which shows readiness, dependency state, request rate, 4xx and 5xx rates, request duration p95, and instance start time. Datasources and dashboards are provisioned from `grafana/provisioning` and `grafana/dashboards`, so no manual setup is required.
 
-`deployments/prometheus.yml` holds the scrape job, `deployments/grafana/provisioning/datasources/project-one-prometheus.yml` the datasource, `deployments/grafana/provisioning/dashboards/project-one-health.yml` the dashboard provider, and `deployments/grafana/dashboards/project-one-health.json` the versioned dashboard. Keep the datasource file's current name: editors apply the Prometheus scrape-configuration schema to any file named exactly `prometheus.yml`, which would flag `apiVersion` and `datasources` as invalid even though Grafana accepts them.
+### Aggregated application logs
+
+Alloy discovers only the Compose `backend` service, parses its JSON records, rebuilds each outgoing event from a safe field allowlist, applies secret filtering, and sends it to Loki. Loki is private to the Compose network and has no host-published port. The backend writes only to stderr and neither starts nor waits on Loki or Alloy.
+
+Open the provisioned **Project One Logs** dashboard in Grafana for log and error counts, a level trend, recent warnings and errors, and the latest backend events. Its counts follow the selected time range; expand a log line to inspect its structured fields and `request_id`.
+
+In Grafana, open **Explore**, select **Loki**, and query:
+
+```logql
+{app="project-one", environment="development", source="backend"} | json
+```
+
+The stream has exactly the bounded labels `app`, `environment`, and `source`. Correlate events with the JSON `request_id` field rather than adding it as a label. Local Loki data is retained for seven days; durable replay and long-term archival are outside this deployment's scope.
+
+Alloy running is the aggregation enablement switch. Stop it to disable forwarding while preserving backend stderr:
+
+```bash
+docker compose -f deployments/compose.yml stop alloy
+docker compose -f deployments/compose.yml logs backend
+docker compose -f deployments/compose.yml start alloy
+```
+
+For a protected external Loki-compatible destination, set its full push URL and optional tenant. Store the bearer token in an ignored local file and pass only its path:
+
+```bash
+export LOKI_URL='https://logs.example.invalid/loki/api/v1/push'
+export LOKI_TENANT_ID='<tenant>'
+export LOKI_BEARER_TOKEN_FILE='/absolute/path/to/ignored/loki-token'
+docker compose -f deployments/compose.yml up -d --force-recreate alloy
+```
+
+Compose mounts the credential read-only at `/run/secrets/loki-bearer-token`; its contents are never placed in Compose environment values or application artifacts. The tenant is sent as the standard `X-Scope-OrgID` header rather than Alloy's `tenant_id` argument, because Alloy echoes `tenant_id` in its own delivery-failure diagnostics; with this wiring the tenant never appears in `logs alloy`. Unset all three overrides and recreate Alloy to restore private local Loki.
+
+If events are missing, first check `docker compose -f deployments/compose.yml ps loki alloy`, then inspect `docker compose -f deployments/compose.yml logs alloy`. A delivery or authorization error indicates a destination, tenant, network, or credential problem; it does not affect backend availability. Confirm backend stderr independently with `docker compose -f deployments/compose.yml logs backend`. Do not paste credentials or user data into diagnostic searches.
+
+`deployments/prometheus.yml` holds the scrape job, `deployments/grafana/provisioning/datasources/` the datasources, `deployments/grafana/provisioning/dashboards/project-one-health.yml` the dashboard provider, and `deployments/grafana/dashboards/` the versioned health and logs dashboards. Keep the Prometheus datasource file's current name: editors apply the Prometheus scrape-configuration schema to any file named exactly `prometheus.yml`, which would flag `apiVersion` and `datasources` as invalid even though Grafana accepts them.
 
 ## Lifecycle
 
@@ -124,15 +161,17 @@ For schema changes against an existing `postgres-data` volume, run the migration
 make migrate-up dsn='postgres://<user>:<password>@localhost:5432/<database>?sslmode=disable'
 ```
 
-The stack uses five named volumes:
+The stack uses seven named volumes:
 
 - `postgres-data` for PostgreSQL data
 - `rabbitmq-data` for broker data
 - `jwt-keys` for the runtime copy of the RSA keys
 - `prometheus-data` for collected measurements
 - `grafana-data` for Grafana state
+- `loki-data` for the local log store
+- `alloy-data` for collector component state (not a durable replay guarantee)
 
-`make compose-down` preserves these volumes. Running `docker compose -f deployments/compose.yml down -v` deletes all five volumes and permanently removes their local data.
+`make compose-down` preserves these volumes. Running `docker compose -f deployments/compose.yml down -v` deletes all seven volumes and permanently removes their local data.
 
 ## Container images
 

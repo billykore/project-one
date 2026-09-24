@@ -1,0 +1,105 @@
+logging {
+	level  = "info"
+	format = "json"
+}
+
+discovery.docker "backend" {
+	host             = "unix:///var/run/docker.sock"
+	refresh_interval = "5s"
+
+	filter {
+		name   = "label"
+		values = ["com.docker.compose.service=backend"]
+	}
+}
+
+loki.source.docker "backend" {
+	host             = "unix:///var/run/docker.sock"
+	targets          = discovery.docker.backend.targets
+	labels           = {}
+	refresh_interval = "5s"
+	forward_to       = [loki.process.safe_backend.receiver]
+}
+
+loki.process "safe_backend" {
+	forward_to = [loki.secretfilter.defense_in_depth.receiver]
+
+	stage.json {
+		drop_malformed = true
+		expressions    = {
+			timestamp        = "time",
+			level            = "level",
+			message          = "msg",
+			request_id       = "request_id",
+			method           = "method",
+			route            = "route",
+			status           = "status",
+			duration_ms      = "duration_ms",
+			error_code       = "error_code",
+			failure_category = "failure_category",
+			instance_id      = "instance_id",
+			error            = "error",
+		}
+	}
+
+	stage.drop {
+		source     = "message"
+		expression = "^$"
+	}
+
+	stage.drop {
+		source     = "instance_id"
+		expression = "^$"
+	}
+
+	stage.timestamp {
+		source                        = "timestamp"
+		format                        = "RFC3339Nano"
+		action_on_failure             = "skip"
+		action_on_duplicate_timestamp = "fudge"
+	}
+
+	stage.static_labels {
+		values = {
+			app         = "project-one",
+			environment = sys.env("APP_ENV"),
+			source      = "backend",
+		}
+	}
+
+	// Build a new JSON object from the allowlist. The original record and every
+	// unlisted attribute are discarded before the entry leaves this component.
+	// stage.template {
+	// 	source   = "safe_event"
+	// 	template = `{"timestamp":{{ .timestamp | toJson }},"level":{{ .level | toJson }},"message":{{ .message | toJson }},"instance_id":{{ .instance_id | toJson }}{{ if .request_id }},"request_id":{{ .request_id | toJson }}{{ end }}{{ if .method }},"method":{{ .method | toJson }}{{ end }}{{ if .route }},"route":{{ .route | toJson }}{{ end }}{{ if .status }},"status":{{ .status | toJson }}{{ end }}{{ if .duration_ms }},"duration_ms":{{ .duration_ms | toJson }}{{ end }}{{ if .error_code }},"error_code":{{ .error_code | toJson }}{{ end }}{{ if .failure_category }},"failure_category":{{ .failure_category | toJson }}{{ end }}{{ if .error }},"error":{{ .error | toJson }}{{ end }}}`
+	// }
+
+	stage.output {
+		source = "safe_event"
+	}
+
+	stage.label_keep {
+		values = ["app", "environment", "source"]
+	}
+}
+
+loki.secretfilter "defense_in_depth" {
+	forward_to         = [loki.write.destination.receiver]
+	drop_on_timeout    = true
+	processing_timeout = "1s"
+}
+
+loki.write "destination" {
+	endpoint {
+		url               = sys.env("LOKI_URL")
+		bearer_token_file = sys.env("LOKI_BEARER_TOKEN_FILE")
+		// The tenant is sent as the standard X-Scope-OrgID header rather than
+		// the tenant_id argument: Alloy echoes tenant_id in its own delivery
+		// failure diagnostics, and the data model requires the tenant identity
+		// never to be logged. An empty value is sent when no tenant is
+		// configured, which Loki ignores when multi-tenancy is disabled.
+		headers = {
+			"X-Scope-OrgID" = sys.env("LOKI_TENANT_ID"),
+		}
+	}
+}

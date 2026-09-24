@@ -113,7 +113,7 @@ This starts PostgreSQL 17, RabbitMQ 4, the Go API, the Next.js frontend, Prometh
    - Readiness probe: <http://localhost:8080/status>
    - Swagger UI: <http://localhost:8080/swagger/index.html>
    - Prometheus: <http://localhost:9090>
-   - Grafana (Project One Health dashboard): <http://localhost:3001>
+   - Grafana (Project One Health and Project One Logs dashboards): <http://localhost:3001>
 
 5. Stop the stack when finished:
 
@@ -125,7 +125,7 @@ On the first start of a new PostgreSQL volume, the container applies every `db/m
 
 See [deployments/README.md](deployments/README.md) for service configuration, lifecycle commands, data-volume behavior, and the observability setup.
 
-## Health and metrics
+## Health, metrics, and logs
 
 | Route | Authentication | Purpose |
 | :--- | :--- | :--- |
@@ -136,6 +136,14 @@ See [deployments/README.md](deployments/README.md) for service configuration, li
 `/healthz` and `/status` stay non-sensitive and unauthenticated so the deployment probe keeps working; `/metrics` requires the dedicated monitoring credential read from a deployment secret. Metrics carry only bounded labels: the HTTP method, the resolved route template, the status class, and the dependency name. No account identifier, token, session value, request body, query string, or raw dependency error is ever used as a label or returned in a health report.
 
 Set `MONITORING_USERNAME` and `MONITORING_PASSWORD_FILE` to enable scraping; when they are unset, `/metrics` rejects every request. Prometheus scrapes `backend:8080/metrics` and Grafana reads it through the provisioned datasource. Alert rules, long-term storage, tracing, and automated remediation are intentionally out of scope.
+
+The Compose deployment also runs a private Loki service and Grafana Alloy collector. Alloy reads only backend container output, forwards a safe structured allowlist, and leaves the API lifecycle independent of log delivery. The provisioned **Project One Logs** dashboard shows counts, level trends, and recent events. In Grafana Explore, select the provisioned **Loki** datasource and start with:
+
+```logql
+{app="project-one", environment="development", source="backend"} | json
+```
+
+Use `request_id` from the parsed JSON to correlate requests. Loki is intentionally not published on a host port. External Loki-compatible destinations use `LOKI_URL`, optional `LOKI_TENANT_ID`, and a read-only file path in `LOKI_BEARER_TOKEN_FILE`; never put bearer-token contents in environment variables or committed files. See [deployments/README.md](deployments/README.md#aggregated-application-logs) for setup, disabling, retention, privacy, and troubleshooting details.
 
 ## Local development
 
