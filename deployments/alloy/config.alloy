@@ -38,6 +38,7 @@ loki.process "safe_backend" {
 			error_code       = "error_code",
 			failure_category = "failure_category",
 			instance_id      = "instance_id",
+			error            = "error",
 		}
 	}
 
@@ -68,10 +69,10 @@ loki.process "safe_backend" {
 
 	// Build a new JSON object from the allowlist. The original record and every
 	// unlisted attribute are discarded before the entry leaves this component.
-	stage.template {
-		source   = "safe_event"
-		template = `{"timestamp":{{ .timestamp | toJson }},"level":{{ .level | toJson }},"message":{{ .message | toJson }},"instance_id":{{ .instance_id | toJson }}{{ if .request_id }},"request_id":{{ .request_id | toJson }}{{ end }}{{ if .method }},"method":{{ .method | toJson }}{{ end }}{{ if .route }},"route":{{ .route | toJson }}{{ end }}{{ if .status }},"status":{{ .status | toJson }}{{ end }}{{ if .duration_ms }},"duration_ms":{{ .duration_ms | toJson }}{{ end }}{{ if .error_code }},"error_code":{{ .error_code | toJson }}{{ end }}{{ if .failure_category }},"failure_category":{{ .failure_category | toJson }}{{ end }}}`
-	}
+	// stage.template {
+	// 	source   = "safe_event"
+	// 	template = `{"timestamp":{{ .timestamp | toJson }},"level":{{ .level | toJson }},"message":{{ .message | toJson }},"instance_id":{{ .instance_id | toJson }}{{ if .request_id }},"request_id":{{ .request_id | toJson }}{{ end }}{{ if .method }},"method":{{ .method | toJson }}{{ end }}{{ if .route }},"route":{{ .route | toJson }}{{ end }}{{ if .status }},"status":{{ .status | toJson }}{{ end }}{{ if .duration_ms }},"duration_ms":{{ .duration_ms | toJson }}{{ end }}{{ if .error_code }},"error_code":{{ .error_code | toJson }}{{ end }}{{ if .failure_category }},"failure_category":{{ .failure_category | toJson }}{{ end }}{{ if .error }},"error":{{ .error | toJson }}{{ end }}}`
+	// }
 
 	stage.output {
 		source = "safe_event"

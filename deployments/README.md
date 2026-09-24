@@ -84,6 +84,8 @@ Prometheus is at <http://localhost:9090>, where `/targets` shows the `project-on
 
 Alloy discovers only the Compose `backend` service, parses its JSON records, rebuilds each outgoing event from a safe field allowlist, applies secret filtering, and sends it to Loki. Loki is private to the Compose network and has no host-published port. The backend writes only to stderr and neither starts nor waits on Loki or Alloy.
 
+Open the provisioned **Project One Logs** dashboard in Grafana for log and error counts, a level trend, recent warnings and errors, and the latest backend events. Its counts follow the selected time range; expand a log line to inspect its structured fields and `request_id`.
+
 In Grafana, open **Explore**, select **Loki**, and query:
 
 ```logql
@@ -113,7 +115,7 @@ Compose mounts the credential read-only at `/run/secrets/loki-bearer-token`; its
 
 If events are missing, first check `docker compose -f deployments/compose.yml ps loki alloy`, then inspect `docker compose -f deployments/compose.yml logs alloy`. A delivery or authorization error indicates a destination, tenant, network, or credential problem; it does not affect backend availability. Confirm backend stderr independently with `docker compose -f deployments/compose.yml logs backend`. Do not paste credentials or user data into diagnostic searches.
 
-`deployments/prometheus.yml` holds the scrape job, `deployments/grafana/provisioning/datasources/project-one-prometheus.yml` the datasource, `deployments/grafana/provisioning/dashboards/project-one-health.yml` the dashboard provider, and `deployments/grafana/dashboards/project-one-health.json` the versioned dashboard. Keep the datasource file's current name: editors apply the Prometheus scrape-configuration schema to any file named exactly `prometheus.yml`, which would flag `apiVersion` and `datasources` as invalid even though Grafana accepts them.
+`deployments/prometheus.yml` holds the scrape job, `deployments/grafana/provisioning/datasources/` the datasources, `deployments/grafana/provisioning/dashboards/project-one-health.yml` the dashboard provider, and `deployments/grafana/dashboards/` the versioned health and logs dashboards. Keep the Prometheus datasource file's current name: editors apply the Prometheus scrape-configuration schema to any file named exactly `prometheus.yml`, which would flag `apiVersion` and `datasources` as invalid even though Grafana accepts them.
 
 ## Lifecycle
 

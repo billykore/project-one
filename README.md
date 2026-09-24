@@ -113,7 +113,7 @@ This starts PostgreSQL 17, RabbitMQ 4, the Go API, the Next.js frontend, Prometh
    - Readiness probe: <http://localhost:8080/status>
    - Swagger UI: <http://localhost:8080/swagger/index.html>
    - Prometheus: <http://localhost:9090>
-   - Grafana (Project One Health dashboard): <http://localhost:3001>
+   - Grafana (Project One Health and Project One Logs dashboards): <http://localhost:3001>
 
 5. Stop the stack when finished:
 
@@ -137,7 +137,7 @@ See [deployments/README.md](deployments/README.md) for service configuration, li
 
 Set `MONITORING_USERNAME` and `MONITORING_PASSWORD_FILE` to enable scraping; when they are unset, `/metrics` rejects every request. Prometheus scrapes `backend:8080/metrics` and Grafana reads it through the provisioned datasource. Alert rules, long-term storage, tracing, and automated remediation are intentionally out of scope.
 
-The Compose deployment also runs a private Loki service and Grafana Alloy collector. Alloy reads only backend container output, forwards a safe structured allowlist, and leaves the API lifecycle independent of log delivery. In Grafana Explore, select the provisioned **Loki** datasource and start with:
+The Compose deployment also runs a private Loki service and Grafana Alloy collector. Alloy reads only backend container output, forwards a safe structured allowlist, and leaves the API lifecycle independent of log delivery. The provisioned **Project One Logs** dashboard shows counts, level trends, and recent events. In Grafana Explore, select the provisioned **Loki** datasource and start with:
 
 ```logql
 {app="project-one", environment="development", source="backend"} | json
