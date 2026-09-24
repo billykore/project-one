@@ -1,35 +1,120 @@
-# Mac OS X files
-.DS_Store
+# ==============================================================================
+# Project One — .gitignore
+# Generated/build artifacts, caches, local secrets, editor and OS noise.
+# ==============================================================================
 
-# Binaries for programs and plugins
+# ------------------------------------------------------------------------------
+# OS / filesystem noise
+# ------------------------------------------------------------------------------
+.DS_Store
+._*
+.Spotlight-V100/
+.Trashes/
+.fseventsd/
+Thumbs.db
+Desktop.ini
+
+# ------------------------------------------------------------------------------
+# Editors / IDEs
+# ------------------------------------------------------------------------------
+.idea
+.vscode
+*.swp
+*.swo
+*~
+.history/
+*.code-workspace
+
+# ------------------------------------------------------------------------------
+# Go — compiled output, test binaries, coverage, debug and profiling artifacts
+# ------------------------------------------------------------------------------
+# Compiled application binary (make build -> bin/main)
+/bin/*
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
-
-# Test binary, build with `go test -c`
+*.dSYM/
+# Test binaries (`go test -c`) and coverage output (`go test -coverprofile`)
 *.test
-
-# Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+coverage.out
+coverage.html
+*.coverprofile
+# Profiling output
+*.prof
+*.pprof
+# Delve / VS Code Go debug binaries (e.g. cmd/__debug_bin123456)
+__debug_bin*
+__debug*
+# PID files from locally started servers
+*.pid
+# Developer-local Go workspace files
+go.work
+go.work.sum
+# Live-reload / scratch directories (e.g. Air)
+tmp/
+.tmp
 
 # Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
 .glide/
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
-.tmp
 
-# IDEs
-.idea
-.vscode
+# ------------------------------------------------------------------------------
+# Python — used by the db/seeds scripts
+# ------------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+.venv/
+venv/
+env/
+ENV/
+.python-version
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
 
-# Build output binaries
-*.pid
-/bin/*
+# ------------------------------------------------------------------------------
+# Node / Next.js / frontend tooling
+# web/.gitignore holds the frontend-specific rules; these are repo-wide safety
+# nets so the same artifacts stay ignored wherever they appear.
+# ------------------------------------------------------------------------------
+node_modules/
+.next/
+out/
+.vercel
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-# Config files with sensitive information
+# ------------------------------------------------------------------------------
+# Playwright reports and test result artifacts
+# ------------------------------------------------------------------------------
+playwright-report/
+blob-report/
+.playwright/
+test-results/
+
+# ------------------------------------------------------------------------------
+# Logs
+# ------------------------------------------------------------------------------
+*.log
+
+# ------------------------------------------------------------------------------
+# Local config and secrets
+# ------------------------------------------------------------------------------
 /configs/*.yaml
 /configs/keys
 
@@ -37,11 +122,25 @@
 deployments/observability/secrets/
 deployments/observability/*.env
 
+.env
+.env.*
+!.env.example
+!*.env.example
+
+# ------------------------------------------------------------------------------
+# Go coverage reports (make test-cover)
+# ------------------------------------------------------------------------------
 test/coverage
 
+# ------------------------------------------------------------------------------
+# Local agent tooling (installed skills / CLI state)
+# ------------------------------------------------------------------------------
 .agents
 .antigravitycli
 
-*/__debug*
-*/**/__pycache__/
-*.py[cod]
+# ------------------------------------------------------------------------------
+# Merge-conflict / patch leftovers
+# ------------------------------------------------------------------------------
+*.orig
+*.rej
+*.bak
