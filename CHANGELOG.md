@@ -5,6 +5,17 @@ All notable changes to Project One are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.1.0] - 2026-09-24 (7cd0b2c)
+
+### Added
+
+- External application log aggregation through Loki and Grafana Alloy.
+- Provisioned Project One Logs Grafana dashboard and Loki datasource.
+
+### Changed
+
+- Added structured request logging with safe field forwarding and optional external Loki configuration.
+
 ## [4.0.0] - 2026-09-22 (5e19658)
 
 ### Added
@@ -138,6 +149,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 - Full-stack authentication, including registration, login, logout, and session handling.
 
+[4.1.0]: https://github.com/billykore/project-one/compare/v4.0.0...v4.1.0
 [4.0.0]: https://github.com/billykore/project-one/compare/v3.2.0...v4.0.0
 [3.2.0]: https://github.com/billykore/project-one/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/billykore/project-one/compare/v3.0.0...v3.1.0
