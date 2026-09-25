@@ -159,6 +159,22 @@ func TestRequestLoggingClassifiesFailuresWithoutRawErrors(t *testing.T) {
 	}
 }
 
+func TestRequestLoggingSkipsReadinessChecks(t *testing.T) {
+	log := &recordingLogger{}
+	e := echo.New()
+	e.Use(RequestLogging(log))
+	e.GET(ReadinessRoute, func(c echo.Context) error {
+		return c.NoContent(http.StatusOK)
+	})
+
+	request := httptest.NewRequest(http.MethodGet, ReadinessRoute, nil)
+	e.ServeHTTP(httptest.NewRecorder(), request)
+
+	if len(log.entries) != 0 {
+		t.Fatalf("log entries = %d, want 0 for %s", len(log.entries), ReadinessRoute)
+	}
+}
+
 func toString(value any) string {
 	return fmt.Sprint(value)
 }

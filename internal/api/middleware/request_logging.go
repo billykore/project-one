@@ -11,6 +11,10 @@ import (
 const (
 	// RequestCompletedMessage is a stable event name, never user input.
 	RequestCompletedMessage = "http request completed"
+	// ReadinessRoute and MetricsRoute are polled frequently by the container orchestrator. Its
+	// request completion events add noise without helping application diagnosis.
+	ReadinessRoute = "/status"
+	MetricsRoute   = "/metrics"
 
 	FailureCategoryClient = "client_error"
 	FailureCategoryServer = "server_error"
@@ -25,6 +29,11 @@ func RequestLogging(log ports.Logger) echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			start := time.Now()
 			err := next(c)
+
+			// Skip logging for readiness and metrics endpoints to reduce noise in logs.
+			if c.Path() == ReadinessRoute || c.Path() == MetricsRoute {
+				return err
+			}
 
 			status := c.Response().Status
 			if err != nil {

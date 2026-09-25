@@ -1,5 +1,3 @@
-.PHONY: build run test test-cover mock vet lint clean docs docker-build help migrate-create migrate-up migrate-down check githooks compose-up compose-down compose-start compose-stop seed-users seed-posts seed-deps
-
 COMPOSE_FILE := deployments/compose.yml
 
 # Python user seeding script
@@ -7,6 +5,7 @@ SEED_SCRIPT := db/seeds/users_seed.py
 SEED_REQ := db/seeds/requirements.txt
 
 ## githooks: Configure git to use local githooks directory
+.PHONY: githooks
 githooks:
 	git config core.hooksPath githooks
 	chmod +x githooks/pre-commit githooks/pre-push githooks/prepare-commit-msg
@@ -15,7 +14,7 @@ BUILD_DIR := ./bin
 
 # Docker image name (override with IMAGE_NAME=<name>)
 IMAGE_NAME ?= project-one
-# Image tag is the 12-character short commit hash of HEAD
+# Image tag is the 7-character short commit hash of HEAD
 COMMIT_SHA := $(shell git rev-parse --short=7 HEAD)
 DOCKER_IMAGE := $(IMAGE_NAME):$(COMMIT_SHA)
 
@@ -24,15 +23,18 @@ config ?= ./configs
 CONFIG_ARG = -config $(config)
 
 ## build: Compile the application binary
+.PHONY: build
 build:
 	go build -mod=mod -o $(BUILD_DIR)/main ./cmd
 	@echo "Build completed. Binary is located at $(BUILD_DIR)/main"
 
 ## run: Build and run the application (e.g., make run config="./configs" or make run args="-config ./configs")
+.PHONY: run
 run: build
 	$(BUILD_DIR)/main $(CONFIG_ARG) $(args)
 
-## docker-build: Build the Docker image tagged with the latest commit hash (git rev-parse --short=12 HEAD)
+## docker-build: Build the Docker image tagged with the latest commit hash (git rev-parse --short=7 HEAD)
+.PHONY: docker-build
 docker-build:
 	@if [ -z "$(COMMIT_SHA)" ]; then echo "Error: unable to determine git commit hash. Ensure this is a git repository." >&2; exit 1; fi
 	docker build -t $(DOCKER_IMAGE) -f Dockerfile .
@@ -42,6 +44,7 @@ docker-build:
 COVERAGE_DIR := ./test/coverage
 
 ## test: Run all tests (e.g., make test coverage=true to generate coverage report)
+.PHONY: test
 test:
 	@if [ "$(coverage)" = "true" ]; then \
 		mkdir -p $(COVERAGE_DIR); \
@@ -53,6 +56,7 @@ test:
 	fi
 
 ## test-cover: Run tests and generate coverage report
+.PHONY: test-cover
 test-cover:
 	mkdir -p $(COVERAGE_DIR)
 	go test -v -race -count=1 -coverprofile=$(COVERAGE_DIR)/coverage.out -covermode=atomic ./...
@@ -61,6 +65,7 @@ test-cover:
 	@echo "Coverage report: $(COVERAGE_DIR)/coverage.html"
 
 ## mocks: Generate test mocks
+.PHONY: mocks
 mocks:
 	@echo "Mock Generation"
 	@mkdir -p internal/core/ports/mocks
@@ -74,48 +79,57 @@ mocks:
 	@echo "Mocks generation completed successfully."
 
 ## vet: Run go vet
+.PHONY: vet
 vet:
 	go vet ./...
 
 ## lint: Run static analysis (requires golangci-lint)
+.PHONY: lint
 lint:
 	@command -v golangci-lint >/dev/null 2>&1 || { echo "Error: 'golangci-lint' command not found." >&2; exit 1; }
 	golangci-lint run -c .golangci.yml ./...
 
 ## clean: Remove build artifacts
+.PHONY: clean
 clean:
 	rm -rf $(BUILD_DIR)
 
 ## docs: Generate swagger documentation
+.PHONY: docs
 docs:
 	@command -v swag >/dev/null 2>&1 || { echo "Error: 'swag' command not found." >&2; exit 1; }
 	swag fmt
 	swag init -g cmd/main.go -o api/swagger
 
 ## migration-create: Create a new migration file (e.g., make migration-create name=create_users_table)
+.PHONY: migration-create
 migration-create:
 	@command -v migrate >/dev/null 2>&1 || { echo "Error: 'migrate' command not found." >&2; exit 1; }
 	@if [ -z "$(name)" ]; then echo "Error: Name is required. Example: make migration-create name=create_users_table" >&2; exit 1; fi
 	migrate create -ext sql -dir db/migrations -seq $(name)
 
 ## migrate-up: Run migrations up (e.g., make migrate-up dsn="postgres://user:pass@host:port/db?sslmode=disable")
+.PHONY: migrate-up
 migrate-up:
 	@command -v migrate >/dev/null 2>&1 || { echo "Error: 'migrate' command not found." >&2; exit 1; }
 	@if [ -z "$(dsn)" ]; then echo "Error: DSN is required. Example: make migrate-up dsn=..." >&2; exit 1; fi
 	migrate -path db/migrations -database "$(dsn)" up $(steps)
 
 ## migrate-down: Run migrations down (e.g., make migrate-down dsn="postgres://user:pass@host:port/db?sslmode=disable")
+.PHONY: migrate-down
 migrate-down:
 	@command -v migrate >/dev/null 2>&1 || { echo "Error: 'migrate' command not found." >&2; exit 1; }
 	@if [ -z "$(dsn)" ]; then echo "Error: DSN is required. Example: make migrate-down dsn=..." >&2; exit 1; fi
 	migrate -path db/migrations -database "$(dsn)" down $(steps)
 
 ## seed-deps: Install Python dependencies for user seeding
+.PHONY: seed-deps
 seed-deps:
 	@command -v pip3 >/dev/null 2>&1 || { echo "Error: 'pip3' command not found." >&2; exit 1; }
 	pip3 install -r $(SEED_REQ)
 
 ## seed-users: Generate user seeds using Python script (e.g., make seed-users dsn="postgres://user:pass@host:port/db?sslmode=disable")
+.PHONY: seed-users
 seed-users: seed-deps
 	@command -v python3 >/dev/null 2>&1 || { echo "Error: 'python3' command not found." >&2; exit 1; }
 	@if [ -n "$(dsn)" ]; then \
@@ -125,6 +139,7 @@ seed-users: seed-deps
 	fi
 
 ## seed-posts: Generate 100,000 post seeds using Python script (e.g., make seed-posts dsn="postgres://user:pass@host:port/db?sslmode=disable")
+.PHONY: seed-posts
 seed-posts: seed-deps
 	@command -v python3 >/dev/null 2>&1 || { echo "Error: 'python3' command not found." >&2; exit 1; }
 	@if [ -n "$(dsn)" ]; then \
@@ -134,24 +149,35 @@ seed-posts: seed-deps
 	fi
 
 ## compose-up: Start containers (docker compose up -d)
+.PHONY: compose-up
 compose-up:
 	docker compose -f $(COMPOSE_FILE) up -d --build
 
 ## compose-down: Stop and remove containers (docker compose down)
+.PHONY: compose-down
 compose-down:
 	docker compose -f $(COMPOSE_FILE) down
 
 ## compose-start: Start stopped containers (docker compose start)
+.PHONY: compose-start
 compose-start:
 	docker compose -f $(COMPOSE_FILE) start
 
 ## compose-stop: Stop running containers (docker compose stop)
+.PHONY: compose-stop
 compose-stop:
 	docker compose -f $(COMPOSE_FILE) stop
 
+# compose-logs: View logs for a specific service (e.g., make compose-logs service=backend)
+.PHONY: compose-logs
+compose-logs:
+	docker compose -f $(COMPOSE_FILE) logs $(service) -f
+
 ## help: Display available targets
+.PHONY: help
 help:
 	@grep -E '^## ' Makefile | sed 's/## //' | column -t -s ':'
 
 ## check: Run all checks (docs, vet, lint, test)
+.PHONY: check
 check: docs vet lint test
