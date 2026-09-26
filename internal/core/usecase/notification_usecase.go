@@ -31,22 +31,17 @@ func NewNotificationUseCase(
 	}
 }
 
-func (uc *notificationUseCase) GetNotifications(ctx context.Context, username string, cursor *vo.Cursor, limit int) (*ports.NotificationsPage, error) {
+func (uc *notificationUseCase) GetNotifications(ctx context.Context, recipient *domain.User, cursor *vo.Cursor, limit int) (*ports.NotificationsPage, error) {
+	if recipient == nil || recipient.ID <= 0 {
+		return nil, domain.ErrInvalidUser
+	}
 	if limit <= 0 {
 		limit = 10
 	}
 	if limit > 100 {
 		limit = 100
 	}
-	user, err := uc.userRepo.GetUserByUsername(ctx, username)
-	if err != nil {
-		return nil, fmt.Errorf("get user by username: %w", err)
-	}
-	if user == nil {
-		return nil, fmt.Errorf("get user by username: %w", domain.ErrUserNotFound)
-	}
-
-	notifications, err := uc.repo.GetByUserID(ctx, user.ID, cursor, limit+1)
+	notifications, err := uc.repo.GetByUserID(ctx, recipient.ID, cursor, limit+1)
 	if err != nil {
 		return nil, fmt.Errorf("get notifications by user id: %w", err)
 	}
@@ -61,7 +56,7 @@ func (uc *notificationUseCase) GetNotifications(ctx context.Context, username st
 	}
 
 	actorMap := map[int]string{
-		user.ID: user.Username,
+		recipient.ID: recipient.Username,
 	}
 	details := make([]*domain.NotificationDetail, 0, len(notifications))
 	for _, n := range notifications {
@@ -89,13 +84,9 @@ func (uc *notificationUseCase) GetNotifications(ctx context.Context, username st
 	return page, nil
 }
 
-func (uc *notificationUseCase) MarkAsRead(ctx context.Context, id int, username string) error {
-	user, err := uc.userRepo.GetUserByUsername(ctx, username)
-	if err != nil {
-		return fmt.Errorf("get user by username: %w", err)
-	}
-	if user == nil {
-		return fmt.Errorf("get user by username: %w", domain.ErrUserNotFound)
+func (uc *notificationUseCase) MarkAsRead(ctx context.Context, id int, userID int) error {
+	if userID <= 0 {
+		return domain.ErrInvalidUser
 	}
 
 	notification, err := uc.repo.GetByID(ctx, id)
@@ -105,7 +96,7 @@ func (uc *notificationUseCase) MarkAsRead(ctx context.Context, id int, username 
 	if notification == nil {
 		return domain.ErrNotificationNotFound
 	}
-	if notification.UserID != user.ID {
+	if notification.UserID != userID {
 		return domain.ErrNotificationNotOwned
 	}
 
@@ -117,15 +108,11 @@ func (uc *notificationUseCase) MarkAsRead(ctx context.Context, id int, username 
 	return nil
 }
 
-func (uc *notificationUseCase) MarkAllAsRead(ctx context.Context, username string) error {
-	user, err := uc.userRepo.GetUserByUsername(ctx, username)
-	if err != nil {
-		return fmt.Errorf("get user by username: %w", err)
+func (uc *notificationUseCase) MarkAllAsRead(ctx context.Context, userID int) error {
+	if userID <= 0 {
+		return domain.ErrInvalidUser
 	}
-	if user == nil {
-		return fmt.Errorf("get user by username: %w", domain.ErrUserNotFound)
-	}
-	err = uc.repo.MarkAllAsRead(ctx, user.ID)
+	err := uc.repo.MarkAllAsRead(ctx, userID)
 	if err != nil {
 		return fmt.Errorf("mark all notifications as read: %w", err)
 	}

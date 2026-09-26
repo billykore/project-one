@@ -30,12 +30,12 @@ type NotificationsPage struct {
 
 // NotificationUseCase is a driving port for notification business logic.
 type NotificationUseCase interface {
-	// GetNotifications retrieves a cursor-paginated notification page with actor details.
-	GetNotifications(ctx context.Context, username string, cursor *vo.Cursor, limit int) (*NotificationsPage, error)
+	// GetNotifications retrieves a cursor-paginated notification page for an authenticated recipient.
+	GetNotifications(ctx context.Context, recipient *domain.User, cursor *vo.Cursor, limit int) (*NotificationsPage, error)
 	// MarkAsRead verifies ownership and marks a specific notification as read.
-	MarkAsRead(ctx context.Context, id int, username string) error
+	MarkAsRead(ctx context.Context, id int, userID int) error
 	// MarkAllAsRead marks all notifications as read for the authenticated user.
-	MarkAllAsRead(ctx context.Context, username string) error
+	MarkAllAsRead(ctx context.Context, userID int) error
 	// SaveNotification saves a notification to the database.
 	SaveNotification(ctx context.Context, notification *domain.Notification) error
 }

@@ -202,7 +202,7 @@ func (h *NotificationHandler) GetNotifications(c echo.Context) error {
 		cursor = &decoded
 	}
 
-	notifications, err := h.uc.GetNotifications(c.Request().Context(), user.Username, cursor, limit)
+	notifications, err := h.uc.GetNotifications(c.Request().Context(), user, cursor, limit)
 	if err != nil {
 		h.log.Error(c.Request().Context(), "GetNotifications failed", "username", user.Username, "error", err)
 		return err
@@ -249,7 +249,7 @@ func (h *NotificationHandler) MarkAsRead(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid notification ID")
 	}
 
-	err = h.uc.MarkAsRead(c.Request().Context(), id, user.Username)
+	err = h.uc.MarkAsRead(c.Request().Context(), id, user.ID)
 	if err != nil {
 		h.log.Error(c.Request().Context(), "MarkAsRead failed", "username", user.Username, "notification_id", id, "error", err)
 		return err
@@ -270,19 +270,19 @@ func (h *NotificationHandler) MarkAsRead(c echo.Context) error {
 //	@Security		BearerAuth
 //	@Router			/notifications/read-all [put]
 func (h *NotificationHandler) MarkAllAsRead(c echo.Context) error {
-	username, ok := c.Get("username").(string)
+	user, ok := currentUser(c)
 	if !ok {
-		h.log.Error(c.Request().Context(), "MarkAllAsRead failed", "error", "Username not found in context")
+		h.log.Error(c.Request().Context(), "MarkAllAsRead failed", "error", "User not found in context")
 		return echo.ErrUnauthorized
 	}
 
-	err := h.uc.MarkAllAsRead(c.Request().Context(), username)
+	err := h.uc.MarkAllAsRead(c.Request().Context(), user.ID)
 	if err != nil {
-		h.log.Error(c.Request().Context(), "MarkAllAsRead failed", "username", username, "error", err)
+		h.log.Error(c.Request().Context(), "MarkAllAsRead failed", "username", user.Username, "error", err)
 		return err
 	}
 
-	h.log.Info(c.Request().Context(), "MarkAllAsRead succeeded", "username", username)
+	h.log.Info(c.Request().Context(), "MarkAllAsRead succeeded", "username", user.Username)
 	return c.JSON(http.StatusOK, dto.MessageResponse{Message: "All notifications marked as read"})
 }
 

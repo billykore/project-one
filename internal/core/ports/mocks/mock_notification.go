@@ -140,46 +140,46 @@ func (m *MockNotificationUseCase) EXPECT() *MockNotificationUseCaseMockRecorder 
 }
 
 // GetNotifications mocks base method.
-func (m *MockNotificationUseCase) GetNotifications(ctx context.Context, username string, cursor *valueobject.Cursor, limit int) (*ports.NotificationsPage, error) {
+func (m *MockNotificationUseCase) GetNotifications(ctx context.Context, recipient *domain.User, cursor *valueobject.Cursor, limit int) (*ports.NotificationsPage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetNotifications", ctx, username, cursor, limit)
+	ret := m.ctrl.Call(m, "GetNotifications", ctx, recipient, cursor, limit)
 	ret0, _ := ret[0].(*ports.NotificationsPage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetNotifications indicates an expected call of GetNotifications.
-func (mr *MockNotificationUseCaseMockRecorder) GetNotifications(ctx, username, cursor, limit any) *gomock.Call {
+func (mr *MockNotificationUseCaseMockRecorder) GetNotifications(ctx, recipient, cursor, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNotifications", reflect.TypeOf((*MockNotificationUseCase)(nil).GetNotifications), ctx, username, cursor, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNotifications", reflect.TypeOf((*MockNotificationUseCase)(nil).GetNotifications), ctx, recipient, cursor, limit)
 }
 
 // MarkAllAsRead mocks base method.
-func (m *MockNotificationUseCase) MarkAllAsRead(ctx context.Context, username string) error {
+func (m *MockNotificationUseCase) MarkAllAsRead(ctx context.Context, userID int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MarkAllAsRead", ctx, username)
+	ret := m.ctrl.Call(m, "MarkAllAsRead", ctx, userID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // MarkAllAsRead indicates an expected call of MarkAllAsRead.
-func (mr *MockNotificationUseCaseMockRecorder) MarkAllAsRead(ctx, username any) *gomock.Call {
+func (mr *MockNotificationUseCaseMockRecorder) MarkAllAsRead(ctx, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarkAllAsRead", reflect.TypeOf((*MockNotificationUseCase)(nil).MarkAllAsRead), ctx, username)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarkAllAsRead", reflect.TypeOf((*MockNotificationUseCase)(nil).MarkAllAsRead), ctx, userID)
 }
 
 // MarkAsRead mocks base method.
-func (m *MockNotificationUseCase) MarkAsRead(ctx context.Context, id int, username string) error {
+func (m *MockNotificationUseCase) MarkAsRead(ctx context.Context, id, userID int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MarkAsRead", ctx, id, username)
+	ret := m.ctrl.Call(m, "MarkAsRead", ctx, id, userID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // MarkAsRead indicates an expected call of MarkAsRead.
-func (mr *MockNotificationUseCaseMockRecorder) MarkAsRead(ctx, id, username any) *gomock.Call {
+func (mr *MockNotificationUseCaseMockRecorder) MarkAsRead(ctx, id, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarkAsRead", reflect.TypeOf((*MockNotificationUseCase)(nil).MarkAsRead), ctx, id, username)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarkAsRead", reflect.TypeOf((*MockNotificationUseCase)(nil).MarkAsRead), ctx, id, userID)
 }
 
 // SaveNotification mocks base method.
