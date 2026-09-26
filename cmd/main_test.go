@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	metricsadapter "github.com/billykore/project-one/internal/adapters/metrics"
+	metricsadapter "github.com/billykore/project-one/internal/operations/adapters/metrics"
 	"github.com/labstack/echo/v4"
 )
 

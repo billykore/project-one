@@ -12,22 +12,42 @@ import (
 	"time"
 
 	"github.com/billykore/project-one/api/swagger"
-	featureflagadapter "github.com/billykore/project-one/internal/adapters/featureflag"
-	"github.com/billykore/project-one/internal/adapters/hasher"
-	healthadapter "github.com/billykore/project-one/internal/adapters/health"
-	"github.com/billykore/project-one/internal/adapters/logger"
-	metricsadapter "github.com/billykore/project-one/internal/adapters/metrics"
-	"github.com/billykore/project-one/internal/adapters/pubsub"
-	"github.com/billykore/project-one/internal/adapters/repository"
-	sseadapter "github.com/billykore/project-one/internal/adapters/sse"
-	"github.com/billykore/project-one/internal/adapters/token"
-	"github.com/billykore/project-one/internal/adapters/validator"
-	"github.com/billykore/project-one/internal/api/handler"
-	"github.com/billykore/project-one/internal/api/middleware"
-	"github.com/billykore/project-one/internal/config"
-	"github.com/billykore/project-one/internal/core/domain"
-	"github.com/billykore/project-one/internal/core/ports"
-	"github.com/billykore/project-one/internal/core/usecase"
+	featureflagrepository "github.com/billykore/project-one/internal/featureflags/adapters"
+	featureflagadapter "github.com/billykore/project-one/internal/featureflags/adapters/featureflag"
+	featureflaghandler "github.com/billykore/project-one/internal/featureflags/api/handler"
+	featureflagmiddleware "github.com/billykore/project-one/internal/featureflags/api/middleware"
+	featureflagdomain "github.com/billykore/project-one/internal/featureflags/domain"
+	featureflagports "github.com/billykore/project-one/internal/featureflags/ports"
+	featureflagusecase "github.com/billykore/project-one/internal/featureflags/usecase"
+	identityrepository "github.com/billykore/project-one/internal/identity/adapters"
+	"github.com/billykore/project-one/internal/identity/adapters/hasher"
+	"github.com/billykore/project-one/internal/identity/adapters/token"
+	identityhandler "github.com/billykore/project-one/internal/identity/api/handler"
+	identitymiddleware "github.com/billykore/project-one/internal/identity/api/middleware"
+	identityports "github.com/billykore/project-one/internal/identity/ports"
+	identityusecase "github.com/billykore/project-one/internal/identity/usecase"
+	notificationrepository "github.com/billykore/project-one/internal/notifications/adapters"
+	sseadapter "github.com/billykore/project-one/internal/notifications/adapters/sse"
+	notificationhandler "github.com/billykore/project-one/internal/notifications/api/handler"
+	notificationusecase "github.com/billykore/project-one/internal/notifications/usecase"
+	healthadapter "github.com/billykore/project-one/internal/operations/adapters/health"
+	metricsadapter "github.com/billykore/project-one/internal/operations/adapters/metrics"
+	operationshandler "github.com/billykore/project-one/internal/operations/api/handler"
+	operationsmiddleware "github.com/billykore/project-one/internal/operations/api/middleware"
+	operationsports "github.com/billykore/project-one/internal/operations/ports"
+	operationsusecase "github.com/billykore/project-one/internal/operations/usecase"
+	"github.com/billykore/project-one/internal/platform/adapters/logger"
+	"github.com/billykore/project-one/internal/platform/adapters/pubsub"
+	"github.com/billykore/project-one/internal/platform/adapters/validator"
+	platformmiddleware "github.com/billykore/project-one/internal/platform/api/middleware"
+	"github.com/billykore/project-one/internal/platform/config"
+	platformports "github.com/billykore/project-one/internal/platform/ports"
+	publishingrepository "github.com/billykore/project-one/internal/publishing/adapters"
+	publishinghandler "github.com/billykore/project-one/internal/publishing/api/handler"
+	publishingusecase "github.com/billykore/project-one/internal/publishing/usecase"
+	socialrepository "github.com/billykore/project-one/internal/social/adapters"
+	socialhandler "github.com/billykore/project-one/internal/social/api/handler"
+	socialusecase "github.com/billykore/project-one/internal/social/usecase"
 	"github.com/labstack/echo/v4"
 	echomiddleware "github.com/labstack/echo/v4/middleware"
 
@@ -47,10 +67,10 @@ import (
 type application struct {
 	echo                *echo.Echo
 	db                  *gorm.DB
-	publisher           ports.Publisher
-	subscriber          ports.Subscriber
+	publisher           platformports.Publisher
+	subscriber          platformports.Subscriber
 	sseManager          *sseadapter.Manager
-	notificationHandler *handler.NotificationHandler
+	notificationHandler *notificationhandler.NotificationHandler
 }
 
 func main() {
@@ -124,48 +144,48 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 
 	val := validator.New()
 
-	userRepo := repository.NewUserRepository(db)
-	userSearchRepo := repository.NewUserSearchRepository(db)
-	userTokenRepo := repository.NewUserTokenRepository(db)
-	postCommandRepo := repository.NewPostCommandRepository(db)
-	postQueryRepo := repository.NewPostQueryRepository(db)
-	featureFlagRepo := repository.NewFeatureFlagRepository(db)
-	followRepo := repository.NewFollowRepository(db)
-	commentRepo := repository.NewCommentRepository(db)
-	likeRepo := repository.NewLikeRepository(db)
-	notificationRepo := repository.NewNotificationRepository(db)
+	userRepo := identityrepository.NewUserRepository(db)
+	userSearchRepo := identityrepository.NewUserSearchRepository(db)
+	userTokenRepo := identityrepository.NewUserTokenRepository(db)
+	postCommandRepo := publishingrepository.NewPostCommandRepository(db)
+	postQueryRepo := publishingrepository.NewPostQueryRepository(db)
+	featureFlagRepo := featureflagrepository.NewFeatureFlagRepository(db)
+	followRepo := socialrepository.NewFollowRepository(db)
+	commentRepo := publishingrepository.NewCommentRepository(db)
+	likeRepo := publishingrepository.NewLikeRepository(db)
+	notificationRepo := notificationrepository.NewNotificationRepository(db)
 
 	tokenSvc := token.NewJWTTokenService(privateKey, publicKey, cfg.JWT.ExpirationTime)
 	hasherSvc := hasher.NewBcryptHasher()
-	authenticator := usecase.NewAuthenticationUseCase(tokenSvc, userTokenRepo, userRepo)
+	authenticator := identityusecase.NewAuthenticationUseCase(tokenSvc, userTokenRepo, userRepo)
 
-	loginUc := usecase.NewLoginUseCase(userRepo, tokenSvc, userTokenRepo, hasherSvc, lgr)
-	userUc := usecase.NewUserUseCase(userRepo, hasherSvc, userSearchRepo)
+	loginUc := identityusecase.NewLoginUseCase(userRepo, tokenSvc, userTokenRepo, hasherSvc, lgr)
+	userUc := identityusecase.NewUserUseCase(userRepo, hasherSvc, userSearchRepo)
 	featureFlagEvaluator, err := featureflagadapter.NewEvaluator(
 		featureFlagRepo,
 		lgr,
-		domain.Environment(cfg.FeatureFlags.Environment),
+		featureflagdomain.Environment(cfg.FeatureFlags.Environment),
 		cfg.FeatureFlags.RefreshInterval,
 	)
 	if err != nil {
 		return nil, err
 	}
 	featureFlagEvaluator.StartRefreshLoop(context.Background())
-	featureFlagUc := usecase.NewFeatureFlagUseCase(featureFlagRepo, featureFlagEvaluator, lgr)
-	postCommandUc := usecase.NewPostCommandUseCase(postCommandRepo, likeRepo, userRepo, publisher, lgr, featureFlagEvaluator)
-	postQueryUc := usecase.NewPostQueryUseCase(postQueryRepo, likeRepo, lgr)
-	followUc := usecase.NewFollowUseCase(followRepo, userRepo, publisher, lgr)
-	commentUc := usecase.NewCommentUseCase(commentRepo, postCommandRepo, userRepo, publisher)
-	notificationUc := usecase.NewNotificationUseCase(notificationRepo, userRepo, lgr)
-	feedUc := usecase.NewFeedUseCase(postQueryRepo, followRepo, lgr)
+	featureFlagUc := featureflagusecase.NewFeatureFlagUseCase(featureFlagRepo, featureFlagEvaluator, lgr)
+	postCommandUc := publishingusecase.NewPostCommandUseCase(postCommandRepo, likeRepo, userRepo, publisher, lgr, featureFlagEvaluator)
+	postQueryUc := publishingusecase.NewPostQueryUseCase(postQueryRepo, likeRepo, lgr)
+	followUc := socialusecase.NewFollowUseCase(followRepo, userRepo, publisher, lgr)
+	commentUc := publishingusecase.NewCommentUseCase(commentRepo, postCommandRepo, userRepo, publisher)
+	notificationUc := notificationusecase.NewNotificationUseCase(notificationRepo, userRepo, lgr)
+	feedUc := socialusecase.NewFeedUseCase(postQueryRepo, followRepo, lgr)
 
-	userHdl := handler.NewUserHandler(userUc, loginUc, followUc, postQueryUc, val, lgr)
-	postCommandHdl := handler.NewPostCommandHandler(postCommandUc, commentUc, val, lgr)
-	postQueryHdl := handler.NewPostQueryHandler(postQueryUc, commentUc, lgr)
-	commentHdl := handler.NewCommentHandler(commentUc, val, lgr)
-	notificationHdl := handler.NewNotificationHandler(lgr, subscriber, notificationUc, userUc, val, sseManager)
-	feedHdl := handler.NewFeedHandler(feedUc, lgr)
-	featureFlagHdl := handler.NewFeatureFlagHandler(featureFlagUc, val, cfg.FeatureFlags.Environment)
+	userHdl := identityhandler.NewUserHandler(userUc, loginUc, followUc, postQueryUc, val, lgr)
+	postCommandHdl := publishinghandler.NewPostCommandHandler(postCommandUc, commentUc, val, lgr)
+	postQueryHdl := publishinghandler.NewPostQueryHandler(postQueryUc, commentUc, lgr)
+	commentHdl := publishinghandler.NewCommentHandler(commentUc, val, lgr)
+	notificationHdl := notificationhandler.NewNotificationHandler(lgr, subscriber, notificationUc, userUc, val, sseManager)
+	feedHdl := socialhandler.NewFeedHandler(feedUc, lgr)
+	featureFlagHdl := featureflaghandler.NewFeatureFlagHandler(featureFlagUc, val, cfg.FeatureFlags.Environment)
 
 	sqlDB, err := db.DB()
 	if err != nil {
@@ -174,10 +194,10 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 	// ponytail: the notification component reports the subscriber connection
 	// state, not the lazily-connecting publisher, so readiness is meaningful
 	// before the first publish.
-	healthCheckers := []ports.DependencyChecker{
+	healthCheckers := []operationsports.DependencyChecker{
 		healthadapter.NewDatabaseChecker(sqlDB),
 	}
-	if reporter, ok := subscriber.(ports.HealthReporter); ok {
+	if reporter, ok := subscriber.(platformports.HealthReporter); ok {
 		healthCheckers = append(healthCheckers, healthadapter.NewNotificationChecker(cfg.MessageBroker.Type, reporter))
 	} else {
 		lgr.Warn(context.Background(), "message broker does not report connection health", "type", cfg.MessageBroker.Type)
@@ -195,17 +215,17 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 		lgr.Warn(context.Background(), "monitoring credentials are not configured; /metrics rejects every scrape")
 	}
 
-	healthUc := usecase.NewHealthUseCase(healthCheckers, metricsRecorder, 0, lgr)
-	healthHdl := handler.NewHealthHandler(healthUc, lgr)
+	healthUc := operationsusecase.NewHealthUseCase(healthCheckers, metricsRecorder, 0, lgr)
+	healthHdl := operationshandler.NewHealthHandler(healthUc, lgr)
 
 	e := echo.New()
 	// Registered first so every completed request, including recovered panics,
 	// is observed with the status the error handler will write.
-	e.Use(middleware.Metrics(metricsRecorder))
+	e.Use(operationsmiddleware.Metrics(metricsRecorder))
 	e.Use(echomiddleware.Recover())
 	e.Use(echomiddleware.RequestID())
-	e.Use(middleware.RequestLogging(lgr))
-	e.HTTPErrorHandler = middleware.ErrorHandler(lgr, cfg.App.ErrorTypeBaseURL, cfg.App.Env == "debug")
+	e.Use(platformmiddleware.RequestLogging(lgr))
+	e.HTTPErrorHandler = platformmiddleware.ErrorHandler(lgr, cfg.App.ErrorTypeBaseURL, cfg.App.Env == "debug")
 
 	if cfg.App.Env != "production" {
 		e.GET("/swagger/*", echoSwagger.WrapHandler)
@@ -225,18 +245,18 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 
 func registerRoutes(
 	e *echo.Echo,
-	authenticator ports.Authenticator,
-	userHdl *handler.UserHandler,
-	postCommandHdl *handler.PostCommandHandler,
-	postQueryHdl *handler.PostQueryHandler,
-	commentHdl *handler.CommentHandler,
-	notificationHdl *handler.NotificationHandler,
-	feedHdl *handler.FeedHandler,
-	featureFlagHdl *handler.FeatureFlagHandler,
-	healthHdl *handler.HealthHandler,
+	authenticator identityports.Authenticator,
+	userHdl *identityhandler.UserHandler,
+	postCommandHdl *publishinghandler.PostCommandHandler,
+	postQueryHdl *publishinghandler.PostQueryHandler,
+	commentHdl *publishinghandler.CommentHandler,
+	notificationHdl *notificationhandler.NotificationHandler,
+	feedHdl *socialhandler.FeedHandler,
+	featureFlagHdl *featureflaghandler.FeatureFlagHandler,
+	healthHdl *operationshandler.HealthHandler,
 	metricsHandler http.Handler,
 	featureFlagOperators []string,
-	featureFlagEvaluator ports.FeatureFlagEvaluator,
+	featureFlagEvaluator featureflagports.FeatureFlagEvaluator,
 ) {
 	// Liveness answers for the process only; readiness reports dependency state.
 	e.GET("/healthz", healthHdl.HandleLiveness)
@@ -247,14 +267,14 @@ func registerRoutes(
 	auth := e.Group("/auth")
 	auth.POST("/register", userHdl.HandleRegister)
 	auth.POST("/login", userHdl.HandleLogin)
-	auth.POST("/logout", userHdl.HandleLogout, middleware.Authorize(authenticator))
+	auth.POST("/logout", userHdl.HandleLogout, identitymiddleware.Authorize(authenticator))
 
 	users := e.Group("/users")
 	users.GET("/search", userHdl.SearchUsers)
 	users.GET("/:username", userHdl.GetUser)
 	users.GET("/:username/posts", userHdl.GetUserPosts)
 
-	usersAuth := users.Group("", middleware.Authorize(authenticator))
+	usersAuth := users.Group("", identitymiddleware.Authorize(authenticator))
 	usersAuth.PUT("/password", userHdl.HandleChangePassword)
 	usersAuth.PUT("/profile", userHdl.HandleUpdateProfile)
 	usersAuth.GET("/:username/following", userHdl.GetFollowing)
@@ -262,7 +282,7 @@ func registerRoutes(
 	usersAuth.POST("/:username/followers", userHdl.HandleFollow)
 	usersAuth.DELETE("/:username/followers", userHdl.HandleUnfollow)
 
-	featureFlags := e.Group("/admin/feature-flags", middleware.Authorize(authenticator), middleware.OperatorOnly(featureFlagOperators))
+	featureFlags := e.Group("/admin/feature-flags", identitymiddleware.Authorize(authenticator), featureflagmiddleware.OperatorOnly(featureFlagOperators))
 	featureFlags.GET("", featureFlagHdl.ListFlags)
 	featureFlags.POST("", featureFlagHdl.CreateFlag)
 	featureFlags.GET("/:key", featureFlagHdl.GetFlag)
@@ -272,11 +292,11 @@ func registerRoutes(
 	featureFlags.POST("/:key/archive", featureFlagHdl.Archive)
 	featureFlags.GET("/:key/audit", featureFlagHdl.ListAudit)
 
-	e.GET("/feature-flags/evaluate", featureFlagHdl.Evaluate, middleware.OptionalAuthorize(authenticator))
+	e.GET("/feature-flags/evaluate", featureFlagHdl.Evaluate, identitymiddleware.OptionalAuthorize(authenticator))
 
 	e.GET("/posts/:id", postQueryHdl.GetPostByID)
-	posts := e.Group("/posts", middleware.Authorize(authenticator))
-	posts.POST("", postCommandHdl.CreatePost, middleware.FeatureFlagGate(featureFlagEvaluator, "post-creation"))
+	posts := e.Group("/posts", identitymiddleware.Authorize(authenticator))
+	posts.POST("", postCommandHdl.CreatePost, featureflagmiddleware.FeatureFlagGate(featureFlagEvaluator, "post-creation"))
 	posts.GET("", postQueryHdl.GetPosts)
 	posts.PUT("/:id", postCommandHdl.UpdatePost)
 	posts.DELETE("/:id", postCommandHdl.DeletePost)
@@ -285,17 +305,17 @@ func registerRoutes(
 	posts.DELETE("/:id/likes", postCommandHdl.UnlikePost)
 	posts.GET("/:id/likes", postQueryHdl.GetLikeStatus)
 
-	comments := e.Group("/comments", middleware.Authorize(authenticator))
+	comments := e.Group("/comments", identitymiddleware.Authorize(authenticator))
 	comments.PUT("/:id", commentHdl.EditComment)
 	comments.DELETE("/:id", commentHdl.DeleteComment)
 
-	notifications := e.Group("/notifications", middleware.Authorize(authenticator))
+	notifications := e.Group("/notifications", identitymiddleware.Authorize(authenticator))
 	notifications.GET("", notificationHdl.GetNotifications)
 	notifications.GET("/stream", notificationHdl.StreamNotifications)
 	notifications.PUT("/:id/read", notificationHdl.MarkAsRead)
 	notifications.PUT("/read-all", notificationHdl.MarkAllAsRead)
 
-	feeds := e.Group("/feeds", middleware.Authorize(authenticator))
+	feeds := e.Group("/feeds", identitymiddleware.Authorize(authenticator))
 	feeds.GET("", feedHdl.HandleGetFeed)
 }
 
@@ -303,7 +323,7 @@ func registerRoutes(
 // the private Compose network path. It is intentionally absent from the public
 // API surface and from the Swagger contract.
 func registerMetricsRoute(e *echo.Echo, handler http.Handler) {
-	e.GET(middleware.SelfScrapeRoute, echo.WrapHandler(handler))
+	e.GET(operationsmiddleware.SelfScrapeRoute, echo.WrapHandler(handler))
 }
 
 func (a *application) shutdown(ctx context.Context, lgr *logger.Logger) error {

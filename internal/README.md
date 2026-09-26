@@ -1,21 +1,15 @@
-# `/internal`
+# Internal modules
 
-Private application and library code. This is the code you don't want others importing in their applications or libraries. Note that this layout pattern is enforced by the Go compiler itself. See the Go 1.4 [`release notes`](https://golang.org/doc/go1.4#internalpackages) for more details. Note that you are not limited to the top level `internal` directory. You can have more than one `internal` directory at any level of your project tree.
+`internal` contains private application code. Business code is organised by bounded context, not by a shared technical layer.
 
-You can optionally add a bit of extra structure to your internal packages to separate your shared and non-shared internal code. It's not required (especially for smaller projects), but it's nice to have visual clues showing the intended package use. Your actual application code can go in the `/internal/app` directory (e.g., `/internal/app/myapp`) and the code shared by those apps in the `/internal/pkg` directory (e.g., `/internal/pkg/myprivlib`).
+- `identity`: users, credentials, sessions, and authentication.
+- `publishing`: posts, comments, and likes.
+- `social`: follows and feeds.
+- `notifications`: persisted notifications and their broker event contract.
+- `featureflags`: release controls.
+- `operations`: health and metrics contracts.
+- `platform`: the restricted shared kernel: generic pagination, problem vocabulary, and technical ports only.
 
-Examples:
+Each business context owns its `domain`, `ports`, `usecase`, `adapters`, `api`, and (where applicable) `config` packages. `platform` owns only cross-cutting infrastructure, bootstrap configuration, and reusable HTTP mechanics. Do not add business entities, use cases, or repositories to `platform`.
 
-* <https://github.com/hashicorp/terraform/tree/main/internal>
-* <https://github.com/influxdata/influxdb/tree/master/internal>
-* <https://github.com/perkeep/perkeep/tree/master/internal>
-* <https://github.com/jaegertracing/jaeger/tree/main/internal>
-* <https://github.com/moby/moby/tree/master/internal>
-* <https://github.com/satellity/satellity/tree/main/internal>
-* <https://github.com/minio/minio/tree/master/internal>
-
-## `/internal/pkg`
-
-Examples:
-
-* <https://github.com/hashicorp/waypoint/tree/main/internal/pkg>
+Cross-context calls should be intentional and narrow: use the upstream context's published types or a local port with only the operation required. The notification event payload is the current explicit integration contract. Shared GoMock test doubles are generated into `testkit/mocks` with `make mocks`.

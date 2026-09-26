@@ -35,13 +35,17 @@ Project One is a full-stack social publishing application. It combines a Go/Echo
 
 ## Architecture
 
-The backend keeps business rules independent of delivery and infrastructure concerns:
+The backend keeps business rules independent of delivery and infrastructure concerns, and assigns each business capability to a bounded context:
 
-- `internal/core/domain`: entities, value objects, and domain errors
-- `internal/core/ports`: interfaces used at architectural boundaries
-- `internal/core/usecase`: application business logic
-- `internal/adapters`: PostgreSQL repositories, token/password services, pub/sub clients, logging, validation, and SSE connection management
-- `internal/api`: Echo handlers, DTOs, and middleware
+- `internal/identity`: accounts, credentials, sessions, authentication, and user search
+- `internal/publishing`: posts, comments, and likes
+- `internal/social`: follows and the personal feed
+- `internal/notifications`: notification persistence and the broker event contract
+- `internal/featureflags`: flag administration and evaluation
+- `internal/operations`: readiness assessment and HTTP metrics contracts
+- `internal/platform`: the deliberately small shared kernel—pagination, transport-neutral problem vocabulary, and technical ports for logging, messaging, and validation
+
+Every context owns its domain, ports, use cases, adapters, HTTP API, and any runtime configuration it needs. `platform` retains only bootstrap/technical concerns: database and broker configuration, logging, validation, broker clients, common HTTP error handling, and authenticated-principal extraction. Cross-context dependencies are explicit and narrow (for example, publishing emits the notifications event contract). Generated mocks live in `internal/testkit/mocks`.
 
 The frontend uses Next.js route handlers as a same-origin backend-for-frontend (BFF). Browser requests carry the session cookies to `/api/*`; the route handlers forward them to the Go API through the server-only `API_URL` setting.
 
@@ -205,7 +209,7 @@ See [web/README.md](web/README.md) for frontend routes, rendering boundaries, AP
 | `make run` | Build and run the backend |
 | `make test` | Run backend tests with the race detector |
 | `make test-cover` | Run backend tests and write the HTML coverage report |
-| `make mocks` | Regenerate GoMock implementations for all core ports |
+| `make mocks` | Regenerate GoMock implementations for all context and platform ports |
 | `make vet` | Run `go vet` |
 | `make lint` | Run `golangci-lint` |
 | `make docs` | Format Swagger annotations and regenerate `api/swagger` |
