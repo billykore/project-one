@@ -5,6 +5,37 @@ All notable changes to Project One are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.1.0] - 2026-09-26 (fb60339)
+
+### Changed
+
+- Added version, revision, and build-date metadata to backend container images
+  and tagged builds with both the release version and commit SHA.
+
+## [5.0.0] - 2026-09-26 (00bdd0f)
+
+### Added
+
+- Database migrations that repair identity references and store follow, comment,
+  like, and session relationships by stable user IDs.
+
+### Changed
+
+- Reorganized the backend as a modular monolith with bounded contexts for
+  identity, publishing, social, notifications, feature flags, and operations;
+  retained shared technical concerns in the restricted `platform` kernel.
+- Updated authentication, authorization, session, post, comment, like, follow,
+  feed, and notification flows to use authenticated user IDs rather than
+  usernames or client-derived identities.
+- Excluded generated coverage artifacts from version control.
+- Reduced structured-log noise by skipping routine readiness and metrics
+  requests.
+
+### Fixed
+
+- Made frontend server-side API fetches resolve to the internal API origin
+  instead of the incoming request host.
+
 ## [4.1.0] - 2026-09-24 (7cd0b2c)
 
 ### Added
@@ -149,6 +180,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 - Full-stack authentication, including registration, login, logout, and session handling.
 
+[5.1.0]: https://github.com/billykore/project-one/compare/v5.0.0...v5.1.0
+[5.0.0]: https://github.com/billykore/project-one/compare/v4.1.0...v5.0.0
 [4.1.0]: https://github.com/billykore/project-one/compare/v4.0.0...v4.1.0
 [4.0.0]: https://github.com/billykore/project-one/compare/v3.2.0...v4.0.0
 [3.2.0]: https://github.com/billykore/project-one/compare/v3.1.0...v3.2.0
