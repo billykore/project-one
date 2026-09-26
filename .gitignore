@@ -30,6 +30,7 @@ Desktop.ini
 # ------------------------------------------------------------------------------
 # Compiled application binary (make build -> bin/main)
 /bin/*
+*/bin/*
 *.exe
 *.exe~
 *.dll

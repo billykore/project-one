@@ -10,7 +10,7 @@ githooks:
 	git config core.hooksPath githooks
 	chmod +x githooks/pre-commit githooks/pre-push githooks/prepare-commit-msg
 
-BUILD_DIR := ./bin
+BUILD_DIR := ./build/bin
 
 # Docker image name (override with IMAGE_NAME=<name>)
 IMAGE_NAME ?= project-one
@@ -68,13 +68,14 @@ test-cover:
 .PHONY: mocks
 mocks:
 	@echo "Mock Generation"
-	@mkdir -p internal/core/ports/mocks
-	@rm -f internal/core/ports/mocks/mock_*.go
-	@for file in internal/core/ports/*.go; do \
+	@mkdir -p internal/testkit/mocks
+	@rm -f internal/testkit/mocks/mock_*.go
+	@for file in internal/featureflags/ports/*.go internal/identity/ports/*.go internal/notifications/ports/*.go internal/operations/ports/*.go internal/publishing/ports/*.go internal/social/ports/*.go internal/platform/ports/*.go; do \
 		filename=$$(basename $$file); \
-		mockname="mock_$$filename"; \
-		echo "Generating mock for $$filename -> $$mockname"; \
-		go run go.uber.org/mock/mockgen -source=$$file -destination=internal/core/ports/mocks/$$mockname -package=mocks; \
+		context=$$(basename $$(dirname $$(dirname $$file))); \
+		mockname="mock_$${context}_$$filename"; \
+		echo "Generating mock for $$file -> $$mockname"; \
+		go run go.uber.org/mock/mockgen -source=$$file -destination=internal/testkit/mocks/$$mockname -package=mocks; \
 	done
 	@echo "Mocks generation completed successfully."
 
