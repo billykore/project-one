@@ -14,9 +14,11 @@ BUILD_DIR := ./build/bin
 
 # Docker image name (override with IMAGE_NAME=<name>)
 IMAGE_NAME ?= project-one
-# Image tag is the 7-character short commit hash of HEAD
-COMMIT_SHA := $(shell git rev-parse --short=7 HEAD)
-DOCKER_IMAGE := $(IMAGE_NAME):$(COMMIT_SHA)
+COMMIT_SHA := $(shell git rev-parse --short=12 HEAD)
+GIT_TAG := $(shell git describe --tags --exact-match 2>/dev/null || echo "dev")
+BUILD_DATE := $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
+DOCKER_IMAGE := $(IMAGE_NAME):$(GIT_TAG)
+DOCKER_IMAGE_SHA := $(IMAGE_NAME):sha-$(COMMIT_SHA)
 
 # Default config path
 config ?= ./configs
@@ -37,8 +39,15 @@ run: build
 .PHONY: docker-build
 docker-build:
 	@if [ -z "$(COMMIT_SHA)" ]; then echo "Error: unable to determine git commit hash. Ensure this is a git repository." >&2; exit 1; fi
-	docker build -t $(DOCKER_IMAGE) -f Dockerfile .
+	docker build \
+		--build-arg GIT_TAG=$(GIT_TAG) \
+		--build-arg GIT_SHA=$(COMMIT_SHA) \
+		--build-arg BUILD_DATE=$(BUILD_DATE) \
+		-t $(DOCKER_IMAGE) \
+		-t $(DOCKER_IMAGE_SHA) \
+		-f Dockerfile .
 	@echo "Built image: $(DOCKER_IMAGE)"
+	@echo "Built image: $(DOCKER_IMAGE_SHA)"
 
 # Coverage output directory
 COVERAGE_DIR := ./test/coverage
