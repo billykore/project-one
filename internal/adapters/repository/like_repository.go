@@ -9,6 +9,7 @@ import (
 	"github.com/billykore/project-one/internal/core/domain"
 	"github.com/billykore/project-one/internal/core/ports"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type likeModel struct {
@@ -33,6 +34,62 @@ type likeRepository struct {
 // NewLikeRepository creates a new instance of LikeRepository.
 func NewLikeRepository(db *gorm.DB) ports.LikeRepository {
 	return &likeRepository{db: db}
+}
+
+// SetLiked changes the relationship and its post counter atomically. This
+// avoids stale read-modify-write counter updates and rolls both writes back on
+// failure.
+func (r *likeRepository) SetLiked(ctx context.Context, postID int, username string, liked bool) (int, bool, error) {
+	var likeCount int
+	var changed bool
+	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if liked {
+			result := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&likeModel{PostID: postID, Username: username})
+			if result.Error != nil {
+				return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, result.Error)
+			}
+			changed = result.RowsAffected == 1
+			if changed {
+				if err := updateLikeCount(tx, postID, "COALESCE(like_count, 0) + 1"); err != nil {
+					return err
+				}
+			}
+		} else {
+			result := tx.Where("post_id = ? AND username = ?", postID, username).Delete(&likeModel{})
+			if result.Error != nil {
+				return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, result.Error)
+			}
+			changed = result.RowsAffected == 1
+			if changed {
+				if err := updateLikeCount(tx, postID, "GREATEST(COALESCE(like_count, 0) - 1, 0)"); err != nil {
+					return err
+				}
+			}
+		}
+
+		result := tx.Model(&postModel{}).Select("like_count").Where("id = ? AND deleted_at IS NULL", postID).Scan(&likeCount)
+		if result.Error != nil {
+			return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, result.Error)
+		}
+		if result.RowsAffected == 0 {
+			return domain.ErrPostNotFound
+		}
+		return nil
+	})
+	return likeCount, changed, err
+}
+
+func updateLikeCount(tx *gorm.DB, postID int, expression string) error {
+	result := tx.Model(&postModel{}).
+		Where("id = ? AND deleted_at IS NULL", postID).
+		UpdateColumn("like_count", gorm.Expr(expression))
+	if result.Error != nil {
+		return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, result.Error)
+	}
+	if result.RowsAffected == 0 {
+		return domain.ErrPostNotFound
+	}
+	return nil
 }
 
 func (r *likeRepository) Create(ctx context.Context, like *domain.Like) error {

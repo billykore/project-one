@@ -26,6 +26,7 @@ func (m *userTokenModel) TableName() string {
 func fromDomainUserToken(token *domain.UserToken) *userTokenModel {
 	return &userTokenModel{
 		ID:        token.ID,
+		UserID:    token.UserID,
 		Username:  token.Username,
 		Token:     token.Token,
 		ExpiresAt: token.ExpiresAt,
@@ -50,6 +51,22 @@ func (r *userTokenRepository) StoreToken(ctx context.Context, token *domain.User
 	return nil
 }
 
+// IsActive verifies that the presented JWT belongs to an active, unexpired
+// persisted session for the same user. JWT verification remains the
+// responsibility of the token service; this repository only supplies the
+// server-side revocation check.
+func (r *userTokenRepository) IsActive(ctx context.Context, token string, userID int) (bool, error) {
+	var count int64
+	err := r.db.WithContext(ctx).
+		Model(&userTokenModel{}).
+		Where("token = ? AND user_id = ? AND expires_at > ?", token, userID, time.Now()).
+		Count(&count).Error
+	if err != nil {
+		return false, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
+	}
+	return count == 1, nil
+}
+
 func (r *userTokenRepository) GetTokenByUsername(ctx context.Context, username string) (*domain.UserToken, error) {
 	var m userTokenModel
 	err := r.db.WithContext(ctx).Where("username = ?", username).First(&m).Error
@@ -61,6 +78,7 @@ func (r *userTokenRepository) GetTokenByUsername(ctx context.Context, username s
 	}
 	return &domain.UserToken{
 		ID:        m.ID,
+		UserID:    m.UserID,
 		Username:  m.Username,
 		Token:     m.Token,
 		ExpiresAt: m.ExpiresAt,

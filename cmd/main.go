@@ -137,6 +137,7 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 
 	tokenSvc := token.NewJWTTokenService(privateKey, publicKey, cfg.JWT.ExpirationTime)
 	hasherSvc := hasher.NewBcryptHasher()
+	authenticator := usecase.NewAuthenticationUseCase(tokenSvc, userTokenRepo, userRepo)
 
 	loginUc := usecase.NewLoginUseCase(userRepo, tokenSvc, userTokenRepo, hasherSvc, lgr)
 	userUc := usecase.NewUserUseCase(userRepo, hasherSvc, userSearchRepo)
@@ -210,7 +211,7 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 		e.GET("/swagger/*", echoSwagger.WrapHandler)
 	}
 
-	registerRoutes(e, tokenSvc, userHdl, postCommandHdl, postQueryHdl, commentHdl, notificationHdl, feedHdl, featureFlagHdl, healthHdl, metricsRecorder.Handler(monitoringCredential), cfg.FeatureFlags.Operators, featureFlagEvaluator)
+	registerRoutes(e, authenticator, userHdl, postCommandHdl, postQueryHdl, commentHdl, notificationHdl, feedHdl, featureFlagHdl, healthHdl, metricsRecorder.Handler(monitoringCredential), cfg.FeatureFlags.Operators, featureFlagEvaluator)
 
 	return &application{
 		echo:                e,
@@ -224,7 +225,7 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 
 func registerRoutes(
 	e *echo.Echo,
-	tokenSvc ports.TokenService,
+	authenticator ports.Authenticator,
 	userHdl *handler.UserHandler,
 	postCommandHdl *handler.PostCommandHandler,
 	postQueryHdl *handler.PostQueryHandler,
@@ -246,14 +247,14 @@ func registerRoutes(
 	auth := e.Group("/auth")
 	auth.POST("/register", userHdl.HandleRegister)
 	auth.POST("/login", userHdl.HandleLogin)
-	auth.POST("/logout", userHdl.HandleLogout, middleware.Authorize(tokenSvc))
+	auth.POST("/logout", userHdl.HandleLogout, middleware.Authorize(authenticator))
 
 	users := e.Group("/users")
 	users.GET("/search", userHdl.SearchUsers)
 	users.GET("/:username", userHdl.GetUser)
 	users.GET("/:username/posts", userHdl.GetUserPosts)
 
-	usersAuth := users.Group("", middleware.Authorize(tokenSvc))
+	usersAuth := users.Group("", middleware.Authorize(authenticator))
 	usersAuth.PUT("/password", userHdl.HandleChangePassword)
 	usersAuth.PUT("/profile", userHdl.HandleUpdateProfile)
 	usersAuth.GET("/:username/following", userHdl.GetFollowing)
@@ -261,7 +262,7 @@ func registerRoutes(
 	usersAuth.POST("/:username/followers", userHdl.HandleFollow)
 	usersAuth.DELETE("/:username/followers", userHdl.HandleUnfollow)
 
-	featureFlags := e.Group("/admin/feature-flags", middleware.Authorize(tokenSvc), middleware.OperatorOnly(featureFlagOperators))
+	featureFlags := e.Group("/admin/feature-flags", middleware.Authorize(authenticator), middleware.OperatorOnly(featureFlagOperators))
 	featureFlags.GET("", featureFlagHdl.ListFlags)
 	featureFlags.POST("", featureFlagHdl.CreateFlag)
 	featureFlags.GET("/:key", featureFlagHdl.GetFlag)
@@ -271,10 +272,10 @@ func registerRoutes(
 	featureFlags.POST("/:key/archive", featureFlagHdl.Archive)
 	featureFlags.GET("/:key/audit", featureFlagHdl.ListAudit)
 
-	e.GET("/feature-flags/evaluate", featureFlagHdl.Evaluate, middleware.OptionalAuthorize(tokenSvc))
+	e.GET("/feature-flags/evaluate", featureFlagHdl.Evaluate, middleware.OptionalAuthorize(authenticator))
 
 	e.GET("/posts/:id", postQueryHdl.GetPostByID)
-	posts := e.Group("/posts", middleware.Authorize(tokenSvc))
+	posts := e.Group("/posts", middleware.Authorize(authenticator))
 	posts.POST("", postCommandHdl.CreatePost, middleware.FeatureFlagGate(featureFlagEvaluator, "post-creation"))
 	posts.GET("", postQueryHdl.GetPosts)
 	posts.PUT("/:id", postCommandHdl.UpdatePost)
@@ -284,17 +285,17 @@ func registerRoutes(
 	posts.DELETE("/:id/likes", postCommandHdl.UnlikePost)
 	posts.GET("/:id/likes", postQueryHdl.GetLikeStatus)
 
-	comments := e.Group("/comments", middleware.Authorize(tokenSvc))
+	comments := e.Group("/comments", middleware.Authorize(authenticator))
 	comments.PUT("/:id", commentHdl.EditComment)
 	comments.DELETE("/:id", commentHdl.DeleteComment)
 
-	notifications := e.Group("/notifications", middleware.Authorize(tokenSvc))
+	notifications := e.Group("/notifications", middleware.Authorize(authenticator))
 	notifications.GET("", notificationHdl.GetNotifications)
 	notifications.GET("/stream", notificationHdl.StreamNotifications)
 	notifications.PUT("/:id/read", notificationHdl.MarkAsRead)
 	notifications.PUT("/read-all", notificationHdl.MarkAllAsRead)
 
-	feeds := e.Group("/feeds", middleware.Authorize(tokenSvc))
+	feeds := e.Group("/feeds", middleware.Authorize(authenticator))
 	feeds.GET("", feedHdl.HandleGetFeed)
 }
 

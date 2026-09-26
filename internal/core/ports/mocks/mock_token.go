@@ -70,6 +70,21 @@ func (mr *MockTokenRepositoryMockRecorder) GetTokenByUsername(ctx, username any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTokenByUsername", reflect.TypeOf((*MockTokenRepository)(nil).GetTokenByUsername), ctx, username)
 }
 
+// IsActive mocks base method.
+func (m *MockTokenRepository) IsActive(ctx context.Context, token string, userID int) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsActive", ctx, token, userID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IsActive indicates an expected call of IsActive.
+func (mr *MockTokenRepositoryMockRecorder) IsActive(ctx, token, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsActive", reflect.TypeOf((*MockTokenRepository)(nil).IsActive), ctx, token, userID)
+}
+
 // StoreToken mocks base method.
 func (m *MockTokenRepository) StoreToken(ctx context.Context, token *domain.UserToken) error {
 	m.ctrl.T.Helper()

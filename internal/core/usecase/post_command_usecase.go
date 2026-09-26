@@ -96,27 +96,20 @@ func (uc *postCommandUseCase) LikePost(ctx context.Context, postID int, username
 		uc.log.Error(ctx, "failed to verify post existence for like", "postID", postID, "error", err)
 		return 0, fmt.Errorf("verify post existence: %w", err)
 	}
-	like := &domain.Like{PostID: postID, Username: username}
-	if err := uc.likeRepo.Create(ctx, like); err != nil {
-		if errors.Is(err, domain.ErrPostNotFound) {
-			return 0, err
-		}
-		if errors.Is(err, domain.ErrAlreadyLiked) {
-			return post.LikeCount, nil
-		}
-		uc.log.Error(ctx, "failed to create like", "postID", postID, "username", username, "error", err)
-		return 0, fmt.Errorf("create like: %w", err)
+	likeCount, changed, err := uc.likeRepo.SetLiked(ctx, postID, username, true)
+	if err != nil {
+		uc.log.Error(ctx, "failed to set like state", "postID", postID, "username", username, "error", err)
+		return 0, fmt.Errorf("set like state: %w", err)
 	}
-	post.AddLike()
-	if err := uc.postRepo.Save(ctx, post); err != nil {
-		uc.log.Error(ctx, "failed to save liked post", "postID", postID, "error", err)
-		return 0, fmt.Errorf("save liked post: %w", err)
+	post.LikeCount = likeCount
+	if !changed {
+		return likeCount, nil
 	}
 	uc.log.Info(ctx, "post liked successfully", "postID", postID, "username", username)
 	if post.Username != username {
-		uc.publishLikeNotification(ctx, post, like)
+		uc.publishLikeNotification(ctx, post, &domain.Like{PostID: postID, Username: username})
 	}
-	return post.LikeCount, nil
+	return likeCount, nil
 }
 
 func (uc *postCommandUseCase) UnlikePost(ctx context.Context, postID int, username string) (int, error) {
@@ -134,20 +127,17 @@ func (uc *postCommandUseCase) UnlikePost(ctx context.Context, postID int, userna
 		uc.log.Error(ctx, "failed to get post for unlike", "postID", postID, "error", err)
 		return 0, fmt.Errorf("get post for unlike: %w", err)
 	}
-	if err := uc.likeRepo.Delete(ctx, postID, username); err != nil {
-		if errors.Is(err, domain.ErrNotLiked) {
-			return post.LikeCount, nil
-		}
-		uc.log.Error(ctx, "failed to delete like", "postID", postID, "username", username, "error", err)
-		return 0, fmt.Errorf("delete like: %w", err)
+	likeCount, changed, err := uc.likeRepo.SetLiked(ctx, postID, username, false)
+	if err != nil {
+		uc.log.Error(ctx, "failed to set like state", "postID", postID, "username", username, "error", err)
+		return 0, fmt.Errorf("set like state: %w", err)
 	}
-	post.RemoveLike()
-	if err := uc.postRepo.Save(ctx, post); err != nil {
-		uc.log.Error(ctx, "failed to save unliked post", "postID", postID, "error", err)
-		return 0, fmt.Errorf("save unliked post: %w", err)
+	post.LikeCount = likeCount
+	if !changed {
+		return likeCount, nil
 	}
 	uc.log.Info(ctx, "post unliked successfully", "postID", postID, "username", username)
-	return post.LikeCount, nil
+	return likeCount, nil
 }
 
 func (uc *postCommandUseCase) publishLikeNotification(ctx context.Context, post *domain.Post, like *domain.Like) {

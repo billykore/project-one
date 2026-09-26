@@ -351,8 +351,7 @@ func TestPostCommandUseCase_LikePost(t *testing.T) {
 
 	t.Run("success - new like", func(t *testing.T) {
 		mockRepo.EXPECT().Load(ctx, postID).Return(&domain.Post{ID: postID, Username: "postowner", LikeCount: 4}, nil)
-		mockLikeRepo.EXPECT().Create(ctx, gomock.Any()).Return(nil)
-		mockRepo.EXPECT().Save(ctx, gomock.Any()).Return(nil)
+		mockLikeRepo.EXPECT().SetLiked(ctx, postID, username, true).Return(5, true, nil)
 		mockUserRepo.EXPECT().GetUserByUsername(ctx, "postowner").Return(&domain.User{ID: 2, Username: "postowner"}, nil)
 		mockUserRepo.EXPECT().GetUserByUsername(ctx, username).Return(&domain.User{ID: 1, Username: username}, nil)
 		mockPublisher.EXPECT().Publish(ctx, gomock.Any()).DoAndReturn(func(ctx context.Context, event ports.Event) error {
@@ -368,7 +367,7 @@ func TestPostCommandUseCase_LikePost(t *testing.T) {
 
 	t.Run("success idempotent - already liked", func(t *testing.T) {
 		mockRepo.EXPECT().Load(ctx, postID).Return(&domain.Post{ID: postID, LikeCount: 4}, nil)
-		mockLikeRepo.EXPECT().Create(ctx, gomock.Any()).Return(domain.ErrAlreadyLiked)
+		mockLikeRepo.EXPECT().SetLiked(ctx, postID, username, true).Return(4, false, nil)
 
 		count, err := svc.LikePost(ctx, postID, username)
 		assert.NoError(t, err)
@@ -393,16 +392,9 @@ func TestPostCommandUseCase_LikePost(t *testing.T) {
 
 	t.Run("write failures", func(t *testing.T) {
 		mockRepo.EXPECT().Load(ctx, postID).Return(&domain.Post{ID: postID}, nil)
-		mockLikeRepo.EXPECT().Create(ctx, gomock.Any()).Return(errors.New("write failed"))
-		mockLog.EXPECT().Error(ctx, "failed to create like", "postID", postID, "username", username, "error", gomock.Any())
+		mockLikeRepo.EXPECT().SetLiked(ctx, postID, username, true).Return(0, false, errors.New("write failed"))
+		mockLog.EXPECT().Error(ctx, "failed to set like state", "postID", postID, "username", username, "error", gomock.Any())
 		_, err := svc.LikePost(ctx, postID, username)
-		assert.Error(t, err)
-
-		mockRepo.EXPECT().Load(ctx, postID).Return(&domain.Post{ID: postID}, nil)
-		mockLikeRepo.EXPECT().Create(ctx, gomock.Any()).Return(nil)
-		mockRepo.EXPECT().Save(ctx, gomock.Any()).Return(errors.New("save failed"))
-		mockLog.EXPECT().Error(ctx, "failed to save liked post", "postID", postID, "error", gomock.Any())
-		_, err = svc.LikePost(ctx, postID, username)
 		assert.Error(t, err)
 	})
 }
@@ -425,8 +417,7 @@ func TestPostCommandUseCase_UnlikePost(t *testing.T) {
 
 	t.Run("success - unlike existing", func(t *testing.T) {
 		mockRepo.EXPECT().Load(ctx, postID).Return(&domain.Post{ID: postID, LikeCount: 4}, nil)
-		mockLikeRepo.EXPECT().Delete(ctx, postID, username).Return(nil)
-		mockRepo.EXPECT().Save(ctx, gomock.Any()).Return(nil)
+		mockLikeRepo.EXPECT().SetLiked(ctx, postID, username, false).Return(3, true, nil)
 		mockLog.EXPECT().Info(ctx, "post unliked successfully", "postID", postID, "username", username)
 
 		count, err := svc.UnlikePost(ctx, postID, username)
@@ -435,8 +426,8 @@ func TestPostCommandUseCase_UnlikePost(t *testing.T) {
 	})
 
 	t.Run("success idempotent - not liked", func(t *testing.T) {
-		mockLikeRepo.EXPECT().Delete(ctx, postID, username).Return(domain.ErrNotLiked)
 		mockRepo.EXPECT().Load(ctx, postID).Return(&domain.Post{ID: postID, LikeCount: 4}, nil)
+		mockLikeRepo.EXPECT().SetLiked(ctx, postID, username, false).Return(4, false, nil)
 
 		count, err := svc.UnlikePost(ctx, postID, username)
 		assert.NoError(t, err)
@@ -454,15 +445,8 @@ func TestPostCommandUseCase_UnlikePost(t *testing.T) {
 		assert.ErrorIs(t, err, domain.ErrPostNotFound)
 
 		mockRepo.EXPECT().Load(ctx, postID).Return(&domain.Post{ID: postID}, nil)
-		mockLikeRepo.EXPECT().Delete(ctx, postID, username).Return(errors.New("delete failed"))
-		mockLog.EXPECT().Error(ctx, "failed to delete like", "postID", postID, "username", username, "error", gomock.Any())
-		_, err = svc.UnlikePost(ctx, postID, username)
-		assert.Error(t, err)
-
-		mockRepo.EXPECT().Load(ctx, postID).Return(&domain.Post{ID: postID}, nil)
-		mockLikeRepo.EXPECT().Delete(ctx, postID, username).Return(nil)
-		mockRepo.EXPECT().Save(ctx, gomock.Any()).Return(errors.New("save failed"))
-		mockLog.EXPECT().Error(ctx, "failed to save unliked post", "postID", postID, "error", gomock.Any())
+		mockLikeRepo.EXPECT().SetLiked(ctx, postID, username, false).Return(0, false, errors.New("delete failed"))
+		mockLog.EXPECT().Error(ctx, "failed to set like state", "postID", postID, "username", username, "error", gomock.Any())
 		_, err = svc.UnlikePost(ctx, postID, username)
 		assert.Error(t, err)
 	})

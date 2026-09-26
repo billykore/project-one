@@ -7,8 +7,9 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// Authorize is an middleware to authorize requests.
-func Authorize(tks ports.TokenService) echo.MiddlewareFunc {
+// Authorize extracts a credential and delegates authentication to the
+// application layer. It deliberately has no knowledge of JWTs or repositories.
+func Authorize(authenticator ports.Authenticator) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			var token string
@@ -34,11 +35,8 @@ func Authorize(tks ports.TokenService) echo.MiddlewareFunc {
 				return echo.ErrUnauthorized
 			}
 
-			user, err := tks.ValidateToken(c.Request().Context(), token)
+			user, err := authenticator.Authenticate(c.Request().Context(), token)
 			if err != nil {
-				return echo.ErrUnauthorized
-			}
-			if user == nil {
 				return echo.ErrUnauthorized
 			}
 
@@ -53,15 +51,15 @@ func Authorize(tks ports.TokenService) echo.MiddlewareFunc {
 
 // OptionalAuthorize attaches a user when a valid session is present and treats
 // missing or invalid credentials as anonymous access.
-func OptionalAuthorize(tks ports.TokenService) echo.MiddlewareFunc {
+func OptionalAuthorize(authenticator ports.Authenticator) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			token := requestToken(c)
 			if token == "" {
 				return next(c)
 			}
-			user, err := tks.ValidateToken(c.Request().Context(), token)
-			if err == nil && user != nil {
+			user, err := authenticator.Authenticate(c.Request().Context(), token)
+			if err == nil {
 				c.Set("user", user)
 				c.Set("username", user.Username)
 			}

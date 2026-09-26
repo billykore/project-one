@@ -98,3 +98,19 @@ func (mr *MockLikeRepositoryMockRecorder) Exists(ctx, postID, username any) *gom
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Exists", reflect.TypeOf((*MockLikeRepository)(nil).Exists), ctx, postID, username)
 }
+
+// SetLiked mocks base method.
+func (m *MockLikeRepository) SetLiked(ctx context.Context, postID int, username string, liked bool) (int, bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetLiked", ctx, postID, username, liked)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(bool)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// SetLiked indicates an expected call of SetLiked.
+func (mr *MockLikeRepositoryMockRecorder) SetLiked(ctx, postID, username, liked any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetLiked", reflect.TypeOf((*MockLikeRepository)(nil).SetLiked), ctx, postID, username, liked)
+}

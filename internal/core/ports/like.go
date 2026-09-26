@@ -8,6 +8,10 @@ import (
 
 // LikeRepository is a driven port for post like persistence.
 type LikeRepository interface {
+	// SetLiked atomically creates or removes a like and updates the post's
+	// denormalized count in the same transaction. changed is false for an
+	// idempotent request; likeCount is the persisted count after the operation.
+	SetLiked(ctx context.Context, postID int, username string, liked bool) (int, bool, error)
 	// Create adds a like to the database. It should return an error if the like already exists.
 	Create(ctx context.Context, like *domain.Like) error
 	// Delete removes a like from the database. It should return an error if the like does not exist.
