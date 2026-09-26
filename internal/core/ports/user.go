@@ -29,8 +29,8 @@ type UserUseCase interface {
 	Register(ctx context.Context, user *domain.User) error
 	// GetUser retrieves a user by their username.
 	GetUser(ctx context.Context, username string) (*domain.User, error)
-	// ChangePassword verifies the old password and sets the new password.
-	ChangePassword(ctx context.Context, username, oldPassword, newPassword string) error
+	// ChangePassword verifies the old password and sets the new password for an authenticated user.
+	ChangePassword(ctx context.Context, userID int, oldPassword, newPassword string) error
 	// UpdateProfile updates the authenticated user's profile fields (first_name, last_name, username).
 	UpdateProfile(ctx context.Context, userID int, user *domain.User) error
 	// SearchUsers searches for users by username prefix/fuzzy match.

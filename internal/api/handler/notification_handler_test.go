@@ -165,7 +165,7 @@ func (u staticUserUseCase) GetUser(context.Context, string) (*domain.User, error
 	return u.user, nil
 }
 
-func (u staticUserUseCase) ChangePassword(context.Context, string, string, string) error {
+func (u staticUserUseCase) ChangePassword(context.Context, int, string, string) error {
 	return nil
 }
 

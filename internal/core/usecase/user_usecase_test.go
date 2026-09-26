@@ -137,6 +137,7 @@ func TestUserUseCase_ChangePassword(t *testing.T) {
 
 	ctx := context.Background()
 	username := "testuser"
+	userID := 1
 
 	t.Run("success", func(t *testing.T) {
 		existingUser := &domain.User{
@@ -144,7 +145,7 @@ func TestUserUseCase_ChangePassword(t *testing.T) {
 			Username: username,
 			Password: "hashed_old_password",
 		}
-		mockRepo.EXPECT().GetUserByUsername(ctx, username).Return(existingUser, nil)
+		mockRepo.EXPECT().GetUserByID(ctx, userID).Return(existingUser, nil)
 		mockHasher.EXPECT().Compare(ctx, "old_password", "hashed_old_password").Return(nil)
 		mockHasher.EXPECT().Hash(ctx, "new_password_123").Return("hashed_new_password", nil)
 		mockRepo.EXPECT().UpdateUser(ctx, gomock.Any()).DoAndReturn(func(ctx context.Context, u *domain.User) error {
@@ -152,14 +153,14 @@ func TestUserUseCase_ChangePassword(t *testing.T) {
 			return nil
 		})
 
-		err := svc.ChangePassword(ctx, username, "old_password", "new_password_123")
+		err := svc.ChangePassword(ctx, userID, "old_password", "new_password_123")
 		assert.NoError(t, err)
 	})
 
 	t.Run("user not found", func(t *testing.T) {
-		mockRepo.EXPECT().GetUserByUsername(ctx, username).Return(nil, domain.ErrUserNotFound)
+		mockRepo.EXPECT().GetUserByID(ctx, userID).Return(nil, domain.ErrUserNotFound)
 
-		err := svc.ChangePassword(ctx, username, "old_password", "new_password_123")
+		err := svc.ChangePassword(ctx, userID, "old_password", "new_password_123")
 		assert.ErrorIs(t, err, domain.ErrUserNotFound)
 	})
 
@@ -169,10 +170,10 @@ func TestUserUseCase_ChangePassword(t *testing.T) {
 			Username: username,
 			Password: "hashed_old_password",
 		}
-		mockRepo.EXPECT().GetUserByUsername(ctx, username).Return(existingUser, nil)
+		mockRepo.EXPECT().GetUserByID(ctx, userID).Return(existingUser, nil)
 		mockHasher.EXPECT().Compare(ctx, "wrong_old_password", "hashed_old_password").Return(domain.ErrInvalidCredentials)
 
-		err := svc.ChangePassword(ctx, username, "wrong_old_password", "new_password_123")
+		err := svc.ChangePassword(ctx, userID, "wrong_old_password", "new_password_123")
 		assert.ErrorIs(t, err, domain.ErrInvalidCredentials)
 	})
 
@@ -182,11 +183,16 @@ func TestUserUseCase_ChangePassword(t *testing.T) {
 			Username: username,
 			Password: "hashed_old_password",
 		}
-		mockRepo.EXPECT().GetUserByUsername(ctx, username).Return(existingUser, nil)
+		mockRepo.EXPECT().GetUserByID(ctx, userID).Return(existingUser, nil)
 		mockHasher.EXPECT().Compare(ctx, "old_password", "hashed_old_password").Return(nil)
 
-		err := svc.ChangePassword(ctx, username, "old_password", "short")
+		err := svc.ChangePassword(ctx, userID, "old_password", "short")
 		assert.ErrorIs(t, err, domain.ErrPasswordTooShort)
+	})
+
+	t.Run("invalid user id", func(t *testing.T) {
+		err := svc.ChangePassword(ctx, 0, "old_password", "new_password_123")
+		assert.ErrorIs(t, err, domain.ErrInvalidUser)
 	})
 }
 

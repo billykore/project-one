@@ -80,11 +80,14 @@ func (s *userUseCase) Register(ctx context.Context, user *domain.User) error {
 	return nil
 }
 
-func (s *userUseCase) ChangePassword(ctx context.Context, username, oldPassword, newPassword string) error {
+func (s *userUseCase) ChangePassword(ctx context.Context, userID int, oldPassword, newPassword string) error {
+	if userID <= 0 {
+		return domain.ErrInvalidUser
+	}
 	// 1. Retrieve user
-	user, err := s.userRepo.GetUserByUsername(ctx, username)
+	user, err := s.userRepo.GetUserByID(ctx, userID)
 	if err != nil {
-		return fmt.Errorf("get user by username: %w", err)
+		return fmt.Errorf("get user by id: %w", err)
 	}
 
 	// 2. Validate current password
@@ -105,7 +108,7 @@ func (s *userUseCase) ChangePassword(ctx context.Context, username, oldPassword,
 
 	user.Password = hashedPassword
 
-	// 5. Save to repository
+	// 5. Save to repository using the resolved stable identity.
 	if err := s.userRepo.UpdateUser(ctx, user); err != nil {
 		return fmt.Errorf("update user: %w", err)
 	}

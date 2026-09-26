@@ -642,7 +642,7 @@ func (h *UserHandler) HandleChangePassword(c echo.Context) error {
 		return err
 	}
 
-	err := h.userUseCase.ChangePassword(c.Request().Context(), user.Username, req.OldPassword, req.NewPassword)
+	err := h.userUseCase.ChangePassword(c.Request().Context(), user.ID, req.OldPassword, req.NewPassword)
 	if err != nil {
 		h.log.Error(c.Request().Context(), "HandleChangePassword failed", "username", user.Username, "error", err)
 		return err
