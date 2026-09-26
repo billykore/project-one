@@ -102,17 +102,17 @@ func (mr *MockUserRepositoryMockRecorder) GetUserByUsername(ctx, username any) *
 }
 
 // UpdateProfile mocks base method.
-func (m *MockUserRepository) UpdateProfile(ctx context.Context, oldUsername string, user *domain.User) error {
+func (m *MockUserRepository) UpdateProfile(ctx context.Context, user *domain.User) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateProfile", ctx, oldUsername, user)
+	ret := m.ctrl.Call(m, "UpdateProfile", ctx, user)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateProfile indicates an expected call of UpdateProfile.
-func (mr *MockUserRepositoryMockRecorder) UpdateProfile(ctx, oldUsername, user any) *gomock.Call {
+func (mr *MockUserRepositoryMockRecorder) UpdateProfile(ctx, user any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfile", reflect.TypeOf((*MockUserRepository)(nil).UpdateProfile), ctx, oldUsername, user)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfile", reflect.TypeOf((*MockUserRepository)(nil).UpdateProfile), ctx, user)
 }
 
 // UpdateUser mocks base method.
@@ -214,17 +214,17 @@ func (mr *MockUserUseCaseMockRecorder) SearchUsers(ctx, query, cursor, limit any
 }
 
 // UpdateProfile mocks base method.
-func (m *MockUserUseCase) UpdateProfile(ctx context.Context, username string, user *domain.User) error {
+func (m *MockUserUseCase) UpdateProfile(ctx context.Context, userID int, user *domain.User) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateProfile", ctx, username, user)
+	ret := m.ctrl.Call(m, "UpdateProfile", ctx, userID, user)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateProfile indicates an expected call of UpdateProfile.
-func (mr *MockUserUseCaseMockRecorder) UpdateProfile(ctx, username, user any) *gomock.Call {
+func (mr *MockUserUseCaseMockRecorder) UpdateProfile(ctx, userID, user any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfile", reflect.TypeOf((*MockUserUseCase)(nil).UpdateProfile), ctx, username, user)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfile", reflect.TypeOf((*MockUserUseCase)(nil).UpdateProfile), ctx, userID, user)
 }
 
 // MockUserSearchRepository is a mock of UserSearchRepository interface.

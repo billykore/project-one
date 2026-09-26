@@ -127,37 +127,19 @@ func (r *userRepository) UpdateUser(ctx context.Context, user *domain.User) erro
 	return nil
 }
 
-// UpdateProfile updates the user's profile fields and the remaining token
-// username snapshot within a single database transaction.
-// oldUsername is the user's current username before the update; it is used
-// in WHERE clauses to find rows that need the cascade.
-func (r *userRepository) UpdateProfile(ctx context.Context, oldUsername string, user *domain.User) error {
-	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		// Update the users row.
-		result := tx.Model(&userModel{}).Where("id = ?", user.ID).Updates(map[string]interface{}{
-			"first_name": user.FirstName,
-			"last_name":  user.LastName,
-			"username":   user.Username,
-			"updated_at": time.Now(),
-		})
-		if result.Error != nil {
-			if errors.Is(result.Error, gorm.ErrDuplicatedKey) {
-				return domain.ErrUsernameAlreadyTaken
-			}
-			return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, result.Error)
-		}
-
-		// Only cascade if the username actually changed.
-		if oldUsername == user.Username {
-			return nil
-		}
-
-		// Cascade username to user_tokens table.
-		if err := tx.Model(&userTokenModel{}).Where("username = ?", oldUsername).
-			Update("username", user.Username).Error; err != nil {
-			return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
-		}
-
-		return nil
+// UpdateProfile updates mutable profile data by the user's stable identifier.
+func (r *userRepository) UpdateProfile(ctx context.Context, user *domain.User) error {
+	result := r.db.WithContext(ctx).Model(&userModel{}).Where("id = ?", user.ID).Updates(map[string]interface{}{
+		"first_name": user.FirstName,
+		"last_name":  user.LastName,
+		"username":   user.Username,
+		"updated_at": time.Now(),
 	})
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrDuplicatedKey) {
+			return domain.ErrUsernameAlreadyTaken
+		}
+		return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, result.Error)
+	}
+	return nil
 }

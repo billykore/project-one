@@ -29,9 +29,8 @@ func (s *jwtTokenService) GenerateTokens(_ context.Context, user *domain.User) (
 	// Access token
 	accessExp := time.Now().Add(s.accessExpiration)
 	accessClaims := jwt.MapClaims{
-		"userID":   user.ID,
-		"username": user.Username,
-		"exp":      accessExp.Unix(),
+		"userID": user.ID,
+		"exp":    accessExp.Unix(),
 	}
 	accessToken, err := jwt.NewWithClaims(jwt.SigningMethodRS256, accessClaims).SignedString(s.privateKey)
 	if err != nil {
@@ -68,14 +67,8 @@ func (s *jwtTokenService) ValidateToken(_ context.Context, tokenString string) (
 		return nil, domain.ErrUntrustedToken
 	}
 
-	username, ok := claims["username"].(string)
-	if !ok {
-		return nil, domain.ErrUntrustedToken
-	}
-
 	return &domain.User{
-		ID:       userID,
-		Username: username,
+		ID: userID,
 	}, nil
 }
 

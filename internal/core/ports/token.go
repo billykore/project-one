@@ -14,8 +14,6 @@ type TokenRepository interface {
 	// for the authenticated user. It is used after JWT signature validation so
 	// logout can revoke a token before its JWT expiry.
 	IsActive(ctx context.Context, token string, userID int) (bool, error)
-	// GetTokenByUsername retrieves a user token by the associated username.
-	GetTokenByUsername(ctx context.Context, username string) (*domain.UserToken, error)
-	// DeleteToken removes a user token by its string value.
-	DeleteTokenByUsername(ctx context.Context, username string) error
+	// DeleteTokensByUserID revokes every active session for a user.
+	DeleteTokensByUserID(ctx context.Context, userID int) error
 }

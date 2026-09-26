@@ -18,6 +18,6 @@ type TokenService interface {
 type LoginUseCase interface {
 	// Login authenticates a user and returns tokens.
 	Login(ctx context.Context, email, password string) (*domain.UserToken, error)
-	// Logout invalidates the given token.
-	Logout(ctx context.Context, username string) error
+	// Logout revokes all sessions for the authenticated user.
+	Logout(ctx context.Context, userID int) error
 }

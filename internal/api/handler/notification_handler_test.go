@@ -169,7 +169,7 @@ func (u staticUserUseCase) ChangePassword(context.Context, string, string, strin
 	return nil
 }
 
-func (u staticUserUseCase) UpdateProfile(context.Context, string, *domain.User) error {
+func (u staticUserUseCase) UpdateProfile(context.Context, int, *domain.User) error {
 	return nil
 }
 

@@ -39,15 +39,15 @@ func TestJWTTokenService_GenerateAndValidateWithRSA(t *testing.T) {
 	privateKey, publicKey := newRSAKeyPair(t)
 	svc := NewJWTTokenService(privateKey, publicKey, time.Hour)
 
-	token, err := svc.GenerateTokens(context.Background(), &domain.User{Username: "alice"})
+	token, err := svc.GenerateTokens(context.Background(), &domain.User{ID: 1, Username: "alice"})
 	require.NoError(t, err)
 	require.NotNil(t, token)
 
 	user, err := svc.ValidateToken(context.Background(), token.Token)
 	require.NoError(t, err)
 	require.NotNil(t, user)
-	assert.Equal(t, "alice", user.Username)
-	assert.Equal(t, 0, user.ID)
+	assert.Empty(t, user.Username)
+	assert.Equal(t, 1, user.ID)
 	assert.WithinDuration(t, time.Now().Add(time.Hour), token.ExpiresAt, time.Minute)
 }
 
@@ -56,7 +56,7 @@ func TestJWTTokenService_RejectsWrongPublicKey(t *testing.T) {
 	_, wrongPublicKey := newRSAKeyPair(t)
 	svc := NewJWTTokenService(privateKey, wrongPublicKey, time.Hour)
 
-	token, err := svc.GenerateTokens(context.Background(), &domain.User{Username: "alice"})
+	token, err := svc.GenerateTokens(context.Background(), &domain.User{ID: 1, Username: "alice"})
 	require.NoError(t, err)
 
 	user, err := svc.ValidateToken(context.Background(), token.Token)

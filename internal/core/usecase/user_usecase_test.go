@@ -200,6 +200,7 @@ func TestUserUseCase_UpdateProfile(t *testing.T) {
 	svc := NewUserUseCase(mockRepo, mockHasher, mockSearchRepo)
 
 	ctx := context.Background()
+	userID := 1
 	oldUsername := "olduser"
 
 	t.Run("success - username unchanged", func(t *testing.T) {
@@ -215,9 +216,9 @@ func TestUserUseCase_UpdateProfile(t *testing.T) {
 			Username:  oldUsername,
 		}
 
-		mockRepo.EXPECT().GetUserByUsername(ctx, oldUsername).Return(currentUser, nil)
-		mockRepo.EXPECT().UpdateProfile(ctx, oldUsername, gomock.Any()).DoAndReturn(
-			func(_ context.Context, old string, u *domain.User) error {
+		mockRepo.EXPECT().GetUserByID(ctx, userID).Return(currentUser, nil)
+		mockRepo.EXPECT().UpdateProfile(ctx, gomock.Any()).DoAndReturn(
+			func(_ context.Context, u *domain.User) error {
 				assert.Equal(t, "New", u.FirstName)
 				assert.Equal(t, "User", u.LastName)
 				assert.Equal(t, oldUsername, u.Username)
@@ -225,7 +226,7 @@ func TestUserUseCase_UpdateProfile(t *testing.T) {
 			},
 		)
 
-		err := svc.UpdateProfile(ctx, oldUsername, updatedUser)
+		err := svc.UpdateProfile(ctx, userID, updatedUser)
 		assert.NoError(t, err)
 	})
 
@@ -243,19 +244,16 @@ func TestUserUseCase_UpdateProfile(t *testing.T) {
 			Username:  newUsername,
 		}
 
-		mockRepo.EXPECT().GetUserByUsername(ctx, oldUsername).Return(currentUser, nil)
+		mockRepo.EXPECT().GetUserByID(ctx, userID).Return(currentUser, nil)
 		mockRepo.EXPECT().GetUserByUsername(ctx, newUsername).Return(nil, domain.ErrUserNotFound)
-		// The oldUsername parameter should be the original username (before update),
-		// while the domain.User should carry the new username.
-		mockRepo.EXPECT().UpdateProfile(ctx, oldUsername, gomock.Any()).DoAndReturn(
-			func(_ context.Context, old string, u *domain.User) error {
+		mockRepo.EXPECT().UpdateProfile(ctx, gomock.Any()).DoAndReturn(
+			func(_ context.Context, u *domain.User) error {
 				assert.Equal(t, newUsername, u.Username)
-				assert.Equal(t, oldUsername, old)
 				return nil
 			},
 		)
 
-		err := svc.UpdateProfile(ctx, oldUsername, updatedUser)
+		err := svc.UpdateProfile(ctx, userID, updatedUser)
 		assert.NoError(t, err)
 	})
 
@@ -273,10 +271,10 @@ func TestUserUseCase_UpdateProfile(t *testing.T) {
 			Username:  newUsername,
 		}
 
-		mockRepo.EXPECT().GetUserByUsername(ctx, oldUsername).Return(currentUser, nil)
+		mockRepo.EXPECT().GetUserByID(ctx, userID).Return(currentUser, nil)
 		mockRepo.EXPECT().GetUserByUsername(ctx, newUsername).Return(&domain.User{ID: 2, Username: newUsername}, nil)
 
-		err := svc.UpdateProfile(ctx, oldUsername, updatedUser)
+		err := svc.UpdateProfile(ctx, userID, updatedUser)
 		assert.ErrorIs(t, err, domain.ErrUsernameAlreadyTaken)
 	})
 
@@ -293,9 +291,9 @@ func TestUserUseCase_UpdateProfile(t *testing.T) {
 			Username:  oldUsername,
 		}
 
-		mockRepo.EXPECT().GetUserByUsername(ctx, oldUsername).Return(currentUser, nil)
+		mockRepo.EXPECT().GetUserByID(ctx, userID).Return(currentUser, nil)
 
-		err := svc.UpdateProfile(ctx, oldUsername, updatedUser)
+		err := svc.UpdateProfile(ctx, userID, updatedUser)
 		assert.ErrorIs(t, err, domain.ErrInvalidUser)
 	})
 
@@ -306,9 +304,9 @@ func TestUserUseCase_UpdateProfile(t *testing.T) {
 			Username:  "newuser",
 		}
 
-		mockRepo.EXPECT().GetUserByUsername(ctx, "nonexistent").Return(nil, domain.ErrUserNotFound)
+		mockRepo.EXPECT().GetUserByID(ctx, 2).Return(nil, domain.ErrUserNotFound)
 
-		err := svc.UpdateProfile(ctx, "nonexistent", updatedUser)
+		err := svc.UpdateProfile(ctx, 2, updatedUser)
 		assert.ErrorIs(t, err, domain.ErrUserNotFound)
 	})
 }

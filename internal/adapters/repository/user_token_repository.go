@@ -13,7 +13,6 @@ import (
 type userTokenModel struct {
 	ID        int       `gorm:"primaryKey;autoIncrement"`
 	UserID    int       `gorm:"notNull"`
-	Username  string    `gorm:"notNull"`
 	Token     string    `gorm:"notNull"`
 	ExpiresAt time.Time `gorm:"notNull"`
 	CreatedAt time.Time
@@ -27,7 +26,6 @@ func fromDomainUserToken(token *domain.UserToken) *userTokenModel {
 	return &userTokenModel{
 		ID:        token.ID,
 		UserID:    token.UserID,
-		Username:  token.Username,
 		Token:     token.Token,
 		ExpiresAt: token.ExpiresAt,
 	}
@@ -67,27 +65,11 @@ func (r *userTokenRepository) IsActive(ctx context.Context, token string, userID
 	return count == 1, nil
 }
 
-func (r *userTokenRepository) GetTokenByUsername(ctx context.Context, username string) (*domain.UserToken, error) {
-	var m userTokenModel
-	err := r.db.WithContext(ctx).Where("username = ?", username).First(&m).Error
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, nil // No token found for this user
-		}
-		return nil, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
+func (r *userTokenRepository) DeleteTokensByUserID(ctx context.Context, userID int) error {
+	if userID <= 0 {
+		return domain.ErrInvalidUser
 	}
-	return &domain.UserToken{
-		ID:        m.ID,
-		UserID:    m.UserID,
-		Username:  m.Username,
-		Token:     m.Token,
-		ExpiresAt: m.ExpiresAt,
-	}, nil
-}
-
-func (r *userTokenRepository) DeleteTokenByUsername(ctx context.Context, username string) error {
-	err := r.db.WithContext(ctx).Where("username = ?", username).Delete(&userTokenModel{}).Error
-	if err != nil {
+	if err := r.db.WithContext(ctx).Where("user_id = ?", userID).Delete(&userTokenModel{}).Error; err != nil {
 		return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
 	return nil

@@ -41,33 +41,18 @@ func (m *MockTokenRepository) EXPECT() *MockTokenRepositoryMockRecorder {
 	return m.recorder
 }
 
-// DeleteTokenByUsername mocks base method.
-func (m *MockTokenRepository) DeleteTokenByUsername(ctx context.Context, username string) error {
+// DeleteTokensByUserID mocks base method.
+func (m *MockTokenRepository) DeleteTokensByUserID(ctx context.Context, userID int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteTokenByUsername", ctx, username)
+	ret := m.ctrl.Call(m, "DeleteTokensByUserID", ctx, userID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteTokenByUsername indicates an expected call of DeleteTokenByUsername.
-func (mr *MockTokenRepositoryMockRecorder) DeleteTokenByUsername(ctx, username any) *gomock.Call {
+// DeleteTokensByUserID indicates an expected call of DeleteTokensByUserID.
+func (mr *MockTokenRepositoryMockRecorder) DeleteTokensByUserID(ctx, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTokenByUsername", reflect.TypeOf((*MockTokenRepository)(nil).DeleteTokenByUsername), ctx, username)
-}
-
-// GetTokenByUsername mocks base method.
-func (m *MockTokenRepository) GetTokenByUsername(ctx context.Context, username string) (*domain.UserToken, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTokenByUsername", ctx, username)
-	ret0, _ := ret[0].(*domain.UserToken)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetTokenByUsername indicates an expected call of GetTokenByUsername.
-func (mr *MockTokenRepositoryMockRecorder) GetTokenByUsername(ctx, username any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTokenByUsername", reflect.TypeOf((*MockTokenRepository)(nil).GetTokenByUsername), ctx, username)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTokensByUserID", reflect.TypeOf((*MockTokenRepository)(nil).DeleteTokensByUserID), ctx, userID)
 }
 
 // IsActive mocks base method.

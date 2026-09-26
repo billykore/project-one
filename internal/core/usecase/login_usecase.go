@@ -58,7 +58,9 @@ func (s *loginUseCase) Login(ctx context.Context, email, password string) (*doma
 		return nil, fmt.Errorf("generate tokens: %w", err)
 	}
 
-	// 4. Store access token
+	// 4. Store the session using its stable owner ID. Username remains response
+	// data for the delivery layer and is not persisted as a session relation.
+	accessToken.UserID = user.ID
 	accessToken.Username = user.Username
 	err = s.tokenRepo.StoreToken(ctx, accessToken)
 	if err != nil {
@@ -70,21 +72,16 @@ func (s *loginUseCase) Login(ctx context.Context, email, password string) (*doma
 	return accessToken, nil
 }
 
-func (s *loginUseCase) Logout(ctx context.Context, username string) error {
-	if username == "" {
-		return fmt.Errorf("%w: username cannot be empty", domain.ErrInvalidUsername)
+func (s *loginUseCase) Logout(ctx context.Context, userID int) error {
+	if userID <= 0 {
+		return domain.ErrInvalidUser
 	}
 
-	user, err := s.repo.GetUserByUsername(ctx, username)
-	if err != nil {
-		return fmt.Errorf("get user by username: %w", err)
+	if err := s.tokenRepo.DeleteTokensByUserID(ctx, userID); err != nil {
+		s.log.Error(ctx, "failed to revoke user sessions on logout", "userID", userID, "error", err)
+		return fmt.Errorf("revoke user sessions (%d): %w", userID, err)
 	}
 
-	if err := s.tokenRepo.DeleteTokenByUsername(ctx, user.Username); err != nil {
-		s.log.Error(ctx, "failed to delete user token on logout", "username", user.Username, "error", err)
-		return fmt.Errorf("delete user token by username (%s): %w", user.Username, err)
-	}
-
-	s.log.Info(ctx, "user logged out successfully", "username", user.Username)
+	s.log.Info(ctx, "user logged out successfully", "userID", userID)
 	return nil
 }

@@ -114,13 +114,12 @@ func (s *userUseCase) ChangePassword(ctx context.Context, username, oldPassword,
 }
 
 // UpdateProfile updates the authenticated user's profile fields.
-// It trims and validates input, checks username uniqueness if changed,
-// and cascades the update to all denormalized columns via a transaction.
-func (s *userUseCase) UpdateProfile(ctx context.Context, username string, updatedUser *domain.User) error {
+// It trims and validates input and checks username uniqueness if changed.
+func (s *userUseCase) UpdateProfile(ctx context.Context, userID int, updatedUser *domain.User) error {
 	// 1. Retrieve the current user record.
-	currentUser, err := s.userRepo.GetUserByUsername(ctx, username)
+	currentUser, err := s.userRepo.GetUserByID(ctx, userID)
 	if err != nil {
-		return fmt.Errorf("get current user: %w", err)
+		return fmt.Errorf("get current user by id: %w", err)
 	}
 
 	updatedUser.FirstName = strings.TrimSpace(updatedUser.FirstName)
@@ -144,10 +143,9 @@ func (s *userUseCase) UpdateProfile(ctx context.Context, username string, update
 	currentUser.FirstName = updatedUser.FirstName
 	currentUser.LastName = updatedUser.LastName
 
-	oldUsername := currentUser.Username
 	currentUser.Username = updatedUser.Username
 
-	if err := s.userRepo.UpdateProfile(ctx, oldUsername, currentUser); err != nil {
+	if err := s.userRepo.UpdateProfile(ctx, currentUser); err != nil {
 		if errors.Is(err, domain.ErrUsernameAlreadyTaken) {
 			return err
 		}

@@ -150,7 +150,7 @@ func (h *UserHandler) HandleLogout(c echo.Context) error {
 		return echo.ErrUnauthorized
 	}
 
-	if err := h.loginUseCase.Logout(c.Request().Context(), user.Username); err != nil {
+	if err := h.loginUseCase.Logout(c.Request().Context(), user.ID); err != nil {
 		h.log.Error(c.Request().Context(), "HandleLogout failed", "username", user.Username, "error", err)
 		return err
 	}
@@ -690,7 +690,7 @@ func (h *UserHandler) HandleUpdateProfile(c echo.Context) error {
 		Username:  strings.ToLower(strings.TrimSpace(req.Username)),
 	}
 
-	if err := h.userUseCase.UpdateProfile(c.Request().Context(), authUser.Username, updatedUser); err != nil {
+	if err := h.userUseCase.UpdateProfile(c.Request().Context(), authUser.ID, updatedUser); err != nil {
 		h.log.Error(c.Request().Context(), "HandleUpdateProfile failed", "username", authUser.Username, "error", err)
 		return err
 	}
