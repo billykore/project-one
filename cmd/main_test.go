@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	metricsadapter "github.com/billykore/project-one/internal/operations/adapters/metrics"
+	operationsapi "github.com/billykore/project-one/internal/operations/api"
 	"github.com/labstack/echo/v4"
 )
 
@@ -32,7 +33,7 @@ func newMetricsRouteForTest(t *testing.T, username, secret string) *echo.Echo {
 	recorder.ObserveRequest(context.Background(), "GET", "/posts/:id", "2xx")
 
 	e := echo.New()
-	registerMetricsRoute(e, recorder.Handler(credential))
+	operationsapi.RegisterMetricsRoute(e, recorder.Handler(credential))
 	return e
 }
 
@@ -114,7 +115,7 @@ func TestMetricsRouteRejectsEveryRequestWhenMonitoringIsUnconfigured(t *testing.
 	}
 
 	e := echo.New()
-	registerMetricsRoute(e, metricsadapter.NewPrometheus().Handler(credential))
+	operationsapi.RegisterMetricsRoute(e, metricsadapter.NewPrometheus().Handler(credential))
 
 	response := requestMetrics(t, e, "", "")
 	if response.Code != http.StatusUnauthorized {
