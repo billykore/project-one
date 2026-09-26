@@ -1,4 +1,4 @@
-package featureflag
+package adapters
 
 import (
 	"context"

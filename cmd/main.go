@@ -12,21 +12,21 @@ import (
 	"time"
 
 	"github.com/billykore/project-one/api/swagger"
-	featureflagrepository "github.com/billykore/project-one/internal/featureflags/adapters"
-	featureflagadapter "github.com/billykore/project-one/internal/featureflags/adapters/featureflag"
+	featureflagaevaluator "github.com/billykore/project-one/internal/featureflags/adapters/evaluator"
+	featureflagrepository "github.com/billykore/project-one/internal/featureflags/adapters/repository"
 	featureflaghandler "github.com/billykore/project-one/internal/featureflags/api/handler"
 	featureflagmiddleware "github.com/billykore/project-one/internal/featureflags/api/middleware"
 	featureflagdomain "github.com/billykore/project-one/internal/featureflags/domain"
 	featureflagports "github.com/billykore/project-one/internal/featureflags/ports"
 	featureflagusecase "github.com/billykore/project-one/internal/featureflags/usecase"
-	identityrepository "github.com/billykore/project-one/internal/identity/adapters"
-	"github.com/billykore/project-one/internal/identity/adapters/hasher"
+	identityhasher "github.com/billykore/project-one/internal/identity/adapters/hasher"
+	identityrepository "github.com/billykore/project-one/internal/identity/adapters/repository"
 	"github.com/billykore/project-one/internal/identity/adapters/token"
 	identityhandler "github.com/billykore/project-one/internal/identity/api/handler"
 	identitymiddleware "github.com/billykore/project-one/internal/identity/api/middleware"
 	identityports "github.com/billykore/project-one/internal/identity/ports"
 	identityusecase "github.com/billykore/project-one/internal/identity/usecase"
-	notificationrepository "github.com/billykore/project-one/internal/notifications/adapters"
+	notificationrepository "github.com/billykore/project-one/internal/notifications/adapters/repository"
 	sseadapter "github.com/billykore/project-one/internal/notifications/adapters/sse"
 	notificationhandler "github.com/billykore/project-one/internal/notifications/api/handler"
 	notificationusecase "github.com/billykore/project-one/internal/notifications/usecase"
@@ -156,12 +156,12 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 	notificationRepo := notificationrepository.NewNotificationRepository(db)
 
 	tokenSvc := token.NewJWTTokenService(privateKey, publicKey, cfg.JWT.ExpirationTime)
-	hasherSvc := hasher.NewBcryptHasher()
+	hasherSvc := identityhasher.NewBcryptHasher()
 	authenticator := identityusecase.NewAuthenticationUseCase(tokenSvc, userTokenRepo, userRepo)
 
 	loginUc := identityusecase.NewLoginUseCase(userRepo, tokenSvc, userTokenRepo, hasherSvc, lgr)
 	userUc := identityusecase.NewUserUseCase(userRepo, hasherSvc, userSearchRepo)
-	featureFlagEvaluator, err := featureflagadapter.NewEvaluator(
+	featureFlagEvaluator, err := featureflagaevaluator.NewEvaluator(
 		featureFlagRepo,
 		lgr,
 		featureflagdomain.Environment(cfg.FeatureFlags.Environment),
