@@ -43,16 +43,16 @@ func (m *MockFeedUseCase) EXPECT() *MockFeedUseCaseMockRecorder {
 }
 
 // GetFeed mocks base method.
-func (m *MockFeedUseCase) GetFeed(ctx context.Context, username string, cursor *valueobject.Cursor, limit int) (*ports.FeedResult, error) {
+func (m *MockFeedUseCase) GetFeed(ctx context.Context, userID int, cursor *valueobject.Cursor, limit int) (*ports.FeedResult, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetFeed", ctx, username, cursor, limit)
+	ret := m.ctrl.Call(m, "GetFeed", ctx, userID, cursor, limit)
 	ret0, _ := ret[0].(*ports.FeedResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetFeed indicates an expected call of GetFeed.
-func (mr *MockFeedUseCaseMockRecorder) GetFeed(ctx, username, cursor, limit any) *gomock.Call {
+func (mr *MockFeedUseCaseMockRecorder) GetFeed(ctx, userID, cursor, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFeed", reflect.TypeOf((*MockFeedUseCase)(nil).GetFeed), ctx, username, cursor, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFeed", reflect.TypeOf((*MockFeedUseCase)(nil).GetFeed), ctx, userID, cursor, limit)
 }

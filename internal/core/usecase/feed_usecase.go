@@ -12,7 +12,6 @@ import (
 type feedUseCase struct {
 	postRepo   ports.PostQueryRepository
 	followRepo ports.FollowRepository
-	userRepo   ports.UserRepository
 	log        ports.Logger
 }
 
@@ -20,21 +19,22 @@ type feedUseCase struct {
 func NewFeedUseCase(
 	postRepo ports.PostQueryRepository,
 	followRepo ports.FollowRepository,
-	userRepo ports.UserRepository,
 	log ports.Logger,
 ) ports.FeedUseCase {
-	if postRepo == nil || followRepo == nil || userRepo == nil || log == nil {
+	if postRepo == nil || followRepo == nil || log == nil {
 		panic("NewFeedUseCase: dependencies must not be nil")
 	}
 	return &feedUseCase{
 		postRepo:   postRepo,
 		followRepo: followRepo,
-		userRepo:   userRepo,
 		log:        log,
 	}
 }
 
-func (u *feedUseCase) GetFeed(ctx context.Context, username string, cursor *vo.Cursor, limit int) (*ports.FeedResult, error) {
+func (u *feedUseCase) GetFeed(ctx context.Context, userID int, cursor *vo.Cursor, limit int) (*ports.FeedResult, error) {
+	if userID <= 0 {
+		return nil, domain.ErrInvalidUser
+	}
 	// Clamp limit.
 	if limit <= 0 {
 		limit = 10
@@ -43,23 +43,14 @@ func (u *feedUseCase) GetFeed(ctx context.Context, username string, cursor *vo.C
 		limit = 50
 	}
 
-	// Resolve user.
-	user, err := u.userRepo.GetUserByUsername(ctx, username)
-	if err != nil {
-		return nil, fmt.Errorf("get user by username: %w", err)
-	}
-	if user == nil {
-		return nil, domain.ErrUserNotFound
-	}
-
 	// Resolve the social graph by stable identity, not mutable usernames.
-	followedUserIDs, err := u.followRepo.GetFollowedUserIDs(ctx, user.ID)
+	followedUserIDs, err := u.followRepo.GetFollowedUserIDs(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("get followed user IDs: %w", err)
 	}
 
 	// Build author ID list: self + followed.
-	userIDs := append([]int{user.ID}, followedUserIDs...)
+	userIDs := append([]int{userID}, followedUserIDs...)
 
 	// Fetch one extra to detect has_more.
 	dbLimit := limit + 1

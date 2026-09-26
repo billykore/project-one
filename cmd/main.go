@@ -157,7 +157,7 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 	followUc := usecase.NewFollowUseCase(followRepo, userRepo, publisher, lgr)
 	commentUc := usecase.NewCommentUseCase(commentRepo, postCommandRepo, userRepo, publisher)
 	notificationUc := usecase.NewNotificationUseCase(notificationRepo, userRepo, lgr)
-	feedUc := usecase.NewFeedUseCase(postQueryRepo, followRepo, userRepo, lgr)
+	feedUc := usecase.NewFeedUseCase(postQueryRepo, followRepo, lgr)
 
 	userHdl := handler.NewUserHandler(userUc, loginUc, followUc, postQueryUc, val, lgr)
 	postCommandHdl := handler.NewPostCommandHandler(postCommandUc, commentUc, val, lgr)

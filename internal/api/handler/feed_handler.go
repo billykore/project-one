@@ -67,7 +67,7 @@ func (h *FeedHandler) HandleGetFeed(c echo.Context) error {
 		cursor = &decoded
 	}
 
-	result, err := h.feedUseCase.GetFeed(c.Request().Context(), user.Username, cursor, limit)
+	result, err := h.feedUseCase.GetFeed(c.Request().Context(), user.ID, cursor, limit)
 	if err != nil {
 		h.log.Error(c.Request().Context(), "HandleGetFeed failed", "username", user.Username, "error", err)
 		return err

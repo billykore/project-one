@@ -37,12 +37,12 @@ type FollowersPage struct {
 
 // FollowUseCase defines the interface for follow-related business logic.
 type FollowUseCase interface {
-	// Follow handles the logic for a user following another user.
-	Follow(ctx context.Context, followerUsername, followedUsername string) (*domain.Follow, error)
+	// Follow creates a relationship from the authenticated actor to a user selected by username.
+	Follow(ctx context.Context, actor *domain.User, followedUsername string) (*domain.Follow, error)
 	// GetFollowing handles the logic for getting a cursor-paginated following list.
 	GetFollowing(ctx context.Context, followerUsername string, cursor *vo.Cursor, limit int) (*FollowingPage, error)
 	// GetFollowers handles the logic for getting a cursor-paginated followers list.
 	GetFollowers(ctx context.Context, followedUsername string, cursor *vo.Cursor, limit int) (*FollowersPage, error)
-	// Unfollow handles the logic for a user unfollowing another user.
-	Unfollow(ctx context.Context, followerUsername, followedUsername string) error
+	// Unfollow removes a relationship from the authenticated actor to a user selected by username.
+	Unfollow(ctx context.Context, actor *domain.User, followedUsername string) error
 }

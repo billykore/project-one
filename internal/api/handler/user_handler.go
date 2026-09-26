@@ -252,7 +252,7 @@ func (h *UserHandler) HandleFollow(c echo.Context) error {
 		return echo.ErrBadRequest
 	}
 
-	follow, err := h.followUseCase.Follow(c.Request().Context(), user.Username, followedUsername)
+	follow, err := h.followUseCase.Follow(c.Request().Context(), user, followedUsername)
 	if err != nil {
 		h.log.Error(c.Request().Context(), "HandleFollow failed", "follower", user.Username, "followed", followedUsername, "error", err)
 		return err
@@ -295,7 +295,7 @@ func (h *UserHandler) HandleUnfollow(c echo.Context) error {
 		return echo.ErrBadRequest
 	}
 
-	err := h.followUseCase.Unfollow(c.Request().Context(), user.Username, followedUsername)
+	err := h.followUseCase.Unfollow(c.Request().Context(), user, followedUsername)
 	if err != nil {
 		h.log.Error(c.Request().Context(), "HandleUnfollow failed", "follower", user.Username, "followed", followedUsername, "error", err)
 		return err

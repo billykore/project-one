@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"testing"
 	"time"
 
@@ -19,23 +18,18 @@ func TestFeedUseCase_GetFeed_ReturnsPostsForUserAndFollowed(t *testing.T) {
 
 	postRepo := mocks.NewMockPostQueryRepository(ctrl)
 	followRepo := mocks.NewMockFollowRepository(ctrl)
-	userRepo := mocks.NewMockUserRepository(ctrl)
 	logger := mocks.NewMockLogger(ctrl)
 
 	logger.EXPECT().Info(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 	logger.EXPECT().Error(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 	logger.EXPECT().Debug(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 
-	uc := NewFeedUseCase(postRepo, followRepo, userRepo, logger)
+	uc := NewFeedUseCase(postRepo, followRepo, logger)
 
 	t.Run("returns posts from self and followed users", func(t *testing.T) {
 		ctx := context.Background()
-		username := "alice"
+		userID := 1
 		now := time.Date(2026, 7, 1, 12, 0, 0, 0, time.UTC)
-
-		userRepo.EXPECT().GetUserByUsername(ctx, username).Return(&domain.User{
-			ID: 1, Username: "alice",
-		}, nil)
 
 		followRepo.EXPECT().GetFollowedUserIDs(ctx, 1).Return([]int{2, 3}, nil)
 
@@ -45,7 +39,7 @@ func TestFeedUseCase_GetFeed_ReturnsPostsForUserAndFollowed(t *testing.T) {
 				{ID: 2, Username: "bob", Title: "Second", Content: "Content 2", CreatedAt: now.Add(-1 * time.Hour), UpdatedAt: now.Add(-1 * time.Hour)},
 			}, nil)
 
-		result, err := uc.GetFeed(ctx, username, nil, 10)
+		result, err := uc.GetFeed(ctx, userID, nil, 10)
 		assert.NoError(t, err)
 		assert.Len(t, result.Posts, 2)
 		assert.False(t, result.HasMore)
@@ -59,21 +53,16 @@ func TestFeedUseCase_GetFeed_DetectsHasMore(t *testing.T) {
 
 	postRepo := mocks.NewMockPostQueryRepository(ctrl)
 	followRepo := mocks.NewMockFollowRepository(ctrl)
-	userRepo := mocks.NewMockUserRepository(ctrl)
 	logger := mocks.NewMockLogger(ctrl)
 
 	logger.EXPECT().Info(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 	logger.EXPECT().Error(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 	logger.EXPECT().Debug(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 
-	uc := NewFeedUseCase(postRepo, followRepo, userRepo, logger)
+	uc := NewFeedUseCase(postRepo, followRepo, logger)
 	ctx := context.Background()
-	username := "alice"
+	userID := 1
 	now := time.Date(2026, 7, 1, 12, 0, 0, 0, time.UTC)
-
-	userRepo.EXPECT().GetUserByUsername(ctx, username).Return(&domain.User{
-		ID: 1, Username: "alice",
-	}, nil)
 
 	followRepo.EXPECT().GetFollowedUserIDs(ctx, 1).Return([]int{}, nil)
 
@@ -91,7 +80,7 @@ func TestFeedUseCase_GetFeed_DetectsHasMore(t *testing.T) {
 
 	postRepo.EXPECT().GetFeed(ctx, []int{1}, (*vo.Cursor)(nil), 11).Return(posts, nil)
 
-	result, err := uc.GetFeed(ctx, username, (*vo.Cursor)(nil), 10)
+	result, err := uc.GetFeed(ctx, userID, (*vo.Cursor)(nil), 10)
 	assert.NoError(t, err)
 	assert.Len(t, result.Posts, 10)
 	assert.True(t, result.HasMore)
@@ -104,20 +93,17 @@ func TestFeedUseCase_GetFeed_UserNotFound(t *testing.T) {
 
 	postRepo := mocks.NewMockPostQueryRepository(ctrl)
 	followRepo := mocks.NewMockFollowRepository(ctrl)
-	userRepo := mocks.NewMockUserRepository(ctrl)
 	logger := mocks.NewMockLogger(ctrl)
 
 	logger.EXPECT().Info(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 	logger.EXPECT().Error(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 	logger.EXPECT().Debug(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 
-	uc := NewFeedUseCase(postRepo, followRepo, userRepo, logger)
+	uc := NewFeedUseCase(postRepo, followRepo, logger)
 	ctx := context.Background()
 
-	userRepo.EXPECT().GetUserByUsername(ctx, "ghost").Return(nil, errors.New("not found"))
-
-	_, err := uc.GetFeed(ctx, "ghost", nil, 10)
-	assert.Error(t, err)
+	_, err := uc.GetFeed(ctx, 0, nil, 10)
+	assert.ErrorIs(t, err, domain.ErrInvalidUser)
 }
 
 func TestFeedUseCase_GetFeed_EmptyFeed(t *testing.T) {
@@ -126,23 +112,19 @@ func TestFeedUseCase_GetFeed_EmptyFeed(t *testing.T) {
 
 	postRepo := mocks.NewMockPostQueryRepository(ctrl)
 	followRepo := mocks.NewMockFollowRepository(ctrl)
-	userRepo := mocks.NewMockUserRepository(ctrl)
 	logger := mocks.NewMockLogger(ctrl)
 
 	logger.EXPECT().Info(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 	logger.EXPECT().Error(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 	logger.EXPECT().Debug(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 
-	uc := NewFeedUseCase(postRepo, followRepo, userRepo, logger)
+	uc := NewFeedUseCase(postRepo, followRepo, logger)
 	ctx := context.Background()
 
-	userRepo.EXPECT().GetUserByUsername(ctx, "alice").Return(&domain.User{
-		ID: 1, Username: "alice",
-	}, nil)
 	followRepo.EXPECT().GetFollowedUserIDs(ctx, 1).Return([]int{}, nil)
 	postRepo.EXPECT().GetFeed(ctx, []int{1}, (*vo.Cursor)(nil), 11).Return([]*domain.Post{}, nil)
 
-	result, err := uc.GetFeed(ctx, "alice", nil, 10)
+	result, err := uc.GetFeed(ctx, 1, nil, 10)
 	assert.NoError(t, err)
 	assert.Len(t, result.Posts, 0)
 	assert.False(t, result.HasMore)
@@ -155,14 +137,13 @@ func TestFeedUseCase_GetFeed_WithCursor(t *testing.T) {
 
 	postRepo := mocks.NewMockPostQueryRepository(ctrl)
 	followRepo := mocks.NewMockFollowRepository(ctrl)
-	userRepo := mocks.NewMockUserRepository(ctrl)
 	logger := mocks.NewMockLogger(ctrl)
 
 	logger.EXPECT().Info(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 	logger.EXPECT().Error(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 	logger.EXPECT().Debug(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 
-	uc := NewFeedUseCase(postRepo, followRepo, userRepo, logger)
+	uc := NewFeedUseCase(postRepo, followRepo, logger)
 	ctx := context.Background()
 	now := time.Date(2026, 7, 1, 12, 0, 0, 0, time.UTC)
 
@@ -171,16 +152,13 @@ func TestFeedUseCase_GetFeed_WithCursor(t *testing.T) {
 		ID:        5,
 	}
 
-	userRepo.EXPECT().GetUserByUsername(ctx, "alice").Return(&domain.User{
-		ID: 1, Username: "alice",
-	}, nil)
 	followRepo.EXPECT().GetFollowedUserIDs(ctx, 1).Return([]int{}, nil)
 	postRepo.EXPECT().GetFeed(ctx, []int{1}, cursor, 11).
 		Return([]*domain.Post{
 			{ID: 3, Username: "alice", Title: "Older", Content: "Content", CreatedAt: now.Add(-3 * time.Hour), UpdatedAt: now},
 		}, nil)
 
-	result, err := uc.GetFeed(ctx, "alice", cursor, 10)
+	result, err := uc.GetFeed(ctx, 1, cursor, 10)
 	assert.NoError(t, err)
 	assert.Len(t, result.Posts, 1)
 	assert.False(t, result.HasMore)
@@ -192,33 +170,26 @@ func TestFeedUseCase_GetFeed_ClampsLimit(t *testing.T) {
 
 	postRepo := mocks.NewMockPostQueryRepository(ctrl)
 	followRepo := mocks.NewMockFollowRepository(ctrl)
-	userRepo := mocks.NewMockUserRepository(ctrl)
 	logger := mocks.NewMockLogger(ctrl)
 
 	logger.EXPECT().Info(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 	logger.EXPECT().Error(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 	logger.EXPECT().Debug(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 
-	uc := NewFeedUseCase(postRepo, followRepo, userRepo, logger)
+	uc := NewFeedUseCase(postRepo, followRepo, logger)
 	ctx := context.Background()
 
 	// limit=0 clamps to 10, so dbLimit=11
-	userRepo.EXPECT().GetUserByUsername(ctx, "alice").Return(&domain.User{
-		ID: 1, Username: "alice",
-	}, nil)
 	followRepo.EXPECT().GetFollowedUserIDs(ctx, 1).Return([]int{}, nil)
 	postRepo.EXPECT().GetFeed(ctx, []int{1}, (*vo.Cursor)(nil), 11).Return([]*domain.Post{}, nil)
 
-	_, err := uc.GetFeed(ctx, "alice", nil, 0)
+	_, err := uc.GetFeed(ctx, 1, nil, 0)
 	assert.NoError(t, err)
 
 	// limit=100 clamps to 50, so dbLimit=51
-	userRepo.EXPECT().GetUserByUsername(ctx, "alice").Return(&domain.User{
-		ID: 1, Username: "alice",
-	}, nil)
 	followRepo.EXPECT().GetFollowedUserIDs(ctx, 1).Return([]int{}, nil)
 	postRepo.EXPECT().GetFeed(ctx, []int{1}, (*vo.Cursor)(nil), 51).Return([]*domain.Post{}, nil)
 
-	_, err = uc.GetFeed(ctx, "alice", nil, 100)
+	_, err = uc.GetFeed(ctx, 1, nil, 100)
 	assert.NoError(t, err)
 }

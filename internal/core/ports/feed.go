@@ -18,5 +18,5 @@ type FeedResult struct {
 type FeedUseCase interface {
 	// GetFeed retrieves a paginated list of posts for the authenticated user,
 	// including posts from users they follow and their own posts.
-	GetFeed(ctx context.Context, username string, cursor *vo.Cursor, limit int) (*FeedResult, error)
+	GetFeed(ctx context.Context, userID int, cursor *vo.Cursor, limit int) (*FeedResult, error)
 }

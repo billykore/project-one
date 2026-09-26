@@ -24,15 +24,14 @@ func TestFollowUseCase_Follow(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("success", func(t *testing.T) {
-		followerUsername := "user1"
+		actor := &domain.User{ID: 1, Username: "user1"}
 		followedUsername := "user2"
 
-		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{ID: 1, Username: "user1"}, nil)
 		mockUserRepo.EXPECT().GetUserByUsername(ctx, followedUsername).Return(&domain.User{ID: 2, Username: "user2"}, nil)
 		mockFollowRepo.EXPECT().Create(ctx, gomock.Any()).Return(nil)
 		mockPublisher.EXPECT().Publish(ctx, gomock.Any()).Return(nil)
 
-		follow, err := svc.Follow(ctx, followerUsername, followedUsername)
+		follow, err := svc.Follow(ctx, actor, followedUsername)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, follow)
@@ -41,50 +40,48 @@ func TestFollowUseCase_Follow(t *testing.T) {
 	})
 
 	t.Run("cannot follow self", func(t *testing.T) {
-		username := "user1"
-		follow, err := svc.Follow(ctx, username, username)
+		actor := &domain.User{ID: 1, Username: "user1"}
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, actor.Username).Return(actor, nil)
+		follow, err := svc.Follow(ctx, actor, actor.Username)
 
 		assert.ErrorIs(t, err, domain.ErrCannotFollowSelf)
 		assert.Nil(t, follow)
 	})
 
 	t.Run("user not found", func(t *testing.T) {
-		followerUsername := "user1"
+		actor := &domain.User{ID: 1, Username: "user1"}
 		followedUsername := "notfound"
 
-		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{Username: "user1"}, nil)
 		mockUserRepo.EXPECT().GetUserByUsername(ctx, followedUsername).Return(nil, domain.ErrUserNotFound)
 
-		follow, err := svc.Follow(ctx, followerUsername, followedUsername)
+		follow, err := svc.Follow(ctx, actor, followedUsername)
 
 		assert.Error(t, err)
 		assert.Nil(t, follow)
 	})
 
 	t.Run("already following", func(t *testing.T) {
-		followerUsername := "user1"
+		actor := &domain.User{ID: 1, Username: "user1"}
 		followedUsername := "user2"
 
-		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{Username: "user1"}, nil)
 		mockUserRepo.EXPECT().GetUserByUsername(ctx, followedUsername).Return(&domain.User{Username: "user2"}, nil)
 		mockFollowRepo.EXPECT().Create(ctx, gomock.Any()).Return(domain.ErrAlreadyFollowing)
 
-		follow, err := svc.Follow(ctx, followerUsername, followedUsername)
+		follow, err := svc.Follow(ctx, actor, followedUsername)
 
 		assert.Error(t, err)
 		assert.Nil(t, follow)
 	})
 
 	t.Run("validation failure does not publish", func(t *testing.T) {
-		followerUsername := "user1"
+		actor := &domain.User{ID: 1, Username: "user1"}
 		followedUsername := "user2"
 
-		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{ID: 1, Username: "user1"}, nil)
 		mockUserRepo.EXPECT().GetUserByUsername(ctx, followedUsername).Return(&domain.User{ID: 0, Username: "user2"}, nil)
 		mockFollowRepo.EXPECT().Create(ctx, gomock.Any()).Return(nil)
 		mockPublisher.EXPECT().Publish(ctx, gomock.Any()).Return(nil)
 
-		follow, err := svc.Follow(ctx, followerUsername, followedUsername)
+		follow, err := svc.Follow(ctx, actor, followedUsername)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, follow)
@@ -104,34 +101,33 @@ func TestFollowUseCase_Unfollow(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("success", func(t *testing.T) {
-		followerUsername := "user1"
+		actor := &domain.User{ID: 1, Username: "user1"}
 		followedUsername := "user2"
 
-		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{ID: 1, Username: followerUsername}, nil)
 		mockUserRepo.EXPECT().GetUserByUsername(ctx, followedUsername).Return(&domain.User{ID: 2, Username: followedUsername}, nil)
 		mockFollowRepo.EXPECT().Delete(ctx, 1, 2).Return(nil)
 
-		err := svc.Unfollow(ctx, followerUsername, followedUsername)
+		err := svc.Unfollow(ctx, actor, followedUsername)
 
 		assert.NoError(t, err)
 	})
 
 	t.Run("cannot unfollow self", func(t *testing.T) {
-		username := "user1"
-		err := svc.Unfollow(ctx, username, username)
+		actor := &domain.User{ID: 1, Username: "user1"}
+		mockUserRepo.EXPECT().GetUserByUsername(ctx, actor.Username).Return(actor, nil)
+		err := svc.Unfollow(ctx, actor, actor.Username)
 
 		assert.ErrorIs(t, err, domain.ErrCannotUnfollowSelf)
 	})
 
 	t.Run("not following", func(t *testing.T) {
-		followerUsername := "user1"
+		actor := &domain.User{ID: 1, Username: "user1"}
 		followedUsername := "user2"
 
-		mockUserRepo.EXPECT().GetUserByUsername(ctx, followerUsername).Return(&domain.User{ID: 1, Username: followerUsername}, nil)
 		mockUserRepo.EXPECT().GetUserByUsername(ctx, followedUsername).Return(&domain.User{ID: 2, Username: followedUsername}, nil)
 		mockFollowRepo.EXPECT().Delete(ctx, 1, 2).Return(domain.ErrNotFollowing)
 
-		err := svc.Unfollow(ctx, followerUsername, followedUsername)
+		err := svc.Unfollow(ctx, actor, followedUsername)
 
 		assert.Error(t, err)
 	})

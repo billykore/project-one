@@ -38,14 +38,9 @@ func NewFollowUseCase(
 	}
 }
 
-func (u *followUseCase) Follow(ctx context.Context, followerUsername, followedUsername string) (*domain.Follow, error) {
-	if followerUsername == followedUsername {
-		return nil, domain.ErrCannotFollowSelf
-	}
-
-	follower, err := u.userRepo.GetUserByUsername(ctx, followerUsername)
-	if err != nil {
-		return nil, fmt.Errorf("get follower by username: %w", err)
+func (u *followUseCase) Follow(ctx context.Context, actor *domain.User, followedUsername string) (*domain.Follow, error) {
+	if actor == nil || actor.ID <= 0 {
+		return nil, domain.ErrInvalidUser
 	}
 
 	followed, err := u.userRepo.GetUserByUsername(ctx, followedUsername)
@@ -53,13 +48,16 @@ func (u *followUseCase) Follow(ctx context.Context, followerUsername, followedUs
 		return nil, fmt.Errorf("get followed by username: %w", err)
 	}
 
-	if follower == nil || followed == nil {
+	if followed == nil {
 		return nil, fmt.Errorf("get user: %w", domain.ErrUserNotFound)
+	}
+	if actor.ID == followed.ID {
+		return nil, domain.ErrCannotFollowSelf
 	}
 
 	follow := &domain.Follow{
-		FollowerID:       follower.ID,
-		FollowerUsername: follower.Username,
+		FollowerID:       actor.ID,
+		FollowerUsername: actor.Username,
 		FollowedID:       followed.ID,
 		FollowedUsername: followed.Username,
 	}
@@ -70,8 +68,8 @@ func (u *followUseCase) Follow(ctx context.Context, followerUsername, followedUs
 
 	notification := &domain.Notification{
 		UserID:        followed.ID,
-		ActorID:       follower.ID,
-		ActorUsername: follower.Username,
+		ActorID:       actor.ID,
+		ActorUsername: actor.Username,
 		Type:          domain.NotificationTypeFollow,
 		CreatedAt:     follow.CreatedAt,
 	}
@@ -106,23 +104,21 @@ func (u *followUseCase) Follow(ctx context.Context, followerUsername, followedUs
 	return follow, nil
 }
 
-func (u *followUseCase) Unfollow(ctx context.Context, followerUsername, followedUsername string) error {
-	if followerUsername == followedUsername {
-		return domain.ErrCannotUnfollowSelf
-	}
-
-	follower, err := u.userRepo.GetUserByUsername(ctx, followerUsername)
-	if err != nil {
-		return fmt.Errorf("get follower by username: %w", err)
+func (u *followUseCase) Unfollow(ctx context.Context, actor *domain.User, followedUsername string) error {
+	if actor == nil || actor.ID <= 0 {
+		return domain.ErrInvalidUser
 	}
 	followed, err := u.userRepo.GetUserByUsername(ctx, followedUsername)
 	if err != nil {
 		return fmt.Errorf("get followed by username: %w", err)
 	}
-	if follower == nil || followed == nil {
+	if followed == nil {
 		return domain.ErrUserNotFound
 	}
-	if err := u.followRepo.Delete(ctx, follower.ID, followed.ID); err != nil {
+	if actor.ID == followed.ID {
+		return domain.ErrCannotUnfollowSelf
+	}
+	if err := u.followRepo.Delete(ctx, actor.ID, followed.ID); err != nil {
 		return fmt.Errorf("delete follow: %w", err)
 	}
 

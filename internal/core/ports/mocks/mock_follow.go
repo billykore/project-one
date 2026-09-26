@@ -141,18 +141,18 @@ func (m *MockFollowUseCase) EXPECT() *MockFollowUseCaseMockRecorder {
 }
 
 // Follow mocks base method.
-func (m *MockFollowUseCase) Follow(ctx context.Context, followerUsername, followedUsername string) (*domain.Follow, error) {
+func (m *MockFollowUseCase) Follow(ctx context.Context, actor *domain.User, followedUsername string) (*domain.Follow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Follow", ctx, followerUsername, followedUsername)
+	ret := m.ctrl.Call(m, "Follow", ctx, actor, followedUsername)
 	ret0, _ := ret[0].(*domain.Follow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Follow indicates an expected call of Follow.
-func (mr *MockFollowUseCaseMockRecorder) Follow(ctx, followerUsername, followedUsername any) *gomock.Call {
+func (mr *MockFollowUseCaseMockRecorder) Follow(ctx, actor, followedUsername any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Follow", reflect.TypeOf((*MockFollowUseCase)(nil).Follow), ctx, followerUsername, followedUsername)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Follow", reflect.TypeOf((*MockFollowUseCase)(nil).Follow), ctx, actor, followedUsername)
 }
 
 // GetFollowers mocks base method.
@@ -186,15 +186,15 @@ func (mr *MockFollowUseCaseMockRecorder) GetFollowing(ctx, followerUsername, cur
 }
 
 // Unfollow mocks base method.
-func (m *MockFollowUseCase) Unfollow(ctx context.Context, followerUsername, followedUsername string) error {
+func (m *MockFollowUseCase) Unfollow(ctx context.Context, actor *domain.User, followedUsername string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Unfollow", ctx, followerUsername, followedUsername)
+	ret := m.ctrl.Call(m, "Unfollow", ctx, actor, followedUsername)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Unfollow indicates an expected call of Unfollow.
-func (mr *MockFollowUseCaseMockRecorder) Unfollow(ctx, followerUsername, followedUsername any) *gomock.Call {
+func (mr *MockFollowUseCaseMockRecorder) Unfollow(ctx, actor, followedUsername any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Unfollow", reflect.TypeOf((*MockFollowUseCase)(nil).Unfollow), ctx, followerUsername, followedUsername)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Unfollow", reflect.TypeOf((*MockFollowUseCase)(nil).Unfollow), ctx, actor, followedUsername)
 }
