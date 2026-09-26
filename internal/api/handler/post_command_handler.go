@@ -140,7 +140,7 @@ func (h *PostCommandHandler) CreateComment(c echo.Context) error {
 	if err := h.validator.Validate(req); err != nil {
 		return err
 	}
-	if err := h.commentUseCase.AddComment(c.Request().Context(), req.ID, user.Username, req.Content); err != nil {
+	if err := h.commentUseCase.AddComment(c.Request().Context(), req.ID, user, req.Content); err != nil {
 		h.log.Error(c.Request().Context(), "CreateComment failed", "username", user.Username, "post_id", req.ID, "error", err)
 		return err
 	}
@@ -166,7 +166,7 @@ func (h *PostCommandHandler) LikePost(c echo.Context) error {
 	if err != nil {
 		return domain.ErrPostIDMustBeANumber
 	}
-	count, err := h.postUseCase.LikePost(c.Request().Context(), id, user.Username)
+	count, err := h.postUseCase.LikePost(c.Request().Context(), id, user)
 	if err != nil {
 		return err
 	}
@@ -192,7 +192,7 @@ func (h *PostCommandHandler) UnlikePost(c echo.Context) error {
 	if err != nil {
 		return domain.ErrPostIDMustBeANumber
 	}
-	count, err := h.postUseCase.UnlikePost(c.Request().Context(), id, user.Username)
+	count, err := h.postUseCase.UnlikePost(c.Request().Context(), id, user)
 	if err != nil {
 		return err
 	}

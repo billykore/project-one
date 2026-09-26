@@ -71,38 +71,38 @@ func (mr *MockLikeRepositoryMockRecorder) Create(ctx, like any) *gomock.Call {
 }
 
 // Delete mocks base method.
-func (m *MockLikeRepository) Delete(ctx context.Context, postID int, username string) error {
+func (m *MockLikeRepository) Delete(ctx context.Context, postID, userID int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", ctx, postID, username)
+	ret := m.ctrl.Call(m, "Delete", ctx, postID, userID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockLikeRepositoryMockRecorder) Delete(ctx, postID, username any) *gomock.Call {
+func (mr *MockLikeRepositoryMockRecorder) Delete(ctx, postID, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockLikeRepository)(nil).Delete), ctx, postID, username)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockLikeRepository)(nil).Delete), ctx, postID, userID)
 }
 
 // Exists mocks base method.
-func (m *MockLikeRepository) Exists(ctx context.Context, postID int, username string) (bool, error) {
+func (m *MockLikeRepository) Exists(ctx context.Context, postID, userID int) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Exists", ctx, postID, username)
+	ret := m.ctrl.Call(m, "Exists", ctx, postID, userID)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Exists indicates an expected call of Exists.
-func (mr *MockLikeRepositoryMockRecorder) Exists(ctx, postID, username any) *gomock.Call {
+func (mr *MockLikeRepositoryMockRecorder) Exists(ctx, postID, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Exists", reflect.TypeOf((*MockLikeRepository)(nil).Exists), ctx, postID, username)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Exists", reflect.TypeOf((*MockLikeRepository)(nil).Exists), ctx, postID, userID)
 }
 
 // SetLiked mocks base method.
-func (m *MockLikeRepository) SetLiked(ctx context.Context, postID int, username string, liked bool) (int, bool, error) {
+func (m *MockLikeRepository) SetLiked(ctx context.Context, postID, userID int, liked bool) (int, bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetLiked", ctx, postID, username, liked)
+	ret := m.ctrl.Call(m, "SetLiked", ctx, postID, userID, liked)
 	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(bool)
 	ret2, _ := ret[2].(error)
@@ -110,7 +110,7 @@ func (m *MockLikeRepository) SetLiked(ctx context.Context, postID int, username 
 }
 
 // SetLiked indicates an expected call of SetLiked.
-func (mr *MockLikeRepositoryMockRecorder) SetLiked(ctx, postID, username, liked any) *gomock.Call {
+func (mr *MockLikeRepositoryMockRecorder) SetLiked(ctx, postID, userID, liked any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetLiked", reflect.TypeOf((*MockLikeRepository)(nil).SetLiked), ctx, postID, username, liked)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetLiked", reflect.TypeOf((*MockLikeRepository)(nil).SetLiked), ctx, postID, userID, liked)
 }

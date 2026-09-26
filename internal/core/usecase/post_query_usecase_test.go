@@ -19,9 +19,9 @@ func TestPostQueryUseCase_RepeatedReadsAreMutationFree(t *testing.T) {
 	ctx := context.Background()
 
 	posts.EXPECT().GetByID(ctx, 1).Return(&domain.Post{ID: 1, LikeCount: 2}, nil).Times(10)
-	likes.EXPECT().Exists(ctx, 1, "reader").Return(true, nil).Times(10)
+	likes.EXPECT().Exists(ctx, 1, 1).Return(true, nil).Times(10)
 	for range 10 {
-		liked, count, err := query.GetLikeStatus(ctx, 1, "reader")
+		liked, count, err := query.GetLikeStatus(ctx, 1, 1)
 		require.NoError(t, err)
 		require.True(t, liked)
 		require.Equal(t, 2, count)

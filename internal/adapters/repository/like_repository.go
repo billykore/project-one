@@ -14,7 +14,7 @@ import (
 
 type likeModel struct {
 	PostID    int       `gorm:"primaryKey"`
-	Username  string    `gorm:"primaryKey;size:255"`
+	UserID    int       `gorm:"primaryKey"`
 	CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP"`
 }
 
@@ -24,7 +24,7 @@ func (m *likeModel) TableName() string {
 
 func (m *likeModel) fromDomain(l *domain.Like) {
 	m.PostID = l.PostID
-	m.Username = l.Username
+	m.UserID = l.UserID
 }
 
 type likeRepository struct {
@@ -39,12 +39,12 @@ func NewLikeRepository(db *gorm.DB) ports.LikeRepository {
 // SetLiked changes the relationship and its post counter atomically. This
 // avoids stale read-modify-write counter updates and rolls both writes back on
 // failure.
-func (r *likeRepository) SetLiked(ctx context.Context, postID int, username string, liked bool) (int, bool, error) {
+func (r *likeRepository) SetLiked(ctx context.Context, postID int, userID int, liked bool) (int, bool, error) {
 	var likeCount int
 	var changed bool
 	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		if liked {
-			result := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&likeModel{PostID: postID, Username: username})
+			result := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&likeModel{PostID: postID, UserID: userID})
 			if result.Error != nil {
 				return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, result.Error)
 			}
@@ -55,7 +55,7 @@ func (r *likeRepository) SetLiked(ctx context.Context, postID int, username stri
 				}
 			}
 		} else {
-			result := tx.Where("post_id = ? AND username = ?", postID, username).Delete(&likeModel{})
+			result := tx.Where("post_id = ? AND user_id = ?", postID, userID).Delete(&likeModel{})
 			if result.Error != nil {
 				return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, result.Error)
 			}
@@ -105,9 +105,9 @@ func (r *likeRepository) Create(ctx context.Context, like *domain.Like) error {
 	return nil
 }
 
-func (r *likeRepository) Delete(ctx context.Context, postID int, username string) error {
+func (r *likeRepository) Delete(ctx context.Context, postID int, userID int) error {
 	result := r.db.WithContext(ctx).
-		Where("post_id = ? AND username = ?", postID, username).
+		Where("post_id = ? AND user_id = ?", postID, userID).
 		Delete(&likeModel{})
 	if result.Error != nil {
 		return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, result.Error)
@@ -118,11 +118,11 @@ func (r *likeRepository) Delete(ctx context.Context, postID int, username string
 	return nil
 }
 
-func (r *likeRepository) Exists(ctx context.Context, postID int, username string) (bool, error) {
+func (r *likeRepository) Exists(ctx context.Context, postID int, userID int) (bool, error) {
 	var count int64
 	err := r.db.WithContext(ctx).
 		Model(&likeModel{}).
-		Where("post_id = ? AND username = ?", postID, username).
+		Where("post_id = ? AND user_id = ?", postID, userID).
 		Count(&count).Error
 	if err != nil {
 		return false, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)

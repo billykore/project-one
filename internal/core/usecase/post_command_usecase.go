@@ -81,11 +81,11 @@ func (uc *postCommandUseCase) DeletePost(ctx context.Context, userID int, postID
 	return nil
 }
 
-func (uc *postCommandUseCase) LikePost(ctx context.Context, postID int, username string) (int, error) {
+func (uc *postCommandUseCase) LikePost(ctx context.Context, postID int, actor *domain.User) (int, error) {
 	if postID <= 0 {
 		return 0, domain.ErrInvalidPostID
 	}
-	if username == "" {
+	if actor == nil || actor.ID <= 0 {
 		return 0, domain.ErrInvalidUsername
 	}
 	post, err := uc.postRepo.Load(ctx, postID)
@@ -96,27 +96,27 @@ func (uc *postCommandUseCase) LikePost(ctx context.Context, postID int, username
 		uc.log.Error(ctx, "failed to verify post existence for like", "postID", postID, "error", err)
 		return 0, fmt.Errorf("verify post existence: %w", err)
 	}
-	likeCount, changed, err := uc.likeRepo.SetLiked(ctx, postID, username, true)
+	likeCount, changed, err := uc.likeRepo.SetLiked(ctx, postID, actor.ID, true)
 	if err != nil {
-		uc.log.Error(ctx, "failed to set like state", "postID", postID, "username", username, "error", err)
+		uc.log.Error(ctx, "failed to set like state", "postID", postID, "userID", actor.ID, "error", err)
 		return 0, fmt.Errorf("set like state: %w", err)
 	}
 	post.LikeCount = likeCount
 	if !changed {
 		return likeCount, nil
 	}
-	uc.log.Info(ctx, "post liked successfully", "postID", postID, "username", username)
-	if post.Username != username {
-		uc.publishLikeNotification(ctx, post, &domain.Like{PostID: postID, Username: username})
+	uc.log.Info(ctx, "post liked successfully", "postID", postID, "userID", actor.ID)
+	if post.UserID != actor.ID {
+		uc.publishLikeNotification(ctx, post, actor)
 	}
 	return likeCount, nil
 }
 
-func (uc *postCommandUseCase) UnlikePost(ctx context.Context, postID int, username string) (int, error) {
+func (uc *postCommandUseCase) UnlikePost(ctx context.Context, postID int, actor *domain.User) (int, error) {
 	if postID <= 0 {
 		return 0, domain.ErrInvalidPost
 	}
-	if username == "" {
+	if actor == nil || actor.ID <= 0 {
 		return 0, domain.ErrInvalidUsername
 	}
 	post, err := uc.postRepo.Load(ctx, postID)
@@ -127,20 +127,20 @@ func (uc *postCommandUseCase) UnlikePost(ctx context.Context, postID int, userna
 		uc.log.Error(ctx, "failed to get post for unlike", "postID", postID, "error", err)
 		return 0, fmt.Errorf("get post for unlike: %w", err)
 	}
-	likeCount, changed, err := uc.likeRepo.SetLiked(ctx, postID, username, false)
+	likeCount, changed, err := uc.likeRepo.SetLiked(ctx, postID, actor.ID, false)
 	if err != nil {
-		uc.log.Error(ctx, "failed to set like state", "postID", postID, "username", username, "error", err)
+		uc.log.Error(ctx, "failed to set like state", "postID", postID, "userID", actor.ID, "error", err)
 		return 0, fmt.Errorf("set like state: %w", err)
 	}
 	post.LikeCount = likeCount
 	if !changed {
 		return likeCount, nil
 	}
-	uc.log.Info(ctx, "post unliked successfully", "postID", postID, "username", username)
+	uc.log.Info(ctx, "post unliked successfully", "postID", postID, "userID", actor.ID)
 	return likeCount, nil
 }
 
-func (uc *postCommandUseCase) publishLikeNotification(ctx context.Context, post *domain.Post, like *domain.Like) {
+func (uc *postCommandUseCase) publishLikeNotification(ctx context.Context, post *domain.Post, actor *domain.User) {
 	owner, err := uc.userRepo.GetUserByID(ctx, post.UserID)
 	if err != nil {
 		uc.log.Error(ctx, "failed to resolve post owner for like notification", "userID", post.UserID, "error", err)
@@ -149,15 +149,7 @@ func (uc *postCommandUseCase) publishLikeNotification(ctx context.Context, post 
 	if owner == nil {
 		return
 	}
-	liker, err := uc.userRepo.GetUserByUsername(ctx, like.Username)
-	if err != nil {
-		uc.log.Error(ctx, "failed to resolve liker for like notification", "username", like.Username, "error", err)
-		return
-	}
-	if liker == nil {
-		return
-	}
-	notification := domain.Notification{UserID: owner.ID, ActorID: liker.ID, Type: domain.NotificationTypeLike, PostID: post.ID, ActorUsername: liker.Username, CreatedAt: like.CreatedAt}
+	notification := domain.Notification{UserID: owner.ID, ActorID: actor.ID, Type: domain.NotificationTypeLike, PostID: post.ID, ActorUsername: actor.Username, CreatedAt: time.Now().UTC()}
 	event := domain.NotificationEvent{EventID: fmt.Sprintf("backend-%d", time.Now().UnixNano()), SchemaVersion: "1.0", Timestamp: time.Now().UTC().Format(time.RFC3339Nano), Notification: notification}
 	payload, err := json.Marshal(event)
 	if err != nil {

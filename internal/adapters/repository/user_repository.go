@@ -127,8 +127,8 @@ func (r *userRepository) UpdateUser(ctx context.Context, user *domain.User) erro
 	return nil
 }
 
-// UpdateProfile updates the user's profile fields and cascades the username
-// change to all denormalized columns within a single database transaction.
+// UpdateProfile updates the user's profile fields and the remaining token
+// username snapshot within a single database transaction.
 // oldUsername is the user's current username before the update; it is used
 // in WHERE clauses to find rows that need the cascade.
 func (r *userRepository) UpdateProfile(ctx context.Context, oldUsername string, user *domain.User) error {
@@ -154,18 +154,6 @@ func (r *userRepository) UpdateProfile(ctx context.Context, oldUsername string, 
 
 		// Cascade username to user_tokens table.
 		if err := tx.Model(&userTokenModel{}).Where("username = ?", oldUsername).
-			Update("username", user.Username).Error; err != nil {
-			return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
-		}
-
-		// Cascade username to comments table.
-		if err := tx.Model(&commentModel{}).Where("username = ?", oldUsername).
-			Update("username", user.Username).Error; err != nil {
-			return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
-		}
-
-		// Cascade username to post_likes table.
-		if err := tx.Model(&likeModel{}).Where("username = ?", oldUsername).
 			Update("username", user.Username).Error; err != nil {
 			return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 		}

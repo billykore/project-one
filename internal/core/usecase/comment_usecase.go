@@ -36,10 +36,14 @@ func NewCommentUseCase(
 	}
 }
 
-func (uc *commentUseCase) AddComment(ctx context.Context, postID int, username string, content string) error {
+func (uc *commentUseCase) AddComment(ctx context.Context, postID int, author *domain.User, content string) error {
+	if author == nil || author.ID <= 0 {
+		return domain.ErrInvalidUsername
+	}
 	comment := &domain.Comment{
 		PostID:   postID,
-		Username: username,
+		UserID:   author.ID,
+		Username: author.Username,
 		Content:  content,
 	}
 
@@ -59,7 +63,7 @@ func (uc *commentUseCase) AddComment(ctx context.Context, postID int, username s
 		return fmt.Errorf("failed to create comment: %w", err)
 	}
 
-	if post.Username != username {
+	if post.UserID != author.ID {
 		uc.publishCommentNotification(ctx, post, comment)
 	}
 
@@ -67,7 +71,7 @@ func (uc *commentUseCase) AddComment(ctx context.Context, postID int, username s
 }
 
 func (uc *commentUseCase) publishCommentNotification(ctx context.Context, post *domain.Post, comment *domain.Comment) {
-	postOwner, err := uc.userRepo.GetUserByUsername(ctx, post.Username)
+	postOwner, err := uc.userRepo.GetUserByID(ctx, post.UserID)
 	if err != nil {
 		return
 	}
@@ -75,21 +79,13 @@ func (uc *commentUseCase) publishCommentNotification(ctx context.Context, post *
 		return
 	}
 
-	commenter, err := uc.userRepo.GetUserByUsername(ctx, comment.Username)
-	if err != nil {
-		return
-	}
-	if commenter == nil {
-		return
-	}
-
 	notification := &domain.Notification{
 		UserID:        postOwner.ID,
-		ActorID:       commenter.ID,
+		ActorID:       comment.UserID,
 		Type:          domain.NotificationTypeComment,
 		PostID:        post.ID,
 		CommentID:     comment.ID,
-		ActorUsername: commenter.Username,
+		ActorUsername: comment.Username,
 		CreatedAt:     comment.CreatedAt,
 	}
 
@@ -127,7 +123,7 @@ func (uc *commentUseCase) GetCommentsByPostID(ctx context.Context, postID int) (
 	return comments, nil
 }
 
-func (uc *commentUseCase) EditComment(ctx context.Context, id int, username string, content string) error {
+func (uc *commentUseCase) EditComment(ctx context.Context, id int, userID int, content string) error {
 	// 1. Fetch current comment
 	comment, err := uc.commentRepo.GetByID(ctx, id)
 	if err != nil {
@@ -141,7 +137,7 @@ func (uc *commentUseCase) EditComment(ctx context.Context, id int, username stri
 	}
 
 	// 2. Authorize: only author can edit
-	if comment.Username != username {
+	if comment.UserID != userID {
 		return domain.ErrCommentNotOwned
 	}
 
@@ -159,7 +155,7 @@ func (uc *commentUseCase) EditComment(ctx context.Context, id int, username stri
 	return nil
 }
 
-func (uc *commentUseCase) DeleteComment(ctx context.Context, id int, username string) error {
+func (uc *commentUseCase) DeleteComment(ctx context.Context, id int, userID int) error {
 	// 1. Fetch current comment
 	comment, err := uc.commentRepo.GetByID(ctx, id)
 	if err != nil {
@@ -173,7 +169,7 @@ func (uc *commentUseCase) DeleteComment(ctx context.Context, id int, username st
 	}
 
 	// 2. Authorize: only author can delete
-	if comment.Username != username {
+	if comment.UserID != userID {
 		return domain.ErrCommentNotOwned
 	}
 

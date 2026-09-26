@@ -61,11 +61,11 @@ func (uc *postQueryUseCase) GetPosts(ctx context.Context, userID int, cursor *vo
 	return posts, nextCursor, hasMore, nil
 }
 
-func (uc *postQueryUseCase) GetLikeStatus(ctx context.Context, postID int, username string) (bool, int, error) {
+func (uc *postQueryUseCase) GetLikeStatus(ctx context.Context, postID int, userID int) (bool, int, error) {
 	if postID <= 0 {
 		return false, 0, domain.ErrInvalidPost
 	}
-	if username == "" {
+	if userID <= 0 {
 		return false, 0, domain.ErrInvalidUsername
 	}
 	post, err := uc.postRepo.GetByID(ctx, postID)
@@ -76,9 +76,9 @@ func (uc *postQueryUseCase) GetLikeStatus(ctx context.Context, postID int, usern
 		uc.log.Error(ctx, "failed to verify post existence for like status", "postID", postID, "error", err)
 		return false, 0, fmt.Errorf("verify post existence: %w", err)
 	}
-	liked, err := uc.likeRepo.Exists(ctx, postID, username)
+	liked, err := uc.likeRepo.Exists(ctx, postID, userID)
 	if err != nil {
-		uc.log.Error(ctx, "failed to check like existence", "postID", postID, "username", username, "error", err)
+		uc.log.Error(ctx, "failed to check like existence", "postID", postID, "userID", userID, "error", err)
 		return false, 0, fmt.Errorf("check like existence: %w", err)
 	}
 	return liked, post.LikeCount, nil

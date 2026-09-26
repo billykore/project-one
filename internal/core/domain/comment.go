@@ -7,8 +7,10 @@ import (
 
 // Comment is the core domain entity representing a comment on a post.
 type Comment struct {
-	ID        int
-	PostID    int
+	ID     int
+	PostID int
+	UserID int
+	// Username is a display projection populated when comments are read.
 	Username  string
 	Content   string
 	CreatedAt time.Time

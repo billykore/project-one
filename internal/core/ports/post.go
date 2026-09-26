@@ -35,10 +35,10 @@ type PostCommandUseCase interface {
 	UpdatePost(ctx context.Context, userID int, postID int, title, content string) (*domain.Post, error)
 	// DeletePost removes a post for a specific user.
 	DeletePost(ctx context.Context, userID int, postID int) error
-	// LikePost likes a post by the given username. If already liked, it behaves idempotently.
-	LikePost(ctx context.Context, postID int, username string) (likeCount int, err error)
-	// UnlikePost unlikes a post by the given username. If not liked, it behaves idempotently.
-	UnlikePost(ctx context.Context, postID int, username string) (likeCount int, err error)
+	// LikePost likes a post by the authenticated user. If already liked, it behaves idempotently.
+	LikePost(ctx context.Context, postID int, actor *domain.User) (likeCount int, err error)
+	// UnlikePost unlikes a post by the authenticated user. If not liked, it behaves idempotently.
+	UnlikePost(ctx context.Context, postID int, actor *domain.User) (likeCount int, err error)
 }
 
 // PostQueryUseCase is the driving port for read-only post actions.
@@ -48,5 +48,5 @@ type PostQueryUseCase interface {
 	// GetPosts retrieves posts and cursor-pagination metadata for a user.
 	GetPosts(ctx context.Context, userID int, cursor *vo.Cursor, limit int) (posts []*domain.Post, nextCursor *vo.Cursor, hasMore bool, err error)
 	// GetLikeStatus retrieves whether a user likes a post and its current like count.
-	GetLikeStatus(ctx context.Context, postID int, username string) (liked bool, likeCount int, err error)
+	GetLikeStatus(ctx context.Context, postID int, userID int) (liked bool, likeCount int, err error)
 }

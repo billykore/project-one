@@ -23,11 +23,11 @@ type CommentRepository interface {
 // CommentUseCase is a driving port for comment-related application logic.
 type CommentUseCase interface {
 	// AddComment creates a new comment on a post.
-	AddComment(ctx context.Context, postID int, username string, content string) error
+	AddComment(ctx context.Context, postID int, author *domain.User, content string) error
 	// GetCommentsByPostID retrieves all comments for a specific post.
 	GetCommentsByPostID(ctx context.Context, postID int) ([]*domain.Comment, error)
 	// EditComment updates an existing comment's content.
-	EditComment(ctx context.Context, id int, username string, content string) error
+	EditComment(ctx context.Context, id int, userID int, content string) error
 	// DeleteComment deletes a comment if it belongs to the user.
-	DeleteComment(ctx context.Context, id int, username string) error
+	DeleteComment(ctx context.Context, id int, userID int) error
 }

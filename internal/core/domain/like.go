@@ -15,6 +15,6 @@ var (
 // Like is the core domain entity representing a user's like on a post.
 type Like struct {
 	PostID    int
-	Username  string
+	UserID    int
 	CreatedAt time.Time
 }

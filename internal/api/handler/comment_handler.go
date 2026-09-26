@@ -65,7 +65,7 @@ func (h *CommentHandler) EditComment(c echo.Context) error {
 		return err
 	}
 
-	err = h.commentUseCase.EditComment(c.Request().Context(), id, user.Username, req.Content)
+	err = h.commentUseCase.EditComment(c.Request().Context(), id, user.ID, req.Content)
 	if err != nil {
 		h.log.Error(c.Request().Context(), "EditComment failed", "username", user.Username, "comment_id", id, "error", err)
 		return err
@@ -102,7 +102,7 @@ func (h *CommentHandler) DeleteComment(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid comment ID")
 	}
 
-	err = h.commentUseCase.DeleteComment(c.Request().Context(), id, user.Username)
+	err = h.commentUseCase.DeleteComment(c.Request().Context(), id, user.ID)
 	if err != nil {
 		h.log.Error(c.Request().Context(), "DeleteComment failed", "username", user.Username, "comment_id", id, "error", err)
 		return err

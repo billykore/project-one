@@ -350,29 +350,29 @@ func TestPostCommandUseCase_LikePost(t *testing.T) {
 
 	ctx := context.Background()
 	username := "testuser"
+	actor := &domain.User{ID: 1, Username: username}
 	postID := 1
 
 	t.Run("success - new like", func(t *testing.T) {
 		mockRepo.EXPECT().Load(ctx, postID).Return(&domain.Post{ID: postID, UserID: 2, Username: "postowner", LikeCount: 4}, nil)
-		mockLikeRepo.EXPECT().SetLiked(ctx, postID, username, true).Return(5, true, nil)
+		mockLikeRepo.EXPECT().SetLiked(ctx, postID, actor.ID, true).Return(5, true, nil)
 		mockUserRepo.EXPECT().GetUserByID(ctx, 2).Return(&domain.User{ID: 2, Username: "postowner"}, nil)
-		mockUserRepo.EXPECT().GetUserByUsername(ctx, username).Return(&domain.User{ID: 1, Username: username}, nil)
 		mockPublisher.EXPECT().Publish(ctx, gomock.Any()).DoAndReturn(func(ctx context.Context, event ports.Event) error {
 			assert.Equal(t, "user:2", event.Key)
 			return nil
 		})
-		mockLog.EXPECT().Info(ctx, "post liked successfully", "postID", postID, "username", username)
+		mockLog.EXPECT().Info(ctx, "post liked successfully", "postID", postID, "userID", actor.ID)
 
-		count, err := svc.LikePost(ctx, postID, username)
+		count, err := svc.LikePost(ctx, postID, actor)
 		assert.NoError(t, err)
 		assert.Equal(t, 5, count)
 	})
 
 	t.Run("success idempotent - already liked", func(t *testing.T) {
 		mockRepo.EXPECT().Load(ctx, postID).Return(&domain.Post{ID: postID, LikeCount: 4}, nil)
-		mockLikeRepo.EXPECT().SetLiked(ctx, postID, username, true).Return(4, false, nil)
+		mockLikeRepo.EXPECT().SetLiked(ctx, postID, actor.ID, true).Return(4, false, nil)
 
-		count, err := svc.LikePost(ctx, postID, username)
+		count, err := svc.LikePost(ctx, postID, actor)
 		assert.NoError(t, err)
 		assert.Equal(t, 4, count)
 	})
@@ -380,24 +380,24 @@ func TestPostCommandUseCase_LikePost(t *testing.T) {
 	t.Run("post not found", func(t *testing.T) {
 		mockRepo.EXPECT().Load(ctx, postID).Return(nil, domain.ErrPostNotFound)
 
-		count, err := svc.LikePost(ctx, postID, username)
+		count, err := svc.LikePost(ctx, postID, actor)
 		assert.Error(t, err)
 		assert.True(t, errors.Is(err, domain.ErrPostNotFound))
 		assert.Equal(t, 0, count)
 	})
 
 	t.Run("invalid input", func(t *testing.T) {
-		_, err := svc.LikePost(ctx, 0, username)
+		_, err := svc.LikePost(ctx, 0, actor)
 		assert.ErrorIs(t, err, domain.ErrInvalidPostID)
-		_, err = svc.LikePost(ctx, postID, "")
+		_, err = svc.LikePost(ctx, postID, nil)
 		assert.ErrorIs(t, err, domain.ErrInvalidUsername)
 	})
 
 	t.Run("write failures", func(t *testing.T) {
 		mockRepo.EXPECT().Load(ctx, postID).Return(&domain.Post{ID: postID}, nil)
-		mockLikeRepo.EXPECT().SetLiked(ctx, postID, username, true).Return(0, false, errors.New("write failed"))
-		mockLog.EXPECT().Error(ctx, "failed to set like state", "postID", postID, "username", username, "error", gomock.Any())
-		_, err := svc.LikePost(ctx, postID, username)
+		mockLikeRepo.EXPECT().SetLiked(ctx, postID, actor.ID, true).Return(0, false, errors.New("write failed"))
+		mockLog.EXPECT().Error(ctx, "failed to set like state", "postID", postID, "userID", actor.ID, "error", gomock.Any())
+		_, err := svc.LikePost(ctx, postID, actor)
 		assert.Error(t, err)
 	})
 }
@@ -416,41 +416,42 @@ func TestPostCommandUseCase_UnlikePost(t *testing.T) {
 
 	ctx := context.Background()
 	username := "testuser"
+	actor := &domain.User{ID: 1, Username: username}
 	postID := 1
 
 	t.Run("success - unlike existing", func(t *testing.T) {
 		mockRepo.EXPECT().Load(ctx, postID).Return(&domain.Post{ID: postID, LikeCount: 4}, nil)
-		mockLikeRepo.EXPECT().SetLiked(ctx, postID, username, false).Return(3, true, nil)
-		mockLog.EXPECT().Info(ctx, "post unliked successfully", "postID", postID, "username", username)
+		mockLikeRepo.EXPECT().SetLiked(ctx, postID, actor.ID, false).Return(3, true, nil)
+		mockLog.EXPECT().Info(ctx, "post unliked successfully", "postID", postID, "userID", actor.ID)
 
-		count, err := svc.UnlikePost(ctx, postID, username)
+		count, err := svc.UnlikePost(ctx, postID, actor)
 		assert.NoError(t, err)
 		assert.Equal(t, 3, count)
 	})
 
 	t.Run("success idempotent - not liked", func(t *testing.T) {
 		mockRepo.EXPECT().Load(ctx, postID).Return(&domain.Post{ID: postID, LikeCount: 4}, nil)
-		mockLikeRepo.EXPECT().SetLiked(ctx, postID, username, false).Return(4, false, nil)
+		mockLikeRepo.EXPECT().SetLiked(ctx, postID, actor.ID, false).Return(4, false, nil)
 
-		count, err := svc.UnlikePost(ctx, postID, username)
+		count, err := svc.UnlikePost(ctx, postID, actor)
 		assert.NoError(t, err)
 		assert.Equal(t, 4, count)
 	})
 
 	t.Run("invalid input and failures", func(t *testing.T) {
-		_, err := svc.UnlikePost(ctx, 0, username)
+		_, err := svc.UnlikePost(ctx, 0, actor)
 		assert.ErrorIs(t, err, domain.ErrInvalidPost)
-		_, err = svc.UnlikePost(ctx, postID, "")
+		_, err = svc.UnlikePost(ctx, postID, nil)
 		assert.ErrorIs(t, err, domain.ErrInvalidUsername)
 
 		mockRepo.EXPECT().Load(ctx, postID).Return(nil, domain.ErrPostNotFound)
-		_, err = svc.UnlikePost(ctx, postID, username)
+		_, err = svc.UnlikePost(ctx, postID, actor)
 		assert.ErrorIs(t, err, domain.ErrPostNotFound)
 
 		mockRepo.EXPECT().Load(ctx, postID).Return(&domain.Post{ID: postID}, nil)
-		mockLikeRepo.EXPECT().SetLiked(ctx, postID, username, false).Return(0, false, errors.New("delete failed"))
-		mockLog.EXPECT().Error(ctx, "failed to set like state", "postID", postID, "username", username, "error", gomock.Any())
-		_, err = svc.UnlikePost(ctx, postID, username)
+		mockLikeRepo.EXPECT().SetLiked(ctx, postID, actor.ID, false).Return(0, false, errors.New("delete failed"))
+		mockLog.EXPECT().Error(ctx, "failed to set like state", "postID", postID, "userID", actor.ID, "error", gomock.Any())
+		_, err = svc.UnlikePost(ctx, postID, actor)
 		assert.Error(t, err)
 	})
 }
@@ -466,23 +467,17 @@ func TestPostCommandUseCase_PublishLikeNotificationFailures(t *testing.T) {
 	uc := NewPostCommandUseCase(posts, likes, users, publisher, log, evaluator).(*postCommandUseCase)
 	ctx := context.Background()
 	post := &domain.Post{ID: 1, UserID: 1, Username: "owner"}
-	like := &domain.Like{PostID: 1, Username: "liker"}
+	actor := &domain.User{ID: 2, Username: "liker"}
 
 	users.EXPECT().GetUserByID(ctx, 1).Return(nil, errors.New("lookup failed"))
 	log.EXPECT().Error(ctx, "failed to resolve post owner for like notification", "userID", 1, "error", gomock.Any())
-	uc.publishLikeNotification(ctx, post, like)
+	uc.publishLikeNotification(ctx, post, actor)
 
 	users.EXPECT().GetUserByID(ctx, 1).Return(nil, nil)
-	uc.publishLikeNotification(ctx, post, like)
+	uc.publishLikeNotification(ctx, post, actor)
 
 	users.EXPECT().GetUserByID(ctx, 1).Return(&domain.User{ID: 1, Username: "owner"}, nil)
-	users.EXPECT().GetUserByUsername(ctx, "liker").Return(nil, errors.New("lookup failed"))
-	log.EXPECT().Error(ctx, "failed to resolve liker for like notification", "username", "liker", "error", gomock.Any())
-	uc.publishLikeNotification(ctx, post, like)
-
-	users.EXPECT().GetUserByID(ctx, 1).Return(&domain.User{ID: 1, Username: "owner"}, nil)
-	users.EXPECT().GetUserByUsername(ctx, "liker").Return(&domain.User{ID: 2, Username: "liker"}, nil)
 	publisher.EXPECT().Publish(ctx, gomock.Any()).Return(errors.New("publish failed"))
 	log.EXPECT().Error(ctx, "failed to publish like notification", "error", gomock.Any())
-	uc.publishLikeNotification(ctx, post, like)
+	uc.publishLikeNotification(ctx, post, actor)
 }

@@ -117,7 +117,7 @@ func (h *PostQueryHandler) GetLikeStatus(c echo.Context) error {
 	if err != nil {
 		return domain.ErrPostIDMustBeANumber
 	}
-	liked, count, err := h.postUseCase.GetLikeStatus(c.Request().Context(), id, user.Username)
+	liked, count, err := h.postUseCase.GetLikeStatus(c.Request().Context(), id, user.ID)
 	if err != nil {
 		return err
 	}
