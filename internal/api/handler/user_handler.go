@@ -578,7 +578,13 @@ func (h *UserHandler) GetUserPosts(c echo.Context) error {
 		cursor = &decoded
 	}
 
-	posts, nextCursor, hasMore, err := h.postUseCase.GetPosts(c.Request().Context(), username, cursor, limit)
+	profile, err := h.userUseCase.GetUser(c.Request().Context(), username)
+	if err != nil {
+		h.log.Error(c.Request().Context(), "GetUserPosts failed", "username", username, "error", err)
+		return err
+	}
+
+	posts, nextCursor, hasMore, err := h.postUseCase.GetPosts(c.Request().Context(), profile.ID, cursor, limit)
 	if err != nil {
 		h.log.Error(c.Request().Context(), "GetUserPosts failed", "username", username, "error", err)
 		return err
@@ -591,7 +597,7 @@ func (h *UserHandler) GetUserPosts(c echo.Context) error {
 			Title:     p.Title,
 			Content:   p.Content,
 			Tags:      p.Tags,
-			Author:    username,
+			Author:    p.Username,
 			CreatedAt: p.CreatedAt,
 			UpdatedAt: p.UpdatedAt,
 		})

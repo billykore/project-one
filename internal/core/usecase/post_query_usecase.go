@@ -38,16 +38,16 @@ func (uc *postQueryUseCase) GetPostByID(ctx context.Context, id int) (*domain.Po
 	return post, nil
 }
 
-func (uc *postQueryUseCase) GetPosts(ctx context.Context, username string, cursor *vo.Cursor, limit int) ([]*domain.Post, *vo.Cursor, bool, error) {
+func (uc *postQueryUseCase) GetPosts(ctx context.Context, userID int, cursor *vo.Cursor, limit int) ([]*domain.Post, *vo.Cursor, bool, error) {
 	if limit <= 0 {
 		limit = 10
 	}
 	if limit > 100 {
 		limit = 100
 	}
-	posts, err := uc.postRepo.GetUserPosts(ctx, username, cursor, limit+1)
+	posts, err := uc.postRepo.GetUserPosts(ctx, userID, cursor, limit+1)
 	if err != nil {
-		uc.log.Error(ctx, "failed to get posts for user", "username", username, "error", err)
+		uc.log.Error(ctx, "failed to get posts for user", "userID", userID, "error", err)
 		return nil, nil, false, fmt.Errorf("get posts for user: %w", domain.ErrRepositoryFailure)
 	}
 	var nextCursor *vo.Cursor

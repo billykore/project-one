@@ -43,9 +43,9 @@ func TestPostQueryUseCase_PostAndPageReads(t *testing.T) {
 		require.Equal(t, 1, post.ID)
 	}
 
-	posts.EXPECT().GetUserPosts(ctx, "author", nil, 2).Return([]*domain.Post{{ID: 2}}, nil).Times(10)
+	posts.EXPECT().GetUserPosts(ctx, 1, nil, 2).Return([]*domain.Post{{ID: 2}}, nil).Times(10)
 	for range 10 {
-		page, _, _, err := query.GetPosts(ctx, "author", nil, 1)
+		page, _, _, err := query.GetPosts(ctx, 1, nil, 1)
 		require.NoError(t, err)
 		require.Len(t, page, 1)
 	}

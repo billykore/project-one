@@ -152,12 +152,6 @@ func (r *userRepository) UpdateProfile(ctx context.Context, oldUsername string, 
 			return nil
 		}
 
-		// Cascade username to posts table.
-		if err := tx.Model(&postModel{}).Where("username = ?", oldUsername).
-			Update("username", user.Username).Error; err != nil {
-			return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
-		}
-
 		// Cascade username to user_tokens table.
 		if err := tx.Model(&userTokenModel{}).Where("username = ?", oldUsername).
 			Update("username", user.Username).Error; err != nil {

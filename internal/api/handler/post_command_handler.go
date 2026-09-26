@@ -83,7 +83,7 @@ func (h *PostCommandHandler) UpdatePost(c echo.Context) error {
 	if err := c.Bind(&req); err != nil {
 		return echo.ErrBadRequest
 	}
-	post, err := h.postUseCase.UpdatePost(c.Request().Context(), user.Username, id, req.Title, req.Content)
+	post, err := h.postUseCase.UpdatePost(c.Request().Context(), user.ID, id, req.Title, req.Content)
 	if err != nil {
 		h.log.Error(c.Request().Context(), "UpdatePost failed", "username", user.Username, "post_id", id, "error", err)
 		return err
@@ -109,7 +109,7 @@ func (h *PostCommandHandler) DeletePost(c echo.Context) error {
 	if err != nil {
 		return domain.ErrPostIDMustBeANumber
 	}
-	if err := h.postUseCase.DeletePost(c.Request().Context(), user.Username, id); err != nil {
+	if err := h.postUseCase.DeletePost(c.Request().Context(), user.ID, id); err != nil {
 		h.log.Error(c.Request().Context(), "DeletePost failed", "username", user.Username, "post_id", id, "error", err)
 		return err
 	}

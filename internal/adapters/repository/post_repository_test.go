@@ -42,7 +42,7 @@ func TestPostCommandAndQueryRepositoryNotFoundAndSoftDelete(t *testing.T) {
 	require.NoError(t, command.Delete(ctx, post))
 	_, err = query.GetByID(ctx, post.ID)
 	require.ErrorIs(t, err, domain.ErrPostNotFound)
-	posts, err := query.GetUserPosts(ctx, username, nil, 10)
+	posts, err := query.GetUserPosts(ctx, post.UserID, nil, 10)
 	require.NoError(t, err)
 	require.Empty(t, posts)
 

@@ -43,7 +43,7 @@ func (uc *postCommandUseCase) CreatePost(ctx context.Context, user *domain.User,
 	return post, nil
 }
 
-func (uc *postCommandUseCase) UpdatePost(ctx context.Context, username string, postID int, title, content string) (*domain.Post, error) {
+func (uc *postCommandUseCase) UpdatePost(ctx context.Context, userID int, postID int, title, content string) (*domain.Post, error) {
 	if postID <= 0 {
 		return nil, domain.ErrInvalidPost
 	}
@@ -51,18 +51,18 @@ func (uc *postCommandUseCase) UpdatePost(ctx context.Context, username string, p
 	if err != nil {
 		return nil, fmt.Errorf("get post for update: %w", err)
 	}
-	if post.Username != username {
+	if post.UserID != userID {
 		return nil, domain.ErrPostNotOwned
 	}
 	post.Update(title, content)
 	if err := uc.postRepo.Save(ctx, post); err != nil {
 		return nil, fmt.Errorf("update post: %w", err)
 	}
-	uc.log.Info(ctx, "post updated successfully", "postID", postID, "username", username)
+	uc.log.Info(ctx, "post updated successfully", "postID", postID, "userID", userID)
 	return post, nil
 }
 
-func (uc *postCommandUseCase) DeletePost(ctx context.Context, username string, postID int) error {
+func (uc *postCommandUseCase) DeletePost(ctx context.Context, userID int, postID int) error {
 	if postID <= 0 {
 		return domain.ErrInvalidPost
 	}
@@ -70,14 +70,14 @@ func (uc *postCommandUseCase) DeletePost(ctx context.Context, username string, p
 	if err != nil {
 		return fmt.Errorf("get post for delete: %w", err)
 	}
-	if post.Username != username {
+	if post.UserID != userID {
 		return domain.ErrPostNotOwned
 	}
 	if err := uc.postRepo.Delete(ctx, post); err != nil {
 		uc.log.Error(ctx, "failed to delete post", "postID", postID, "error", err)
 		return fmt.Errorf("delete post: %w", domain.ErrRepositoryFailure)
 	}
-	uc.log.Info(ctx, "post deleted successfully", "postID", postID, "username", username)
+	uc.log.Info(ctx, "post deleted successfully", "postID", postID, "userID", userID)
 	return nil
 }
 
@@ -141,9 +141,9 @@ func (uc *postCommandUseCase) UnlikePost(ctx context.Context, postID int, userna
 }
 
 func (uc *postCommandUseCase) publishLikeNotification(ctx context.Context, post *domain.Post, like *domain.Like) {
-	owner, err := uc.userRepo.GetUserByUsername(ctx, post.Username)
+	owner, err := uc.userRepo.GetUserByID(ctx, post.UserID)
 	if err != nil {
-		uc.log.Error(ctx, "failed to resolve post owner for like notification", "username", post.Username, "error", err)
+		uc.log.Error(ctx, "failed to resolve post owner for like notification", "userID", post.UserID, "error", err)
 		return
 	}
 	if owner == nil {

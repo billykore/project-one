@@ -57,7 +57,7 @@ func TestPostCommandHandlerRoutes(t *testing.T) {
 		ctx, recorder := postContext(http.MethodPut, "/posts/1", `{"title":"title"}`, user)
 		ctx.SetParamNames("id")
 		ctx.SetParamValues("1")
-		commands.EXPECT().UpdatePost(gomock.Any(), "author", 1, "title", "").Return(&domain.Post{ID: 1}, nil)
+		commands.EXPECT().UpdatePost(gomock.Any(), 1, 1, "title", "").Return(&domain.Post{ID: 1}, nil)
 		assert.NoError(t, handler.UpdatePost(ctx))
 		assert.Equal(t, http.StatusOK, recorder.Code)
 	})
@@ -65,7 +65,7 @@ func TestPostCommandHandlerRoutes(t *testing.T) {
 		ctx, recorder := postContext(http.MethodDelete, "/posts/1", "", user)
 		ctx.SetParamNames("id")
 		ctx.SetParamValues("1")
-		commands.EXPECT().DeletePost(gomock.Any(), "author", 1).Return(nil)
+		commands.EXPECT().DeletePost(gomock.Any(), 1, 1).Return(nil)
 		assert.NoError(t, handler.DeletePost(ctx))
 		assert.Equal(t, http.StatusOK, recorder.Code)
 	})
@@ -97,7 +97,7 @@ func TestPostQueryHandlerRoutes(t *testing.T) {
 	queries := mocks.NewMockPostQueryUseCase(ctrl)
 	comments := mocks.NewMockCommentUseCase(ctrl)
 	handler := NewPostQueryHandler(queries, comments, discardPostLogger{})
-	user := &domain.User{Username: "reader"}
+	user := &domain.User{ID: 1, Username: "reader"}
 	post := &domain.Post{ID: 1, Username: "author", Title: "title", CreatedAt: time.Now()}
 
 	t.Run("detail", func(t *testing.T) {
@@ -111,7 +111,7 @@ func TestPostQueryHandlerRoutes(t *testing.T) {
 	})
 	t.Run("list", func(t *testing.T) {
 		ctx, recorder := postContext(http.MethodGet, "/posts", "", user)
-		queries.EXPECT().GetPosts(gomock.Any(), "reader", nil, 10).Return([]*domain.Post{post}, nil, false, nil)
+		queries.EXPECT().GetPosts(gomock.Any(), 1, nil, 10).Return([]*domain.Post{post}, nil, false, nil)
 		assert.NoError(t, handler.GetPosts(ctx))
 		assert.Equal(t, http.StatusOK, recorder.Code)
 	})

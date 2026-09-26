@@ -24,8 +24,8 @@ func (r *postQueryRepository) GetByID(ctx context.Context, id int) (*domain.Post
 	return model.toDomain(), nil
 }
 
-func (r *postQueryRepository) GetUserPosts(ctx context.Context, username string, cursor *vo.Cursor, limit int) ([]*domain.Post, error) {
-	return findPosts(r.db.WithContext(ctx).Where("username = ?", username).Where("deleted_at IS NULL"), cursor, limit)
+func (r *postQueryRepository) GetUserPosts(ctx context.Context, userID int, cursor *vo.Cursor, limit int) ([]*domain.Post, error) {
+	return findPosts(r.db.WithContext(ctx).Where("user_id = ?", userID).Where("deleted_at IS NULL"), cursor, limit)
 }
 
 func (r *postQueryRepository) GetFeed(ctx context.Context, userIDs []int, cursor *vo.Cursor, limit int) ([]*domain.Post, error) {

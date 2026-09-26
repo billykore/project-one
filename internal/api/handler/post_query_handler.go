@@ -83,7 +83,7 @@ func (h *PostQueryHandler) GetPosts(c echo.Context) error {
 		}
 		cursor = &decoded
 	}
-	posts, nextCursor, hasMore, err := h.postUseCase.GetPosts(c.Request().Context(), user.Username, cursor, limit)
+	posts, nextCursor, hasMore, err := h.postUseCase.GetPosts(c.Request().Context(), user.ID, cursor, limit)
 	if err != nil {
 		return err
 	}

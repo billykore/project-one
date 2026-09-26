@@ -22,7 +22,7 @@ type PostQueryRepository interface {
 	// GetByID retrieves a post by its identifier.
 	GetByID(ctx context.Context, id int) (*domain.Post, error)
 	// GetUserPosts retrieves a cursor-paginated page of posts for a user.
-	GetUserPosts(ctx context.Context, username string, cursor *vo.Cursor, limit int) ([]*domain.Post, error)
+	GetUserPosts(ctx context.Context, userID int, cursor *vo.Cursor, limit int) ([]*domain.Post, error)
 	// GetFeed retrieves a cursor-paginated page of posts authored by the given users.
 	GetFeed(ctx context.Context, userIDs []int, cursor *vo.Cursor, limit int) ([]*domain.Post, error)
 }
@@ -32,9 +32,9 @@ type PostCommandUseCase interface {
 	// CreatePost creates a new post with the given details.
 	CreatePost(ctx context.Context, user *domain.User, title, content string, tags []string) (*domain.Post, error)
 	// UpdatePost updates an existing post for a specific user.
-	UpdatePost(ctx context.Context, username string, postID int, title, content string) (*domain.Post, error)
+	UpdatePost(ctx context.Context, userID int, postID int, title, content string) (*domain.Post, error)
 	// DeletePost removes a post for a specific user.
-	DeletePost(ctx context.Context, username string, postID int) error
+	DeletePost(ctx context.Context, userID int, postID int) error
 	// LikePost likes a post by the given username. If already liked, it behaves idempotently.
 	LikePost(ctx context.Context, postID int, username string) (likeCount int, err error)
 	// UnlikePost unlikes a post by the given username. If not liked, it behaves idempotently.
@@ -46,7 +46,7 @@ type PostQueryUseCase interface {
 	// GetPostByID retrieves a post by its identifier.
 	GetPostByID(ctx context.Context, postID int) (*domain.Post, error)
 	// GetPosts retrieves posts and cursor-pagination metadata for a user.
-	GetPosts(ctx context.Context, username string, cursor *vo.Cursor, limit int) (posts []*domain.Post, nextCursor *vo.Cursor, hasMore bool, err error)
+	GetPosts(ctx context.Context, userID int, cursor *vo.Cursor, limit int) (posts []*domain.Post, nextCursor *vo.Cursor, hasMore bool, err error)
 	// GetLikeStatus retrieves whether a user likes a post and its current like count.
 	GetLikeStatus(ctx context.Context, postID int, username string) (liked bool, likeCount int, err error)
 }

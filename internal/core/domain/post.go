@@ -7,8 +7,10 @@ import (
 
 // Post is the core domain entity representing a user's post.
 type Post struct {
-	ID        int
-	UserID    int
+	ID     int
+	UserID int
+	// Username is an author snapshot used for rendering. Authorization and
+	// persistence relationships must use UserID because usernames are mutable.
 	Username  string
 	Title     string
 	Content   string
