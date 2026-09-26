@@ -125,18 +125,18 @@ func (mr *MockPostQueryRepositoryMockRecorder) GetByID(ctx, id any) *gomock.Call
 }
 
 // GetFeed mocks base method.
-func (m *MockPostQueryRepository) GetFeed(ctx context.Context, usernames []string, cursor *valueobject.Cursor, limit int) ([]*domain.Post, error) {
+func (m *MockPostQueryRepository) GetFeed(ctx context.Context, userIDs []int, cursor *valueobject.Cursor, limit int) ([]*domain.Post, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetFeed", ctx, usernames, cursor, limit)
+	ret := m.ctrl.Call(m, "GetFeed", ctx, userIDs, cursor, limit)
 	ret0, _ := ret[0].([]*domain.Post)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetFeed indicates an expected call of GetFeed.
-func (mr *MockPostQueryRepositoryMockRecorder) GetFeed(ctx, usernames, cursor, limit any) *gomock.Call {
+func (mr *MockPostQueryRepositoryMockRecorder) GetFeed(ctx, userIDs, cursor, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFeed", reflect.TypeOf((*MockPostQueryRepository)(nil).GetFeed), ctx, usernames, cursor, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFeed", reflect.TypeOf((*MockPostQueryRepository)(nil).GetFeed), ctx, userIDs, cursor, limit)
 }
 
 // GetUserPosts mocks base method.

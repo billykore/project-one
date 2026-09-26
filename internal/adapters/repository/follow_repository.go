@@ -13,11 +13,9 @@ import (
 )
 
 type followModel struct {
-	FollowerID       int
-	FollowerUsername string
-	FollowedID       int
-	FollowedUsername string
-	CreatedAt        time.Time `gorm:"default:CURRENT_TIMESTAMP"`
+	FollowerID int
+	FollowedID int
+	CreatedAt  time.Time `gorm:"default:CURRENT_TIMESTAMP"`
 }
 
 func (m *followModel) TableName() string {
@@ -35,10 +33,8 @@ func NewFollowRepository(db *gorm.DB) ports.FollowRepository {
 
 func (r *followRepository) Create(ctx context.Context, follow *domain.Follow) error {
 	m := followModel{
-		FollowerID:       follow.FollowerID,
-		FollowerUsername: follow.FollowerUsername,
-		FollowedID:       follow.FollowedID,
-		FollowedUsername: follow.FollowedUsername,
+		FollowerID: follow.FollowerID,
+		FollowedID: follow.FollowedID,
 	}
 	if err := r.db.WithContext(ctx).Create(&m).Error; err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
@@ -50,43 +46,43 @@ func (r *followRepository) Create(ctx context.Context, follow *domain.Follow) er
 	return nil
 }
 
-func (r *followRepository) GetFollowing(ctx context.Context, followerUsername string, cursor *vo.Cursor, limit int) ([]domain.Following, error) {
+func (r *followRepository) GetFollowing(ctx context.Context, followerID int, cursor *vo.Cursor, limit int) ([]domain.Following, error) {
 	var results []domain.Following
 	query := r.db.WithContext(ctx).Table("follows").
-		Select("users.username, users.first_name, users.last_name, follows.created_at AS followed_at, (mutual.follower_username IS NOT NULL) AS is_mutual").
-		Joins("INNER JOIN users ON users.username = follows.followed_username").
-		Joins("LEFT JOIN follows AS mutual ON mutual.follower_username = follows.followed_username AND mutual.followed_username = follows.follower_username").
-		Where("follows.follower_username = ?", followerUsername)
+		Select("users.username, users.first_name, users.last_name, follows.created_at AS followed_at, (mutual.follower_id IS NOT NULL) AS is_mutual").
+		Joins("INNER JOIN users ON users.id = follows.followed_id").
+		Joins("LEFT JOIN follows AS mutual ON mutual.follower_id = follows.followed_id AND mutual.followed_id = follows.follower_id").
+		Where("follows.follower_id = ?", followerID)
 	if cursor != nil && !cursor.CreatedAt.IsZero() && cursor.Key != "" {
-		query = query.Where("(follows.created_at < ?) OR (follows.created_at = ? AND follows.followed_username < ?)", cursor.CreatedAt, cursor.CreatedAt, cursor.Key)
+		query = query.Where("(follows.created_at < ?) OR (follows.created_at = ? AND users.username < ?)", cursor.CreatedAt, cursor.CreatedAt, cursor.Key)
 	}
-	err := query.Order("follows.created_at DESC, follows.followed_username DESC").Limit(limit).Scan(&results).Error
+	err := query.Order("follows.created_at DESC, users.username DESC").Limit(limit).Scan(&results).Error
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
 	return results, nil
 }
 
-func (r *followRepository) GetFollowers(ctx context.Context, followedUsername string, cursor *vo.Cursor, limit int) ([]domain.Follower, error) {
+func (r *followRepository) GetFollowers(ctx context.Context, followedID int, cursor *vo.Cursor, limit int) ([]domain.Follower, error) {
 	var results []domain.Follower
 	query := r.db.WithContext(ctx).Table("follows").
-		Select("users.username, users.first_name, users.last_name, follows.created_at AS followed_at, (mutual.follower_username IS NOT NULL) AS is_mutual").
-		Joins("INNER JOIN users ON users.username = follows.follower_username").
-		Joins("LEFT JOIN follows AS mutual ON mutual.follower_username = follows.follower_username AND mutual.followed_username = follows.followed_username").
-		Where("follows.followed_username = ?", followedUsername)
+		Select("users.username, users.first_name, users.last_name, follows.created_at AS followed_at, (mutual.follower_id IS NOT NULL) AS is_mutual").
+		Joins("INNER JOIN users ON users.id = follows.follower_id").
+		Joins("LEFT JOIN follows AS mutual ON mutual.follower_id = follows.followed_id AND mutual.followed_id = follows.follower_id").
+		Where("follows.followed_id = ?", followedID)
 	if cursor != nil && !cursor.CreatedAt.IsZero() && cursor.Key != "" {
-		query = query.Where("(follows.created_at < ?) OR (follows.created_at = ? AND follows.follower_username < ?)", cursor.CreatedAt, cursor.CreatedAt, cursor.Key)
+		query = query.Where("(follows.created_at < ?) OR (follows.created_at = ? AND users.username < ?)", cursor.CreatedAt, cursor.CreatedAt, cursor.Key)
 	}
-	err := query.Order("follows.created_at DESC, follows.follower_username DESC").Limit(limit).Scan(&results).Error
+	err := query.Order("follows.created_at DESC, users.username DESC").Limit(limit).Scan(&results).Error
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
 	return results, nil
 }
 
-func (r *followRepository) Delete(ctx context.Context, followerUsername, followedUsername string) error {
+func (r *followRepository) Delete(ctx context.Context, followerID, followedID int) error {
 	result := r.db.WithContext(ctx).
-		Where("follower_username = ? AND followed_username = ?", followerUsername, followedUsername).
+		Where("follower_id = ? AND followed_id = ?", followerID, followedID).
 		Delete(&followModel{})
 	if result.Error != nil {
 		return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, result.Error)
@@ -97,14 +93,14 @@ func (r *followRepository) Delete(ctx context.Context, followerUsername, followe
 	return nil
 }
 
-func (r *followRepository) GetFollowedUsernames(ctx context.Context, followerUsername string) ([]string, error) {
-	var usernames []string
+func (r *followRepository) GetFollowedUserIDs(ctx context.Context, followerID int) ([]int, error) {
+	var ids []int
 	err := r.db.WithContext(ctx).
 		Model(&followModel{}).
-		Where("follower_username = ?", followerUsername).
-		Pluck("followed_username", &usernames).Error
+		Where("follower_id = ?", followerID).
+		Pluck("followed_id", &ids).Error
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
 	}
-	return usernames, nil
+	return ids, nil
 }

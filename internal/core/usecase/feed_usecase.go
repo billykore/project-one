@@ -52,18 +52,18 @@ func (u *feedUseCase) GetFeed(ctx context.Context, username string, cursor *vo.C
 		return nil, domain.ErrUserNotFound
 	}
 
-	// Get followed usernames.
-	followedUsernames, err := u.followRepo.GetFollowedUsernames(ctx, username)
+	// Resolve the social graph by stable identity, not mutable usernames.
+	followedUserIDs, err := u.followRepo.GetFollowedUserIDs(ctx, user.ID)
 	if err != nil {
-		return nil, fmt.Errorf("get followed usernames: %w", err)
+		return nil, fmt.Errorf("get followed user IDs: %w", err)
 	}
 
-	// Build username list: self + followed.
-	usernames := append([]string{username}, followedUsernames...)
+	// Build author ID list: self + followed.
+	userIDs := append([]int{user.ID}, followedUserIDs...)
 
 	// Fetch one extra to detect has_more.
 	dbLimit := limit + 1
-	posts, err := u.postRepo.GetFeed(ctx, usernames, cursor, dbLimit)
+	posts, err := u.postRepo.GetFeed(ctx, userIDs, cursor, dbLimit)
 	if err != nil {
 		return nil, fmt.Errorf("get feed from repo: %w", err)
 	}

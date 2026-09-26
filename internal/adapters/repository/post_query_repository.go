@@ -28,11 +28,11 @@ func (r *postQueryRepository) GetUserPosts(ctx context.Context, username string,
 	return findPosts(r.db.WithContext(ctx).Where("username = ?", username).Where("deleted_at IS NULL"), cursor, limit)
 }
 
-func (r *postQueryRepository) GetFeed(ctx context.Context, usernames []string, cursor *vo.Cursor, limit int) ([]*domain.Post, error) {
-	if len(usernames) == 0 {
+func (r *postQueryRepository) GetFeed(ctx context.Context, userIDs []int, cursor *vo.Cursor, limit int) ([]*domain.Post, error) {
+	if len(userIDs) == 0 {
 		return []*domain.Post{}, nil
 	}
-	return findPosts(r.db.WithContext(ctx).Model(&postModel{}).Where("username IN ?", usernames).Where("deleted_at IS NULL"), cursor, limit)
+	return findPosts(r.db.WithContext(ctx).Model(&postModel{}).Where("user_id IN ?", userIDs).Where("deleted_at IS NULL"), cursor, limit)
 }
 
 func findPost(ctx context.Context, query *gorm.DB) (*postModel, error) {

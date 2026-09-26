@@ -152,16 +152,6 @@ func (r *userRepository) UpdateProfile(ctx context.Context, oldUsername string, 
 			return nil
 		}
 
-		// Cascade username to follows table (both follower and followed columns).
-		if err := tx.Model(&followModel{}).Where("follower_username = ?", oldUsername).
-			Update("follower_username", user.Username).Error; err != nil {
-			return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
-		}
-		if err := tx.Model(&followModel{}).Where("followed_username = ?", oldUsername).
-			Update("followed_username", user.Username).Error; err != nil {
-			return fmt.Errorf("%w: %v", domain.ErrRepositoryFailure, err)
-		}
-
 		// Cascade username to posts table.
 		if err := tx.Model(&postModel{}).Where("username = ?", oldUsername).
 			Update("username", user.Username).Error; err != nil {

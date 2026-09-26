@@ -12,13 +12,13 @@ type FollowRepository interface {
 	// Create persists a new follow relationship.
 	Create(ctx context.Context, follow *domain.Follow) error
 	// GetFollowing fetches the cursor-paginated list of users being followed by a specific user.
-	GetFollowing(ctx context.Context, followerUsername string, cursor *vo.Cursor, limit int) ([]domain.Following, error)
+	GetFollowing(ctx context.Context, followerID int, cursor *vo.Cursor, limit int) ([]domain.Following, error)
 	// GetFollowers fetches the cursor-paginated list of users following a specific user.
-	GetFollowers(ctx context.Context, followedUsername string, cursor *vo.Cursor, limit int) ([]domain.Follower, error)
+	GetFollowers(ctx context.Context, followedID int, cursor *vo.Cursor, limit int) ([]domain.Follower, error)
 	// Delete removes an existing follow relationship.
-	Delete(ctx context.Context, followerUsername, followedUsername string) error
-	// GetFollowedUsernames returns all usernames that the given user follows.
-	GetFollowedUsernames(ctx context.Context, followerUsername string) ([]string, error)
+	Delete(ctx context.Context, followerID, followedID int) error
+	// GetFollowedUserIDs returns stable IDs for every user the actor follows.
+	GetFollowedUserIDs(ctx context.Context, followerID int) ([]int, error)
 }
 
 // FollowingPage is a cursor-paginated following result.

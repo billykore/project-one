@@ -24,7 +24,7 @@ type PostQueryRepository interface {
 	// GetUserPosts retrieves a cursor-paginated page of posts for a user.
 	GetUserPosts(ctx context.Context, username string, cursor *vo.Cursor, limit int) ([]*domain.Post, error)
 	// GetFeed retrieves a cursor-paginated page of posts authored by the given users.
-	GetFeed(ctx context.Context, usernames []string, cursor *vo.Cursor, limit int) ([]*domain.Post, error)
+	GetFeed(ctx context.Context, userIDs []int, cursor *vo.Cursor, limit int) ([]*domain.Post, error)
 }
 
 // PostCommandUseCase is the driving port for state-changing post actions.
