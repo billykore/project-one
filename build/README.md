@@ -1,11 +1,18 @@
-# `/build`
+# Build artifacts and packaging
 
-Packaging and Continuous Integration.
+`build/` is reserved for build output and packaging/CI support files.
 
-Put your cloud (AMI), container (Docker), OS (deb, rpm, pkg) package configurations and scripts in the `/build/package` directory.
+- `build/bin/main` is the backend executable produced by `make build`.
+- `build/package/` is reserved for package-specific build assets.
+- `build/ci/` is reserved for CI support assets when a workflow cannot live in
+  its provider-required location.
 
-Put your CI (travis, circle, drone) configurations and scripts in the `/build/ci` directory. Note that some of the CI tools (e.g., Travis CI) are very picky about the location of their config files. Try putting the config files in the `/build/ci` directory linking them to the location where the CI tools expect them when possible (don't worry if it's not and if keeping those files in the root directory makes your life easier :-)).
+The executable is generated locally and must not be committed. Rebuild it with:
 
-Examples:
+```bash
+make build
+```
 
-* https://github.com/cockroachdb/cockroach/tree/master/build
+Remove generated backend artifacts with `make clean`. Container build inputs
+live at the repository root in `Dockerfile`; the local multi-service runtime is
+defined in [deployments/compose.yml](../deployments/compose.yml).

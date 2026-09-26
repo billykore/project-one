@@ -33,10 +33,21 @@ cp configs/config.yaml.example configs/config.yaml
 | `message_broker.rabbitmq.url` | `MESSAGE_BROKER_RABBITMQ_URL` | AMQP connection URL |
 | `message_broker.rabbitmq.exchange` | `MESSAGE_BROKER_RABBITMQ_EXCHANGE` | Notification exchange name |
 | `message_broker.rabbitmq.queue` | `MESSAGE_BROKER_RABBITMQ_QUEUE` | Notification queue name |
+| `feature_flags.environment` | `FEATURE_FLAGS_ENVIRONMENT` | Flag-evaluation environment: `local`, `test`, `staging`, or `production` |
+| `feature_flags.refresh_interval` | `FEATURE_FLAGS_REFRESH_INTERVAL` | Interval for refreshing flag state; defaults to `30s` |
+| `feature_flags.operators` | `FEATURE_FLAGS_OPERATORS` | Usernames permitted to manage feature flags |
+| `monitoring.username` | `MONITORING_USERNAME` | Dedicated username for the Prometheus `/metrics` scrape |
+| `monitoring.password_file` | `MONITORING_PASSWORD_FILE` | Path to the non-empty file holding the monitoring password |
 
 Environment variable names are derived by replacing YAML dots with underscores and converting the result to uppercase. Environment values override values from the YAML file.
 
 The config schema also contains Kafka fields for the Kafka pub/sub adapter. The current `cmd` application wiring constructs RabbitMQ publisher and subscriber implementations, so a running RabbitMQ instance and its connection settings are required.
+
+The monitoring settings are optional as a pair. Leave both unset to make
+`/metrics` reject every scrape. When enabled, set both and store the password
+outside the repository; the checked-in example shows a local Compose-friendly
+file path. See [deployments/README.md](../deployments/README.md#monitoring-secret)
+for the Compose setup.
 
 ## JWT keys
 

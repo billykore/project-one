@@ -1,19 +1,20 @@
-# `/cmd`
+# Application entry point
 
-Main applications for this project.
+`cmd/main.go` is the composition root for the Project One API. It loads the
+runtime configuration and RSA keys, wires the bounded contexts to PostgreSQL
+and RabbitMQ adapters, starts the Echo server and notification consumer, and
+performs graceful shutdown on `SIGINT` or `SIGTERM`.
 
-The directory name for each application should match the name of the executable you want to have (e.g., `/cmd/myapp`).
+Run it through the Make target:
 
-Don't put a lot of code in the application directory. If you think the code can be imported and used in other projects, then it should live in the `/pkg` directory. If the code is not reusable or if you don't want others to reuse it, put that code in the `/internal` directory. You'll be surprised what others will do, so be explicit about your intentions!
+```bash
+make run
+```
 
-It's common to have a small `main` function that imports and invokes the code from the `/internal` and `/pkg` directories and nothing else.
+By default, `make run` reads `configs/config.yaml`. Point it at another
+configuration directory with `make run config=/path/to/config-dir`.
 
-Examples:
-
-* <https://github.com/vmware-tanzu/velero/tree/main/cmd> (just a really small `main` function with everything else in packages)
-* <https://github.com/moby/moby/tree/master/cmd>
-* <https://github.com/prometheus/prometheus/tree/main/cmd>
-* <https://github.com/influxdata/influxdb/tree/master/cmd>
-* <https://github.com/kubernetes/kubernetes/tree/master/cmd>
-* <https://github.com/dapr/dapr/tree/master/cmd>
-* <https://github.com/ethereum/go-ethereum/tree/master/cmd>
+Keep business rules, persistence, and HTTP handler logic in `internal/`.
+Changes in this directory should normally be limited to application assembly,
+startup/shutdown behavior, command-line flags, and key loading. Unit tests for
+that wiring and the RSA loader live alongside the entry point.

@@ -205,7 +205,7 @@ See [web/README.md](web/README.md) for frontend routes, rendering boundaries, AP
 | Command | Description |
 | :--- | :--- |
 | `make help` | List documented Make targets |
-| `make build` | Build the backend binary at `bin/main` |
+| `make build` | Build the backend binary at `build/bin/main` |
 | `make run` | Build and run the backend |
 | `make test` | Run backend tests with the race detector |
 | `make test-cover` | Run backend tests and write the HTML coverage report |
@@ -214,7 +214,7 @@ See [web/README.md](web/README.md) for frontend routes, rendering boundaries, AP
 | `make lint` | Run `golangci-lint` |
 | `make docs` | Format Swagger annotations and regenerate `api/swagger` |
 | `make check` | Run docs generation, vet, lint, and backend tests |
-| `make migrate-create name=...` | Create a numbered up/down migration pair |
+| `make migration-create name=...` | Create a numbered up/down migration pair |
 | `make migrate-up dsn=...` | Apply migrations; optionally pass `steps=N` |
 | `make migrate-down dsn=...` | Revert migrations; optionally pass `steps=N` |
 | `make seed-users dsn=...` | Install seed dependencies and insert 20 generated users |
