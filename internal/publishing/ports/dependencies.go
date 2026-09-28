@@ -10,6 +10,7 @@ import (
 // UserLookup is publishing's narrow view of the identity context.
 type UserLookup interface {
 	GetUserByID(ctx context.Context, id int) (*identitydomain.User, error)
+	GetUserByUsername(ctx context.Context, username string) (*identitydomain.User, error)
 }
 
 // FeatureEvaluator is publishing's release-control dependency. It exposes only

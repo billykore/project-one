@@ -45,6 +45,20 @@ jobs:
     name: Test
     needs: [build]
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: project1_test
+          POSTGRES_USER: project1
+          POSTGRES_PASSWORD: project1
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U project1 -d project1_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - name: Set up Go
@@ -52,5 +66,18 @@ jobs:
         with:
           go-version: '1.26.2'
           cache: true
+      - name: Apply database migrations
+        env:
+          PGPASSWORD: project1
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+          for migration in db/migrations/*.up.sql; do
+            psql --host=localhost --username=project1 --dbname=project1_test --file="$migration"
+          done
       - name: Test
+        env:
+          FEATURE_FLAGS_TEST_DSN: postgres://project1:project1@localhost:5432/project1_test?sslmode=disable
+          POSTS_TEST_DSN: postgres://project1:project1@localhost:5432/project1_test?sslmode=disable
+          OUTBOX_TEST_DSN: postgres://project1:project1@localhost:5432/project1_test?sslmode=disable
         run: go test -v -race -count=1 ./...

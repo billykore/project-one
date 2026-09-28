@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	identitydomain "github.com/billykore/project-one/internal/identity/domain"
 	notificationdomain "github.com/billykore/project-one/internal/notifications/domain"
+	"github.com/billykore/project-one/internal/platform/auth"
 	vo "github.com/billykore/project-one/internal/platform/pagination"
 	platformports "github.com/billykore/project-one/internal/platform/ports"
 	"github.com/billykore/project-one/internal/platform/problem"
@@ -42,7 +42,7 @@ func NewFollowUseCase(
 	}
 }
 
-func (u *followUseCase) Follow(ctx context.Context, actor *identitydomain.User, followedUsername string) (*domain.Follow, error) {
+func (u *followUseCase) Follow(ctx context.Context, actor *auth.Principal, followedUsername string) (*domain.Follow, error) {
 	if actor == nil || actor.ID <= 0 {
 		return nil, problem.ErrInvalidUser
 	}
@@ -66,49 +66,25 @@ func (u *followUseCase) Follow(ctx context.Context, actor *identitydomain.User, 
 		FollowedUsername: followed.Username,
 	}
 
-	if err := u.followRepo.Create(ctx, follow); err != nil {
-		return nil, fmt.Errorf("create follow: %w", err)
-	}
-
-	notification := &notificationdomain.Notification{
-		UserID:        followed.ID,
-		ActorID:       actor.ID,
-		ActorUsername: actor.Username,
-		Type:          notificationdomain.NotificationTypeFollow,
-		CreatedAt:     follow.CreatedAt,
-	}
-
-	notificationEvent := notificationdomain.NotificationEvent{
-		EventID:       fmt.Sprintf("backend-%d", time.Now().UnixNano()),
-		SchemaVersion: "1.0",
-		Timestamp:     time.Now().UTC().Format(time.RFC3339Nano),
-		Notification:  *notification,
-	}
-
-	payload, err := json.Marshal(notificationEvent)
-	if err != nil {
-		u.log.Error(ctx, "failed to marshal follow notification", "error", err)
-		return follow, nil
-	}
-
-	event := platformports.Event{
-		Topic:   followNotificationTopic,
-		Key:     fmt.Sprintf("user:%d", followed.ID),
-		Payload: payload,
-		Metadata: map[string]string{
-			"event_id":       notificationEvent.EventID,
-			"schema_version": notificationEvent.SchemaVersion,
-			"timestamp":      notificationEvent.Timestamp,
-		},
-	}
-	if err := u.publisher.Publish(ctx, event); err != nil {
-		u.log.Error(ctx, "failed to publish follow notification", "error", err)
+	if err := platformports.InTransaction(ctx, u.publisher, func(txCtx context.Context) error {
+		if err := u.followRepo.Create(txCtx, follow); err != nil {
+			return fmt.Errorf("create follow: %w", err)
+		}
+		notification := notificationdomain.Notification{UserID: followed.ID, ActorID: actor.ID, ActorUsername: actor.Username, Type: notificationdomain.NotificationTypeFollow, CreatedAt: follow.CreatedAt}
+		notificationEvent := notificationdomain.NotificationEvent{EventID: fmt.Sprintf("backend-%d", time.Now().UnixNano()), SchemaVersion: "1.0", Timestamp: time.Now().UTC().Format(time.RFC3339Nano), Notification: notification}
+		payload, err := json.Marshal(notificationEvent)
+		if err != nil {
+			return fmt.Errorf("marshal follow notification: %w", err)
+		}
+		return u.publisher.Publish(txCtx, platformports.Event{Topic: followNotificationTopic, Key: fmt.Sprintf("user:%d", followed.ID), Payload: payload, Metadata: map[string]string{"event_id": notificationEvent.EventID, "schema_version": notificationEvent.SchemaVersion, "timestamp": notificationEvent.Timestamp}})
+	}); err != nil {
+		return nil, err
 	}
 
 	return follow, nil
 }
 
-func (u *followUseCase) Unfollow(ctx context.Context, actor *identitydomain.User, followedUsername string) error {
+func (u *followUseCase) Unfollow(ctx context.Context, actor *auth.Principal, followedUsername string) error {
 	if actor == nil || actor.ID <= 0 {
 		return problem.ErrInvalidUser
 	}

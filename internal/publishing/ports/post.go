@@ -3,7 +3,7 @@ package ports
 import (
 	"context"
 
-	identitydomain "github.com/billykore/project-one/internal/identity/domain"
+	"github.com/billykore/project-one/internal/platform/auth"
 	vo "github.com/billykore/project-one/internal/platform/pagination"
 	"github.com/billykore/project-one/internal/publishing/domain"
 )
@@ -31,15 +31,15 @@ type PostQueryRepository interface {
 // PostCommandUseCase is the driving port for state-changing post actions.
 type PostCommandUseCase interface {
 	// CreatePost creates a new post with the given details.
-	CreatePost(ctx context.Context, user *identitydomain.User, title, content string, tags []string) (*domain.Post, error)
+	CreatePost(ctx context.Context, user *auth.Principal, title, content string, tags []string) (*domain.Post, error)
 	// UpdatePost updates an existing post for a specific user.
 	UpdatePost(ctx context.Context, userID int, postID int, title, content string) (*domain.Post, error)
 	// DeletePost removes a post for a specific user.
 	DeletePost(ctx context.Context, userID int, postID int) error
 	// LikePost likes a post by the authenticated user. If already liked, it behaves idempotently.
-	LikePost(ctx context.Context, postID int, actor *identitydomain.User) (likeCount int, err error)
+	LikePost(ctx context.Context, postID int, actor *auth.Principal) (likeCount int, err error)
 	// UnlikePost unlikes a post by the authenticated user. If not liked, it behaves idempotently.
-	UnlikePost(ctx context.Context, postID int, actor *identitydomain.User) (likeCount int, err error)
+	UnlikePost(ctx context.Context, postID int, actor *auth.Principal) (likeCount int, err error)
 }
 
 // PostQueryUseCase is the driving port for read-only post actions.

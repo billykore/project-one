@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"time"
 
-	identitydomain "github.com/billykore/project-one/internal/identity/domain"
 	notificationdomain "github.com/billykore/project-one/internal/notifications/domain"
+	"github.com/billykore/project-one/internal/platform/auth"
 	platformports "github.com/billykore/project-one/internal/platform/ports"
 	"github.com/billykore/project-one/internal/platform/problem"
 	"github.com/billykore/project-one/internal/publishing/domain"
@@ -40,7 +40,7 @@ func NewCommentUseCase(
 	}
 }
 
-func (uc *commentUseCase) AddComment(ctx context.Context, postID int, author *identitydomain.User, content string) error {
+func (uc *commentUseCase) AddComment(ctx context.Context, postID int, author *auth.Principal, content string) error {
 	if author == nil || author.ID <= 0 {
 		return problem.ErrInvalidUsername
 	}
@@ -62,25 +62,24 @@ func (uc *commentUseCase) AddComment(ctx context.Context, postID int, author *id
 		return fmt.Errorf("failed to fetch post for comment: %w", err)
 	}
 
-	// 3. Create comment
-	if err := uc.commentRepo.Create(ctx, comment); err != nil {
-		return fmt.Errorf("failed to create comment: %w", err)
-	}
-
-	if post.UserID != author.ID {
-		uc.publishCommentNotification(ctx, post, comment)
-	}
-
-	return nil
+	return platformports.InTransaction(ctx, uc.publisher, func(txCtx context.Context) error {
+		if err := uc.commentRepo.Create(txCtx, comment); err != nil {
+			return fmt.Errorf("failed to create comment: %w", err)
+		}
+		if post.UserID != author.ID {
+			return uc.publishCommentNotification(txCtx, post, comment)
+		}
+		return nil
+	})
 }
 
-func (uc *commentUseCase) publishCommentNotification(ctx context.Context, post *domain.Post, comment *domain.Comment) {
+func (uc *commentUseCase) publishCommentNotification(ctx context.Context, post *domain.Post, comment *domain.Comment) error {
 	postOwner, err := uc.userRepo.GetUserByID(ctx, post.UserID)
 	if err != nil {
-		return
+		return fmt.Errorf("resolve post owner: %w", err)
 	}
 	if postOwner == nil {
-		return
+		return nil
 	}
 
 	notification := &notificationdomain.Notification{
@@ -102,7 +101,7 @@ func (uc *commentUseCase) publishCommentNotification(ctx context.Context, post *
 
 	payload, err := json.Marshal(notificationEvent)
 	if err != nil {
-		return
+		return fmt.Errorf("marshal comment notification: %w", err)
 	}
 
 	if err := uc.publisher.Publish(ctx, platformports.Event{
@@ -115,8 +114,9 @@ func (uc *commentUseCase) publishCommentNotification(ctx context.Context, post *
 			"timestamp":      notificationEvent.Timestamp,
 		},
 	}); err != nil {
-		return
+		return fmt.Errorf("enqueue comment notification: %w", err)
 	}
+	return nil
 }
 
 func (uc *commentUseCase) GetCommentsByPostID(ctx context.Context, postID int) ([]*domain.Comment, error) {

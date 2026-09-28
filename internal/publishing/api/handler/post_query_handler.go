@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	identitydomain "github.com/billykore/project-one/internal/identity/domain"
+	request "github.com/billykore/project-one/internal/platform/api/request"
 	vo "github.com/billykore/project-one/internal/platform/pagination"
 	platformports "github.com/billykore/project-one/internal/platform/ports"
 	"github.com/billykore/project-one/internal/platform/problem"
@@ -65,7 +65,7 @@ func (h *PostQueryHandler) GetPostByID(c echo.Context) error {
 //	@Security	BearerAuth
 //	@Router		/posts [get]
 func (h *PostQueryHandler) GetPosts(c echo.Context) error {
-	user, ok := c.Get("user").(*identitydomain.User)
+	user, ok := request.CurrentUser(c)
 	if !ok {
 		return echo.ErrUnauthorized
 	}
@@ -111,7 +111,7 @@ func (h *PostQueryHandler) GetPosts(c echo.Context) error {
 //	@Security	BearerAuth
 //	@Router		/posts/{id}/likes [get]
 func (h *PostQueryHandler) GetLikeStatus(c echo.Context) error {
-	user, ok := c.Get("user").(*identitydomain.User)
+	user, ok := request.CurrentUser(c)
 	if !ok {
 		return echo.ErrUnauthorized
 	}

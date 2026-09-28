@@ -3,8 +3,8 @@ package ports
 import (
 	"context"
 
-	identitydomain "github.com/billykore/project-one/internal/identity/domain"
 	"github.com/billykore/project-one/internal/notifications/domain"
+	"github.com/billykore/project-one/internal/platform/auth"
 	vo "github.com/billykore/project-one/internal/platform/pagination"
 )
 
@@ -32,7 +32,7 @@ type NotificationsPage struct {
 // NotificationUseCase is a driving port for notification business logic.
 type NotificationUseCase interface {
 	// GetNotifications retrieves a cursor-paginated notification page for an authenticated recipient.
-	GetNotifications(ctx context.Context, recipient *identitydomain.User, cursor *vo.Cursor, limit int) (*NotificationsPage, error)
+	GetNotifications(ctx context.Context, recipient *auth.Principal, cursor *vo.Cursor, limit int) (*NotificationsPage, error)
 	// MarkAsRead verifies ownership and marks a specific notification as read.
 	MarkAsRead(ctx context.Context, id int, userID int) error
 	// MarkAllAsRead marks all notifications as read for the authenticated user.

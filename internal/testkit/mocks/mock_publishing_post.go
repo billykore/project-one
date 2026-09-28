@@ -13,9 +13,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	domain "github.com/billykore/project-one/internal/identity/domain"
+	auth "github.com/billykore/project-one/internal/platform/auth"
 	valueobject "github.com/billykore/project-one/internal/platform/pagination"
-	domain0 "github.com/billykore/project-one/internal/publishing/domain"
+	domain "github.com/billykore/project-one/internal/publishing/domain"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -44,7 +44,7 @@ func (m *MockPostCommandRepository) EXPECT() *MockPostCommandRepositoryMockRecor
 }
 
 // Delete mocks base method.
-func (m *MockPostCommandRepository) Delete(ctx context.Context, post *domain0.Post) error {
+func (m *MockPostCommandRepository) Delete(ctx context.Context, post *domain.Post) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", ctx, post)
 	ret0, _ := ret[0].(error)
@@ -58,10 +58,10 @@ func (mr *MockPostCommandRepositoryMockRecorder) Delete(ctx, post any) *gomock.C
 }
 
 // Load mocks base method.
-func (m *MockPostCommandRepository) Load(ctx context.Context, id int) (*domain0.Post, error) {
+func (m *MockPostCommandRepository) Load(ctx context.Context, id int) (*domain.Post, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Load", ctx, id)
-	ret0, _ := ret[0].(*domain0.Post)
+	ret0, _ := ret[0].(*domain.Post)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -73,7 +73,7 @@ func (mr *MockPostCommandRepositoryMockRecorder) Load(ctx, id any) *gomock.Call 
 }
 
 // Save mocks base method.
-func (m *MockPostCommandRepository) Save(ctx context.Context, post *domain0.Post) error {
+func (m *MockPostCommandRepository) Save(ctx context.Context, post *domain.Post) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Save", ctx, post)
 	ret0, _ := ret[0].(error)
@@ -111,10 +111,10 @@ func (m *MockPostQueryRepository) EXPECT() *MockPostQueryRepositoryMockRecorder 
 }
 
 // GetByID mocks base method.
-func (m *MockPostQueryRepository) GetByID(ctx context.Context, id int) (*domain0.Post, error) {
+func (m *MockPostQueryRepository) GetByID(ctx context.Context, id int) (*domain.Post, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetByID", ctx, id)
-	ret0, _ := ret[0].(*domain0.Post)
+	ret0, _ := ret[0].(*domain.Post)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -126,10 +126,10 @@ func (mr *MockPostQueryRepositoryMockRecorder) GetByID(ctx, id any) *gomock.Call
 }
 
 // GetFeed mocks base method.
-func (m *MockPostQueryRepository) GetFeed(ctx context.Context, userIDs []int, cursor *valueobject.Cursor, limit int) ([]*domain0.Post, error) {
+func (m *MockPostQueryRepository) GetFeed(ctx context.Context, userIDs []int, cursor *valueobject.Cursor, limit int) ([]*domain.Post, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetFeed", ctx, userIDs, cursor, limit)
-	ret0, _ := ret[0].([]*domain0.Post)
+	ret0, _ := ret[0].([]*domain.Post)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -141,10 +141,10 @@ func (mr *MockPostQueryRepositoryMockRecorder) GetFeed(ctx, userIDs, cursor, lim
 }
 
 // GetUserPosts mocks base method.
-func (m *MockPostQueryRepository) GetUserPosts(ctx context.Context, userID int, cursor *valueobject.Cursor, limit int) ([]*domain0.Post, error) {
+func (m *MockPostQueryRepository) GetUserPosts(ctx context.Context, userID int, cursor *valueobject.Cursor, limit int) ([]*domain.Post, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserPosts", ctx, userID, cursor, limit)
-	ret0, _ := ret[0].([]*domain0.Post)
+	ret0, _ := ret[0].([]*domain.Post)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -180,10 +180,10 @@ func (m *MockPostCommandUseCase) EXPECT() *MockPostCommandUseCaseMockRecorder {
 }
 
 // CreatePost mocks base method.
-func (m *MockPostCommandUseCase) CreatePost(ctx context.Context, user *domain.User, title, content string, tags []string) (*domain0.Post, error) {
+func (m *MockPostCommandUseCase) CreatePost(ctx context.Context, user *auth.Principal, title, content string, tags []string) (*domain.Post, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreatePost", ctx, user, title, content, tags)
-	ret0, _ := ret[0].(*domain0.Post)
+	ret0, _ := ret[0].(*domain.Post)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -209,7 +209,7 @@ func (mr *MockPostCommandUseCaseMockRecorder) DeletePost(ctx, userID, postID any
 }
 
 // LikePost mocks base method.
-func (m *MockPostCommandUseCase) LikePost(ctx context.Context, postID int, actor *domain.User) (int, error) {
+func (m *MockPostCommandUseCase) LikePost(ctx context.Context, postID int, actor *auth.Principal) (int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "LikePost", ctx, postID, actor)
 	ret0, _ := ret[0].(int)
@@ -224,7 +224,7 @@ func (mr *MockPostCommandUseCaseMockRecorder) LikePost(ctx, postID, actor any) *
 }
 
 // UnlikePost mocks base method.
-func (m *MockPostCommandUseCase) UnlikePost(ctx context.Context, postID int, actor *domain.User) (int, error) {
+func (m *MockPostCommandUseCase) UnlikePost(ctx context.Context, postID int, actor *auth.Principal) (int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UnlikePost", ctx, postID, actor)
 	ret0, _ := ret[0].(int)
@@ -239,10 +239,10 @@ func (mr *MockPostCommandUseCaseMockRecorder) UnlikePost(ctx, postID, actor any)
 }
 
 // UpdatePost mocks base method.
-func (m *MockPostCommandUseCase) UpdatePost(ctx context.Context, userID, postID int, title, content string) (*domain0.Post, error) {
+func (m *MockPostCommandUseCase) UpdatePost(ctx context.Context, userID, postID int, title, content string) (*domain.Post, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdatePost", ctx, userID, postID, title, content)
-	ret0, _ := ret[0].(*domain0.Post)
+	ret0, _ := ret[0].(*domain.Post)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -294,10 +294,10 @@ func (mr *MockPostQueryUseCaseMockRecorder) GetLikeStatus(ctx, postID, userID an
 }
 
 // GetPostByID mocks base method.
-func (m *MockPostQueryUseCase) GetPostByID(ctx context.Context, postID int) (*domain0.Post, error) {
+func (m *MockPostQueryUseCase) GetPostByID(ctx context.Context, postID int) (*domain.Post, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPostByID", ctx, postID)
-	ret0, _ := ret[0].(*domain0.Post)
+	ret0, _ := ret[0].(*domain.Post)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -309,10 +309,10 @@ func (mr *MockPostQueryUseCaseMockRecorder) GetPostByID(ctx, postID any) *gomock
 }
 
 // GetPosts mocks base method.
-func (m *MockPostQueryUseCase) GetPosts(ctx context.Context, userID int, cursor *valueobject.Cursor, limit int) ([]*domain0.Post, *valueobject.Cursor, bool, error) {
+func (m *MockPostQueryUseCase) GetPosts(ctx context.Context, userID int, cursor *valueobject.Cursor, limit int) ([]*domain.Post, *valueobject.Cursor, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPosts", ctx, userID, cursor, limit)
-	ret0, _ := ret[0].([]*domain0.Post)
+	ret0, _ := ret[0].([]*domain.Post)
 	ret1, _ := ret[1].(*valueobject.Cursor)
 	ret2, _ := ret[2].(bool)
 	ret3, _ := ret[3].(error)

@@ -22,6 +22,22 @@ type Publisher interface {
 	Close() error
 }
 
+// TransactionalPublisher can atomically persist an event beside a domain write.
+// Implementations that publish directly to a broker intentionally do not satisfy it.
+type TransactionalPublisher interface {
+	Publisher
+	InTransaction(ctx context.Context, fn func(context.Context) error) error
+}
+
+// InTransaction uses a transactional publisher when available. This keeps unit
+// tests and non-database adapters simple while production uses the outbox.
+func InTransaction(ctx context.Context, publisher Publisher, fn func(context.Context) error) error {
+	if transactional, ok := publisher.(TransactionalPublisher); ok {
+		return transactional.InTransaction(ctx, fn)
+	}
+	return fn(ctx)
+}
+
 // Subscriber is a driven port for consuming events from a message broker.
 type Subscriber interface {
 	// Subscribe registers a handler for the given topic.

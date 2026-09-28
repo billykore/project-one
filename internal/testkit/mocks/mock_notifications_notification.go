@@ -13,9 +13,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	domain "github.com/billykore/project-one/internal/identity/domain"
-	domain0 "github.com/billykore/project-one/internal/notifications/domain"
+	domain "github.com/billykore/project-one/internal/notifications/domain"
 	ports "github.com/billykore/project-one/internal/notifications/ports"
+	auth "github.com/billykore/project-one/internal/platform/auth"
 	valueobject "github.com/billykore/project-one/internal/platform/pagination"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -45,7 +45,7 @@ func (m *MockNotificationRepository) EXPECT() *MockNotificationRepositoryMockRec
 }
 
 // Create mocks base method.
-func (m *MockNotificationRepository) Create(ctx context.Context, notification *domain0.Notification) error {
+func (m *MockNotificationRepository) Create(ctx context.Context, notification *domain.Notification) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", ctx, notification)
 	ret0, _ := ret[0].(error)
@@ -59,10 +59,10 @@ func (mr *MockNotificationRepositoryMockRecorder) Create(ctx, notification any) 
 }
 
 // GetByID mocks base method.
-func (m *MockNotificationRepository) GetByID(ctx context.Context, id int) (*domain0.Notification, error) {
+func (m *MockNotificationRepository) GetByID(ctx context.Context, id int) (*domain.Notification, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetByID", ctx, id)
-	ret0, _ := ret[0].(*domain0.Notification)
+	ret0, _ := ret[0].(*domain.Notification)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -74,10 +74,10 @@ func (mr *MockNotificationRepositoryMockRecorder) GetByID(ctx, id any) *gomock.C
 }
 
 // GetByUserID mocks base method.
-func (m *MockNotificationRepository) GetByUserID(ctx context.Context, userID int, cursor *valueobject.Cursor, limit int) ([]*domain0.Notification, error) {
+func (m *MockNotificationRepository) GetByUserID(ctx context.Context, userID int, cursor *valueobject.Cursor, limit int) ([]*domain.Notification, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetByUserID", ctx, userID, cursor, limit)
-	ret0, _ := ret[0].([]*domain0.Notification)
+	ret0, _ := ret[0].([]*domain.Notification)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -141,7 +141,7 @@ func (m *MockNotificationUseCase) EXPECT() *MockNotificationUseCaseMockRecorder 
 }
 
 // GetNotifications mocks base method.
-func (m *MockNotificationUseCase) GetNotifications(ctx context.Context, recipient *domain.User, cursor *valueobject.Cursor, limit int) (*ports.NotificationsPage, error) {
+func (m *MockNotificationUseCase) GetNotifications(ctx context.Context, recipient *auth.Principal, cursor *valueobject.Cursor, limit int) (*ports.NotificationsPage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetNotifications", ctx, recipient, cursor, limit)
 	ret0, _ := ret[0].(*ports.NotificationsPage)
@@ -184,7 +184,7 @@ func (mr *MockNotificationUseCaseMockRecorder) MarkAsRead(ctx, id, userID any) *
 }
 
 // SaveNotification mocks base method.
-func (m *MockNotificationUseCase) SaveNotification(ctx context.Context, notification *domain0.Notification) error {
+func (m *MockNotificationUseCase) SaveNotification(ctx context.Context, notification *domain.Notification) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveNotification", ctx, notification)
 	ret0, _ := ret[0].(error)

@@ -13,8 +13,8 @@ import (
 	context "context"
 	reflect "reflect"
 
-	domain "github.com/billykore/project-one/internal/identity/domain"
-	domain0 "github.com/billykore/project-one/internal/publishing/domain"
+	auth "github.com/billykore/project-one/internal/platform/auth"
+	domain "github.com/billykore/project-one/internal/publishing/domain"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -43,7 +43,7 @@ func (m *MockCommentRepository) EXPECT() *MockCommentRepositoryMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockCommentRepository) Create(ctx context.Context, comment *domain0.Comment) error {
+func (m *MockCommentRepository) Create(ctx context.Context, comment *domain.Comment) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", ctx, comment)
 	ret0, _ := ret[0].(error)
@@ -71,10 +71,10 @@ func (mr *MockCommentRepositoryMockRecorder) Delete(ctx, id any) *gomock.Call {
 }
 
 // GetByID mocks base method.
-func (m *MockCommentRepository) GetByID(ctx context.Context, id int) (*domain0.Comment, error) {
+func (m *MockCommentRepository) GetByID(ctx context.Context, id int) (*domain.Comment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetByID", ctx, id)
-	ret0, _ := ret[0].(*domain0.Comment)
+	ret0, _ := ret[0].(*domain.Comment)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -86,10 +86,10 @@ func (mr *MockCommentRepositoryMockRecorder) GetByID(ctx, id any) *gomock.Call {
 }
 
 // GetByPostID mocks base method.
-func (m *MockCommentRepository) GetByPostID(ctx context.Context, postID int) ([]*domain0.Comment, error) {
+func (m *MockCommentRepository) GetByPostID(ctx context.Context, postID int) ([]*domain.Comment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetByPostID", ctx, postID)
-	ret0, _ := ret[0].([]*domain0.Comment)
+	ret0, _ := ret[0].([]*domain.Comment)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -101,7 +101,7 @@ func (mr *MockCommentRepositoryMockRecorder) GetByPostID(ctx, postID any) *gomoc
 }
 
 // Update mocks base method.
-func (m *MockCommentRepository) Update(ctx context.Context, comment *domain0.Comment) error {
+func (m *MockCommentRepository) Update(ctx context.Context, comment *domain.Comment) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", ctx, comment)
 	ret0, _ := ret[0].(error)
@@ -139,7 +139,7 @@ func (m *MockCommentUseCase) EXPECT() *MockCommentUseCaseMockRecorder {
 }
 
 // AddComment mocks base method.
-func (m *MockCommentUseCase) AddComment(ctx context.Context, postID int, author *domain.User, content string) error {
+func (m *MockCommentUseCase) AddComment(ctx context.Context, postID int, author *auth.Principal, content string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddComment", ctx, postID, author, content)
 	ret0, _ := ret[0].(error)
@@ -181,10 +181,10 @@ func (mr *MockCommentUseCaseMockRecorder) EditComment(ctx, id, userID, content a
 }
 
 // GetCommentsByPostID mocks base method.
-func (m *MockCommentUseCase) GetCommentsByPostID(ctx context.Context, postID int) ([]*domain0.Comment, error) {
+func (m *MockCommentUseCase) GetCommentsByPostID(ctx context.Context, postID int) ([]*domain.Comment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCommentsByPostID", ctx, postID)
-	ret0, _ := ret[0].([]*domain0.Comment)
+	ret0, _ := ret[0].([]*domain.Comment)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	identityports "github.com/billykore/project-one/internal/identity/ports"
+	"github.com/billykore/project-one/internal/platform/auth"
 	"github.com/labstack/echo/v4"
 )
 
@@ -26,11 +27,6 @@ func Authorize(authenticator identityports.Authenticator) echo.MiddlewareFunc {
 				}
 			}
 
-			// Query param for browser WebSocket connections — they can't set headers during upgrade.
-			if token == "" {
-				token = c.QueryParam("token")
-			}
-
 			if token == "" {
 				return echo.ErrUnauthorized
 			}
@@ -40,7 +36,8 @@ func Authorize(authenticator identityports.Authenticator) echo.MiddlewareFunc {
 				return echo.ErrUnauthorized
 			}
 
-			// Store user for downstream handlers
+			// Expose only the minimal principal outside the identity context.
+			c.Set("principal", &auth.Principal{ID: user.ID, Username: user.Username})
 			c.Set("user", user)
 			c.Set("username", user.Username)
 
@@ -60,6 +57,7 @@ func OptionalAuthorize(authenticator identityports.Authenticator) echo.Middlewar
 			}
 			user, err := authenticator.Authenticate(c.Request().Context(), token)
 			if err == nil {
+				c.Set("principal", &auth.Principal{ID: user.ID, Username: user.Username})
 				c.Set("user", user)
 				c.Set("username", user.Username)
 			}
@@ -75,5 +73,5 @@ func requestToken(c echo.Context) string {
 	if after, ok := strings.CutPrefix(c.Request().Header.Get("Authorization"), "Bearer "); ok {
 		return after
 	}
-	return c.QueryParam("token")
+	return ""
 }

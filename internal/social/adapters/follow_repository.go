@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/billykore/project-one/internal/platform/database"
 	vo "github.com/billykore/project-one/internal/platform/pagination"
-
 	"github.com/billykore/project-one/internal/platform/problem"
 	"github.com/billykore/project-one/internal/social/domain"
 	"github.com/billykore/project-one/internal/social/ports"
@@ -38,7 +38,7 @@ func (r *followRepository) Create(ctx context.Context, follow *domain.Follow) er
 		FollowerID: follow.FollowerID,
 		FollowedID: follow.FollowedID,
 	}
-	if err := r.db.WithContext(ctx).Create(&m).Error; err != nil {
+	if err := database.FromContext(ctx, r.db).WithContext(ctx).Create(&m).Error; err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return fmt.Errorf("%w: %v", problem.ErrAlreadyFollowing, err)
 		}

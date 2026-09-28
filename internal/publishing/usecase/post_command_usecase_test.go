@@ -474,13 +474,13 @@ func TestPostCommandUseCase_PublishLikeNotificationFailures(t *testing.T) {
 
 	users.EXPECT().GetUserByID(ctx, 1).Return(nil, errors.New("lookup failed"))
 	log.EXPECT().Error(ctx, "failed to resolve post owner for like notification", "userID", 1, "error", gomock.Any())
-	uc.publishLikeNotification(ctx, post, actor)
+	assert.NoError(t, uc.publishLikeNotification(ctx, post, actor))
 
 	users.EXPECT().GetUserByID(ctx, 1).Return(nil, nil)
-	uc.publishLikeNotification(ctx, post, actor)
+	assert.NoError(t, uc.publishLikeNotification(ctx, post, actor))
 
 	users.EXPECT().GetUserByID(ctx, 1).Return(&identitydomain.User{ID: 1, Username: "owner"}, nil)
 	publisher.EXPECT().Publish(ctx, gomock.Any()).Return(errors.New("publish failed"))
 	log.EXPECT().Error(ctx, "failed to publish like notification", "error", gomock.Any())
-	uc.publishLikeNotification(ctx, post, actor)
+	assert.Error(t, uc.publishLikeNotification(ctx, post, actor))
 }

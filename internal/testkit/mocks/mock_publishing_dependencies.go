@@ -57,6 +57,21 @@ func (mr *MockUserLookupMockRecorder) GetUserByID(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByID", reflect.TypeOf((*MockUserLookup)(nil).GetUserByID), ctx, id)
 }
 
+// GetUserByUsername mocks base method.
+func (m *MockUserLookup) GetUserByUsername(ctx context.Context, username string) (*domain0.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserByUsername", ctx, username)
+	ret0, _ := ret[0].(*domain0.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserByUsername indicates an expected call of GetUserByUsername.
+func (mr *MockUserLookupMockRecorder) GetUserByUsername(ctx, username any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByUsername", reflect.TypeOf((*MockUserLookup)(nil).GetUserByUsername), ctx, username)
+}
+
 // MockFeatureEvaluator is a mock of FeatureEvaluator interface.
 type MockFeatureEvaluator struct {
 	ctrl     *gomock.Controller

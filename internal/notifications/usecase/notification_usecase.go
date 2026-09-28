@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	identitydomain "github.com/billykore/project-one/internal/identity/domain"
 	"github.com/billykore/project-one/internal/notifications/domain"
 	"github.com/billykore/project-one/internal/notifications/ports"
+	"github.com/billykore/project-one/internal/platform/auth"
 	vo "github.com/billykore/project-one/internal/platform/pagination"
 	platformports "github.com/billykore/project-one/internal/platform/ports"
 	"github.com/billykore/project-one/internal/platform/problem"
@@ -34,7 +34,7 @@ func NewNotificationUseCase(
 	}
 }
 
-func (uc *notificationUseCase) GetNotifications(ctx context.Context, recipient *identitydomain.User, cursor *vo.Cursor, limit int) (*ports.NotificationsPage, error) {
+func (uc *notificationUseCase) GetNotifications(ctx context.Context, recipient *auth.Principal, cursor *vo.Cursor, limit int) (*ports.NotificationsPage, error) {
 	if recipient == nil || recipient.ID <= 0 {
 		return nil, problem.ErrInvalidUser
 	}

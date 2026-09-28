@@ -3,7 +3,7 @@ package ports
 import (
 	"context"
 
-	identitydomain "github.com/billykore/project-one/internal/identity/domain"
+	"github.com/billykore/project-one/internal/platform/auth"
 	"github.com/billykore/project-one/internal/publishing/domain"
 )
 
@@ -24,7 +24,7 @@ type CommentRepository interface {
 // CommentUseCase is a driving port for comment-related application logic.
 type CommentUseCase interface {
 	// AddComment creates a new comment on a post.
-	AddComment(ctx context.Context, postID int, author *identitydomain.User, content string) error
+	AddComment(ctx context.Context, postID int, author *auth.Principal, content string) error
 	// GetCommentsByPostID retrieves all comments for a specific post.
 	GetCommentsByPostID(ctx context.Context, postID int) ([]*domain.Comment, error)
 	// EditComment updates an existing comment's content.

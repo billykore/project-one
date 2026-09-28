@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	identitydomain "github.com/billykore/project-one/internal/identity/domain"
+	request "github.com/billykore/project-one/internal/platform/api/request"
 	platformports "github.com/billykore/project-one/internal/platform/ports"
 	"github.com/billykore/project-one/internal/platform/problem"
 	"github.com/billykore/project-one/internal/publishing/api/dto"
@@ -36,7 +36,7 @@ func NewPostCommandHandler(postUseCase publishingports.PostCommandUseCase, comme
 //	@Security	BearerAuth
 //	@Router		/posts [post]
 func (h *PostCommandHandler) CreatePost(c echo.Context) error {
-	user, ok := c.Get("user").(*identitydomain.User)
+	user, ok := request.CurrentUser(c)
 	if !ok {
 		h.log.Error(c.Request().Context(), "CreatePost failed", "error", "user not found in context")
 		return echo.ErrUnauthorized
@@ -72,7 +72,7 @@ func (h *PostCommandHandler) CreatePost(c echo.Context) error {
 //	@Security	BearerAuth
 //	@Router		/posts/{id} [put]
 func (h *PostCommandHandler) UpdatePost(c echo.Context) error {
-	user, ok := c.Get("user").(*identitydomain.User)
+	user, ok := request.CurrentUser(c)
 	if !ok {
 		h.log.Error(c.Request().Context(), "UpdatePost failed", "error", "user not found in context")
 		return echo.ErrUnauthorized
@@ -103,7 +103,7 @@ func (h *PostCommandHandler) UpdatePost(c echo.Context) error {
 //	@Security	BearerAuth
 //	@Router		/posts/{id} [delete]
 func (h *PostCommandHandler) DeletePost(c echo.Context) error {
-	user, ok := c.Get("user").(*identitydomain.User)
+	user, ok := request.CurrentUser(c)
 	if !ok {
 		return echo.ErrUnauthorized
 	}
@@ -131,7 +131,7 @@ func (h *PostCommandHandler) DeletePost(c echo.Context) error {
 //	@Security	BearerAuth
 //	@Router		/posts/{id}/comments [post]
 func (h *PostCommandHandler) CreateComment(c echo.Context) error {
-	user, ok := c.Get("user").(*identitydomain.User)
+	user, ok := request.CurrentUser(c)
 	if !ok {
 		return echo.ErrUnauthorized
 	}
@@ -160,7 +160,7 @@ func (h *PostCommandHandler) CreateComment(c echo.Context) error {
 //	@Security	BearerAuth
 //	@Router		/posts/{id}/likes [post]
 func (h *PostCommandHandler) LikePost(c echo.Context) error {
-	user, ok := c.Get("user").(*identitydomain.User)
+	user, ok := request.CurrentUser(c)
 	if !ok {
 		return echo.ErrUnauthorized
 	}
@@ -186,7 +186,7 @@ func (h *PostCommandHandler) LikePost(c echo.Context) error {
 //	@Security	BearerAuth
 //	@Router		/posts/{id}/likes [delete]
 func (h *PostCommandHandler) UnlikePost(c echo.Context) error {
-	user, ok := c.Get("user").(*identitydomain.User)
+	user, ok := request.CurrentUser(c)
 	if !ok {
 		return echo.ErrUnauthorized
 	}

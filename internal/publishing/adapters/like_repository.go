@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/billykore/project-one/internal/platform/database"
 	"github.com/billykore/project-one/internal/platform/problem"
 	"github.com/billykore/project-one/internal/publishing/domain"
 	"github.com/billykore/project-one/internal/publishing/ports"
@@ -43,7 +44,7 @@ func NewLikeRepository(db *gorm.DB) ports.LikeRepository {
 func (r *likeRepository) SetLiked(ctx context.Context, postID int, userID int, liked bool) (int, bool, error) {
 	var likeCount int
 	var changed bool
-	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+	err := database.FromContext(ctx, r.db).WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		if liked {
 			result := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&likeModel{PostID: postID, UserID: userID})
 			if result.Error != nil {

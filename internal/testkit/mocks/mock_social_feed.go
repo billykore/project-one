@@ -13,7 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	pagination "github.com/billykore/project-one/internal/platform/pagination"
+	valueobject "github.com/billykore/project-one/internal/platform/pagination"
 	ports "github.com/billykore/project-one/internal/social/ports"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -43,7 +43,7 @@ func (m *MockFeedUseCase) EXPECT() *MockFeedUseCaseMockRecorder {
 }
 
 // GetFeed mocks base method.
-func (m *MockFeedUseCase) GetFeed(ctx context.Context, userID int, cursor *pagination.Cursor, limit int) (*ports.FeedResult, error) {
+func (m *MockFeedUseCase) GetFeed(ctx context.Context, userID int, cursor *valueobject.Cursor, limit int) (*ports.FeedResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetFeed", ctx, userID, cursor, limit)
 	ret0, _ := ret[0].(*ports.FeedResult)

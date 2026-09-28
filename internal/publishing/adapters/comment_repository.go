@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/billykore/project-one/internal/platform/database"
 	"github.com/billykore/project-one/internal/platform/problem"
 	"github.com/billykore/project-one/internal/publishing/domain"
 	"github.com/billykore/project-one/internal/publishing/ports"
@@ -56,7 +57,7 @@ func (r *commentRepository) Create(ctx context.Context, comment *domain.Comment)
 	var m commentModel
 	m.fromDomain(comment)
 	username := comment.Username
-	if err := r.db.WithContext(ctx).Create(&m).Error; err != nil {
+	if err := database.FromContext(ctx, r.db).WithContext(ctx).Create(&m).Error; err != nil {
 		return fmt.Errorf("%w: %v", problem.ErrRepositoryFailure, err)
 	}
 	*comment = *m.toDomain()

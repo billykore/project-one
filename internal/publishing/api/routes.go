@@ -16,10 +16,12 @@ func RegisterRoutes(
 	authenticator identityports.Authenticator,
 	postCommandHandler *publishinghandler.PostCommandHandler,
 	postQueryHandler *publishinghandler.PostQueryHandler,
+	userPostsHandler *publishinghandler.UserPostsHandler,
 	commentHandler *publishinghandler.CommentHandler,
 	featureFlagEvaluator featureflagports.FeatureFlagEvaluator,
 ) {
 	e.GET("/posts/:id", postQueryHandler.GetPostByID)
+	e.GET("/users/:username/posts", userPostsHandler.GetUserPosts)
 
 	posts := e.Group("/posts", identitymiddleware.Authorize(authenticator))
 	posts.POST("", postCommandHandler.CreatePost, featureflagmiddleware.FeatureFlagGate(featureFlagEvaluator, "post-creation"))

@@ -50,4 +50,12 @@ func TestAuthorize_RequiresAnActiveSessionForTheCurrentUser(t *testing.T) {
 		assert.Equal(t, http.StatusOK, rec.Code)
 		assert.Equal(t, "new-name", rec.Body.String())
 	})
+
+	t.Run("rejects credentials supplied in the query string", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/private?token=query-token", nil)
+		rec := httptest.NewRecorder()
+		e.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusUnauthorized, rec.Code)
+	})
 }

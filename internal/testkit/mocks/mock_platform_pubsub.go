@@ -69,6 +69,72 @@ func (mr *MockPublisherMockRecorder) Publish(ctx, event any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Publish", reflect.TypeOf((*MockPublisher)(nil).Publish), ctx, event)
 }
 
+// MockTransactionalPublisher is a mock of TransactionalPublisher interface.
+type MockTransactionalPublisher struct {
+	ctrl     *gomock.Controller
+	recorder *MockTransactionalPublisherMockRecorder
+	isgomock struct{}
+}
+
+// MockTransactionalPublisherMockRecorder is the mock recorder for MockTransactionalPublisher.
+type MockTransactionalPublisherMockRecorder struct {
+	mock *MockTransactionalPublisher
+}
+
+// NewMockTransactionalPublisher creates a new mock instance.
+func NewMockTransactionalPublisher(ctrl *gomock.Controller) *MockTransactionalPublisher {
+	mock := &MockTransactionalPublisher{ctrl: ctrl}
+	mock.recorder = &MockTransactionalPublisherMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockTransactionalPublisher) EXPECT() *MockTransactionalPublisherMockRecorder {
+	return m.recorder
+}
+
+// Close mocks base method.
+func (m *MockTransactionalPublisher) Close() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Close")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Close indicates an expected call of Close.
+func (mr *MockTransactionalPublisherMockRecorder) Close() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockTransactionalPublisher)(nil).Close))
+}
+
+// InTransaction mocks base method.
+func (m *MockTransactionalPublisher) InTransaction(ctx context.Context, fn func(context.Context) error) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InTransaction", ctx, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// InTransaction indicates an expected call of InTransaction.
+func (mr *MockTransactionalPublisherMockRecorder) InTransaction(ctx, fn any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InTransaction", reflect.TypeOf((*MockTransactionalPublisher)(nil).InTransaction), ctx, fn)
+}
+
+// Publish mocks base method.
+func (m *MockTransactionalPublisher) Publish(ctx context.Context, event ports.Event) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Publish", ctx, event)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Publish indicates an expected call of Publish.
+func (mr *MockTransactionalPublisherMockRecorder) Publish(ctx, event any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Publish", reflect.TypeOf((*MockTransactionalPublisher)(nil).Publish), ctx, event)
+}
+
 // MockSubscriber is a mock of Subscriber interface.
 type MockSubscriber struct {
 	ctrl     *gomock.Controller

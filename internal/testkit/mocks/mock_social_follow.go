@@ -13,9 +13,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	domain "github.com/billykore/project-one/internal/identity/domain"
+	auth "github.com/billykore/project-one/internal/platform/auth"
 	valueobject "github.com/billykore/project-one/internal/platform/pagination"
-	domain0 "github.com/billykore/project-one/internal/social/domain"
+	domain "github.com/billykore/project-one/internal/social/domain"
 	ports "github.com/billykore/project-one/internal/social/ports"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -45,7 +45,7 @@ func (m *MockFollowRepository) EXPECT() *MockFollowRepositoryMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockFollowRepository) Create(ctx context.Context, follow *domain0.Follow) error {
+func (m *MockFollowRepository) Create(ctx context.Context, follow *domain.Follow) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", ctx, follow)
 	ret0, _ := ret[0].(error)
@@ -88,10 +88,10 @@ func (mr *MockFollowRepositoryMockRecorder) GetFollowedUserIDs(ctx, followerID a
 }
 
 // GetFollowers mocks base method.
-func (m *MockFollowRepository) GetFollowers(ctx context.Context, followedID int, cursor *valueobject.Cursor, limit int) ([]domain0.Follower, error) {
+func (m *MockFollowRepository) GetFollowers(ctx context.Context, followedID int, cursor *valueobject.Cursor, limit int) ([]domain.Follower, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetFollowers", ctx, followedID, cursor, limit)
-	ret0, _ := ret[0].([]domain0.Follower)
+	ret0, _ := ret[0].([]domain.Follower)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -103,10 +103,10 @@ func (mr *MockFollowRepositoryMockRecorder) GetFollowers(ctx, followedID, cursor
 }
 
 // GetFollowing mocks base method.
-func (m *MockFollowRepository) GetFollowing(ctx context.Context, followerID int, cursor *valueobject.Cursor, limit int) ([]domain0.Following, error) {
+func (m *MockFollowRepository) GetFollowing(ctx context.Context, followerID int, cursor *valueobject.Cursor, limit int) ([]domain.Following, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetFollowing", ctx, followerID, cursor, limit)
-	ret0, _ := ret[0].([]domain0.Following)
+	ret0, _ := ret[0].([]domain.Following)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -142,10 +142,10 @@ func (m *MockFollowUseCase) EXPECT() *MockFollowUseCaseMockRecorder {
 }
 
 // Follow mocks base method.
-func (m *MockFollowUseCase) Follow(ctx context.Context, actor *domain.User, followedUsername string) (*domain0.Follow, error) {
+func (m *MockFollowUseCase) Follow(ctx context.Context, actor *auth.Principal, followedUsername string) (*domain.Follow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Follow", ctx, actor, followedUsername)
-	ret0, _ := ret[0].(*domain0.Follow)
+	ret0, _ := ret[0].(*domain.Follow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -187,7 +187,7 @@ func (mr *MockFollowUseCaseMockRecorder) GetFollowing(ctx, followerUsername, cur
 }
 
 // Unfollow mocks base method.
-func (m *MockFollowUseCase) Unfollow(ctx context.Context, actor *domain.User, followedUsername string) error {
+func (m *MockFollowUseCase) Unfollow(ctx context.Context, actor *auth.Principal, followedUsername string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Unfollow", ctx, actor, followedUsername)
 	ret0, _ := ret[0].(error)

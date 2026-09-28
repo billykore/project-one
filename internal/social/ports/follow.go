@@ -3,7 +3,7 @@ package ports
 import (
 	"context"
 
-	identitydomain "github.com/billykore/project-one/internal/identity/domain"
+	"github.com/billykore/project-one/internal/platform/auth"
 	vo "github.com/billykore/project-one/internal/platform/pagination"
 	"github.com/billykore/project-one/internal/social/domain"
 )
@@ -39,11 +39,11 @@ type FollowersPage struct {
 // FollowUseCase defines the interface for follow-related business logic.
 type FollowUseCase interface {
 	// Follow creates a relationship from the authenticated actor to a user selected by username.
-	Follow(ctx context.Context, actor *identitydomain.User, followedUsername string) (*domain.Follow, error)
+	Follow(ctx context.Context, actor *auth.Principal, followedUsername string) (*domain.Follow, error)
 	// GetFollowing handles the logic for getting a cursor-paginated following list.
 	GetFollowing(ctx context.Context, followerUsername string, cursor *vo.Cursor, limit int) (*FollowingPage, error)
 	// GetFollowers handles the logic for getting a cursor-paginated followers list.
 	GetFollowers(ctx context.Context, followedUsername string, cursor *vo.Cursor, limit int) (*FollowersPage, error)
 	// Unfollow removes a relationship from the authenticated actor to a user selected by username.
-	Unfollow(ctx context.Context, actor *identitydomain.User, followedUsername string) error
+	Unfollow(ctx context.Context, actor *auth.Principal, followedUsername string) error
 }

@@ -41,6 +41,7 @@ import (
 	"github.com/billykore/project-one/internal/platform/adapters/validator"
 	platformmiddleware "github.com/billykore/project-one/internal/platform/api/middleware"
 	"github.com/billykore/project-one/internal/platform/config"
+	"github.com/billykore/project-one/internal/platform/outbox"
 	platformports "github.com/billykore/project-one/internal/platform/ports"
 	publishingrepository "github.com/billykore/project-one/internal/publishing/adapters"
 	publishingapi "github.com/billykore/project-one/internal/publishing/api"
@@ -96,7 +97,7 @@ func main() {
 
 	swagger.SwaggerInfo.Host = fmt.Sprintf("localhost:%d", cfg.App.Port)
 
-	app, err := newApplication(cfg, privateKey, publicKey, lgr)
+	app, err := newApplication(ctx, cfg, privateKey, publicKey, lgr)
 	if err != nil {
 		lgr.Fatal(ctx, "failed to initialize application", "error", err)
 	}
@@ -128,7 +129,7 @@ func main() {
 	}
 }
 
-func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey, lgr *logger.Logger) (*application, error) {
+func newApplication(ctx context.Context, cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey, lgr *logger.Logger) (*application, error) {
 	db, err := setupDB(cfg.Database)
 	if err != nil {
 		return nil, err
@@ -156,6 +157,9 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 	commentRepo := publishingrepository.NewCommentRepository(db)
 	likeRepo := publishingrepository.NewLikeRepository(db)
 	notificationRepo := notificationrepository.NewNotificationRepository(db)
+	outboxPublisher := outbox.NewPublisher(db)
+	outboxDispatcher := outbox.NewDispatcher(db, publisher, lgr, time.Second, 100)
+	outboxDispatcher.Start(ctx)
 
 	tokenSvc := token.NewJWTTokenService(privateKey, publicKey, cfg.JWT.ExpirationTime)
 	hasherSvc := identityhasher.NewBcryptHasher()
@@ -172,21 +176,23 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 	if err != nil {
 		return nil, err
 	}
-	featureFlagEvaluator.StartRefreshLoop(context.Background())
+	featureFlagEvaluator.StartRefreshLoop(ctx)
 	featureFlagUc := featureflagusecase.NewFeatureFlagUseCase(featureFlagRepo, featureFlagEvaluator, lgr)
-	postCommandUc := publishingusecase.NewPostCommandUseCase(postCommandRepo, likeRepo, userRepo, publisher, lgr, featureFlagEvaluator)
+	postCommandUc := publishingusecase.NewPostCommandUseCase(postCommandRepo, likeRepo, userRepo, outboxPublisher, lgr, featureFlagEvaluator)
 	postQueryUc := publishingusecase.NewPostQueryUseCase(postQueryRepo, likeRepo, lgr)
-	followUc := socialusecase.NewFollowUseCase(followRepo, userRepo, publisher, lgr)
-	commentUc := publishingusecase.NewCommentUseCase(commentRepo, postCommandRepo, userRepo, publisher)
+	followUc := socialusecase.NewFollowUseCase(followRepo, userRepo, outboxPublisher, lgr)
+	commentUc := publishingusecase.NewCommentUseCase(commentRepo, postCommandRepo, userRepo, outboxPublisher)
 	notificationUc := notificationusecase.NewNotificationUseCase(notificationRepo, userRepo, lgr)
 	feedUc := socialusecase.NewFeedUseCase(postQueryRepo, followRepo, lgr)
 
-	userHdl := identityhandler.NewUserHandler(userUc, loginUc, followUc, postQueryUc, val, lgr)
+	userHdl := identityhandler.NewUserHandler(userUc, loginUc, val, lgr, cfg.App.Env == "production")
 	postCommandHdl := publishinghandler.NewPostCommandHandler(postCommandUc, commentUc, val, lgr)
 	postQueryHdl := publishinghandler.NewPostQueryHandler(postQueryUc, commentUc, lgr)
+	userPostsHdl := publishinghandler.NewUserPostsHandler(postQueryUc, userRepo, lgr)
 	commentHdl := publishinghandler.NewCommentHandler(commentUc, val, lgr)
 	notificationHdl := notificationhandler.NewNotificationHandler(lgr, subscriber, notificationUc, userUc, val, sseManager)
 	feedHdl := socialhandler.NewFeedHandler(feedUc, lgr)
+	followHdl := socialhandler.NewFollowHandler(followUc, val, lgr)
 	featureFlagHdl := featureflaghandler.NewFeatureFlagHandler(featureFlagUc, val, cfg.FeatureFlags.Environment)
 
 	sqlDB, err := db.DB()
@@ -235,9 +241,9 @@ func newApplication(cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *r
 
 	identityapi.RegisterRoutes(e, authenticator, userHdl)
 	featureflagsapi.RegisterRoutes(e, authenticator, featureFlagHdl, cfg.FeatureFlags.Operators)
-	publishingapi.RegisterRoutes(e, authenticator, postCommandHdl, postQueryHdl, commentHdl, featureFlagEvaluator)
+	publishingapi.RegisterRoutes(e, authenticator, postCommandHdl, postQueryHdl, userPostsHdl, commentHdl, featureFlagEvaluator)
 	notificationsapi.RegisterRoutes(e, authenticator, notificationHdl)
-	socialapi.RegisterRoutes(e, authenticator, feedHdl)
+	socialapi.RegisterRoutes(e, authenticator, feedHdl, followHdl)
 	operationsapi.RegisterRoutes(e, healthHdl, metricsRecorder.Handler(monitoringCredential))
 
 	return &application{
