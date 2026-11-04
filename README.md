@@ -8,7 +8,8 @@ Project One is a full-stack social publishing application. It combines a Go/Echo
 - User profiles, profile editing, password changes, user search, and follow relationships
 - Post creation, browsing, editing, deletion, comments, and idempotent likes
 - A cursor-paginated personal feed with infinite scrolling
-- Persistent follow, like, and comment notifications delivered live over SSE
+- Persistent follow, like, and comment notifications delivered live over SSE through a transactional outbox
+- Feature flags with per-environment availability, user overrides, an audit log, and an operator-only admin page
 - RFC 9457 Problem Details error responses with request IDs
 - Separate liveness (`/healthz`) and readiness (`/status`) probes with per-dependency state
 - Bounded-label Prometheus metrics on an authenticated `/metrics` endpoint, plus a provisioned Grafana dashboard
@@ -21,10 +22,10 @@ Project One is a full-stack social publishing application. It combines a Go/Echo
 
 - Go 1.26.2
 - Echo 4.15, GORM, and PostgreSQL
-- RabbitMQ for notification events; Kafka and in-memory adapters are also present
+- RabbitMQ for notification events (the composition root always wires RabbitMQ; Kafka and in-memory adapters exist but are not selectable at runtime)
 - Viper configuration, `log/slog` structured logging, Validator v10, bcrypt, and JWT v5
 - Official Prometheus Go client with a dedicated registry, bounded labels, and standard Go/process collectors
-- Testify, GoMock, and Swaggo
+- Testify, GoMock, Swaggo, and golangci-lint with `depguard` architecture rules
 
 ### Frontend
 
@@ -43,9 +44,11 @@ The backend keeps business rules independent of delivery and infrastructure conc
 - `internal/notifications`: notification persistence and the broker event contract
 - `internal/featureflags`: flag administration and evaluation
 - `internal/operations`: readiness assessment and HTTP metrics contracts
-- `internal/pkg`: the deliberately small shared kernel—pagination, transport-neutral problem vocabulary, and technical ports for logging, messaging, and validation
+- `internal/pkg`: the deliberately small shared kernel—pagination, cross-context problem vocabulary, the transactional outbox, and technical ports for logging, messaging, and validation
 
-Every context owns its domain, ports, use cases, adapters, HTTP API, and any runtime configuration it needs. `pkg` retains only bootstrap/technical concerns: database and broker configuration, logging, validation, broker clients, common HTTP error handling, and authenticated-principal extraction. Cross-context dependencies are explicit and narrow (for example, publishing emits the notifications event contract). Generated mocks live in `internal/testkit/mocks`.
+Every context owns its domain, ports, use cases, adapters, HTTP API, and any runtime configuration it needs, including its own sentinel errors and their problem-details mappings, which it registers alongside its routes. `pkg` retains only bootstrap/technical concerns: infrastructure configuration, logging, validation, broker clients, the outbox, common HTTP error handling, and authenticated-principal extraction. `cmd` is the composition root: it loads the aggregate configuration and wires the contexts together.
+
+Cross-context dependencies are explicit and narrow. Publishing and social emit the notifications event contract, and contexts that need a user define their own small projection (publishing's `Author`, social's `Account`, notifications' `Actor`) filled by a lookup adapter instead of using identity's `User` aggregate. Two `depguard` rules in `.golangci.yml` enforce these boundaries: `internal/pkg` cannot import a bounded context, and only lookup adapters may import `identity/domain`. Generated mocks live in `internal/testkit/mocks`.
 
 The frontend uses Next.js route handlers as a same-origin backend-for-frontend (BFF). Browser requests carry the session cookies to `/api/*`; the route handlers forward them to the Go API through the server-only `API_URL` setting.
 
@@ -64,6 +67,8 @@ flowchart LR
         usecases[Use cases]
         ports[Ports]
         adapters[Adapters]
+        consumer[Notification consumer]
+        outbox[Outbox dispatcher]
         sse[SSE manager]
     end
 
@@ -78,15 +83,18 @@ flowchart LR
     usecases --> ports
     ports --> adapters
     adapters --> postgres
-    usecases -->|publish| rabbit
-    rabbit -->|consume| handlers
-    handlers --> sse
+    usecases -->|event in same transaction| postgres
+    postgres -->|pending outbox rows| outbox
+    outbox -->|publish| rabbit
+    rabbit -->|consume| consumer
+    consumer --> usecases
+    usecases --> sse
     sse -->|text/event-stream| bff
 ```
 
 ## Quick start with Docker Compose
 
-This starts PostgreSQL 17, RabbitMQ 4, the Go API, the Next.js frontend, Prometheus, and Grafana. You need Docker with Compose and OpenSSL installed.
+This starts PostgreSQL 17, RabbitMQ 4, the Go API, the Next.js frontend, Prometheus, Grafana, Loki, and Grafana Alloy, plus a one-shot `keys` service that copies the JWT keys into a protected volume. You need Docker with Compose and OpenSSL installed.
 
 1. Generate the local RSA key pair used to sign JWTs:
 
@@ -104,11 +112,13 @@ This starts PostgreSQL 17, RabbitMQ 4, the Go API, the Next.js frontend, Prometh
    export GRAFANA_ADMIN_PASSWORD='<local-grafana-password>'
    ```
 
-3. Build and start the stack:
+3. Start the stack:
 
    ```bash
    make compose-up
    ```
+
+   `--build` rebuilds the frontend image only. The `backend` service runs the prebuilt image named in `deployments/compose.yml` (currently `project-one:sha-d401b6674bc3`), which must already exist locally. `make docker-build` tags images as `project-one:<tag-or-dev>` and `project-one:sha-<12-character HEAD>`, so it produces a different tag unless the `image:` line is updated to match.
 
 4. Open the services:
 
@@ -206,6 +216,7 @@ See [web/README.md](web/README.md) for frontend routes, rendering boundaries, AP
 | :--- | :--- |
 | `make help` | List documented Make targets |
 | `make build` | Build the backend binary at `build/bin/main` |
+| `make docker-build` | Build the backend image tagged `project-one:<git tag or dev>` and `project-one:sha-<12-character commit>` |
 | `make run` | Build and run the backend |
 | `make test` | Run backend tests with the race detector |
 | `make test-cover` | Run backend tests and write the HTML coverage report |
@@ -213,10 +224,11 @@ See [web/README.md](web/README.md) for frontend routes, rendering boundaries, AP
 | `make vet` | Run `go vet` |
 | `make lint` | Run `golangci-lint` |
 | `make docs` | Format Swagger annotations and regenerate `api/swagger` |
-| `make check` | Run docs generation, vet, lint, and backend tests |
+| `make check` | Run docs generation, vet, lint, and backend tests (currently stops at `make docs`; see below) |
 | `make migration-create name=...` | Create a numbered up/down migration pair |
 | `make migrate-up dsn=...` | Apply migrations; optionally pass `steps=N` |
 | `make migrate-down dsn=...` | Revert migrations; optionally pass `steps=N` |
+| `make seed-deps` | Install the Python seed dependencies |
 | `make seed-users dsn=...` | Install seed dependencies and insert 20 generated users |
 | `make seed-posts dsn=...` | Install seed dependencies and insert 100,000 generated posts |
 | `make compose-up` | Build and start the Compose stack |
@@ -240,12 +252,15 @@ npm run build
 
 Swagger artifacts are checked in under `api/swagger/`. Run `make docs` after changing handler annotations. Swagger UI is served at `/swagger/index.html` unless `APP_ENV=production`.
 
+`make docs` currently fails because `swag` cannot resolve the `dto.MessageResponse` type referenced by annotations in `internal/identity/api/handler/user_handler.go`. Until that is fixed, the checked-in artifacts may lag behind handler changes.
+
 The notification flow is:
 
-1. Follow, like, and comment use cases publish an event to RabbitMQ.
-2. The notification consumer persists the event in PostgreSQL.
-3. Connected clients receive the new notification from `GET /notifications/stream` as SSE.
-4. Clients retrieve notification history from `GET /notifications` and can mark one or all notifications as read.
+1. Follow, like, and comment use cases write a notification event to the `notification_outbox` table in the same transaction as the change that caused it.
+2. A background outbox dispatcher publishes pending events to RabbitMQ and retries failed deliveries.
+3. The notification consumer (`internal/notifications/adapters/consumer`) hands each event to the notification use case, which stores it once per event ID (a redelivered event is acknowledged without a second row) and pushes it to the recipient's SSE connections.
+4. Connected clients receive the new notification from `GET /notifications/stream` as SSE.
+5. Clients retrieve notification history from `GET /notifications` and can mark one or all notifications as read.
 
 The SSE endpoint accepts the same `access_token` cookie or `Authorization: Bearer <token>` header as other protected endpoints. The browser connects through the frontend route at `/api/notifications/stream`, which forwards its cookies to the backend. Streams include a keepalive comment every 30 seconds.
 
@@ -254,15 +269,15 @@ The SSE endpoint accepts the same `access_token` cookie or `Authorization: Beare
 ```text
 ├── api/swagger/          # Generated OpenAPI documentation
 ├── build/                # Packaging and CI placeholders
-├── cmd/                  # Backend entry point and RSA key loading
+├── cmd/                  # Composition root, configuration loading, and RSA key loading
 ├── configs/              # YAML configuration and local JWT keys
 ├── db/migrations/        # Versioned PostgreSQL migrations
-├── db/seeds/             # Development user seeding utility
+├── db/seeds/             # Development user and post seeders
 ├── deployments/          # Docker Compose stack and DB initialization
 ├── docs/                 # Feature requirements, designs, and plans
 ├── githooks/             # Repository Git hooks
 ├── internal/             # Backend domain, ports, use cases, adapters, and API
-├── scripts/              # Postman collection generator
+├── scripts/              # Postman collection generator, benchmarks, and latency checks
 ├── specs/                # Spec Kit feature artifacts
 ├── test/                 # API collections, reports, screenshots, and coverage
 └── web/                  # Next.js frontend
