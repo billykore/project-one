@@ -4,12 +4,12 @@ import (
 	"context"
 
 	vo "github.com/billykore/project-one/internal/pkg/pagination"
-	publishingdomain "github.com/billykore/project-one/internal/publishing/domain"
+	"github.com/billykore/project-one/internal/social/domain"
 )
 
 // FeedResult holds the result of a feed query.
 type FeedResult struct {
-	Posts      []*publishingdomain.Post
+	Posts      []*domain.TimelinePost
 	NextCursor *vo.Cursor
 	HasMore    bool
 }

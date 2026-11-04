@@ -7,7 +7,7 @@ import (
 
 	vo "github.com/billykore/project-one/internal/pkg/pagination"
 	"github.com/billykore/project-one/internal/pkg/problem"
-	publishingdomain "github.com/billykore/project-one/internal/publishing/domain"
+	"github.com/billykore/project-one/internal/social/domain"
 	"github.com/billykore/project-one/internal/testkit/mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -17,7 +17,7 @@ func TestFeedUseCase_GetFeed_ReturnsPostsForUserAndFollowed(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	postRepo := mocks.NewMockPostQueryRepository(ctrl)
+	postRepo := mocks.NewMockTimelineReader(ctrl)
 	followRepo := mocks.NewMockFollowRepository(ctrl)
 	logger := mocks.NewMockLogger(ctrl)
 
@@ -35,9 +35,9 @@ func TestFeedUseCase_GetFeed_ReturnsPostsForUserAndFollowed(t *testing.T) {
 		followRepo.EXPECT().GetFollowedUserIDs(ctx, 1).Return([]int{2, 3}, nil)
 
 		postRepo.EXPECT().GetFeed(ctx, []int{1, 2, 3}, (*vo.Cursor)(nil), 11).
-			Return([]*publishingdomain.Post{
-				{ID: 3, Username: "charlie", Title: "Third", Content: "Content 3", CreatedAt: now, UpdatedAt: now},
-				{ID: 2, Username: "bob", Title: "Second", Content: "Content 2", CreatedAt: now.Add(-1 * time.Hour), UpdatedAt: now.Add(-1 * time.Hour)},
+			Return([]*domain.TimelinePost{
+				{ID: 3, Author: "charlie", Title: "Third", Content: "Content 3", CreatedAt: now, UpdatedAt: now},
+				{ID: 2, Author: "bob", Title: "Second", Content: "Content 2", CreatedAt: now.Add(-1 * time.Hour), UpdatedAt: now.Add(-1 * time.Hour)},
 			}, nil)
 
 		result, err := uc.GetFeed(ctx, userID, nil, 10)
@@ -52,7 +52,7 @@ func TestFeedUseCase_GetFeed_DetectsHasMore(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	postRepo := mocks.NewMockPostQueryRepository(ctrl)
+	postRepo := mocks.NewMockTimelineReader(ctrl)
 	followRepo := mocks.NewMockFollowRepository(ctrl)
 	logger := mocks.NewMockLogger(ctrl)
 
@@ -67,11 +67,11 @@ func TestFeedUseCase_GetFeed_DetectsHasMore(t *testing.T) {
 
 	followRepo.EXPECT().GetFollowedUserIDs(ctx, 1).Return([]int{}, nil)
 
-	posts := make([]*publishingdomain.Post, 11)
+	posts := make([]*domain.TimelinePost, 11)
 	for i := 0; i < 11; i++ {
-		posts[i] = &publishingdomain.Post{
+		posts[i] = &domain.TimelinePost{
 			ID:        i + 1,
-			Username:  "alice",
+			Author:    "alice",
 			Title:     "Post",
 			Content:   "Content",
 			CreatedAt: now.Add(-time.Duration(i) * time.Hour),
@@ -92,7 +92,7 @@ func TestFeedUseCase_GetFeed_UserNotFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	postRepo := mocks.NewMockPostQueryRepository(ctrl)
+	postRepo := mocks.NewMockTimelineReader(ctrl)
 	followRepo := mocks.NewMockFollowRepository(ctrl)
 	logger := mocks.NewMockLogger(ctrl)
 
@@ -111,7 +111,7 @@ func TestFeedUseCase_GetFeed_EmptyFeed(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	postRepo := mocks.NewMockPostQueryRepository(ctrl)
+	postRepo := mocks.NewMockTimelineReader(ctrl)
 	followRepo := mocks.NewMockFollowRepository(ctrl)
 	logger := mocks.NewMockLogger(ctrl)
 
@@ -123,7 +123,7 @@ func TestFeedUseCase_GetFeed_EmptyFeed(t *testing.T) {
 	ctx := context.Background()
 
 	followRepo.EXPECT().GetFollowedUserIDs(ctx, 1).Return([]int{}, nil)
-	postRepo.EXPECT().GetFeed(ctx, []int{1}, (*vo.Cursor)(nil), 11).Return([]*publishingdomain.Post{}, nil)
+	postRepo.EXPECT().GetFeed(ctx, []int{1}, (*vo.Cursor)(nil), 11).Return([]*domain.TimelinePost{}, nil)
 
 	result, err := uc.GetFeed(ctx, 1, nil, 10)
 	assert.NoError(t, err)
@@ -136,7 +136,7 @@ func TestFeedUseCase_GetFeed_WithCursor(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	postRepo := mocks.NewMockPostQueryRepository(ctrl)
+	postRepo := mocks.NewMockTimelineReader(ctrl)
 	followRepo := mocks.NewMockFollowRepository(ctrl)
 	logger := mocks.NewMockLogger(ctrl)
 
@@ -155,8 +155,8 @@ func TestFeedUseCase_GetFeed_WithCursor(t *testing.T) {
 
 	followRepo.EXPECT().GetFollowedUserIDs(ctx, 1).Return([]int{}, nil)
 	postRepo.EXPECT().GetFeed(ctx, []int{1}, cursor, 11).
-		Return([]*publishingdomain.Post{
-			{ID: 3, Username: "alice", Title: "Older", Content: "Content", CreatedAt: now.Add(-3 * time.Hour), UpdatedAt: now},
+		Return([]*domain.TimelinePost{
+			{ID: 3, Author: "alice", Title: "Older", Content: "Content", CreatedAt: now.Add(-3 * time.Hour), UpdatedAt: now},
 		}, nil)
 
 	result, err := uc.GetFeed(ctx, 1, cursor, 10)
@@ -169,7 +169,7 @@ func TestFeedUseCase_GetFeed_ClampsLimit(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	postRepo := mocks.NewMockPostQueryRepository(ctrl)
+	postRepo := mocks.NewMockTimelineReader(ctrl)
 	followRepo := mocks.NewMockFollowRepository(ctrl)
 	logger := mocks.NewMockLogger(ctrl)
 
@@ -182,14 +182,14 @@ func TestFeedUseCase_GetFeed_ClampsLimit(t *testing.T) {
 
 	// limit=0 clamps to 10, so dbLimit=11
 	followRepo.EXPECT().GetFollowedUserIDs(ctx, 1).Return([]int{}, nil)
-	postRepo.EXPECT().GetFeed(ctx, []int{1}, (*vo.Cursor)(nil), 11).Return([]*publishingdomain.Post{}, nil)
+	postRepo.EXPECT().GetFeed(ctx, []int{1}, (*vo.Cursor)(nil), 11).Return([]*domain.TimelinePost{}, nil)
 
 	_, err := uc.GetFeed(ctx, 1, nil, 0)
 	assert.NoError(t, err)
 
 	// limit=100 clamps to 50, so dbLimit=51
 	followRepo.EXPECT().GetFollowedUserIDs(ctx, 1).Return([]int{}, nil)
-	postRepo.EXPECT().GetFeed(ctx, []int{1}, (*vo.Cursor)(nil), 51).Return([]*publishingdomain.Post{}, nil)
+	postRepo.EXPECT().GetFeed(ctx, []int{1}, (*vo.Cursor)(nil), 51).Return([]*domain.TimelinePost{}, nil)
 
 	_, err = uc.GetFeed(ctx, 1, nil, 100)
 	assert.NoError(t, err)

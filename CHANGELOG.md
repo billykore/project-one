@@ -7,6 +7,13 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Changed
+
+- The social feed no longer uses publishing's `Post` aggregate. Social reads
+  its own `TimelinePost` projection through a `TimelineReader` adapter, and a
+  `depguard` rule keeps `publishing/domain` out of other contexts' domain,
+  ports, use cases, and API packages. The `GET /feeds` response is unchanged.
+
 ### Fixed
 
 - `make docs` (and therefore `make check`) generates the Swagger artifacts

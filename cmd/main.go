@@ -187,7 +187,7 @@ func newApplication(ctx context.Context, cfg *Config, privateKey *rsa.PrivateKey
 	followUc := socialusecase.NewFollowUseCase(followRepo, socialAccounts, outboxPublisher, lgr)
 	commentUc := publishingusecase.NewCommentUseCase(commentRepo, postCommandRepo, publishingUsers, outboxPublisher)
 	notificationUc := notificationusecase.NewNotificationUseCase(notificationRepo, notificationActors, sseadapter.NewNotifier(sseManager), lgr)
-	feedUc := socialusecase.NewFeedUseCase(postQueryRepo, followRepo, lgr)
+	feedUc := socialusecase.NewFeedUseCase(socialrepository.NewTimelineReader(postQueryRepo), followRepo, lgr)
 
 	userHdl := identityhandler.NewUserHandler(userUc, loginUc, val, lgr, cfg.App.Env == "production")
 	postCommandHdl := publishinghandler.NewPostCommandHandler(postCommandUc, commentUc, val, lgr)

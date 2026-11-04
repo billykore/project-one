@@ -99,6 +99,31 @@ linters:
           deny:
             - pkg: github.com/billykore/project-one/internal/identity/domain
               desc: other contexts use their own user projection; only lookup adapters may translate identity users
+        publishing-aggregate:
+          files:
+            - "**/internal/identity/domain/**"
+            - "**/internal/identity/ports/**"
+            - "**/internal/identity/usecase/**"
+            - "**/internal/identity/api/**"
+            - "**/internal/social/domain/**"
+            - "**/internal/social/ports/**"
+            - "**/internal/social/usecase/**"
+            - "**/internal/social/api/**"
+            - "**/internal/notifications/domain/**"
+            - "**/internal/notifications/ports/**"
+            - "**/internal/notifications/usecase/**"
+            - "**/internal/notifications/api/**"
+            - "**/internal/featureflags/domain/**"
+            - "**/internal/featureflags/ports/**"
+            - "**/internal/featureflags/usecase/**"
+            - "**/internal/featureflags/api/**"
+            - "**/internal/operations/domain/**"
+            - "**/internal/operations/ports/**"
+            - "**/internal/operations/usecase/**"
+            - "**/internal/operations/api/**"
+          deny:
+            - pkg: github.com/billykore/project-one/internal/publishing/domain
+              desc: other contexts use their own post projection; only reader adapters may translate publishing posts
     govet:
       # every vet analyzer, minus the two that are known to be opinionated
       enable-all: true
