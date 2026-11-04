@@ -16,7 +16,7 @@ import (
 	"github.com/billykore/project-one/internal/notifications/api/dto"
 	notificationdomain "github.com/billykore/project-one/internal/notifications/domain"
 	vo "github.com/billykore/project-one/internal/pkg/pagination"
-	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/billykore/project-one/internal/testkit/mocks"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
@@ -140,8 +140,8 @@ func TestNotificationHandler_ListenSkipsMissingSSEClient(t *testing.T) {
 
 	subscriber.EXPECT().
 		Subscribe(gomock.Any(), "notifications", gomock.Any()).
-		DoAndReturn(func(ctx context.Context, _ string, handler platformports.EventHandler) error {
-			return handler(ctx, platformports.Event{Payload: payload})
+		DoAndReturn(func(ctx context.Context, _ string, handler pkgports.EventHandler) error {
+			return handler(ctx, pkgports.Event{Payload: payload})
 		})
 
 	require.NoError(t, h.Listen(context.Background()))

@@ -9,7 +9,7 @@ import (
 	"time"
 
 	identitydomain "github.com/billykore/project-one/internal/identity/domain"
-	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 	publishingdomain "github.com/billykore/project-one/internal/publishing/domain"
 	"github.com/billykore/project-one/internal/testkit/mocks"
 	"github.com/labstack/echo/v4"
@@ -29,8 +29,8 @@ type validPostRequest struct{}
 
 func (validPostRequest) Validate(any) error { return nil }
 
-var _ platformports.Logger = discardPostLogger{}
-var _ platformports.Validator = validPostRequest{}
+var _ pkgports.Logger = discardPostLogger{}
+var _ pkgports.Validator = validPostRequest{}
 
 func postContext(method, path, body string, user *identitydomain.User) (echo.Context, *httptest.ResponseRecorder) {
 	e := echo.New()

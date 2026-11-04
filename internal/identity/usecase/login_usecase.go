@@ -6,7 +6,7 @@ import (
 
 	"github.com/billykore/project-one/internal/identity/domain"
 	"github.com/billykore/project-one/internal/identity/ports"
-	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/billykore/project-one/internal/pkg/problem"
 )
 
@@ -15,7 +15,7 @@ type loginUseCase struct {
 	tokens    ports.TokenService
 	tokenRepo ports.TokenRepository
 	hasher    ports.Hasher
-	log       platformports.Logger
+	log       pkgports.Logger
 }
 
 // NewLoginUseCase creates a new instance of ports.LoginUseCase.
@@ -24,7 +24,7 @@ func NewLoginUseCase(
 	tokens ports.TokenService,
 	tokenRepo ports.TokenRepository,
 	hasher ports.Hasher,
-	log platformports.Logger,
+	log pkgports.Logger,
 ) ports.LoginUseCase {
 	// ponytail: normalized nil checks to match other constructors
 	if repo == nil || tokens == nil || tokenRepo == nil || hasher == nil || log == nil {

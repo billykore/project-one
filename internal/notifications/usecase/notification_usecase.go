@@ -9,20 +9,20 @@ import (
 	"github.com/billykore/project-one/internal/notifications/ports"
 	"github.com/billykore/project-one/internal/pkg/auth"
 	vo "github.com/billykore/project-one/internal/pkg/pagination"
-	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/billykore/project-one/internal/pkg/problem"
 )
 
 type notificationUseCase struct {
 	repo     ports.NotificationRepository
 	userRepo ports.ActorLookup
-	log      platformports.Logger
+	log      pkgports.Logger
 }
 
 func NewNotificationUseCase(
 	repo ports.NotificationRepository,
 	userRepo ports.ActorLookup,
-	log platformports.Logger,
+	log pkgports.Logger,
 ) ports.NotificationUseCase {
 	if repo == nil || userRepo == nil || log == nil {
 		panic("NewNotificationUseCase: dependencies must not be nil")

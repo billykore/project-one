@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	request "github.com/billykore/project-one/internal/pkg/api/request"
-	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/billykore/project-one/internal/publishing/api/dto"
 	publishingports "github.com/billykore/project-one/internal/publishing/ports"
 	"github.com/labstack/echo/v4"
@@ -13,12 +13,12 @@ import (
 
 type CommentHandler struct {
 	commentUseCase publishingports.CommentUseCase
-	validator      platformports.Validator
-	log            platformports.Logger
+	validator      pkgports.Validator
+	log            pkgports.Logger
 }
 
 // ponytail: nil checks removed — Go panics at method call site on nil pointer
-func NewCommentHandler(commentUseCase publishingports.CommentUseCase, validator platformports.Validator, log platformports.Logger) *CommentHandler {
+func NewCommentHandler(commentUseCase publishingports.CommentUseCase, validator pkgports.Validator, log pkgports.Logger) *CommentHandler {
 	return &CommentHandler{
 		commentUseCase: commentUseCase,
 		validator:      validator,

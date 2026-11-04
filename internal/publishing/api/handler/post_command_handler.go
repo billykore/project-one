@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	request "github.com/billykore/project-one/internal/pkg/api/request"
-	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/billykore/project-one/internal/publishing/api/dto"
 	publishingports "github.com/billykore/project-one/internal/publishing/ports"
@@ -16,11 +16,11 @@ import (
 type PostCommandHandler struct {
 	postUseCase    publishingports.PostCommandUseCase
 	commentUseCase publishingports.CommentUseCase
-	validator      platformports.Validator
-	log            platformports.Logger
+	validator      pkgports.Validator
+	log            pkgports.Logger
 }
 
-func NewPostCommandHandler(postUseCase publishingports.PostCommandUseCase, commentUseCase publishingports.CommentUseCase, validator platformports.Validator, log platformports.Logger) *PostCommandHandler {
+func NewPostCommandHandler(postUseCase publishingports.PostCommandUseCase, commentUseCase publishingports.CommentUseCase, validator pkgports.Validator, log pkgports.Logger) *PostCommandHandler {
 	return &PostCommandHandler{postUseCase: postUseCase, commentUseCase: commentUseCase, validator: validator, log: log}
 }
 

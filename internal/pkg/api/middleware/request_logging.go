@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	"github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/labstack/echo/v4"
 )
 
@@ -26,7 +26,7 @@ const (
 // only the resolved route template and bounded response data; raw request
 // paths, queries, headers, bodies, addresses, errors, and stack traces are
 // intentionally never added.
-func RequestLogging(log platformports.Logger) echo.MiddlewareFunc {
+func RequestLogging(log ports.Logger) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			start := time.Now()

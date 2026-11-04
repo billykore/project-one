@@ -10,7 +10,7 @@ import (
 	featureflagports "github.com/billykore/project-one/internal/featureflags/ports"
 	request "github.com/billykore/project-one/internal/pkg/api/request"
 	vo "github.com/billykore/project-one/internal/pkg/pagination"
-	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/labstack/echo/v4"
 )
@@ -18,12 +18,12 @@ import (
 // FeatureFlagHandler handles feature-flag evaluation and administration.
 type FeatureFlagHandler struct {
 	useCase     featureflagports.FeatureFlagUseCase
-	validator   platformports.Validator
+	validator   pkgports.Validator
 	environment string
 }
 
 // NewFeatureFlagHandler creates a feature-flag handler.
-func NewFeatureFlagHandler(useCase featureflagports.FeatureFlagUseCase, validator platformports.Validator, environment string) *FeatureFlagHandler {
+func NewFeatureFlagHandler(useCase featureflagports.FeatureFlagUseCase, validator pkgports.Validator, environment string) *FeatureFlagHandler {
 	return &FeatureFlagHandler{useCase: useCase, validator: validator, environment: environment}
 }
 

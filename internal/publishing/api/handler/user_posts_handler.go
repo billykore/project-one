@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	vo "github.com/billykore/project-one/internal/pkg/pagination"
-	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/billykore/project-one/internal/publishing/api/dto"
 	publishingports "github.com/billykore/project-one/internal/publishing/ports"
@@ -16,11 +16,11 @@ import (
 type UserPostsHandler struct {
 	postUseCase publishingports.PostQueryUseCase
 	userLookup  publishingports.UserLookup
-	log         platformports.Logger
+	log         pkgports.Logger
 }
 
 // NewUserPostsHandler creates a profile-posts API handler.
-func NewUserPostsHandler(postUseCase publishingports.PostQueryUseCase, userLookup publishingports.UserLookup, log platformports.Logger) *UserPostsHandler {
+func NewUserPostsHandler(postUseCase publishingports.PostQueryUseCase, userLookup publishingports.UserLookup, log pkgports.Logger) *UserPostsHandler {
 	return &UserPostsHandler{postUseCase: postUseCase, userLookup: userLookup, log: log}
 }
 

@@ -7,7 +7,7 @@ import (
 
 	request "github.com/billykore/project-one/internal/pkg/api/request"
 	vo "github.com/billykore/project-one/internal/pkg/pagination"
-	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/billykore/project-one/internal/social/api/dto"
 	"github.com/billykore/project-one/internal/social/domain"
@@ -18,12 +18,12 @@ import (
 // FollowHandler serves the HTTP API owned by the social context.
 type FollowHandler struct {
 	followUseCase socialports.FollowUseCase
-	validator     platformports.Validator
-	log           platformports.Logger
+	validator     pkgports.Validator
+	log           pkgports.Logger
 }
 
 // NewFollowHandler creates a follow API handler.
-func NewFollowHandler(followUseCase socialports.FollowUseCase, validator platformports.Validator, log platformports.Logger) *FollowHandler {
+func NewFollowHandler(followUseCase socialports.FollowUseCase, validator pkgports.Validator, log pkgports.Logger) *FollowHandler {
 	return &FollowHandler{followUseCase: followUseCase, validator: validator, log: log}
 }
 

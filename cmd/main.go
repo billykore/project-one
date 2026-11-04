@@ -39,10 +39,10 @@ import (
 	"github.com/billykore/project-one/internal/pkg/adapters/logger"
 	"github.com/billykore/project-one/internal/pkg/adapters/pubsub"
 	"github.com/billykore/project-one/internal/pkg/adapters/validator"
-	platformmiddleware "github.com/billykore/project-one/internal/pkg/api/middleware"
+	pkgmiddleware "github.com/billykore/project-one/internal/pkg/api/middleware"
 	"github.com/billykore/project-one/internal/pkg/config"
 	"github.com/billykore/project-one/internal/pkg/outbox"
-	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 	publishingrepository "github.com/billykore/project-one/internal/publishing/adapters"
 	publishingapi "github.com/billykore/project-one/internal/publishing/api"
 	publishinghandler "github.com/billykore/project-one/internal/publishing/api/handler"
@@ -70,8 +70,8 @@ import (
 type application struct {
 	echo                *echo.Echo
 	db                  *gorm.DB
-	publisher           platformports.Publisher
-	subscriber          platformports.Subscriber
+	publisher           pkgports.Publisher
+	subscriber          pkgports.Subscriber
 	sseManager          *sseadapter.Manager
 	notificationHandler *notificationhandler.NotificationHandler
 }
@@ -205,7 +205,7 @@ func newApplication(ctx context.Context, cfg *config.Config, privateKey *rsa.Pri
 	healthCheckers := []operationsports.DependencyChecker{
 		healthadapter.NewDatabaseChecker(sqlDB),
 	}
-	if reporter, ok := subscriber.(platformports.HealthReporter); ok {
+	if reporter, ok := subscriber.(pkgports.HealthReporter); ok {
 		healthCheckers = append(healthCheckers, healthadapter.NewNotificationChecker(cfg.MessageBroker.Type, reporter))
 	} else {
 		lgr.Warn(context.Background(), "message broker does not report connection health", "type", cfg.MessageBroker.Type)
@@ -232,8 +232,8 @@ func newApplication(ctx context.Context, cfg *config.Config, privateKey *rsa.Pri
 	e.Use(operationsmiddleware.Metrics(metricsRecorder))
 	e.Use(echomiddleware.Recover())
 	e.Use(echomiddleware.RequestID())
-	e.Use(platformmiddleware.RequestLogging(lgr))
-	e.HTTPErrorHandler = platformmiddleware.ErrorHandler(lgr, cfg.App.ErrorTypeBaseURL, cfg.App.Env == "debug")
+	e.Use(pkgmiddleware.RequestLogging(lgr))
+	e.HTTPErrorHandler = pkgmiddleware.ErrorHandler(lgr, cfg.App.ErrorTypeBaseURL, cfg.App.Env == "debug")
 
 	if cfg.App.Env != "production" {
 		e.GET("/swagger/*", echoSwagger.WrapHandler)

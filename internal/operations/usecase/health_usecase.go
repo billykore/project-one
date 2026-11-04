@@ -7,7 +7,7 @@ import (
 
 	"github.com/billykore/project-one/internal/operations/domain"
 	"github.com/billykore/project-one/internal/operations/ports"
-	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 )
 
 // DefaultHealthCheckTimeout bounds a single dependency check when no explicit
@@ -19,7 +19,7 @@ const DefaultHealthCheckTimeout = 2 * time.Second
 type HealthUseCase struct {
 	checkers []ports.DependencyChecker
 	observer ports.HealthObserver
-	logger   platformports.Logger
+	logger   pkgports.Logger
 	timeout  time.Duration
 }
 
@@ -30,7 +30,7 @@ func NewHealthUseCase(
 	checkers []ports.DependencyChecker,
 	observer ports.HealthObserver,
 	checkTimeout time.Duration,
-	logger platformports.Logger,
+	logger pkgports.Logger,
 ) *HealthUseCase {
 	if checkTimeout <= 0 {
 		checkTimeout = DefaultHealthCheckTimeout

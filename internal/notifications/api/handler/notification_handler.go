@@ -17,7 +17,7 @@ import (
 	notificationports "github.com/billykore/project-one/internal/notifications/ports"
 	request "github.com/billykore/project-one/internal/pkg/api/request"
 	vo "github.com/billykore/project-one/internal/pkg/pagination"
-	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/labstack/echo/v4"
 )
@@ -25,20 +25,20 @@ import (
 const notificationTopic = "notifications"
 
 type NotificationHandler struct {
-	log        platformports.Logger
-	subscriber platformports.Subscriber
+	log        pkgports.Logger
+	subscriber pkgports.Subscriber
 	uc         notificationports.NotificationUseCase
 	userUc     identityports.UserUseCase
-	validator  platformports.Validator
+	validator  pkgports.Validator
 	sseManager *sseadapter.Manager
 }
 
 func NewNotificationHandler(
-	log platformports.Logger,
-	subscriber platformports.Subscriber,
+	log pkgports.Logger,
+	subscriber pkgports.Subscriber,
 	notificationUc notificationports.NotificationUseCase,
 	userUc identityports.UserUseCase,
-	validator platformports.Validator,
+	validator pkgports.Validator,
 	sseManager *sseadapter.Manager,
 ) *NotificationHandler {
 	// ponytail: nil checks removed — Go panics at method call site on nil pointer
@@ -55,7 +55,7 @@ func NewNotificationHandler(
 // Listen starts a goroutine to listen for incoming notifications from the PubSub system
 // and persists them to the database.
 func (h *NotificationHandler) Listen(ctx context.Context) error {
-	return h.subscriber.Subscribe(ctx, notificationTopic, func(ctx context.Context, event platformports.Event) error {
+	return h.subscriber.Subscribe(ctx, notificationTopic, func(ctx context.Context, event pkgports.Event) error {
 		var notificationEvent notificationdomain.NotificationEvent
 		if err := json.Unmarshal(event.Payload, &notificationEvent); err != nil {
 			h.log.Error(ctx, "failed to unmarshal notification event", "error", err)

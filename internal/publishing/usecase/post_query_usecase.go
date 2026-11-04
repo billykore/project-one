@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	vo "github.com/billykore/project-one/internal/pkg/pagination"
-	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/billykore/project-one/internal/publishing/domain"
 	"github.com/billykore/project-one/internal/publishing/ports"
@@ -15,10 +15,10 @@ import (
 type postQueryUseCase struct {
 	postRepo ports.PostQueryRepository
 	likeRepo ports.LikeRepository
-	log      platformports.Logger
+	log      pkgports.Logger
 }
 
-func NewPostQueryUseCase(postRepo ports.PostQueryRepository, likeRepo ports.LikeRepository, log platformports.Logger) ports.PostQueryUseCase {
+func NewPostQueryUseCase(postRepo ports.PostQueryRepository, likeRepo ports.LikeRepository, log pkgports.Logger) ports.PostQueryUseCase {
 	if postRepo == nil || likeRepo == nil || log == nil {
 		panic("NewPostQueryUseCase: dependencies must not be nil")
 	}

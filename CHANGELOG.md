@@ -5,6 +5,14 @@ All notable changes to Project One are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Renamed the restricted shared technical kernel from `internal/platform` to
+  `internal/pkg`. Branches importing `internal/platform/...` must update their
+  import paths; regenerate mocks with `make mocks`.
+
 ## [5.1.0] - 2026-09-26 (fb60339)
 
 ### Changed
@@ -180,6 +188,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 - Full-stack authentication, including registration, login, logout, and session handling.
 
+[Unreleased]: https://github.com/billykore/project-one/compare/v5.1.0...HEAD
 [5.1.0]: https://github.com/billykore/project-one/compare/v5.0.0...v5.1.0
 [5.0.0]: https://github.com/billykore/project-one/compare/v4.1.0...v5.0.0
 [4.1.0]: https://github.com/billykore/project-one/compare/v4.0.0...v4.1.0

@@ -10,7 +10,7 @@ import (
 	featureflagdomain "github.com/billykore/project-one/internal/featureflags/domain"
 	notificationdomain "github.com/billykore/project-one/internal/notifications/domain"
 	"github.com/billykore/project-one/internal/pkg/auth"
-	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/billykore/project-one/internal/publishing/domain"
 	"github.com/billykore/project-one/internal/publishing/ports"
@@ -22,12 +22,12 @@ type postCommandUseCase struct {
 	postRepo  ports.PostCommandRepository
 	likeRepo  ports.LikeRepository
 	userRepo  ports.UserLookup
-	publisher platformports.Publisher
-	log       platformports.Logger
+	publisher pkgports.Publisher
+	log       pkgports.Logger
 	evaluator ports.FeatureEvaluator
 }
 
-func NewPostCommandUseCase(postRepo ports.PostCommandRepository, likeRepo ports.LikeRepository, userRepo ports.UserLookup, publisher platformports.Publisher, log platformports.Logger, evaluator ports.FeatureEvaluator) ports.PostCommandUseCase {
+func NewPostCommandUseCase(postRepo ports.PostCommandRepository, likeRepo ports.LikeRepository, userRepo ports.UserLookup, publisher pkgports.Publisher, log pkgports.Logger, evaluator ports.FeatureEvaluator) ports.PostCommandUseCase {
 	if postRepo == nil || likeRepo == nil || userRepo == nil || publisher == nil || log == nil || evaluator == nil {
 		panic("NewPostCommandUseCase: dependencies must not be nil")
 	}
@@ -103,7 +103,7 @@ func (uc *postCommandUseCase) LikePost(ctx context.Context, postID int, actor *a
 	}
 	var likeCount int
 	var changed bool
-	err = platformports.InTransaction(ctx, uc.publisher, func(txCtx context.Context) error {
+	err = pkgports.InTransaction(ctx, uc.publisher, func(txCtx context.Context) error {
 		var setErr error
 		likeCount, changed, setErr = uc.likeRepo.SetLiked(txCtx, postID, actor.ID, true)
 		if setErr != nil {
@@ -170,7 +170,7 @@ func (uc *postCommandUseCase) publishLikeNotification(ctx context.Context, post 
 		uc.log.Error(ctx, "failed to marshal like notification", "error", err)
 		return fmt.Errorf("marshal like notification: %w", err)
 	}
-	if err := uc.publisher.Publish(ctx, platformports.Event{Topic: postNotificationTopic, Key: fmt.Sprintf("user:%d", owner.ID), Payload: payload, Metadata: map[string]string{"event_id": event.EventID, "schema_version": event.SchemaVersion, "timestamp": event.Timestamp}}); err != nil {
+	if err := uc.publisher.Publish(ctx, pkgports.Event{Topic: postNotificationTopic, Key: fmt.Sprintf("user:%d", owner.ID), Payload: payload, Metadata: map[string]string{"event_id": event.EventID, "schema_version": event.SchemaVersion, "timestamp": event.Timestamp}}); err != nil {
 		uc.log.Error(ctx, "failed to publish like notification", "error", err)
 		return fmt.Errorf("enqueue like notification: %w", err)
 	}

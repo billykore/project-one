@@ -6,7 +6,7 @@ import (
 	"runtime/debug"
 
 	"github.com/billykore/project-one/internal/pkg/api/dto"
-	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	"github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
@@ -17,7 +17,7 @@ import (
 //
 // ponytail: no middleware wrapper needed. Echo passes errors directly to HTTPErrorHandler.
 // Handler return nil → Echo never calls this. Return error → this formats and writes the response.
-func ErrorHandler(log platformports.Logger, errorTypeBaseURL string, withStackTrace bool) func(err error, c echo.Context) {
+func ErrorHandler(log ports.Logger, errorTypeBaseURL string, withStackTrace bool) func(err error, c echo.Context) {
 	// ponytail: normalize base URL once at construction time.
 	if errorTypeBaseURL == "" {
 		errorTypeBaseURL = "http://localhost:8080/errors"

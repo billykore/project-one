@@ -9,7 +9,7 @@ import (
 
 	notificationdomain "github.com/billykore/project-one/internal/notifications/domain"
 	"github.com/billykore/project-one/internal/pkg/auth"
-	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/billykore/project-one/internal/publishing/domain"
 	"github.com/billykore/project-one/internal/publishing/ports"
@@ -19,7 +19,7 @@ type commentUseCase struct {
 	commentRepo ports.CommentRepository
 	postRepo    ports.PostCommandRepository
 	userRepo    ports.UserLookup
-	publisher   platformports.Publisher
+	publisher   pkgports.Publisher
 }
 
 // NewCommentUseCase creates a new instance of ports.CommentUseCase.
@@ -27,7 +27,7 @@ func NewCommentUseCase(
 	commentRepo ports.CommentRepository,
 	postRepo ports.PostCommandRepository,
 	userRepo ports.UserLookup,
-	publisher platformports.Publisher,
+	publisher pkgports.Publisher,
 ) ports.CommentUseCase {
 	if commentRepo == nil || postRepo == nil || userRepo == nil || publisher == nil {
 		panic("NewCommentUseCase: dependencies must not be nil")
@@ -62,7 +62,7 @@ func (uc *commentUseCase) AddComment(ctx context.Context, postID int, author *au
 		return fmt.Errorf("failed to fetch post for comment: %w", err)
 	}
 
-	return platformports.InTransaction(ctx, uc.publisher, func(txCtx context.Context) error {
+	return pkgports.InTransaction(ctx, uc.publisher, func(txCtx context.Context) error {
 		if err := uc.commentRepo.Create(txCtx, comment); err != nil {
 			return fmt.Errorf("failed to create comment: %w", err)
 		}
@@ -104,7 +104,7 @@ func (uc *commentUseCase) publishCommentNotification(ctx context.Context, post *
 		return fmt.Errorf("marshal comment notification: %w", err)
 	}
 
-	if err := uc.publisher.Publish(ctx, platformports.Event{
+	if err := uc.publisher.Publish(ctx, pkgports.Event{
 		Topic:   postNotificationTopic,
 		Key:     fmt.Sprintf("user:%d", postOwner.ID),
 		Payload: payload,

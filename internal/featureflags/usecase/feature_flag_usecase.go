@@ -9,21 +9,21 @@ import (
 	"github.com/billykore/project-one/internal/featureflags/domain"
 	"github.com/billykore/project-one/internal/featureflags/ports"
 	vo "github.com/billykore/project-one/internal/pkg/pagination"
-	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/billykore/project-one/internal/pkg/problem"
 )
 
 type featureFlagUseCase struct {
 	repository ports.FeatureFlagRepository
 	evaluator  ports.FeatureFlagEvaluator
-	logger     platformports.Logger
+	logger     pkgports.Logger
 }
 
 // NewFeatureFlagUseCase creates the feature-flag application service.
 func NewFeatureFlagUseCase(
 	repository ports.FeatureFlagRepository,
 	evaluator ports.FeatureFlagEvaluator,
-	logger platformports.Logger,
+	logger pkgports.Logger,
 ) ports.FeatureFlagUseCase {
 	if repository == nil || evaluator == nil || logger == nil {
 		panic("NewFeatureFlagUseCase: dependencies must not be nil")

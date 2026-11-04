@@ -7,7 +7,7 @@ import (
 	"github.com/billykore/project-one/internal/operations/api/dto"
 	operationsdomain "github.com/billykore/project-one/internal/operations/domain"
 	operationsports "github.com/billykore/project-one/internal/operations/ports"
-	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/labstack/echo/v4"
 )
 
@@ -15,11 +15,11 @@ import (
 // It owns no dependency knowledge of its own; the use case assesses components.
 type HealthHandler struct {
 	healthUseCase operationsports.HealthAssessor
-	log           platformports.Logger
+	log           pkgports.Logger
 }
 
 // NewHealthHandler creates a new instance of HealthHandler.
-func NewHealthHandler(healthUseCase operationsports.HealthAssessor, log platformports.Logger) *HealthHandler {
+func NewHealthHandler(healthUseCase operationsports.HealthAssessor, log pkgports.Logger) *HealthHandler {
 	return &HealthHandler{
 		healthUseCase: healthUseCase,
 		log:           log,

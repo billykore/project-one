@@ -7,7 +7,7 @@ import (
 
 	featureflagdomain "github.com/billykore/project-one/internal/featureflags/domain"
 	identitydomain "github.com/billykore/project-one/internal/identity/domain"
-	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/billykore/project-one/internal/publishing/domain"
 	"github.com/billykore/project-one/internal/testkit/mocks"
@@ -360,7 +360,7 @@ func TestPostCommandUseCase_LikePost(t *testing.T) {
 		mockRepo.EXPECT().Load(ctx, postID).Return(&domain.Post{ID: postID, UserID: 2, Username: "postowner", LikeCount: 4}, nil)
 		mockLikeRepo.EXPECT().SetLiked(ctx, postID, actor.ID, true).Return(5, true, nil)
 		mockUserRepo.EXPECT().GetUserByID(ctx, 2).Return(&identitydomain.User{ID: 2, Username: "postowner"}, nil)
-		mockPublisher.EXPECT().Publish(ctx, gomock.Any()).DoAndReturn(func(ctx context.Context, event platformports.Event) error {
+		mockPublisher.EXPECT().Publish(ctx, gomock.Any()).DoAndReturn(func(ctx context.Context, event pkgports.Event) error {
 			assert.Equal(t, "user:2", event.Key)
 			return nil
 		})

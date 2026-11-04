@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	"github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/billykore/project-one/internal/testkit/mocks"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -32,7 +32,7 @@ func TestPublisherAndDispatcherPersistAndDeliverEvents(t *testing.T) {
 	t.Cleanup(func() { _ = db.Where("event_id = ?", eventID).Delete(&messageModel{}).Error })
 
 	persistentPublisher := NewPublisher(db)
-	event := platformports.Event{Topic: "notifications", Key: "user:42", Payload: []byte(`{"event":"test"}`), Metadata: map[string]string{"event_id": eventID, "schema_version": "1.0"}}
+	event := ports.Event{Topic: "notifications", Key: "user:42", Payload: []byte(`{"event":"test"}`), Metadata: map[string]string{"event_id": eventID, "schema_version": "1.0"}}
 	require.NoError(t, persistentPublisher.InTransaction(ctx, func(txCtx context.Context) error {
 		return persistentPublisher.Publish(txCtx, event)
 	}))

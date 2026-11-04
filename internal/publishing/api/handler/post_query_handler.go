@@ -6,7 +6,7 @@ import (
 
 	request "github.com/billykore/project-one/internal/pkg/api/request"
 	vo "github.com/billykore/project-one/internal/pkg/pagination"
-	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/billykore/project-one/internal/publishing/api/dto"
 	publishingports "github.com/billykore/project-one/internal/publishing/ports"
@@ -17,10 +17,10 @@ import (
 type PostQueryHandler struct {
 	postUseCase    publishingports.PostQueryUseCase
 	commentUseCase publishingports.CommentUseCase
-	log            platformports.Logger
+	log            pkgports.Logger
 }
 
-func NewPostQueryHandler(postUseCase publishingports.PostQueryUseCase, commentUseCase publishingports.CommentUseCase, log platformports.Logger) *PostQueryHandler {
+func NewPostQueryHandler(postUseCase publishingports.PostQueryUseCase, commentUseCase publishingports.CommentUseCase, log pkgports.Logger) *PostQueryHandler {
 	return &PostQueryHandler{postUseCase: postUseCase, commentUseCase: commentUseCase, log: log}
 }
 
