@@ -8,6 +8,7 @@ import (
 
 	"github.com/billykore/project-one/internal/notifications/ports"
 	vo "github.com/billykore/project-one/internal/pkg/pagination"
+	"github.com/jackc/pgx/v5/pgconn"
 
 	"github.com/billykore/project-one/internal/notifications/domain"
 	"github.com/billykore/project-one/internal/pkg/problem"
@@ -71,6 +72,9 @@ func (r *notificationRepository) Create(ctx context.Context, n *domain.Notificat
 		m.CreatedAt = time.Now()
 	}
 	if err := r.db.WithContext(ctx).Create(&m).Error; err != nil {
+		if isUniqueViolation(err) {
+			return domain.ErrDuplicateNotification
+		}
 		return fmt.Errorf("%w: %v", problem.ErrRepositoryFailure, err)
 	}
 	n.ID = int(m.ID)
@@ -120,4 +124,17 @@ func (r *notificationRepository) MarkAllAsRead(ctx context.Context, userID int) 
 		return fmt.Errorf("%w: %v", problem.ErrRepositoryFailure, err)
 	}
 	return nil
+}
+
+// uniqueViolationCode is the PostgreSQL SQLSTATE for unique_violation.
+const uniqueViolationCode = "23505"
+
+// isUniqueViolation recognizes a unique-index conflict whether or not GORM's
+// TranslateError option has already converted the PostgreSQL error.
+func isUniqueViolation(err error) bool {
+	if errors.Is(err, gorm.ErrDuplicatedKey) {
+		return true
+	}
+	var pgErr *pgconn.PgError
+	return errors.As(err, &pgErr) && pgErr.Code == uniqueViolationCode
 }

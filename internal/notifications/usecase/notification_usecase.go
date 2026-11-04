@@ -16,20 +16,23 @@ import (
 type notificationUseCase struct {
 	repo     ports.NotificationRepository
 	userRepo ports.ActorLookup
+	notifier ports.RealtimeNotifier
 	log      pkgports.Logger
 }
 
 func NewNotificationUseCase(
 	repo ports.NotificationRepository,
 	userRepo ports.ActorLookup,
+	notifier ports.RealtimeNotifier,
 	log pkgports.Logger,
 ) ports.NotificationUseCase {
-	if repo == nil || userRepo == nil || log == nil {
+	if repo == nil || userRepo == nil || notifier == nil || log == nil {
 		panic("NewNotificationUseCase: dependencies must not be nil")
 	}
 	return &notificationUseCase{
 		repo:     repo,
 		userRepo: userRepo,
+		notifier: notifier,
 		log:      log,
 	}
 }
@@ -122,9 +125,28 @@ func (uc *notificationUseCase) MarkAllAsRead(ctx context.Context, userID int) er
 	return nil
 }
 
-func (uc *notificationUseCase) SaveNotification(ctx context.Context, notification *domain.Notification) error {
-	if err := uc.repo.Create(ctx, notification); err != nil {
+func (uc *notificationUseCase) RecordEvent(ctx context.Context, event domain.NotificationEvent) error {
+	if event.SchemaVersion != "" && event.SchemaVersion != domain.NotificationEventSchemaVersion {
+		return fmt.Errorf("%w: %s", domain.ErrUnsupportedEventSchema, event.SchemaVersion)
+	}
+
+	notification := event.Notification
+	notification.EventID = event.EventID
+	if err := uc.repo.Create(ctx, &notification); err != nil {
+		if errors.Is(err, domain.ErrDuplicateNotification) {
+			uc.log.Debug(ctx, "duplicate notification event skipped", "event_id", notification.EventID)
+			return nil
+		}
 		return fmt.Errorf("create notification: %w", err)
+	}
+	uc.log.Info(ctx, "notification saved", "userID", notification.UserID, "actorID", notification.ActorID, "type", notification.Type)
+
+	// The notification is already stored, so a failed push must not cause a redelivery.
+	delivered, err := uc.notifier.Notify(ctx, notification)
+	if err != nil {
+		uc.log.Warn(ctx, "failed to push notification to realtime clients", "userID", notification.UserID, "error", err)
+	} else if delivered {
+		uc.log.Info(ctx, "notification streamed to realtime clients", "userID", notification.UserID, "type", notification.Type)
 	}
 	return nil
 }

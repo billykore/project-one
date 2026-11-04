@@ -164,7 +164,7 @@ func (uc *postCommandUseCase) publishLikeNotification(ctx context.Context, post 
 		return nil
 	}
 	notification := notificationdomain.Notification{UserID: owner.ID, ActorID: actor.ID, Type: notificationdomain.NotificationTypeLike, PostID: post.ID, ActorUsername: actor.Username, CreatedAt: time.Now().UTC()}
-	event := notificationdomain.NotificationEvent{EventID: fmt.Sprintf("backend-%d", time.Now().UnixNano()), SchemaVersion: "1.0", Timestamp: time.Now().UTC().Format(time.RFC3339Nano), Notification: notification}
+	event := notificationdomain.NotificationEvent{EventID: fmt.Sprintf("backend-%d", time.Now().UnixNano()), SchemaVersion: notificationdomain.NotificationEventSchemaVersion, Timestamp: time.Now().UTC().Format(time.RFC3339Nano), Notification: notification}
 	payload, err := json.Marshal(event)
 	if err != nil {
 		uc.log.Error(ctx, "failed to marshal like notification", "error", err)

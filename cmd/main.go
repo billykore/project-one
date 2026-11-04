@@ -24,6 +24,7 @@ import (
 	identityapi "github.com/billykore/project-one/internal/identity/api"
 	identityhandler "github.com/billykore/project-one/internal/identity/api/handler"
 	identityusecase "github.com/billykore/project-one/internal/identity/usecase"
+	notificationconsumer "github.com/billykore/project-one/internal/notifications/adapters/consumer"
 	notificationrepository "github.com/billykore/project-one/internal/notifications/adapters/repository"
 	sseadapter "github.com/billykore/project-one/internal/notifications/adapters/sse"
 	notificationsapi "github.com/billykore/project-one/internal/notifications/api"
@@ -68,12 +69,12 @@ import (
 // @in							header
 // @name						Authorization
 type application struct {
-	echo                *echo.Echo
-	db                  *gorm.DB
-	publisher           pkgports.Publisher
-	subscriber          pkgports.Subscriber
-	sseManager          *sseadapter.Manager
-	notificationHandler *notificationhandler.NotificationHandler
+	echo                 *echo.Echo
+	db                   *gorm.DB
+	publisher            pkgports.Publisher
+	subscriber           pkgports.Subscriber
+	sseManager           *sseadapter.Manager
+	notificationConsumer *notificationconsumer.Consumer
 }
 
 func main() {
@@ -105,7 +106,7 @@ func main() {
 	lgr.Info(ctx, "starting server", "port", cfg.App.Port)
 
 	go func() {
-		if err := app.notificationHandler.Listen(ctx); err != nil {
+		if err := app.notificationConsumer.Run(ctx); err != nil {
 			lgr.Fatal(ctx, "failed to start notification consumer", "error", err)
 		}
 	}()
@@ -182,7 +183,7 @@ func newApplication(ctx context.Context, cfg *Config, privateKey *rsa.PrivateKey
 	postQueryUc := publishingusecase.NewPostQueryUseCase(postQueryRepo, likeRepo, lgr)
 	followUc := socialusecase.NewFollowUseCase(followRepo, userRepo, outboxPublisher, lgr)
 	commentUc := publishingusecase.NewCommentUseCase(commentRepo, postCommandRepo, userRepo, outboxPublisher)
-	notificationUc := notificationusecase.NewNotificationUseCase(notificationRepo, userRepo, lgr)
+	notificationUc := notificationusecase.NewNotificationUseCase(notificationRepo, userRepo, sseadapter.NewNotifier(sseManager), lgr)
 	feedUc := socialusecase.NewFeedUseCase(postQueryRepo, followRepo, lgr)
 
 	userHdl := identityhandler.NewUserHandler(userUc, loginUc, val, lgr, cfg.App.Env == "production")
@@ -190,7 +191,8 @@ func newApplication(ctx context.Context, cfg *Config, privateKey *rsa.PrivateKey
 	postQueryHdl := publishinghandler.NewPostQueryHandler(postQueryUc, commentUc, lgr)
 	userPostsHdl := publishinghandler.NewUserPostsHandler(postQueryUc, userRepo, lgr)
 	commentHdl := publishinghandler.NewCommentHandler(commentUc, val, lgr)
-	notificationHdl := notificationhandler.NewNotificationHandler(lgr, subscriber, notificationUc, userUc, val, sseManager)
+	notificationHdl := notificationhandler.NewNotificationHandler(lgr, notificationUc, userUc, val, sseManager)
+	notificationConsumer := notificationconsumer.NewConsumer(subscriber, notificationUc, lgr)
 	feedHdl := socialhandler.NewFeedHandler(feedUc, lgr)
 	followHdl := socialhandler.NewFollowHandler(followUc, val, lgr)
 	featureFlagHdl := featureflaghandler.NewFeatureFlagHandler(featureFlagUc, val, cfg.FeatureFlags.Environment)
@@ -247,12 +249,12 @@ func newApplication(ctx context.Context, cfg *Config, privateKey *rsa.PrivateKey
 	operationsapi.RegisterRoutes(e, healthHdl, metricsRecorder.Handler(monitoringCredential))
 
 	return &application{
-		echo:                e,
-		db:                  db,
-		publisher:           publisher,
-		subscriber:          subscriber,
-		sseManager:          sseManager,
-		notificationHandler: notificationHdl,
+		echo:                 e,
+		db:                   db,
+		publisher:            publisher,
+		subscriber:           subscriber,
+		sseManager:           sseManager,
+		notificationConsumer: notificationConsumer,
 	}, nil
 }
 

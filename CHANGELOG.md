@@ -21,6 +21,15 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   carries only `ID` and `Username`.
 - Moved aggregate configuration loading into `cmd`; each context validates its
   own settings.
+- Moved the notification broker consumer out of the HTTP handler into
+  `notifications/adapters/consumer`; the use case now owns event recording and
+  realtime delivery through a `RealtimeNotifier` port.
+
+### Fixed
+
+- Redelivered notification events are acknowledged as duplicates again. With
+  GORM's `TranslateError` enabled, the consumer's error-message check never
+  matched, so each duplicate was retried and then dead-lettered.
 
 ## [5.1.0] - 2026-09-26 (fb60339)
 

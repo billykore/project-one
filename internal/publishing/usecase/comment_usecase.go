@@ -94,7 +94,7 @@ func (uc *commentUseCase) publishCommentNotification(ctx context.Context, post *
 
 	notificationEvent := notificationdomain.NotificationEvent{
 		EventID:       fmt.Sprintf("backend-%d", time.Now().UnixNano()),
-		SchemaVersion: "1.0",
+		SchemaVersion: notificationdomain.NotificationEventSchemaVersion,
 		Timestamp:     time.Now().UTC().Format(time.RFC3339Nano),
 		Notification:  *notification,
 	}

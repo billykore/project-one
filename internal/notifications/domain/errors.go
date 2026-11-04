@@ -10,4 +10,8 @@ var (
 	ErrNotificationNotOwned = errors.New("notification not owned by user")
 	// ErrInvalidNotification is returned when a notification is invalid.
 	ErrInvalidNotification = errors.New("invalid notification")
+	// ErrDuplicateNotification is returned when a notification for the same event was already stored.
+	ErrDuplicateNotification = errors.New("duplicate notification event")
+	// ErrUnsupportedEventSchema is returned when a notification event uses an unknown schema version.
+	ErrUnsupportedEventSchema = errors.New("unsupported notification event schema version")
 )

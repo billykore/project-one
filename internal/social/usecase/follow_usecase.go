@@ -71,7 +71,7 @@ func (u *followUseCase) Follow(ctx context.Context, actor *auth.Principal, follo
 			return fmt.Errorf("create follow: %w", err)
 		}
 		notification := notificationdomain.Notification{UserID: followed.ID, ActorID: actor.ID, ActorUsername: actor.Username, Type: notificationdomain.NotificationTypeFollow, CreatedAt: follow.CreatedAt}
-		notificationEvent := notificationdomain.NotificationEvent{EventID: fmt.Sprintf("backend-%d", time.Now().UnixNano()), SchemaVersion: "1.0", Timestamp: time.Now().UTC().Format(time.RFC3339Nano), Notification: notification}
+		notificationEvent := notificationdomain.NotificationEvent{EventID: fmt.Sprintf("backend-%d", time.Now().UnixNano()), SchemaVersion: notificationdomain.NotificationEventSchemaVersion, Timestamp: time.Now().UTC().Format(time.RFC3339Nano), Notification: notification}
 		payload, err := json.Marshal(notificationEvent)
 		if err != nil {
 			return fmt.Errorf("marshal follow notification: %w", err)

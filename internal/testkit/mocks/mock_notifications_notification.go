@@ -183,16 +183,55 @@ func (mr *MockNotificationUseCaseMockRecorder) MarkAsRead(ctx, id, userID any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarkAsRead", reflect.TypeOf((*MockNotificationUseCase)(nil).MarkAsRead), ctx, id, userID)
 }
 
-// SaveNotification mocks base method.
-func (m *MockNotificationUseCase) SaveNotification(ctx context.Context, notification *domain.Notification) error {
+// RecordEvent mocks base method.
+func (m *MockNotificationUseCase) RecordEvent(ctx context.Context, event domain.NotificationEvent) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveNotification", ctx, notification)
+	ret := m.ctrl.Call(m, "RecordEvent", ctx, event)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// SaveNotification indicates an expected call of SaveNotification.
-func (mr *MockNotificationUseCaseMockRecorder) SaveNotification(ctx, notification any) *gomock.Call {
+// RecordEvent indicates an expected call of RecordEvent.
+func (mr *MockNotificationUseCaseMockRecorder) RecordEvent(ctx, event any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveNotification", reflect.TypeOf((*MockNotificationUseCase)(nil).SaveNotification), ctx, notification)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordEvent", reflect.TypeOf((*MockNotificationUseCase)(nil).RecordEvent), ctx, event)
+}
+
+// MockRealtimeNotifier is a mock of RealtimeNotifier interface.
+type MockRealtimeNotifier struct {
+	ctrl     *gomock.Controller
+	recorder *MockRealtimeNotifierMockRecorder
+	isgomock struct{}
+}
+
+// MockRealtimeNotifierMockRecorder is the mock recorder for MockRealtimeNotifier.
+type MockRealtimeNotifierMockRecorder struct {
+	mock *MockRealtimeNotifier
+}
+
+// NewMockRealtimeNotifier creates a new mock instance.
+func NewMockRealtimeNotifier(ctrl *gomock.Controller) *MockRealtimeNotifier {
+	mock := &MockRealtimeNotifier{ctrl: ctrl}
+	mock.recorder = &MockRealtimeNotifierMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockRealtimeNotifier) EXPECT() *MockRealtimeNotifierMockRecorder {
+	return m.recorder
+}
+
+// Notify mocks base method.
+func (m *MockRealtimeNotifier) Notify(ctx context.Context, notification domain.Notification) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Notify", ctx, notification)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Notify indicates an expected call of Notify.
+func (mr *MockRealtimeNotifierMockRecorder) Notify(ctx, notification any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Notify", reflect.TypeOf((*MockRealtimeNotifier)(nil).Notify), ctx, notification)
 }

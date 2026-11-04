@@ -1,13 +1,10 @@
 package handler
 
 import (
-	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	identityports "github.com/billykore/project-one/internal/identity/ports"
@@ -22,11 +19,8 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-const notificationTopic = "notifications"
-
 type NotificationHandler struct {
 	log        pkgports.Logger
-	subscriber pkgports.Subscriber
 	uc         notificationports.NotificationUseCase
 	userUc     identityports.UserUseCase
 	validator  pkgports.Validator
@@ -35,7 +29,6 @@ type NotificationHandler struct {
 
 func NewNotificationHandler(
 	log pkgports.Logger,
-	subscriber pkgports.Subscriber,
 	notificationUc notificationports.NotificationUseCase,
 	userUc identityports.UserUseCase,
 	validator pkgports.Validator,
@@ -44,64 +37,11 @@ func NewNotificationHandler(
 	// ponytail: nil checks removed — Go panics at method call site on nil pointer
 	return &NotificationHandler{
 		log:        log,
-		subscriber: subscriber,
 		uc:         notificationUc,
 		userUc:     userUc,
 		validator:  validator,
 		sseManager: sseManager,
 	}
-}
-
-// Listen starts a goroutine to listen for incoming notifications from the PubSub system
-// and persists them to the database.
-func (h *NotificationHandler) Listen(ctx context.Context) error {
-	return h.subscriber.Subscribe(ctx, notificationTopic, func(ctx context.Context, event pkgports.Event) error {
-		var notificationEvent notificationdomain.NotificationEvent
-		if err := json.Unmarshal(event.Payload, &notificationEvent); err != nil {
-			h.log.Error(ctx, "failed to unmarshal notification event", "error", err)
-			return err
-		}
-		if notificationEvent.SchemaVersion != "" && notificationEvent.SchemaVersion != "1.0" {
-			h.log.Warn(ctx, "unsupported notification schema version", "schema_version", notificationEvent.SchemaVersion)
-			return fmt.Errorf("unsupported notification schema version: %s", notificationEvent.SchemaVersion)
-		}
-
-		notification := notificationEvent.Notification
-		notification.EventID = notificationEvent.EventID
-
-		if err := h.uc.SaveNotification(ctx, &notification); err != nil {
-			if strings.Contains(err.Error(), "duplicate key") || strings.Contains(err.Error(), "unique constraint") {
-				h.log.Debug(ctx, "duplicate event skipped", "event_id", notification.EventID)
-				return nil
-			}
-			h.log.Error(ctx, "failed to save notification", "error", err)
-			return err
-		}
-
-		h.log.Info(ctx, "notification saved",
-			"userID", notification.UserID,
-			"actorID", notification.ActorID,
-			"type", notification.Type,
-		)
-
-		resp := notificationResponseFromDomain(notification)
-
-		var streamed bool
-		err := h.sseManager.Send(resp)
-		if err != nil {
-			if !errors.Is(err, sseadapter.ErrUserNotConnected) {
-				h.log.Warn(ctx, "failed to stream notification to sse", "userID", notification.UserID, "error", err)
-			}
-		} else {
-			streamed = true
-		}
-
-		if streamed {
-			h.log.Info(ctx, "notification streamed to realtime clients", "userID", notification.UserID, "type", notification.Type)
-		}
-
-		return nil
-	})
 }
 
 // StreamNotifications handles the GET /notifications/stream endpoint.
@@ -288,22 +228,6 @@ func (h *NotificationHandler) MarkAllAsRead(c echo.Context) error {
 
 	h.log.Info(c.Request().Context(), "MarkAllAsRead succeeded", "username", user.Username)
 	return c.JSON(http.StatusOK, dto.MessageResponse{Message: "All notifications marked as read"})
-}
-
-func notificationResponseFromDomain(notification notificationdomain.Notification) *dto.NotificationResponse {
-	return &dto.NotificationResponse{
-		ID:            notification.ID,
-		UserID:        notification.UserID,
-		ActorID:       notification.ActorID,
-		ActorUsername: notification.ActorUsername,
-		Type:          string(notification.Type),
-		PostID:        notification.PostID,
-		CommentID:     notification.CommentID,
-		IsRead:        notification.IsRead,
-		CreatedAt:     notification.CreatedAt,
-		Title:         dto.NotificationTitle(notification.Type),
-		Body:          dto.NotificationBody(notification.Type, notification.ActorUsername),
-	}
 }
 
 func notificationResponseFromDetail(notification *notificationdomain.NotificationDetail) *dto.NotificationResponse {

@@ -6,6 +6,10 @@ import (
 	"time"
 )
 
+// NotificationEventSchemaVersion is the event schema version producers publish
+// and the notifications consumer accepts.
+const NotificationEventSchemaVersion = "1.0"
+
 // NotificationEvent represents a notification event published to the message broker.
 // It wraps the core Notification with broker-specific metadata for idempotency,
 // schema versioning, and event timing.
