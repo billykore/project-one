@@ -10,12 +10,9 @@ import (
 	"testing"
 	"time"
 
-	identitydomain "github.com/billykore/project-one/internal/identity/domain"
-	identityports "github.com/billykore/project-one/internal/identity/ports"
 	sseadapter "github.com/billykore/project-one/internal/notifications/adapters/sse"
 	"github.com/billykore/project-one/internal/notifications/api/dto"
 	"github.com/billykore/project-one/internal/pkg/auth"
-	vo "github.com/billykore/project-one/internal/pkg/pagination"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -27,8 +24,6 @@ func TestNotificationHandler_StreamNotifications(t *testing.T) {
 	sseManager := sseadapter.NewManager()
 	h := NewNotificationHandler(
 		noopLogger{},
-		nil,
-		staticUserUseCase{user: &identitydomain.User{ID: 42, Username: "alice"}},
 		nil,
 		sseManager,
 	)
@@ -101,32 +96,6 @@ func (noopLogger) Info(context.Context, string, ...any)  {}
 func (noopLogger) Warn(context.Context, string, ...any)  {}
 func (noopLogger) Error(context.Context, string, ...any) {}
 func (noopLogger) Fatal(context.Context, string, ...any) {}
-
-type staticUserUseCase struct {
-	user *identitydomain.User
-}
-
-func (u staticUserUseCase) Register(context.Context, *identitydomain.User) error {
-	return nil
-}
-
-func (u staticUserUseCase) GetUser(context.Context, string) (*identitydomain.User, error) {
-	return u.user, nil
-}
-
-func (u staticUserUseCase) ChangePassword(context.Context, int, string, string) error {
-	return nil
-}
-
-func (u staticUserUseCase) UpdateProfile(context.Context, int, *identitydomain.User) error {
-	return nil
-}
-
-func (u staticUserUseCase) SearchUsers(context.Context, string, *vo.Cursor, int) ([]identitydomain.SearchResult, *vo.Cursor, bool, error) {
-	return nil, nil, false, nil
-}
-
-var _ identityports.UserUseCase = staticUserUseCase{}
 
 // lockedWriter wraps an http.ResponseWriter with a mutex to allow safe
 // concurrent writes (from a handler goroutine) and reads (from a test

@@ -13,7 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	domain "github.com/billykore/project-one/internal/identity/domain"
+	domain "github.com/billykore/project-one/internal/notifications/domain"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -42,10 +42,10 @@ func (m *MockActorLookup) EXPECT() *MockActorLookupMockRecorder {
 }
 
 // GetUserByID mocks base method.
-func (m *MockActorLookup) GetUserByID(ctx context.Context, id int) (*domain.User, error) {
+func (m *MockActorLookup) GetUserByID(ctx context.Context, id int) (*domain.Actor, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserByID", ctx, id)
-	ret0, _ := ret[0].(*domain.User)
+	ret0, _ := ret[0].(*domain.Actor)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

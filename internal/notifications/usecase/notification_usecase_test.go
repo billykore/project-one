@@ -5,7 +5,6 @@ import (
 	"errors"
 	"testing"
 
-	identitydomain "github.com/billykore/project-one/internal/identity/domain"
 	"github.com/billykore/project-one/internal/notifications/domain"
 	"github.com/billykore/project-one/internal/notifications/ports"
 	"github.com/billykore/project-one/internal/pkg/auth"
@@ -28,7 +27,7 @@ func TestNewNotificationUseCase(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockNotificationRepository(ctrl)
-	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockUserRepo := mocks.NewMockActorLookup(ctrl)
 	lgr := &mockUseCaseLogger{}
 
 	t.Run("success", func(t *testing.T) {
@@ -74,7 +73,7 @@ func TestNotificationUseCase_RecordEvent(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		repo := mocks.NewMockNotificationRepository(ctrl)
 		notifier := mocks.NewMockRealtimeNotifier(ctrl)
-		return repo, notifier, NewNotificationUseCase(repo, mocks.NewMockUserRepository(ctrl), notifier, &mockUseCaseLogger{})
+		return repo, notifier, NewNotificationUseCase(repo, mocks.NewMockActorLookup(ctrl), notifier, &mockUseCaseLogger{})
 	}
 
 	t.Run("stores the event and pushes it", func(t *testing.T) {
@@ -116,7 +115,7 @@ func TestNotificationUseCase_GetNotifications(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockNotificationRepository(ctrl)
-	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockUserRepo := mocks.NewMockActorLookup(ctrl)
 	lgr := &mockUseCaseLogger{}
 	uc := NewNotificationUseCase(mockRepo, mockUserRepo, mocks.NewMockRealtimeNotifier(ctrl), lgr)
 
@@ -142,11 +141,11 @@ func TestNotificationUseCase_GetNotifications(t *testing.T) {
 		mockRepo.EXPECT().GetByUserID(ctx, user.ID, nil, limit+1).Return(notifications, nil)
 
 		// Actor 2: lookup succeeds once
-		actor2 := &identitydomain.User{ID: 2, Username: "actor2"}
+		actor2 := &domain.Actor{ID: 2, Username: "actor2"}
 		mockUserRepo.EXPECT().GetUserByID(ctx, 2).Return(actor2, nil).Times(1)
 
 		// Actor 3: lookup succeeds
-		actor3 := &identitydomain.User{ID: 3, Username: "actor3"}
+		actor3 := &domain.Actor{ID: 3, Username: "actor3"}
 		mockUserRepo.EXPECT().GetUserByID(ctx, 3).Return(actor3, nil)
 
 		// Actor 4: lookup fails with ErrUserNotFound, should only be called once due to caching of soft failure
@@ -199,7 +198,7 @@ func TestNotificationUseCase_MarkAsRead(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockNotificationRepository(ctrl)
-	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockUserRepo := mocks.NewMockActorLookup(ctrl)
 	lgr := &mockUseCaseLogger{}
 	uc := NewNotificationUseCase(mockRepo, mockUserRepo, mocks.NewMockRealtimeNotifier(ctrl), lgr)
 
@@ -265,7 +264,7 @@ func TestNotificationUseCase_MarkAllAsRead(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockNotificationRepository(ctrl)
-	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockUserRepo := mocks.NewMockActorLookup(ctrl)
 	lgr := &mockUseCaseLogger{}
 	uc := NewNotificationUseCase(mockRepo, mockUserRepo, mocks.NewMockRealtimeNotifier(ctrl), lgr)
 

@@ -13,9 +13,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	domain "github.com/billykore/project-one/internal/identity/domain"
 	valueobject "github.com/billykore/project-one/internal/pkg/pagination"
-	domain0 "github.com/billykore/project-one/internal/publishing/domain"
+	domain "github.com/billykore/project-one/internal/publishing/domain"
+	domain0 "github.com/billykore/project-one/internal/social/domain"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -44,10 +44,10 @@ func (m *MockAccountLookup) EXPECT() *MockAccountLookupMockRecorder {
 }
 
 // GetUserByID mocks base method.
-func (m *MockAccountLookup) GetUserByID(ctx context.Context, id int) (*domain.User, error) {
+func (m *MockAccountLookup) GetUserByID(ctx context.Context, id int) (*domain0.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserByID", ctx, id)
-	ret0, _ := ret[0].(*domain.User)
+	ret0, _ := ret[0].(*domain0.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -59,10 +59,10 @@ func (mr *MockAccountLookupMockRecorder) GetUserByID(ctx, id any) *gomock.Call {
 }
 
 // GetUserByUsername mocks base method.
-func (m *MockAccountLookup) GetUserByUsername(ctx context.Context, username string) (*domain.User, error) {
+func (m *MockAccountLookup) GetUserByUsername(ctx context.Context, username string) (*domain0.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserByUsername", ctx, username)
-	ret0, _ := ret[0].(*domain.User)
+	ret0, _ := ret[0].(*domain0.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -98,10 +98,10 @@ func (m *MockTimelineReader) EXPECT() *MockTimelineReaderMockRecorder {
 }
 
 // GetFeed mocks base method.
-func (m *MockTimelineReader) GetFeed(ctx context.Context, userIDs []int, cursor *valueobject.Cursor, limit int) ([]*domain0.Post, error) {
+func (m *MockTimelineReader) GetFeed(ctx context.Context, userIDs []int, cursor *valueobject.Cursor, limit int) ([]*domain.Post, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetFeed", ctx, userIDs, cursor, limit)
-	ret0, _ := ret[0].([]*domain0.Post)
+	ret0, _ := ret[0].([]*domain.Post)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

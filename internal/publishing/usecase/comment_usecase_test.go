@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"testing"
 
-	identitydomain "github.com/billykore/project-one/internal/identity/domain"
 	"github.com/billykore/project-one/internal/pkg/auth"
 	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/billykore/project-one/internal/pkg/problem"
@@ -22,7 +21,7 @@ func TestCommentUseCase_AddComment(t *testing.T) {
 
 	mockCommentRepo := mocks.NewMockCommentRepository(ctrl)
 	mockPostRepo := mocks.NewMockPostCommandRepository(ctrl)
-	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockUserRepo := mocks.NewMockUserLookup(ctrl)
 	mockPublisher := mocks.NewMockPublisher(ctrl)
 
 	svc := NewCommentUseCase(mockCommentRepo, mockPostRepo, mockUserRepo, mockPublisher)
@@ -46,7 +45,7 @@ func TestCommentUseCase_AddComment(t *testing.T) {
 				return nil
 			})
 
-		mockUserRepo.EXPECT().GetUserByID(ctx, 2).Return(&identitydomain.User{ID: 2, Username: "postowner"}, nil)
+		mockUserRepo.EXPECT().GetUserByID(ctx, 2).Return(&domain.Author{ID: 2, Username: "postowner"}, nil)
 		mockPublisher.EXPECT().Publish(ctx, gomock.Any()).DoAndReturn(func(ctx context.Context, event pkgports.Event) error {
 			assert.Equal(t, "user:2", event.Key)
 			return nil
@@ -99,7 +98,7 @@ func TestCommentUseCase_GetCommentsByPostID(t *testing.T) {
 
 	mockCommentRepo := mocks.NewMockCommentRepository(ctrl)
 	mockPostRepo := mocks.NewMockPostCommandRepository(ctrl)
-	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockUserRepo := mocks.NewMockUserLookup(ctrl)
 	mockPublisher := mocks.NewMockPublisher(ctrl)
 
 	svc := NewCommentUseCase(mockCommentRepo, mockPostRepo, mockUserRepo, mockPublisher)
@@ -135,7 +134,7 @@ func TestCommentUseCase_EditComment(t *testing.T) {
 
 	mockCommentRepo := mocks.NewMockCommentRepository(ctrl)
 	mockPostRepo := mocks.NewMockPostCommandRepository(ctrl)
-	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockUserRepo := mocks.NewMockUserLookup(ctrl)
 	mockPublisher := mocks.NewMockPublisher(ctrl)
 
 	svc := NewCommentUseCase(mockCommentRepo, mockPostRepo, mockUserRepo, mockPublisher)
@@ -265,7 +264,7 @@ func TestCommentUseCase_DeleteComment(t *testing.T) {
 
 	mockCommentRepo := mocks.NewMockCommentRepository(ctrl)
 	mockPostRepo := mocks.NewMockPostCommandRepository(ctrl)
-	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockUserRepo := mocks.NewMockUserLookup(ctrl)
 	mockPublisher := mocks.NewMockPublisher(ctrl)
 
 	svc := NewCommentUseCase(mockCommentRepo, mockPostRepo, mockUserRepo, mockPublisher)

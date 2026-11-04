@@ -3,15 +3,15 @@ package ports
 import (
 	"context"
 
-	identitydomain "github.com/billykore/project-one/internal/identity/domain"
 	vo "github.com/billykore/project-one/internal/pkg/pagination"
 	publishingdomain "github.com/billykore/project-one/internal/publishing/domain"
+	"github.com/billykore/project-one/internal/social/domain"
 )
 
 // AccountLookup is social's narrow identity lookup contract.
 type AccountLookup interface {
-	GetUserByID(ctx context.Context, id int) (*identitydomain.User, error)
-	GetUserByUsername(ctx context.Context, username string) (*identitydomain.User, error)
+	GetUserByID(ctx context.Context, id int) (*domain.Account, error)
+	GetUserByUsername(ctx context.Context, username string) (*domain.Account, error)
 }
 
 // TimelineReader is social's read-only view of published posts.

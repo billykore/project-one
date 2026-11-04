@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"time"
 
-	identityports "github.com/billykore/project-one/internal/identity/ports"
 	sseadapter "github.com/billykore/project-one/internal/notifications/adapters/sse"
 	"github.com/billykore/project-one/internal/notifications/api/dto"
 	notificationdomain "github.com/billykore/project-one/internal/notifications/domain"
@@ -22,24 +21,18 @@ import (
 type NotificationHandler struct {
 	log        pkgports.Logger
 	uc         notificationports.NotificationUseCase
-	userUc     identityports.UserUseCase
-	validator  pkgports.Validator
 	sseManager *sseadapter.Manager
 }
 
 func NewNotificationHandler(
 	log pkgports.Logger,
 	notificationUc notificationports.NotificationUseCase,
-	userUc identityports.UserUseCase,
-	validator pkgports.Validator,
 	sseManager *sseadapter.Manager,
 ) *NotificationHandler {
 	// ponytail: nil checks removed — Go panics at method call site on nil pointer
 	return &NotificationHandler{
 		log:        log,
 		uc:         notificationUc,
-		userUc:     userUc,
-		validator:  validator,
 		sseManager: sseManager,
 	}
 }

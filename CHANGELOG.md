@@ -24,6 +24,12 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Moved the notification broker consumer out of the HTTP handler into
   `notifications/adapters/consumer`; the use case now owns event recording and
   realtime delivery through a `RealtimeNotifier` port.
+- Publishing, social, and notifications no longer use identity's `User`
+  aggregate. Each defines its own `ID`/`Username` projection (`Author`,
+  `Account`, `Actor`) filled by a lookup adapter, and a `depguard` rule keeps
+  `identity/domain` out of their domain, ports, use cases, and API packages.
+- Removed the unused identity use case and validator dependencies from the
+  notification HTTP handler.
 
 ### Fixed
 

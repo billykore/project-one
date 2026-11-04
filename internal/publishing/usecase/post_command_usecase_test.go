@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	featureflagdomain "github.com/billykore/project-one/internal/featureflags/domain"
-	identitydomain "github.com/billykore/project-one/internal/identity/domain"
 	"github.com/billykore/project-one/internal/pkg/auth"
 	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/billykore/project-one/internal/pkg/problem"
@@ -22,7 +21,7 @@ func TestPostCommandUseCase_CreatePost(t *testing.T) {
 
 	mockRepo := mocks.NewMockPostCommandRepository(ctrl)
 	mockLikeRepo := mocks.NewMockLikeRepository(ctrl)
-	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockUserRepo := mocks.NewMockUserLookup(ctrl)
 	mockPublisher := mocks.NewMockPublisher(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
 	mockEvaluator := mocks.NewMockFeatureFlagEvaluator(ctrl)
@@ -74,7 +73,7 @@ func TestPostCommandUseCase_CreatePost_RejectsUnknownFeatureFlag(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockRepo := mocks.NewMockPostCommandRepository(ctrl)
 	mockLikeRepo := mocks.NewMockLikeRepository(ctrl)
-	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockUserRepo := mocks.NewMockUserLookup(ctrl)
 	mockPublisher := mocks.NewMockPublisher(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
 	mockEvaluator := mocks.NewMockFeatureFlagEvaluator(ctrl)
@@ -204,7 +203,7 @@ func TestPostCommandUseCase_UpdatePost(t *testing.T) {
 
 	mockRepo := mocks.NewMockPostCommandRepository(ctrl)
 	mockLikeRepo := mocks.NewMockLikeRepository(ctrl)
-	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockUserRepo := mocks.NewMockUserLookup(ctrl)
 	mockPublisher := mocks.NewMockPublisher(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
 	mockEvaluator := mocks.NewMockFeatureFlagEvaluator(ctrl)
@@ -300,7 +299,7 @@ func TestPostCommandUseCase_DeletePost(t *testing.T) {
 
 	mockRepo := mocks.NewMockPostCommandRepository(ctrl)
 	mockLikeRepo := mocks.NewMockLikeRepository(ctrl)
-	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockUserRepo := mocks.NewMockUserLookup(ctrl)
 	mockPublisher := mocks.NewMockPublisher(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
 	mockEvaluator := mocks.NewMockFeatureFlagEvaluator(ctrl)
@@ -346,7 +345,7 @@ func TestPostCommandUseCase_LikePost(t *testing.T) {
 
 	mockRepo := mocks.NewMockPostCommandRepository(ctrl)
 	mockLikeRepo := mocks.NewMockLikeRepository(ctrl)
-	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockUserRepo := mocks.NewMockUserLookup(ctrl)
 	mockPublisher := mocks.NewMockPublisher(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
 	mockEvaluator := mocks.NewMockFeatureFlagEvaluator(ctrl)
@@ -360,7 +359,7 @@ func TestPostCommandUseCase_LikePost(t *testing.T) {
 	t.Run("success - new like", func(t *testing.T) {
 		mockRepo.EXPECT().Load(ctx, postID).Return(&domain.Post{ID: postID, UserID: 2, Username: "postowner", LikeCount: 4}, nil)
 		mockLikeRepo.EXPECT().SetLiked(ctx, postID, actor.ID, true).Return(5, true, nil)
-		mockUserRepo.EXPECT().GetUserByID(ctx, 2).Return(&identitydomain.User{ID: 2, Username: "postowner"}, nil)
+		mockUserRepo.EXPECT().GetUserByID(ctx, 2).Return(&domain.Author{ID: 2, Username: "postowner"}, nil)
 		mockPublisher.EXPECT().Publish(ctx, gomock.Any()).DoAndReturn(func(ctx context.Context, event pkgports.Event) error {
 			assert.Equal(t, "user:2", event.Key)
 			return nil
@@ -412,7 +411,7 @@ func TestPostCommandUseCase_UnlikePost(t *testing.T) {
 
 	mockRepo := mocks.NewMockPostCommandRepository(ctrl)
 	mockLikeRepo := mocks.NewMockLikeRepository(ctrl)
-	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+	mockUserRepo := mocks.NewMockUserLookup(ctrl)
 	mockPublisher := mocks.NewMockPublisher(ctrl)
 	mockLog := mocks.NewMockLogger(ctrl)
 	mockEvaluator := mocks.NewMockFeatureFlagEvaluator(ctrl)
@@ -464,7 +463,7 @@ func TestPostCommandUseCase_PublishLikeNotificationFailures(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	posts := mocks.NewMockPostCommandRepository(ctrl)
 	likes := mocks.NewMockLikeRepository(ctrl)
-	users := mocks.NewMockUserRepository(ctrl)
+	users := mocks.NewMockUserLookup(ctrl)
 	publisher := mocks.NewMockPublisher(ctrl)
 	log := mocks.NewMockLogger(ctrl)
 	evaluator := mocks.NewMockFeatureFlagEvaluator(ctrl)
@@ -480,7 +479,7 @@ func TestPostCommandUseCase_PublishLikeNotificationFailures(t *testing.T) {
 	users.EXPECT().GetUserByID(ctx, 1).Return(nil, nil)
 	assert.NoError(t, uc.publishLikeNotification(ctx, post, actor))
 
-	users.EXPECT().GetUserByID(ctx, 1).Return(&identitydomain.User{ID: 1, Username: "owner"}, nil)
+	users.EXPECT().GetUserByID(ctx, 1).Return(&domain.Author{ID: 1, Username: "owner"}, nil)
 	publisher.EXPECT().Publish(ctx, gomock.Any()).Return(errors.New("publish failed"))
 	log.EXPECT().Error(ctx, "failed to publish like notification", "error", gomock.Any())
 	assert.Error(t, uc.publishLikeNotification(ctx, post, actor))
