@@ -56,7 +56,7 @@ func (u *followUseCase) Follow(ctx context.Context, actor *auth.Principal, follo
 		return nil, fmt.Errorf("get user: %w", problem.ErrUserNotFound)
 	}
 	if actor.ID == followed.ID {
-		return nil, problem.ErrCannotFollowSelf
+		return nil, domain.ErrCannotFollowSelf
 	}
 
 	follow := &domain.Follow{
@@ -96,7 +96,7 @@ func (u *followUseCase) Unfollow(ctx context.Context, actor *auth.Principal, fol
 		return problem.ErrUserNotFound
 	}
 	if actor.ID == followed.ID {
-		return problem.ErrCannotUnfollowSelf
+		return domain.ErrCannotUnfollowSelf
 	}
 	if err := u.followRepo.Delete(ctx, actor.ID, followed.ID); err != nil {
 		return fmt.Errorf("delete follow: %w", err)

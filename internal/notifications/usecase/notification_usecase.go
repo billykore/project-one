@@ -97,10 +97,10 @@ func (uc *notificationUseCase) MarkAsRead(ctx context.Context, id int, userID in
 		return fmt.Errorf("get notification by id: %w", err)
 	}
 	if notification == nil {
-		return problem.ErrNotificationNotFound
+		return domain.ErrNotificationNotFound
 	}
 	if notification.UserID != userID {
-		return problem.ErrNotificationNotOwned
+		return domain.ErrNotificationNotOwned
 	}
 
 	err = uc.repo.MarkAsRead(ctx, id)

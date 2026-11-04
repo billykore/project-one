@@ -27,11 +27,11 @@ func NewPostQueryUseCase(postRepo ports.PostQueryRepository, likeRepo ports.Like
 
 func (uc *postQueryUseCase) GetPostByID(ctx context.Context, id int) (*domain.Post, error) {
 	if id <= 0 {
-		return nil, problem.ErrInvalidPost
+		return nil, domain.ErrInvalidPost
 	}
 	post, err := uc.postRepo.GetByID(ctx, id)
 	if err != nil {
-		if errors.Is(err, problem.ErrPostNotFound) {
+		if errors.Is(err, domain.ErrPostNotFound) {
 			return nil, err
 		}
 		uc.log.Error(ctx, "failed to get post by id", "postID", id, "error", err)
@@ -65,14 +65,14 @@ func (uc *postQueryUseCase) GetPosts(ctx context.Context, userID int, cursor *vo
 
 func (uc *postQueryUseCase) GetLikeStatus(ctx context.Context, postID int, userID int) (bool, int, error) {
 	if postID <= 0 {
-		return false, 0, problem.ErrInvalidPost
+		return false, 0, domain.ErrInvalidPost
 	}
 	if userID <= 0 {
 		return false, 0, problem.ErrInvalidUsername
 	}
 	post, err := uc.postRepo.GetByID(ctx, postID)
 	if err != nil {
-		if errors.Is(err, problem.ErrPostNotFound) {
+		if errors.Is(err, domain.ErrPostNotFound) {
 			return false, 0, err
 		}
 		uc.log.Error(ctx, "failed to verify post existence for like status", "postID", postID, "error", err)

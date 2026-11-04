@@ -94,9 +94,9 @@ func (r *userRepository) CreateUser(ctx context.Context, user *domain.User) erro
 	if err := r.db.WithContext(ctx).Create(&m).Error; err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			if strings.Contains(err.Error(), "username") {
-				return problem.ErrUsernameAlreadyTaken
+				return domain.ErrUsernameAlreadyTaken
 			}
-			return problem.ErrEmailAlreadyRegistered
+			return domain.ErrEmailAlreadyRegistered
 		}
 		return fmt.Errorf("%w: %v", problem.ErrRepositoryFailure, err)
 	}
@@ -120,7 +120,7 @@ func (r *userRepository) UpdateUser(ctx context.Context, user *domain.User) erro
 	if err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			if strings.Contains(err.Error(), "username") {
-				return problem.ErrUsernameAlreadyTaken
+				return domain.ErrUsernameAlreadyTaken
 			}
 			return fmt.Errorf("%w: %v", problem.ErrRepositoryFailure, err)
 		}
@@ -138,7 +138,7 @@ func (r *userRepository) UpdateProfile(ctx context.Context, user *domain.User) e
 	})
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrDuplicatedKey) {
-			return problem.ErrUsernameAlreadyTaken
+			return domain.ErrUsernameAlreadyTaken
 		}
 		return fmt.Errorf("%w: %v", problem.ErrRepositoryFailure, result.Error)
 	}

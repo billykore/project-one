@@ -1,9 +1,10 @@
 // Package auth contains transport-neutral authenticated-principal data.
 package auth
 
-import identitydomain "github.com/billykore/project-one/internal/identity/domain"
-
 // Principal is the authenticated identity contract used outside identity.
-// It aliases the existing model temporarily so callers can migrate without a
-// flag day; downstream contexts must use only ID and Username.
-type Principal = identitydomain.User
+// The identity authorization middleware builds it from the session's user;
+// downstream contexts see only the stable ID and the display username.
+type Principal struct {
+	ID       int
+	Username string
+}

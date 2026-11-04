@@ -1,4 +1,4 @@
-package config_test
+package main
 
 import (
 	"os"
@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/billykore/project-one/internal/pkg/config"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
@@ -71,7 +70,7 @@ feature_flags:
 	err := os.WriteFile(filepath.Join(tempDir, "config.yaml"), yamlContent, 0644)
 	assert.NoError(t, err)
 
-	cfg, err := config.Load(tempDir)
+	cfg, err := loadConfig(tempDir)
 	assert.NoError(t, err)
 	assert.NotNil(t, cfg)
 
@@ -112,7 +111,7 @@ func TestLoad_SuccessFromEnv(t *testing.T) {
 	t.Setenv("MESSAGE_BROKER_RABBITMQ_EXCHANGE", "project1.notifications")
 	t.Setenv("MESSAGE_BROKER_RABBITMQ_QUEUE", "notifications")
 
-	cfg, err := config.Load(tempDir)
+	cfg, err := loadConfig(tempDir)
 	assert.NoError(t, err)
 	assert.NotNil(t, cfg)
 
@@ -161,7 +160,7 @@ app:
 	t.Setenv("MESSAGE_BROKER_RABBITMQ_EXCHANGE", "project1.notifications")
 	t.Setenv("MESSAGE_BROKER_RABBITMQ_QUEUE", "notifications")
 
-	cfg, err := config.Load(tempDir)
+	cfg, err := loadConfig(tempDir)
 	assert.NoError(t, err)
 	assert.NotNil(t, cfg)
 
@@ -190,7 +189,7 @@ jwt:
 	err := os.WriteFile(filepath.Join(tempDir, "config.yaml"), yamlContent, 0644)
 	assert.NoError(t, err)
 
-	cfg, err := config.Load(tempDir)
+	cfg, err := loadConfig(tempDir)
 	assert.Error(t, err)
 	assert.Nil(t, cfg)
 	assert.Contains(t, err.Error(), "JWT private key path cannot be empty")
@@ -213,7 +212,7 @@ jwt:
 	err := os.WriteFile(filepath.Join(tempDir, "config.yaml"), yamlContent, 0644)
 	assert.NoError(t, err)
 
-	cfg, err := config.Load(tempDir)
+	cfg, err := loadConfig(tempDir)
 	assert.Error(t, err)
 	assert.Nil(t, cfg)
 	assert.Contains(t, err.Error(), "JWT public key path cannot be empty")
@@ -237,7 +236,7 @@ jwt:
 	err := os.WriteFile(filepath.Join(tempDir, "config.yaml"), yamlContent, 0644)
 	assert.NoError(t, err)
 
-	cfg, err := config.Load(tempDir)
+	cfg, err := loadConfig(tempDir)
 	assert.Error(t, err)
 	assert.Nil(t, cfg)
 	assert.Contains(t, err.Error(), "database host, user, and dbname cannot be empty")
@@ -259,7 +258,7 @@ jwt:
 	err := os.WriteFile(filepath.Join(tempDir, "config.yaml"), yamlContent, 0644)
 	assert.NoError(t, err)
 
-	cfg, err := config.Load(tempDir)
+	cfg, err := loadConfig(tempDir)
 	assert.Error(t, err)
 	assert.Nil(t, cfg)
 	assert.Contains(t, err.Error(), "failed to unmarshal config")
@@ -270,7 +269,7 @@ func TestLoad_Success_ConfigFileNotFoundAndNoEnvFallback(t *testing.T) {
 	defer cleanup()
 
 	// No user_config.yaml file and no relevant env vars
-	cfg, err := config.Load(tempDir)
+	cfg, err := loadConfig(tempDir)
 	assert.Error(t, err)
 	assert.Nil(t, cfg)
 	assert.Contains(t, err.Error(), "JWT private key path cannot be empty")
@@ -304,7 +303,7 @@ message_broker:
 	t.Setenv("FEATURE_FLAGS_REFRESH_INTERVAL", "45s")
 	t.Setenv("FEATURE_FLAGS_OPERATORS", "op1,op2")
 
-	cfg, err := config.Load(tempDir)
+	cfg, err := loadConfig(tempDir)
 	assert.NoError(t, err)
 	assert.Equal(t, "production", cfg.FeatureFlags.Environment)
 	assert.Equal(t, 45*time.Second, cfg.FeatureFlags.RefreshInterval)
@@ -337,7 +336,7 @@ feature_flags:
 	err := os.WriteFile(filepath.Join(tempDir, "config.yaml"), yamlContent, 0644)
 	assert.NoError(t, err)
 
-	cfg, err := config.Load(tempDir)
+	cfg, err := loadConfig(tempDir)
 	assert.Error(t, err)
 	assert.Nil(t, cfg)
 	assert.Contains(t, err.Error(), "unsupported feature flags environment")
@@ -384,7 +383,7 @@ monitoring:
 `)
 	defer cleanup()
 
-	cfg, err := config.Load(tempDir)
+	cfg, err := loadConfig(tempDir)
 	assert.NoError(t, err)
 	assert.NotNil(t, cfg)
 	assert.Equal(t, "projectone-metrics", cfg.Monitoring.Username)
@@ -401,7 +400,7 @@ func TestLoad_MonitoringCredentialsFromEnv(t *testing.T) {
 	t.Setenv("MONITORING_USERNAME", "env-metrics-user")
 	t.Setenv("MONITORING_PASSWORD_FILE", secretPath)
 
-	cfg, err := config.Load(tempDir)
+	cfg, err := loadConfig(tempDir)
 	assert.NoError(t, err)
 	assert.NotNil(t, cfg)
 	assert.Equal(t, "env-metrics-user", cfg.Monitoring.Username)
@@ -412,7 +411,7 @@ func TestLoad_MonitoringDisabledWhenUnconfigured(t *testing.T) {
 	tempDir, cleanup := writeConfig(t, baseConfigWithoutMonitoring)
 	defer cleanup()
 
-	cfg, err := config.Load(tempDir)
+	cfg, err := loadConfig(tempDir)
 	assert.NoError(t, err)
 	assert.NotNil(t, cfg)
 	assert.Empty(t, cfg.Monitoring.Username)
@@ -427,7 +426,7 @@ monitoring:
 `)
 	defer cleanup()
 
-	cfg, err := config.Load(tempDir)
+	cfg, err := loadConfig(tempDir)
 	assert.Error(t, err)
 	assert.Nil(t, cfg)
 	assert.Contains(t, err.Error(), "monitoring password file")
@@ -444,7 +443,7 @@ monitoring:
 `)
 	defer cleanup()
 
-	cfg, err := config.Load(tempDir)
+	cfg, err := loadConfig(tempDir)
 	assert.Error(t, err)
 	assert.Nil(t, cfg)
 	assert.Contains(t, err.Error(), "monitoring password file")
@@ -457,7 +456,7 @@ monitoring:
 `)
 	defer cleanup()
 
-	cfg, err := config.Load(tempDir)
+	cfg, err := loadConfig(tempDir)
 	assert.Error(t, err)
 	assert.Nil(t, cfg)
 	assert.Contains(t, err.Error(), "monitoring username and password_file")
@@ -471,7 +470,7 @@ monitoring:
 `)
 	defer cleanupPeer()
 
-	peerCfg, peerErr := config.Load(tempDirPeer)
+	peerCfg, peerErr := loadConfig(tempDirPeer)
 	assert.Error(t, peerErr)
 	assert.Nil(t, peerCfg)
 	assert.Contains(t, peerErr.Error(), "monitoring username and password_file")

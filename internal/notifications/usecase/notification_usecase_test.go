@@ -7,6 +7,7 @@ import (
 
 	identitydomain "github.com/billykore/project-one/internal/identity/domain"
 	"github.com/billykore/project-one/internal/notifications/domain"
+	"github.com/billykore/project-one/internal/pkg/auth"
 	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/billykore/project-one/internal/testkit/mocks"
 	"github.com/stretchr/testify/assert"
@@ -91,7 +92,7 @@ func TestNotificationUseCase_GetNotifications(t *testing.T) {
 	username := "testuser"
 	limit := 10
 
-	user := &identitydomain.User{
+	user := &auth.Principal{
 		ID:       1,
 		Username: username,
 	}
@@ -174,7 +175,7 @@ func TestNotificationUseCase_MarkAsRead(t *testing.T) {
 	username := "testuser"
 	notificationID := 101
 
-	user := &identitydomain.User{
+	user := &auth.Principal{
 		ID:       1,
 		Username: username,
 	}
@@ -205,7 +206,7 @@ func TestNotificationUseCase_MarkAsRead(t *testing.T) {
 		mockRepo.EXPECT().GetByID(ctx, notificationID).Return(nil, nil)
 
 		err := uc.MarkAsRead(ctx, notificationID, user.ID)
-		assert.ErrorIs(t, err, problem.ErrNotificationNotFound)
+		assert.ErrorIs(t, err, domain.ErrNotificationNotFound)
 	})
 
 	t.Run("unauthorized owner mismatch", func(t *testing.T) {
@@ -213,7 +214,7 @@ func TestNotificationUseCase_MarkAsRead(t *testing.T) {
 		mockRepo.EXPECT().GetByID(ctx, notificationID).Return(notification, nil)
 
 		err := uc.MarkAsRead(ctx, notificationID, user.ID)
-		assert.ErrorIs(t, err, problem.ErrNotificationNotOwned)
+		assert.ErrorIs(t, err, domain.ErrNotificationNotOwned)
 	})
 
 	t.Run("mark as read repository error", func(t *testing.T) {
@@ -239,7 +240,7 @@ func TestNotificationUseCase_MarkAllAsRead(t *testing.T) {
 	ctx := context.Background()
 	username := "testuser"
 
-	user := &identitydomain.User{
+	user := &auth.Principal{
 		ID:       1,
 		Username: username,
 	}

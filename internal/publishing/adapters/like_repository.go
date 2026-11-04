@@ -74,7 +74,7 @@ func (r *likeRepository) SetLiked(ctx context.Context, postID int, userID int, l
 			return fmt.Errorf("%w: %v", problem.ErrRepositoryFailure, result.Error)
 		}
 		if result.RowsAffected == 0 {
-			return problem.ErrPostNotFound
+			return domain.ErrPostNotFound
 		}
 		return nil
 	})
@@ -89,7 +89,7 @@ func updateLikeCount(tx *gorm.DB, postID int, expression string) error {
 		return fmt.Errorf("%w: %v", problem.ErrRepositoryFailure, result.Error)
 	}
 	if result.RowsAffected == 0 {
-		return problem.ErrPostNotFound
+		return domain.ErrPostNotFound
 	}
 	return nil
 }

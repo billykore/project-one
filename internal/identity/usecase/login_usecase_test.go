@@ -64,7 +64,7 @@ func TestLoginUseCase_Login_WithMocks(t *testing.T) {
 				mockRepo.EXPECT().GetUserByEmail(gomock.Any(), "notfound@example.com").Return(nil, problem.ErrUserNotFound)
 				mockLogger.EXPECT().Error(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 			},
-			wantErr: problem.ErrInvalidCredentials,
+			wantErr: domain.ErrInvalidCredentials,
 		},
 		{
 			name:     "password mismatch",
@@ -76,7 +76,7 @@ func TestLoginUseCase_Login_WithMocks(t *testing.T) {
 				mockHasher.EXPECT().Compare(gomock.Any(), "wrongpassword", "hashed_password").Return(errors.New("mismatch"))
 				mockLogger.EXPECT().Error(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any())
 			},
-			wantErr: problem.ErrInvalidCredentials,
+			wantErr: domain.ErrInvalidCredentials,
 		},
 		{
 			name:     "token generation error",

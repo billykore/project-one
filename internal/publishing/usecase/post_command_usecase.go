@@ -50,14 +50,14 @@ func (uc *postCommandUseCase) CreatePost(ctx context.Context, user *auth.Princip
 
 func (uc *postCommandUseCase) UpdatePost(ctx context.Context, userID int, postID int, title, content string) (*domain.Post, error) {
 	if postID <= 0 {
-		return nil, problem.ErrInvalidPost
+		return nil, domain.ErrInvalidPost
 	}
 	post, err := uc.postRepo.Load(ctx, postID)
 	if err != nil {
 		return nil, fmt.Errorf("get post for update: %w", err)
 	}
 	if post.UserID != userID {
-		return nil, problem.ErrPostNotOwned
+		return nil, domain.ErrPostNotOwned
 	}
 	post.Update(title, content)
 	if err := uc.postRepo.Save(ctx, post); err != nil {
@@ -69,14 +69,14 @@ func (uc *postCommandUseCase) UpdatePost(ctx context.Context, userID int, postID
 
 func (uc *postCommandUseCase) DeletePost(ctx context.Context, userID int, postID int) error {
 	if postID <= 0 {
-		return problem.ErrInvalidPost
+		return domain.ErrInvalidPost
 	}
 	post, err := uc.postRepo.Load(ctx, postID)
 	if err != nil {
 		return fmt.Errorf("get post for delete: %w", err)
 	}
 	if post.UserID != userID {
-		return problem.ErrPostNotOwned
+		return domain.ErrPostNotOwned
 	}
 	if err := uc.postRepo.Delete(ctx, post); err != nil {
 		uc.log.Error(ctx, "failed to delete post", "postID", postID, "error", err)
@@ -88,14 +88,14 @@ func (uc *postCommandUseCase) DeletePost(ctx context.Context, userID int, postID
 
 func (uc *postCommandUseCase) LikePost(ctx context.Context, postID int, actor *auth.Principal) (int, error) {
 	if postID <= 0 {
-		return 0, problem.ErrInvalidPostID
+		return 0, domain.ErrInvalidPostID
 	}
 	if actor == nil || actor.ID <= 0 {
 		return 0, problem.ErrInvalidUsername
 	}
 	post, err := uc.postRepo.Load(ctx, postID)
 	if err != nil {
-		if errors.Is(err, problem.ErrPostNotFound) {
+		if errors.Is(err, domain.ErrPostNotFound) {
 			return 0, err
 		}
 		uc.log.Error(ctx, "failed to verify post existence for like", "postID", postID, "error", err)
@@ -128,14 +128,14 @@ func (uc *postCommandUseCase) LikePost(ctx context.Context, postID int, actor *a
 
 func (uc *postCommandUseCase) UnlikePost(ctx context.Context, postID int, actor *auth.Principal) (int, error) {
 	if postID <= 0 {
-		return 0, problem.ErrInvalidPost
+		return 0, domain.ErrInvalidPost
 	}
 	if actor == nil || actor.ID <= 0 {
 		return 0, problem.ErrInvalidUsername
 	}
 	post, err := uc.postRepo.Load(ctx, postID)
 	if err != nil {
-		if errors.Is(err, problem.ErrPostNotFound) {
+		if errors.Is(err, domain.ErrPostNotFound) {
 			return 0, err
 		}
 		uc.log.Error(ctx, "failed to get post for unlike", "postID", postID, "error", err)

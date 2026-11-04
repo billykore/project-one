@@ -9,6 +9,7 @@ import (
 	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/billykore/project-one/internal/publishing/api/dto"
+	"github.com/billykore/project-one/internal/publishing/domain"
 	publishingports "github.com/billykore/project-one/internal/publishing/ports"
 	"github.com/labstack/echo/v4"
 )
@@ -36,7 +37,7 @@ func NewPostQueryHandler(postUseCase publishingports.PostQueryUseCase, commentUs
 func (h *PostQueryHandler) GetPostByID(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return problem.ErrPostIDMustBeANumber
+		return domain.ErrPostIDMustBeANumber
 	}
 	post, err := h.postUseCase.GetPostByID(c.Request().Context(), id)
 	if err != nil {
@@ -117,7 +118,7 @@ func (h *PostQueryHandler) GetLikeStatus(c echo.Context) error {
 	}
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return problem.ErrPostIDMustBeANumber
+		return domain.ErrPostIDMustBeANumber
 	}
 	liked, count, err := h.postUseCase.GetLikeStatus(c.Request().Context(), id, user.ID)
 	if err != nil {

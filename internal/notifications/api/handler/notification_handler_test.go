@@ -15,6 +15,7 @@ import (
 	sseadapter "github.com/billykore/project-one/internal/notifications/adapters/sse"
 	"github.com/billykore/project-one/internal/notifications/api/dto"
 	notificationdomain "github.com/billykore/project-one/internal/notifications/domain"
+	"github.com/billykore/project-one/internal/pkg/auth"
 	vo "github.com/billykore/project-one/internal/pkg/pagination"
 	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/billykore/project-one/internal/testkit/mocks"
@@ -48,7 +49,7 @@ func TestNotificationHandler_StreamNotifications(t *testing.T) {
 	// reading rec.Body concurrently.
 	locked := &lockedWriter{w: rec}
 	c := e.NewContext(req, locked)
-	c.Set("user", &identitydomain.User{ID: 42, Username: "alice"})
+	c.Set("principal", &auth.Principal{ID: 42, Username: "alice"})
 
 	errCh := make(chan error, 1)
 	go func() {

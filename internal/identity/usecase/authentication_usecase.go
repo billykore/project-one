@@ -5,7 +5,6 @@ import (
 
 	"github.com/billykore/project-one/internal/identity/domain"
 	"github.com/billykore/project-one/internal/identity/ports"
-	"github.com/billykore/project-one/internal/pkg/problem"
 )
 
 type authenticationUseCase struct {
@@ -26,17 +25,17 @@ func NewAuthenticationUseCase(tokens ports.TokenService, sessions ports.TokenRep
 func (uc *authenticationUseCase) Authenticate(ctx context.Context, rawToken string) (*domain.User, error) {
 	claimsUser, err := uc.tokens.ValidateToken(ctx, rawToken)
 	if err != nil || claimsUser == nil || claimsUser.ID <= 0 {
-		return nil, problem.ErrUntrustedToken
+		return nil, domain.ErrUntrustedToken
 	}
 
 	active, err := uc.sessions.IsActive(ctx, rawToken, claimsUser.ID)
 	if err != nil || !active {
-		return nil, problem.ErrUntrustedToken
+		return nil, domain.ErrUntrustedToken
 	}
 
 	currentUser, err := uc.users.GetUserByID(ctx, claimsUser.ID)
 	if err != nil || currentUser == nil {
-		return nil, problem.ErrUntrustedToken
+		return nil, domain.ErrUntrustedToken
 	}
 
 	// Do not place credential or profile data loaded from persistence in the

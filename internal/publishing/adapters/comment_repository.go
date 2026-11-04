@@ -93,7 +93,7 @@ func (r *commentRepository) GetByID(ctx context.Context, id int) (*domain.Commen
 		Take(&m).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, problem.ErrCommentNotFound
+			return nil, domain.ErrCommentNotFound
 		}
 		return nil, fmt.Errorf("%w: %v", problem.ErrRepositoryFailure, err)
 	}

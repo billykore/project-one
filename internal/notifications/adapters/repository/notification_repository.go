@@ -82,7 +82,7 @@ func (r *notificationRepository) GetByID(ctx context.Context, id int) (*domain.N
 	var m notificationModel
 	if err := r.db.WithContext(ctx).First(&m, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, problem.ErrNotificationNotFound
+			return nil, domain.ErrNotificationNotFound
 		}
 		return nil, fmt.Errorf("%w: %v", problem.ErrRepositoryFailure, err)
 	}

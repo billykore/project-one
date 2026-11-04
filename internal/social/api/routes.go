@@ -4,12 +4,15 @@ package api
 import (
 	identitymiddleware "github.com/billykore/project-one/internal/identity/api/middleware"
 	identityports "github.com/billykore/project-one/internal/identity/ports"
+	pkgmiddleware "github.com/billykore/project-one/internal/pkg/api/middleware"
 	socialhandler "github.com/billykore/project-one/internal/social/api/handler"
 	"github.com/labstack/echo/v4"
 )
 
 // RegisterRoutes mounts authenticated personal-feed and relationship endpoints.
 func RegisterRoutes(e *echo.Echo, authenticator identityports.Authenticator, feedHandler *socialhandler.FeedHandler, followHandler *socialhandler.FollowHandler) {
+	pkgmiddleware.RegisterErrorMappings(errorMappings)
+
 	feeds := e.Group("/feeds", identitymiddleware.Authorize(authenticator))
 	feeds.GET("", feedHandler.HandleGetFeed)
 

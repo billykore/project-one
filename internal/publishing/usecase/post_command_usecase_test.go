@@ -7,6 +7,7 @@ import (
 
 	featureflagdomain "github.com/billykore/project-one/internal/featureflags/domain"
 	identitydomain "github.com/billykore/project-one/internal/identity/domain"
+	"github.com/billykore/project-one/internal/pkg/auth"
 	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/billykore/project-one/internal/publishing/domain"
@@ -28,7 +29,7 @@ func TestPostCommandUseCase_CreatePost(t *testing.T) {
 	svc := NewPostCommandUseCase(mockRepo, mockLikeRepo, mockUserRepo, mockPublisher, mockLog, mockEvaluator)
 
 	ctx := context.Background()
-	user := &identitydomain.User{ID: 42, Username: "testuser"}
+	user := &auth.Principal{ID: 42, Username: "testuser"}
 	title := "Test Title"
 	content := "Test Content"
 	tags := []string{"tag1", "tag2"}
@@ -80,7 +81,7 @@ func TestPostCommandUseCase_CreatePost_RejectsUnknownFeatureFlag(t *testing.T) {
 	mockEvaluator.EXPECT().Evaluate(gomock.Any(), "post-creation", "testuser").Return(featureflagdomain.FeatureFlagDecision{Source: featureflagdomain.SourceUnknown})
 
 	svc := NewPostCommandUseCase(mockRepo, mockLikeRepo, mockUserRepo, mockPublisher, mockLog, mockEvaluator)
-	post, err := svc.CreatePost(context.Background(), &identitydomain.User{ID: 42, Username: "testuser"}, "title", "content", nil)
+	post, err := svc.CreatePost(context.Background(), &auth.Principal{ID: 42, Username: "testuser"}, "title", "content", nil)
 
 	assert.Nil(t, post)
 	assert.ErrorIs(t, err, problem.ErrFeatureDisabled)
@@ -110,13 +111,13 @@ func TestPostQueryUseCase_GetPostByID(t *testing.T) {
 	})
 
 	t.Run("not found", func(t *testing.T) {
-		mockRepo.EXPECT().GetByID(ctx, postID).Return(nil, problem.ErrPostNotFound)
+		mockRepo.EXPECT().GetByID(ctx, postID).Return(nil, domain.ErrPostNotFound)
 
 		post, err := svc.GetPostByID(ctx, postID)
 
 		assert.Error(t, err)
 		assert.Nil(t, post)
-		assert.True(t, errors.Is(err, problem.ErrPostNotFound))
+		assert.True(t, errors.Is(err, domain.ErrPostNotFound))
 	})
 
 	t.Run("repository error", func(t *testing.T) {
@@ -135,7 +136,7 @@ func TestPostQueryUseCase_GetPostByID(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.Nil(t, post)
-		assert.True(t, errors.Is(err, problem.ErrInvalidPost))
+		assert.True(t, errors.Is(err, domain.ErrInvalidPost))
 	})
 }
 
@@ -275,13 +276,13 @@ func TestPostCommandUseCase_UpdatePost(t *testing.T) {
 	})
 
 	t.Run("not found", func(t *testing.T) {
-		mockRepo.EXPECT().Load(ctx, postID).Return(nil, problem.ErrPostNotFound)
+		mockRepo.EXPECT().Load(ctx, postID).Return(nil, domain.ErrPostNotFound)
 
 		post, err := svc.UpdatePost(ctx, userID, postID, "New Title", "New Content")
 
 		assert.Error(t, err)
 		assert.Nil(t, post)
-		assert.True(t, errors.Is(err, problem.ErrPostNotFound))
+		assert.True(t, errors.Is(err, domain.ErrPostNotFound))
 	})
 
 	t.Run("invalid id", func(t *testing.T) {
@@ -289,7 +290,7 @@ func TestPostCommandUseCase_UpdatePost(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.Nil(t, post)
-		assert.True(t, errors.Is(err, problem.ErrInvalidPost))
+		assert.True(t, errors.Is(err, domain.ErrInvalidPost))
 	})
 }
 
@@ -335,7 +336,7 @@ func TestPostCommandUseCase_DeletePost(t *testing.T) {
 		err := svc.DeletePost(ctx, userID, 0)
 
 		assert.Error(t, err)
-		assert.True(t, errors.Is(err, problem.ErrInvalidPost))
+		assert.True(t, errors.Is(err, domain.ErrInvalidPost))
 	})
 }
 
@@ -353,7 +354,7 @@ func TestPostCommandUseCase_LikePost(t *testing.T) {
 
 	ctx := context.Background()
 	username := "testuser"
-	actor := &identitydomain.User{ID: 1, Username: username}
+	actor := &auth.Principal{ID: 1, Username: username}
 	postID := 1
 
 	t.Run("success - new like", func(t *testing.T) {
@@ -381,17 +382,17 @@ func TestPostCommandUseCase_LikePost(t *testing.T) {
 	})
 
 	t.Run("post not found", func(t *testing.T) {
-		mockRepo.EXPECT().Load(ctx, postID).Return(nil, problem.ErrPostNotFound)
+		mockRepo.EXPECT().Load(ctx, postID).Return(nil, domain.ErrPostNotFound)
 
 		count, err := svc.LikePost(ctx, postID, actor)
 		assert.Error(t, err)
-		assert.True(t, errors.Is(err, problem.ErrPostNotFound))
+		assert.True(t, errors.Is(err, domain.ErrPostNotFound))
 		assert.Equal(t, 0, count)
 	})
 
 	t.Run("invalid input", func(t *testing.T) {
 		_, err := svc.LikePost(ctx, 0, actor)
-		assert.ErrorIs(t, err, problem.ErrInvalidPostID)
+		assert.ErrorIs(t, err, domain.ErrInvalidPostID)
 		_, err = svc.LikePost(ctx, postID, nil)
 		assert.ErrorIs(t, err, problem.ErrInvalidUsername)
 	})
@@ -419,7 +420,7 @@ func TestPostCommandUseCase_UnlikePost(t *testing.T) {
 
 	ctx := context.Background()
 	username := "testuser"
-	actor := &identitydomain.User{ID: 1, Username: username}
+	actor := &auth.Principal{ID: 1, Username: username}
 	postID := 1
 
 	t.Run("success - unlike existing", func(t *testing.T) {
@@ -443,13 +444,13 @@ func TestPostCommandUseCase_UnlikePost(t *testing.T) {
 
 	t.Run("invalid input and failures", func(t *testing.T) {
 		_, err := svc.UnlikePost(ctx, 0, actor)
-		assert.ErrorIs(t, err, problem.ErrInvalidPost)
+		assert.ErrorIs(t, err, domain.ErrInvalidPost)
 		_, err = svc.UnlikePost(ctx, postID, nil)
 		assert.ErrorIs(t, err, problem.ErrInvalidUsername)
 
-		mockRepo.EXPECT().Load(ctx, postID).Return(nil, problem.ErrPostNotFound)
+		mockRepo.EXPECT().Load(ctx, postID).Return(nil, domain.ErrPostNotFound)
 		_, err = svc.UnlikePost(ctx, postID, actor)
-		assert.ErrorIs(t, err, problem.ErrPostNotFound)
+		assert.ErrorIs(t, err, domain.ErrPostNotFound)
 
 		mockRepo.EXPECT().Load(ctx, postID).Return(&domain.Post{ID: postID}, nil)
 		mockLikeRepo.EXPECT().SetLiked(ctx, postID, actor.ID, false).Return(0, false, errors.New("delete failed"))
@@ -470,7 +471,7 @@ func TestPostCommandUseCase_PublishLikeNotificationFailures(t *testing.T) {
 	uc := NewPostCommandUseCase(posts, likes, users, publisher, log, evaluator).(*postCommandUseCase)
 	ctx := context.Background()
 	post := &domain.Post{ID: 1, UserID: 1, Username: "owner"}
-	actor := &identitydomain.User{ID: 2, Username: "liker"}
+	actor := &auth.Principal{ID: 2, Username: "liker"}
 
 	users.EXPECT().GetUserByID(ctx, 1).Return(nil, errors.New("lookup failed"))
 	log.EXPECT().Error(ctx, "failed to resolve post owner for like notification", "userID", 1, "error", gomock.Any())

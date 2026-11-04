@@ -59,7 +59,7 @@ func TestFeatureFlagUseCaseSupportsGradualRolloutAndRejectsConflicts(t *testing.
 	repository := mocks.NewMockFeatureFlagRepository(controller)
 	flag := &domain.FeatureFlag{ID: 8, Key: "editor", Lifecycle: domain.LifecycleActive}
 	repository.EXPECT().GetByKey(gomock.Any(), "editor").Return(flag, nil)
-	repository.EXPECT().GetSetting(gomock.Any(), 8, domain.EnvironmentProduction).Return(nil, problem.ErrFlagSettingNotFound)
+	repository.EXPECT().GetSetting(gomock.Any(), 8, domain.EnvironmentProduction).Return(nil, domain.ErrFlagSettingNotFound)
 	repository.EXPECT().UpsertSetting(gomock.Any(), gomock.Any()).DoAndReturn(func(_ context.Context, setting *domain.EnvironmentSetting) error {
 		setting.ID = 3
 		setting.Revision = 1
@@ -73,8 +73,8 @@ func TestFeatureFlagUseCaseSupportsGradualRolloutAndRejectsConflicts(t *testing.
 		t.Fatalf("unexpected gradual setting: %+v, error: %v", setting, err)
 	}
 
-	if err := useCase.SetOverrides(context.Background(), "operator", "editor", domain.EnvironmentProduction, []string{"alice"}, []string{"alice"}, "conflict"); err != problem.ErrConflictingOverrides {
-		t.Fatalf("got %v, want %v", err, problem.ErrConflictingOverrides)
+	if err := useCase.SetOverrides(context.Background(), "operator", "editor", domain.EnvironmentProduction, []string{"alice"}, []string{"alice"}, "conflict"); err != domain.ErrConflictingOverrides {
+		t.Fatalf("got %v, want %v", err, domain.ErrConflictingOverrides)
 	}
 }
 

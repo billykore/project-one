@@ -44,13 +44,13 @@ func (s *loginUseCase) Login(ctx context.Context, email, password string) (*doma
 	user, err := s.repo.GetUserByEmail(ctx, email)
 	if err != nil {
 		s.log.Error(ctx, "user not found during login", "email", email, "error", err)
-		return nil, fmt.Errorf("get user by email: %w", problem.ErrInvalidCredentials)
+		return nil, fmt.Errorf("get user by email: %w", domain.ErrInvalidCredentials)
 	}
 
 	// 2. Compare passwords
 	if err := s.hasher.Compare(ctx, password, user.Password); err != nil {
 		s.log.Error(ctx, "password mismatch during login", "email", email, "error", err)
-		return nil, fmt.Errorf("compare passwords: %w", problem.ErrInvalidCredentials)
+		return nil, fmt.Errorf("compare passwords: %w", domain.ErrInvalidCredentials)
 	}
 
 	// 3. Generate tokens

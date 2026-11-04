@@ -85,7 +85,7 @@ func main() {
 
 	lgr := logger.New()
 
-	cfg, err := config.Load(*configPath)
+	cfg, err := loadConfig(*configPath)
 	if err != nil {
 		lgr.Fatal(ctx, "failed to load config", "error", err)
 	}
@@ -129,7 +129,7 @@ func main() {
 	}
 }
 
-func newApplication(ctx context.Context, cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey, lgr *logger.Logger) (*application, error) {
+func newApplication(ctx context.Context, cfg *Config, privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey, lgr *logger.Logger) (*application, error) {
 	db, err := setupDB(cfg.Database)
 	if err != nil {
 		return nil, err

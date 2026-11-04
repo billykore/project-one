@@ -12,6 +12,15 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Renamed the restricted shared technical kernel from `internal/platform` to
   `internal/pkg`. Branches importing `internal/platform/...` must update their
   import paths; regenerate mocks with `make mocks`.
+- Enforced the shared-kernel boundary with a `depguard` lint rule: `internal/pkg`
+  can no longer import a bounded context.
+- Moved context-owned sentinel errors from `internal/pkg/problem` into each
+  context's `domain` package; each context registers its problem-details
+  mappings from its `RegisterRoutes`. HTTP status codes and messages are unchanged.
+- Replaced the `auth.Principal` alias of the identity user with a struct that
+  carries only `ID` and `Username`.
+- Moved aggregate configuration loading into `cmd`; each context validates its
+  own settings.
 
 ## [5.1.0] - 2026-09-26 (fb60339)
 

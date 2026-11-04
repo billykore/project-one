@@ -8,7 +8,6 @@ import (
 
 	"github.com/billykore/project-one/internal/featureflags/domain"
 	vo "github.com/billykore/project-one/internal/pkg/pagination"
-	"github.com/billykore/project-one/internal/pkg/problem"
 )
 
 type evaluatorRepository struct {
@@ -18,13 +17,13 @@ type evaluatorRepository struct {
 
 func (r *evaluatorRepository) Create(context.Context, *domain.FeatureFlag) error { return nil }
 func (r *evaluatorRepository) GetByKey(context.Context, string) (*domain.FeatureFlag, error) {
-	return nil, problem.ErrFlagNotFound
+	return nil, domain.ErrFlagNotFound
 }
 func (r *evaluatorRepository) List(context.Context) ([]domain.FeatureFlag, error)        { return nil, nil }
 func (r *evaluatorRepository) UpdateMetadata(context.Context, *domain.FeatureFlag) error { return nil }
 func (r *evaluatorRepository) Archive(context.Context, string) error                     { return nil }
 func (r *evaluatorRepository) GetSetting(context.Context, int, domain.Environment) (*domain.EnvironmentSetting, error) {
-	return nil, problem.ErrFlagSettingNotFound
+	return nil, domain.ErrFlagSettingNotFound
 }
 func (r *evaluatorRepository) ListSettings(context.Context, int) ([]domain.EnvironmentSetting, error) {
 	return nil, nil

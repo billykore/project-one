@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/billykore/project-one/internal/featureflags/domain"
-	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -54,5 +53,5 @@ func TestFeatureFlagRepositoryPersistenceAndRevisionConflict(t *testing.T) {
 	stale := *setting
 	stale.Mode = domain.ModeEnabledAll
 	require.NoError(t, repository.UpsertSetting(ctx, setting))
-	require.ErrorIs(t, repository.UpsertSetting(ctx, &stale), problem.ErrRevisionConflict)
+	require.ErrorIs(t, repository.UpsertSetting(ctx, &stale), domain.ErrRevisionConflict)
 }

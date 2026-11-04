@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	identitydomain "github.com/billykore/project-one/internal/identity/domain"
+	"github.com/billykore/project-one/internal/pkg/auth"
 	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/billykore/project-one/internal/publishing/domain"
@@ -29,7 +30,7 @@ func TestCommentUseCase_AddComment(t *testing.T) {
 	ctx := context.Background()
 	postID := 1
 	username := "testuser"
-	author := &identitydomain.User{ID: 1, Username: username}
+	author := &auth.Principal{ID: 1, Username: username}
 	content := "This is a comment"
 
 	t.Run("success", func(t *testing.T) {
@@ -58,23 +59,23 @@ func TestCommentUseCase_AddComment(t *testing.T) {
 	t.Run("validation failure - empty content", func(t *testing.T) {
 		err := svc.AddComment(ctx, postID, author, "")
 		assert.Error(t, err)
-		assert.True(t, errors.Is(err, problem.ErrCommentTooShort))
+		assert.True(t, errors.Is(err, domain.ErrCommentTooShort))
 	})
 
 	t.Run("validation failure - whitespace content", func(t *testing.T) {
 		err := svc.AddComment(ctx, postID, author, "   ")
 		assert.Error(t, err)
-		assert.True(t, errors.Is(err, problem.ErrCommentTooShort))
+		assert.True(t, errors.Is(err, domain.ErrCommentTooShort))
 	})
 
 	t.Run("post not found", func(t *testing.T) {
 		mockPostRepo.EXPECT().
 			Load(ctx, int(postID)).
-			Return(nil, problem.ErrPostNotFound)
+			Return(nil, domain.ErrPostNotFound)
 
 		err := svc.AddComment(ctx, postID, author, content)
 		assert.Error(t, err)
-		assert.True(t, errors.Is(err, problem.ErrPostNotFound))
+		assert.True(t, errors.Is(err, domain.ErrPostNotFound))
 	})
 
 	t.Run("repository error on create", func(t *testing.T) {
@@ -172,11 +173,11 @@ func TestCommentUseCase_EditComment(t *testing.T) {
 	t.Run("comment not found", func(t *testing.T) {
 		mockCommentRepo.EXPECT().
 			GetByID(ctx, commentID).
-			Return(nil, problem.ErrCommentNotFound)
+			Return(nil, domain.ErrCommentNotFound)
 
 		err := svc.EditComment(ctx, commentID, authorID, newContent)
 		assert.Error(t, err)
-		assert.True(t, errors.Is(err, problem.ErrCommentNotFound))
+		assert.True(t, errors.Is(err, domain.ErrCommentNotFound))
 	})
 
 	t.Run("comment is nil", func(t *testing.T) {
@@ -186,7 +187,7 @@ func TestCommentUseCase_EditComment(t *testing.T) {
 
 		err := svc.EditComment(ctx, commentID, authorID, newContent)
 		assert.Error(t, err)
-		assert.True(t, errors.Is(err, problem.ErrCommentNotFound))
+		assert.True(t, errors.Is(err, domain.ErrCommentNotFound))
 	})
 
 	t.Run("unauthorized", func(t *testing.T) {
@@ -202,7 +203,7 @@ func TestCommentUseCase_EditComment(t *testing.T) {
 
 		err := svc.EditComment(ctx, commentID, nonAuthorID, newContent)
 		assert.Error(t, err)
-		assert.True(t, errors.Is(err, problem.ErrCommentNotOwned))
+		assert.True(t, errors.Is(err, domain.ErrCommentNotOwned))
 	})
 
 	t.Run("validation failure - empty content", func(t *testing.T) {
@@ -218,7 +219,7 @@ func TestCommentUseCase_EditComment(t *testing.T) {
 
 		err := svc.EditComment(ctx, commentID, authorID, "")
 		assert.Error(t, err)
-		assert.True(t, errors.Is(err, problem.ErrInvalidComment))
+		assert.True(t, errors.Is(err, domain.ErrInvalidComment))
 	})
 
 	t.Run("validation failure - whitespace content", func(t *testing.T) {
@@ -234,7 +235,7 @@ func TestCommentUseCase_EditComment(t *testing.T) {
 
 		err := svc.EditComment(ctx, commentID, authorID, "   ")
 		assert.Error(t, err)
-		assert.True(t, errors.Is(err, problem.ErrInvalidComment))
+		assert.True(t, errors.Is(err, domain.ErrInvalidComment))
 	})
 
 	t.Run("repository update error", func(t *testing.T) {
@@ -296,11 +297,11 @@ func TestCommentUseCase_DeleteComment(t *testing.T) {
 	t.Run("comment not found - error", func(t *testing.T) {
 		mockCommentRepo.EXPECT().
 			GetByID(ctx, commentID).
-			Return(nil, problem.ErrCommentNotFound)
+			Return(nil, domain.ErrCommentNotFound)
 
 		err := svc.DeleteComment(ctx, commentID, authorID)
 		assert.Error(t, err)
-		assert.True(t, errors.Is(err, problem.ErrCommentNotFound))
+		assert.True(t, errors.Is(err, domain.ErrCommentNotFound))
 	})
 
 	t.Run("comment not found - other repo error", func(t *testing.T) {
@@ -320,7 +321,7 @@ func TestCommentUseCase_DeleteComment(t *testing.T) {
 
 		err := svc.DeleteComment(ctx, commentID, authorID)
 		assert.Error(t, err)
-		assert.True(t, errors.Is(err, problem.ErrCommentNotFound))
+		assert.True(t, errors.Is(err, domain.ErrCommentNotFound))
 	})
 
 	t.Run("unauthorized", func(t *testing.T) {
@@ -335,7 +336,7 @@ func TestCommentUseCase_DeleteComment(t *testing.T) {
 
 		err := svc.DeleteComment(ctx, commentID, nonAuthorID)
 		assert.Error(t, err)
-		assert.True(t, errors.Is(err, problem.ErrCommentNotOwned))
+		assert.True(t, errors.Is(err, domain.ErrCommentNotOwned))
 	})
 
 	t.Run("repository delete error", func(t *testing.T) {

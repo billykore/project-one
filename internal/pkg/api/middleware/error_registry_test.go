@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/billykore/project-one/internal/pkg/problem"
-	publishingdomain "github.com/billykore/project-one/internal/publishing/domain"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,20 +17,9 @@ func TestLookupError_Known(t *testing.T) {
 		wantStr  string
 	}{
 		{problem.ErrUserNotFound, http.StatusNotFound, problem.CodeNotFound},
-		{problem.ErrInvalidCredentials, http.StatusUnauthorized, problem.CodeUnauthenticated},
-		{problem.ErrAlreadyFollowing, http.StatusConflict, problem.CodeAlreadyExists},
-		{problem.ErrCannotFollowSelf, http.StatusUnprocessableEntity, problem.CodeInvalidArgument},
-		{problem.ErrPostNotFound, http.StatusNotFound, problem.CodeNotFound},
-		{problem.ErrEmailAlreadyRegistered, http.StatusConflict, problem.CodeAlreadyExists},
-		{problem.ErrNotFollowing, http.StatusNotFound, problem.CodeNotFound},
-		{problem.ErrCannotUnfollowSelf, http.StatusUnprocessableEntity, problem.CodeInvalidArgument},
-		{problem.ErrUsernameAlreadyTaken, http.StatusConflict, problem.CodeAlreadyExists},
-		{problem.ErrInvalidPost, http.StatusBadRequest, problem.CodeInvalidArgument},
-		{publishingdomain.ErrAlreadyLiked, http.StatusConflict, problem.CodeAlreadyExists},
-		{publishingdomain.ErrNotLiked, http.StatusNotFound, problem.CodeNotFound},
-		{problem.ErrCommentNotFound, http.StatusNotFound, problem.CodeNotFound},
-		{problem.ErrNotificationNotFound, http.StatusNotFound, problem.CodeNotFound},
-		{problem.ErrInvalidNotification, http.StatusBadRequest, problem.CodeInvalidArgument},
+		{problem.ErrInvalidCursor, http.StatusBadRequest, problem.CodeInvalidArgument},
+		{problem.ErrInvalidArgument, http.StatusUnprocessableEntity, problem.CodeInvalidArgument},
+		{problem.ErrFeatureDisabled, http.StatusNotFound, problem.CodeNotFound},
 	}
 
 	for _, tt := range tests {
@@ -67,4 +55,23 @@ func TestLookupError_Wrapped(t *testing.T) {
 	doubleWrapped := fmt.Errorf("handler: %w", wrapped)
 	m2 := LookupError(doubleWrapped)
 	assert.Equal(t, http.StatusNotFound, m2.Status)
+}
+
+func TestRegisterErrorMappings(t *testing.T) {
+	errContextOwned := errors.New("context-owned failure")
+	mapping := ErrorMapping{Status: http.StatusConflict, Code: problem.CodeConflict, TypeSlug: "conflict", Title: "Conflict", Detail: "Context-owned failure"}
+
+	RegisterErrorMappings(map[error]ErrorMapping{errContextOwned: mapping})
+	assert.Equal(t, mapping, LookupError(fmt.Errorf("wrapped: %w", errContextOwned)))
+
+	assert.NotPanics(t, func() {
+		RegisterErrorMappings(map[error]ErrorMapping{errContextOwned: mapping})
+	}, "re-registering an identical mapping is a no-op")
+
+	conflicting := mapping
+	conflicting.Status = http.StatusBadRequest
+	assert.Panics(t, func() {
+		RegisterErrorMappings(map[error]ErrorMapping{errContextOwned: conflicting})
+	})
+	assert.Equal(t, mapping, LookupError(errContextOwned))
 }

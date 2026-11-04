@@ -51,7 +51,7 @@ func (s *userUseCase) Register(ctx context.Context, user *domain.User) error {
 
 	existingUser, err := s.userRepo.GetUserByEmail(ctx, user.Email)
 	if err == nil && existingUser != nil {
-		return problem.ErrEmailAlreadyRegistered
+		return domain.ErrEmailAlreadyRegistered
 	}
 	if err != nil && !errors.Is(err, problem.ErrUserNotFound) {
 		return fmt.Errorf("get user by email: %w", err)
@@ -59,7 +59,7 @@ func (s *userUseCase) Register(ctx context.Context, user *domain.User) error {
 
 	existingUsername, err := s.userRepo.GetUserByUsername(ctx, user.Username)
 	if err == nil && existingUsername != nil {
-		return problem.ErrUsernameAlreadyTaken
+		return domain.ErrUsernameAlreadyTaken
 	}
 	if err != nil && !errors.Is(err, problem.ErrUserNotFound) {
 		return fmt.Errorf("get user by username: %w", err)
@@ -93,12 +93,12 @@ func (s *userUseCase) ChangePassword(ctx context.Context, userID int, oldPasswor
 
 	// 2. Validate current password
 	if err := s.hasher.Compare(ctx, oldPassword, user.Password); err != nil {
-		return problem.ErrInvalidCredentials
+		return domain.ErrInvalidCredentials
 	}
 
 	// 3. Validate new password length (minimum 8 characters)
 	if len(newPassword) < 8 {
-		return fmt.Errorf("%w: password must be at least 8 characters", problem.ErrPasswordTooShort)
+		return fmt.Errorf("%w: password must be at least 8 characters", domain.ErrPasswordTooShort)
 	}
 
 	// 4. Hash new password
@@ -133,7 +133,7 @@ func (s *userUseCase) UpdateProfile(ctx context.Context, userID int, updatedUser
 	if updatedUser.Username != currentUser.Username {
 		existingUser, err := s.userRepo.GetUserByUsername(ctx, updatedUser.Username)
 		if err == nil && existingUser != nil {
-			return problem.ErrUsernameAlreadyTaken
+			return domain.ErrUsernameAlreadyTaken
 		}
 		if err != nil && !errors.Is(err, problem.ErrUserNotFound) {
 			return fmt.Errorf("check username uniqueness: %w", err)
@@ -150,7 +150,7 @@ func (s *userUseCase) UpdateProfile(ctx context.Context, userID int, updatedUser
 	currentUser.Username = updatedUser.Username
 
 	if err := s.userRepo.UpdateProfile(ctx, currentUser); err != nil {
-		if errors.Is(err, problem.ErrUsernameAlreadyTaken) {
+		if errors.Is(err, domain.ErrUsernameAlreadyTaken) {
 			return err
 		}
 		return fmt.Errorf("update profile: %w", err)
@@ -164,7 +164,7 @@ func (s *userUseCase) UpdateProfile(ctx context.Context, userID int, updatedUser
 func (s *userUseCase) SearchUsers(ctx context.Context, query string, cursor *vo.Cursor, limit int) ([]domain.SearchResult, *vo.Cursor, bool, error) {
 	query = strings.ToLower(strings.TrimSpace(query))
 	if len(query) < 3 {
-		return nil, nil, false, problem.ErrSearchQueryTooShort
+		return nil, nil, false, domain.ErrSearchQueryTooShort
 	}
 
 	results, nextCursor, hasMore, err := s.userSearchRepo.Search(ctx, query, cursor, limit)

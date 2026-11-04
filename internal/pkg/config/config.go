@@ -1,26 +1,13 @@
+// Package config holds the infrastructure settings shared by the composition
+// root and technical adapters. Context-specific settings live in each bounded
+// context's own config package.
 package config
 
 import (
+	"errors"
 	"fmt"
-	"os"
-	"strings"
 	"time"
-
-	featureflagsconfig "github.com/billykore/project-one/internal/featureflags/config"
-	identityconfig "github.com/billykore/project-one/internal/identity/config"
-	operationsconfig "github.com/billykore/project-one/internal/operations/config"
-	"github.com/spf13/viper"
 )
-
-// Config holds all application configuration.
-type Config struct {
-	App           AppConfig                             `mapstructure:"app"`
-	Database      DatabaseConfig                        `mapstructure:"database"`
-	JWT           identityconfig.JWTConfig              `mapstructure:"jwt"`
-	MessageBroker MessageBrokerConfig                   `mapstructure:"message_broker"`
-	FeatureFlags  featureflagsconfig.FeatureFlagsConfig `mapstructure:"feature_flags"`
-	Monitoring    operationsconfig.MonitoringConfig     `mapstructure:"monitoring"`
-}
 
 // AppConfig holds application-level settings.
 type AppConfig struct {
@@ -64,108 +51,18 @@ type RabbitMQBrokerConfig struct {
 	Queue    string `mapstructure:"queue"`
 }
 
-// ponytail: uses viper (already-installed dep). BindEnv needed so AutomaticEnv
-// knows which keys to check (it only looks up env vars for registered keys).
-func Load(path string) (*Config, error) {
-	v := viper.New()
-	v.AddConfigPath(path)
-	v.SetConfigName("config")
-	v.SetConfigType("yaml")
-
-	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-	v.AutomaticEnv()
-
-	v.SetDefault("app.port", 8080)
-	v.SetDefault("feature_flags.environment", "local")
-	v.SetDefault("feature_flags.refresh_interval", "30s")
-	v.SetDefault("feature_flags.operators", []string{})
-	for _, key := range []string{
-		"app.port",
-		"app.env",
-		"database.host",
-		"database.port",
-		"database.user",
-		"database.password",
-		"database.dbname",
-		"database.sslmode",
-		"app.error_type_base_url",
-		"jwt.private_key_path",
-		"jwt.public_key_path",
-		"jwt.expiration_time",
-		"message_broker.type",
-		"message_broker.kafka.brokers",
-		"message_broker.kafka.topic_prefix",
-		"message_broker.kafka.consumer_group",
-		"message_broker.kafka.tls_enabled",
-		"message_broker.rabbitmq.url",
-		"message_broker.rabbitmq.exchange",
-		"message_broker.rabbitmq.queue",
-		"feature_flags.environment",
-		"feature_flags.refresh_interval",
-		"feature_flags.operators",
-		"monitoring.username",
-		"monitoring.password_file",
-	} {
-		_ = v.BindEnv(key)
+// Validate reports missing connection settings.
+func (c DatabaseConfig) Validate() error {
+	if c.Host == "" || c.User == "" || c.DBName == "" {
+		return errors.New("database host, user, and dbname cannot be empty")
 	}
-
-	err := v.ReadInConfig()
-	if err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-			return nil, fmt.Errorf("failed to read config file: %w", err)
-		}
-	}
-
-	var cfg Config
-	if err := v.Unmarshal(&cfg); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
-	}
-
-	if cfg.JWT.PrivateKeyPath == "" {
-		return nil, fmt.Errorf("JWT private key path cannot be empty")
-	}
-	if cfg.JWT.PublicKeyPath == "" {
-		return nil, fmt.Errorf("JWT public key path cannot be empty")
-	}
-	if cfg.Database.Host == "" || cfg.Database.User == "" || cfg.Database.DBName == "" {
-		return nil, fmt.Errorf("database host, user, and dbname cannot be empty")
-	}
-	if cfg.MessageBroker.Type != "kafka" && cfg.MessageBroker.Type != "rabbitmq" {
-		return nil, fmt.Errorf("unsupported message broker type: %s", cfg.MessageBroker.Type)
-	}
-	switch cfg.FeatureFlags.Environment {
-	case "local", "test", "staging", "production":
-	default:
-		return nil, fmt.Errorf("unsupported feature flags environment: %s", cfg.FeatureFlags.Environment)
-	}
-	if cfg.FeatureFlags.RefreshInterval <= 0 {
-		cfg.FeatureFlags.RefreshInterval = 30 * time.Second
-	}
-	if err := validateMonitoring(cfg.Monitoring); err != nil {
-		return nil, err
-	}
-
-	return &cfg, nil
+	return nil
 }
 
-// validateMonitoring fails fast when the monitoring credential is half
-// configured or points at a missing or empty secret file. Leaving both fields
-// empty is valid and disables metrics scraping.
-func validateMonitoring(monitoring operationsconfig.MonitoringConfig) error {
-	if (monitoring.Username == "") != (monitoring.PasswordFile == "") {
-		return fmt.Errorf("monitoring username and password_file must be configured together")
+// Validate reports an unsupported broker selection.
+func (c MessageBrokerConfig) Validate() error {
+	if c.Type != "kafka" && c.Type != "rabbitmq" {
+		return fmt.Errorf("unsupported message broker type: %s", c.Type)
 	}
-	if monitoring.PasswordFile == "" {
-		return nil
-	}
-
-	secret, err := os.ReadFile(monitoring.PasswordFile)
-	if err != nil {
-		return fmt.Errorf("failed to read monitoring password file: %w", err)
-	}
-	if strings.TrimSpace(string(secret)) == "" {
-		return fmt.Errorf("monitoring password file %s is empty", monitoring.PasswordFile)
-	}
-
 	return nil
 }

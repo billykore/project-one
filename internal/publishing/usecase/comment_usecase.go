@@ -131,24 +131,24 @@ func (uc *commentUseCase) EditComment(ctx context.Context, id int, userID int, c
 	// 1. Fetch current comment
 	comment, err := uc.commentRepo.GetByID(ctx, id)
 	if err != nil {
-		if errors.Is(err, problem.ErrCommentNotFound) {
+		if errors.Is(err, domain.ErrCommentNotFound) {
 			return err
 		}
 		return fmt.Errorf("failed to fetch comment for edit: %w", err)
 	}
 	if comment == nil {
-		return problem.ErrCommentNotFound
+		return domain.ErrCommentNotFound
 	}
 
 	// 2. Authorize: only author can edit
 	if comment.UserID != userID {
-		return problem.ErrCommentNotOwned
+		return domain.ErrCommentNotOwned
 	}
 
 	// 3. Update fields & Validate
 	comment.Content = content
 	if err := comment.Validate(); err != nil {
-		return fmt.Errorf("%w: %v", problem.ErrInvalidComment, err)
+		return fmt.Errorf("%w: %v", domain.ErrInvalidComment, err)
 	}
 
 	// 4. Persist changes
@@ -163,18 +163,18 @@ func (uc *commentUseCase) DeleteComment(ctx context.Context, id int, userID int)
 	// 1. Fetch current comment
 	comment, err := uc.commentRepo.GetByID(ctx, id)
 	if err != nil {
-		if errors.Is(err, problem.ErrCommentNotFound) {
+		if errors.Is(err, domain.ErrCommentNotFound) {
 			return err
 		}
 		return fmt.Errorf("failed to fetch comment for delete: %w", problem.ErrRepositoryFailure)
 	}
 	if comment == nil {
-		return problem.ErrCommentNotFound
+		return domain.ErrCommentNotFound
 	}
 
 	// 2. Authorize: only author can delete
 	if comment.UserID != userID {
-		return problem.ErrCommentNotOwned
+		return domain.ErrCommentNotOwned
 	}
 
 	// 3. Persist deletion

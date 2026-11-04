@@ -40,7 +40,7 @@ func (r *followRepository) Create(ctx context.Context, follow *domain.Follow) er
 	}
 	if err := database.FromContext(ctx, r.db).WithContext(ctx).Create(&m).Error; err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return fmt.Errorf("%w: %v", problem.ErrAlreadyFollowing, err)
+			return fmt.Errorf("%w: %v", domain.ErrAlreadyFollowing, err)
 		}
 		return fmt.Errorf("%w: %v", problem.ErrUserNotFound, err)
 	}
@@ -90,7 +90,7 @@ func (r *followRepository) Delete(ctx context.Context, followerID, followedID in
 		return fmt.Errorf("%w: %v", problem.ErrRepositoryFailure, result.Error)
 	}
 	if result.RowsAffected == 0 {
-		return fmt.Errorf("%w: %v", problem.ErrNotFollowing, errors.New("no such follow relationship"))
+		return fmt.Errorf("%w: %v", domain.ErrNotFollowing, errors.New("no such follow relationship"))
 	}
 	return nil
 }
