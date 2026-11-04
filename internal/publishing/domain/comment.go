@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/billykore/project-one/internal/platform/problem"
+	"github.com/billykore/project-one/internal/pkg/problem"
 )
 
 // Comment is the core domain entity representing a comment on a post.

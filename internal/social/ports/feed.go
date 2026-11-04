@@ -3,7 +3,7 @@ package ports
 import (
 	"context"
 
-	vo "github.com/billykore/project-one/internal/platform/pagination"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
 	publishingdomain "github.com/billykore/project-one/internal/publishing/domain"
 )
 

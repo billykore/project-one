@@ -7,8 +7,8 @@ import (
 
 	featureflagdomain "github.com/billykore/project-one/internal/featureflags/domain"
 	identitydomain "github.com/billykore/project-one/internal/identity/domain"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
-	"github.com/billykore/project-one/internal/platform/problem"
+	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/billykore/project-one/internal/publishing/domain"
 	"github.com/billykore/project-one/internal/testkit/mocks"
 	"github.com/stretchr/testify/assert"

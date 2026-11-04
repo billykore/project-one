@@ -9,7 +9,7 @@ import (
 
 	"github.com/billykore/project-one/internal/identity/domain"
 	"github.com/billykore/project-one/internal/identity/ports"
-	"github.com/billykore/project-one/internal/platform/problem"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	"gorm.io/gorm"
 )
 

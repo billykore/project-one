@@ -9,9 +9,9 @@ import (
 
 	featureflagdomain "github.com/billykore/project-one/internal/featureflags/domain"
 	notificationdomain "github.com/billykore/project-one/internal/notifications/domain"
-	"github.com/billykore/project-one/internal/platform/auth"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
-	"github.com/billykore/project-one/internal/platform/problem"
+	"github.com/billykore/project-one/internal/pkg/auth"
+	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/billykore/project-one/internal/publishing/domain"
 	"github.com/billykore/project-one/internal/publishing/ports"
 )

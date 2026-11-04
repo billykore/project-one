@@ -13,8 +13,8 @@ import (
 	context "context"
 	reflect "reflect"
 
-	auth "github.com/billykore/project-one/internal/platform/auth"
-	valueobject "github.com/billykore/project-one/internal/platform/pagination"
+	auth "github.com/billykore/project-one/internal/pkg/auth"
+	valueobject "github.com/billykore/project-one/internal/pkg/pagination"
 	domain "github.com/billykore/project-one/internal/social/domain"
 	ports "github.com/billykore/project-one/internal/social/ports"
 	gomock "go.uber.org/mock/gomock"

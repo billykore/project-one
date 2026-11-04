@@ -9,8 +9,8 @@ import (
 
 	"github.com/billykore/project-one/internal/featureflags/domain"
 	"github.com/billykore/project-one/internal/featureflags/ports"
-	vo "github.com/billykore/project-one/internal/platform/pagination"
-	"github.com/billykore/project-one/internal/platform/problem"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
 )

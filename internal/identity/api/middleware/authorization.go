@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	identityports "github.com/billykore/project-one/internal/identity/ports"
-	"github.com/billykore/project-one/internal/platform/auth"
+	"github.com/billykore/project-one/internal/pkg/auth"
 	"github.com/labstack/echo/v4"
 )
 

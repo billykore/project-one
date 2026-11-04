@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
-	request "github.com/billykore/project-one/internal/platform/api/request"
-	vo "github.com/billykore/project-one/internal/platform/pagination"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
+	request "github.com/billykore/project-one/internal/pkg/api/request"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
+	platformports "github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/billykore/project-one/internal/social/api/dto"
 	socialports "github.com/billykore/project-one/internal/social/ports"
 	"github.com/labstack/echo/v4"

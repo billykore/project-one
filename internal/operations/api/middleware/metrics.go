@@ -6,7 +6,7 @@ import (
 	"time"
 
 	operationsports "github.com/billykore/project-one/internal/operations/ports"
-	platformmiddleware "github.com/billykore/project-one/internal/platform/api/middleware"
+	platformmiddleware "github.com/billykore/project-one/internal/pkg/api/middleware"
 	"github.com/labstack/echo/v4"
 )
 

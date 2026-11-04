@@ -13,7 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	auth "github.com/billykore/project-one/internal/platform/auth"
+	auth "github.com/billykore/project-one/internal/pkg/auth"
 	domain "github.com/billykore/project-one/internal/publishing/domain"
 	gomock "go.uber.org/mock/gomock"
 )

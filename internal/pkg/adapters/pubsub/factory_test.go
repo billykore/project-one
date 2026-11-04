@@ -3,7 +3,7 @@ package pubsub
 import (
 	"testing"
 
-	"github.com/billykore/project-one/internal/platform/config"
+	"github.com/billykore/project-one/internal/pkg/config"
 	"github.com/stretchr/testify/assert"
 )
 

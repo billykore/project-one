@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/billykore/project-one/internal/featureflags/domain"
-	vo "github.com/billykore/project-one/internal/platform/pagination"
-	"github.com/billykore/project-one/internal/platform/problem"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
+	"github.com/billykore/project-one/internal/pkg/problem"
 )
 
 type evaluatorRepository struct {

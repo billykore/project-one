@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/billykore/project-one/internal/platform/problem"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 

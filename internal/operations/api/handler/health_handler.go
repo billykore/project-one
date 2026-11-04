@@ -7,7 +7,7 @@ import (
 	"github.com/billykore/project-one/internal/operations/api/dto"
 	operationsdomain "github.com/billykore/project-one/internal/operations/domain"
 	operationsports "github.com/billykore/project-one/internal/operations/ports"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
+	platformports "github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/labstack/echo/v4"
 )
 

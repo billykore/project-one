@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/billykore/project-one/internal/platform/database"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
+	"github.com/billykore/project-one/internal/pkg/database"
+	"github.com/billykore/project-one/internal/pkg/ports"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -67,7 +67,7 @@ type Publisher struct{ db *gorm.DB }
 
 func NewPublisher(db *gorm.DB) *Publisher { return &Publisher{db: db} }
 
-func (p *Publisher) Publish(ctx context.Context, event platformports.Event) error {
+func (p *Publisher) Publish(ctx context.Context, event ports.Event) error {
 	return Enqueue(ctx, database.FromContext(ctx, p.db), Message{EventID: event.Metadata["event_id"], Topic: event.Topic, Key: event.Key, Payload: event.Payload, Metadata: event.Metadata})
 }
 
@@ -84,14 +84,14 @@ func (p *Publisher) InTransaction(ctx context.Context, fn func(context.Context) 
 // before marking a message published; consumers must use EventID idempotently.
 type Dispatcher struct {
 	db        *gorm.DB
-	publisher platformports.Publisher
-	log       platformports.Logger
+	publisher ports.Publisher
+	log       ports.Logger
 	pollEvery time.Duration
 	batchSize int
 	lease     time.Duration
 }
 
-func NewDispatcher(db *gorm.DB, publisher platformports.Publisher, log platformports.Logger, pollEvery time.Duration, batchSize int) *Dispatcher {
+func NewDispatcher(db *gorm.DB, publisher ports.Publisher, log ports.Logger, pollEvery time.Duration, batchSize int) *Dispatcher {
 	if pollEvery <= 0 {
 		pollEvery = time.Second
 	}
@@ -126,7 +126,7 @@ func (d *Dispatcher) DispatchOnce(ctx context.Context) error {
 		return err
 	}
 	for _, message := range messages {
-		err := d.publisher.Publish(ctx, platformports.Event{Topic: message.Topic, Key: message.Key, Payload: message.Payload, Metadata: message.Metadata})
+		err := d.publisher.Publish(ctx, ports.Event{Topic: message.Topic, Key: message.Key, Payload: message.Payload, Metadata: message.Metadata})
 		if err != nil {
 			d.log.Warn(ctx, "outbox publish failed; event will be retried", "event_id", message.EventID, "error", err)
 			if releaseErr := d.release(ctx, message); releaseErr != nil {

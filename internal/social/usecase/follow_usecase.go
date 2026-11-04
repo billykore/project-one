@@ -7,10 +7,10 @@ import (
 	"time"
 
 	notificationdomain "github.com/billykore/project-one/internal/notifications/domain"
-	"github.com/billykore/project-one/internal/platform/auth"
-	vo "github.com/billykore/project-one/internal/platform/pagination"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
-	"github.com/billykore/project-one/internal/platform/problem"
+	"github.com/billykore/project-one/internal/pkg/auth"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
+	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/billykore/project-one/internal/social/domain"
 	"github.com/billykore/project-one/internal/social/ports"
 )

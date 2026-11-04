@@ -5,7 +5,7 @@ import (
 	"slices"
 	"sync"
 
-	"github.com/billykore/project-one/internal/platform/ports"
+	"github.com/billykore/project-one/internal/pkg/ports"
 )
 
 type inMemoryPubSub struct {

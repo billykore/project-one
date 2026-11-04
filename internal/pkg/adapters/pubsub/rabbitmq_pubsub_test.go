@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/billykore/project-one/internal/platform/config"
-	"github.com/billykore/project-one/internal/platform/ports"
+	"github.com/billykore/project-one/internal/pkg/config"
+	"github.com/billykore/project-one/internal/pkg/ports"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/stretchr/testify/assert"
 )

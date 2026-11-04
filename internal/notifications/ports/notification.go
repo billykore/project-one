@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/billykore/project-one/internal/notifications/domain"
-	"github.com/billykore/project-one/internal/platform/auth"
-	vo "github.com/billykore/project-one/internal/platform/pagination"
+	"github.com/billykore/project-one/internal/pkg/auth"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
 )
 
 // NotificationRepository is a driven port for notification database persistence.

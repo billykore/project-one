@@ -8,9 +8,9 @@ import (
 
 	"github.com/billykore/project-one/internal/featureflags/domain"
 	"github.com/billykore/project-one/internal/featureflags/ports"
-	vo "github.com/billykore/project-one/internal/platform/pagination"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
-	"github.com/billykore/project-one/internal/platform/problem"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
+	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	"github.com/billykore/project-one/internal/pkg/problem"
 )
 
 type featureFlagUseCase struct {

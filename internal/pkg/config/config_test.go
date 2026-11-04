@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/billykore/project-one/internal/platform/config"
+	"github.com/billykore/project-one/internal/pkg/config"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )

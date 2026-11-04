@@ -8,8 +8,8 @@ import (
 
 	"github.com/billykore/project-one/internal/identity/domain"
 	"github.com/billykore/project-one/internal/identity/ports"
-	vo "github.com/billykore/project-one/internal/platform/pagination"
-	"github.com/billykore/project-one/internal/platform/problem"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
+	"github.com/billykore/project-one/internal/pkg/problem"
 )
 
 type userUseCase struct {

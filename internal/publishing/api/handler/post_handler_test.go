@@ -9,7 +9,7 @@ import (
 	"time"
 
 	identitydomain "github.com/billykore/project-one/internal/identity/domain"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
+	platformports "github.com/billykore/project-one/internal/pkg/ports"
 	publishingdomain "github.com/billykore/project-one/internal/publishing/domain"
 	"github.com/billykore/project-one/internal/testkit/mocks"
 	"github.com/labstack/echo/v4"

@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	platformports "github.com/billykore/project-one/internal/platform/ports"
+	platformports "github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/billykore/project-one/internal/testkit/mocks"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"

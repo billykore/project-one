@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/billykore/project-one/internal/operations/ports"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
+	platformports "github.com/billykore/project-one/internal/pkg/ports"
 )
 
 // componentDatabase is the stable component name of the application store.

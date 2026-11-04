@@ -5,7 +5,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/billykore/project-one/internal/platform/problem"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	publishingdomain "github.com/billykore/project-one/internal/publishing/domain"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"

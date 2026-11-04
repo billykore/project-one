@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/billykore/project-one/internal/identity/ports"
-	"github.com/billykore/project-one/internal/platform/problem"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	"golang.org/x/crypto/bcrypt"
 )
 

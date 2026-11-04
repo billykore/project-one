@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/billykore/project-one/internal/platform/database"
-	"github.com/billykore/project-one/internal/platform/problem"
+	"github.com/billykore/project-one/internal/pkg/database"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/billykore/project-one/internal/publishing/domain"
 	"github.com/billykore/project-one/internal/publishing/ports"
 	"gorm.io/gorm"

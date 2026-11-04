@@ -7,7 +7,7 @@ import (
 
 	"github.com/billykore/project-one/internal/operations/domain"
 	"github.com/billykore/project-one/internal/operations/ports"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
+	platformports "github.com/billykore/project-one/internal/pkg/ports"
 )
 
 // DefaultHealthCheckTimeout bounds a single dependency check when no explicit

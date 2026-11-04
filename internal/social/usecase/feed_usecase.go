@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	vo "github.com/billykore/project-one/internal/platform/pagination"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
-	"github.com/billykore/project-one/internal/platform/problem"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
+	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/billykore/project-one/internal/social/ports"
 )
 

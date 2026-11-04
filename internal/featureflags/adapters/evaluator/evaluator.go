@@ -9,7 +9,7 @@ import (
 
 	"github.com/billykore/project-one/internal/featureflags/domain"
 	"github.com/billykore/project-one/internal/featureflags/ports"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
+	platformports "github.com/billykore/project-one/internal/pkg/ports"
 )
 
 // Evaluator evaluates feature flags from an in-memory environment snapshot.

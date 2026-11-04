@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	platformports "github.com/billykore/project-one/internal/platform/ports"
+	platformports "github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/labstack/echo/v4"
 )
 

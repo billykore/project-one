@@ -15,10 +15,10 @@ import (
 	"github.com/billykore/project-one/internal/notifications/api/dto"
 	notificationdomain "github.com/billykore/project-one/internal/notifications/domain"
 	notificationports "github.com/billykore/project-one/internal/notifications/ports"
-	request "github.com/billykore/project-one/internal/platform/api/request"
-	vo "github.com/billykore/project-one/internal/platform/pagination"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
-	"github.com/billykore/project-one/internal/platform/problem"
+	request "github.com/billykore/project-one/internal/pkg/api/request"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
+	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/labstack/echo/v4"
 )
 

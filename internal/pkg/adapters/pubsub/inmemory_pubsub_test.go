@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/billykore/project-one/internal/platform/ports"
+	"github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/stretchr/testify/assert"
 )
 

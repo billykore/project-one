@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/billykore/project-one/internal/platform/database"
-	vo "github.com/billykore/project-one/internal/platform/pagination"
-	"github.com/billykore/project-one/internal/platform/problem"
+	"github.com/billykore/project-one/internal/pkg/database"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/billykore/project-one/internal/social/domain"
 	"github.com/billykore/project-one/internal/social/ports"
 	"gorm.io/gorm"

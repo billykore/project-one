@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	metricsadapter "github.com/billykore/project-one/internal/operations/adapters/metrics"
-	platformmiddleware "github.com/billykore/project-one/internal/platform/api/middleware"
+	platformmiddleware "github.com/billykore/project-one/internal/pkg/api/middleware"
 	"github.com/billykore/project-one/internal/testkit/mocks"
 	"github.com/labstack/echo/v4"
 	echomiddleware "github.com/labstack/echo/v4/middleware"

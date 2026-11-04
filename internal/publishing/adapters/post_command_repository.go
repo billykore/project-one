@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/billykore/project-one/internal/platform/problem"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/billykore/project-one/internal/publishing/domain"
 	"github.com/billykore/project-one/internal/publishing/ports"
 	"gorm.io/gorm"

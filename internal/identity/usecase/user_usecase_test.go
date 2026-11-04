@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/billykore/project-one/internal/identity/domain"
-	vo "github.com/billykore/project-one/internal/platform/pagination"
-	"github.com/billykore/project-one/internal/platform/problem"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/billykore/project-one/internal/testkit/mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"

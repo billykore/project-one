@@ -3,7 +3,7 @@ package ports
 import (
 	"context"
 
-	"github.com/billykore/project-one/internal/platform/auth"
+	"github.com/billykore/project-one/internal/pkg/auth"
 	"github.com/billykore/project-one/internal/publishing/domain"
 )
 

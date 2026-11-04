@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/billykore/project-one/internal/featureflags/domain"
-	"github.com/billykore/project-one/internal/platform/problem"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

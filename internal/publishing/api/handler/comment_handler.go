@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
-	request "github.com/billykore/project-one/internal/platform/api/request"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
+	request "github.com/billykore/project-one/internal/pkg/api/request"
+	platformports "github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/billykore/project-one/internal/publishing/api/dto"
 	publishingports "github.com/billykore/project-one/internal/publishing/ports"
 	"github.com/labstack/echo/v4"

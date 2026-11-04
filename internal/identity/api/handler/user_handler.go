@@ -9,10 +9,10 @@ import (
 	"github.com/billykore/project-one/internal/identity/api/dto"
 	identitydomain "github.com/billykore/project-one/internal/identity/domain"
 	identityports "github.com/billykore/project-one/internal/identity/ports"
-	request "github.com/billykore/project-one/internal/platform/api/request"
-	vo "github.com/billykore/project-one/internal/platform/pagination"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
-	"github.com/billykore/project-one/internal/platform/problem"
+	request "github.com/billykore/project-one/internal/pkg/api/request"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
+	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/labstack/echo/v4"
 )
 

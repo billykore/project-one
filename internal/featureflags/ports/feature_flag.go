@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/billykore/project-one/internal/featureflags/domain"
-	vo "github.com/billykore/project-one/internal/platform/pagination"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
 )
 
 // FeatureFlagRepository is a driven port for feature-flag persistence.

@@ -5,9 +5,9 @@ import (
 	"errors"
 	"runtime/debug"
 
-	"github.com/billykore/project-one/internal/platform/api/dto"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
-	"github.com/billykore/project-one/internal/platform/problem"
+	"github.com/billykore/project-one/internal/pkg/api/dto"
+	platformports "github.com/billykore/project-one/internal/pkg/ports"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 )

@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"github.com/billykore/project-one/internal/notifications/ports"
-	vo "github.com/billykore/project-one/internal/platform/pagination"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
 
 	"github.com/billykore/project-one/internal/notifications/domain"
-	"github.com/billykore/project-one/internal/platform/problem"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	"gorm.io/gorm"
 )
 

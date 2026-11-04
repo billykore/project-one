@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/billykore/project-one/internal/platform/problem"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	publishingdomain "github.com/billykore/project-one/internal/publishing/domain"
 	"github.com/stretchr/testify/assert"
 )
