@@ -224,7 +224,7 @@ See [web/README.md](web/README.md) for frontend routes, rendering boundaries, AP
 | `make vet` | Run `go vet` |
 | `make lint` | Run `golangci-lint` |
 | `make docs` | Format Swagger annotations and regenerate `api/swagger` |
-| `make check` | Run docs generation, vet, lint, and backend tests (currently stops at `make docs`; see below) |
+| `make check` | Run docs generation, vet, lint, and backend tests |
 | `make migration-create name=...` | Create a numbered up/down migration pair |
 | `make migrate-up dsn=...` | Apply migrations; optionally pass `steps=N` |
 | `make migrate-down dsn=...` | Revert migrations; optionally pass `steps=N` |
@@ -252,7 +252,7 @@ npm run build
 
 Swagger artifacts are checked in under `api/swagger/`. Run `make docs` after changing handler annotations. Swagger UI is served at `/swagger/index.html` unless `APP_ENV=production`.
 
-`make docs` currently fails because `swag` cannot resolve the `dto.MessageResponse` type referenced by annotations in `internal/identity/api/handler/user_handler.go`. Until that is fixed, the checked-in artifacts may lag behind handler changes.
+Every context's HTTP DTOs live in a package named `dto`, and `swag` resolves annotation types by that short package name. Keep exported DTO type names unique across all `dto` packages (for example `IdentityMessageResponse` and `NotificationMessageResponse`); a duplicated name makes `make docs` fail with `cannot find type definition`.
 
 The notification flow is:
 

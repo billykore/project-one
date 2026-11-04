@@ -504,7 +504,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.MessageResponse"
+                            "$ref": "#/definitions/dto.PublishingMessageResponse"
                         }
                     },
                     "400": {
@@ -557,7 +557,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.MessageResponse"
+                            "$ref": "#/definitions/dto.PublishingMessageResponse"
                         }
                     },
                     "400": {
@@ -762,7 +762,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.MessageResponse"
+                            "$ref": "#/definitions/dto.NotificationMessageResponse"
                         }
                     },
                     "401": {
@@ -842,7 +842,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.MessageResponse"
+                            "$ref": "#/definitions/dto.NotificationMessageResponse"
                         }
                     },
                     "400": {
@@ -1449,7 +1449,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.MessageResponse"
+                            "$ref": "#/definitions/dto.IdentityMessageResponse"
                         }
                     },
                     "400": {
@@ -2391,6 +2391,14 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.IdentityMessageResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.LikeResponse": {
             "type": "object",
             "properties": {
@@ -2452,7 +2460,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.MessageResponse": {
+        "dto.NotificationMessageResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -2633,6 +2641,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.PublishingMessageResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
                     "type": "string"
                 }
             }

@@ -35,7 +35,7 @@ func NewCommentHandler(commentUseCase publishingports.CommentUseCase, validator 
 //	@Produce		json
 //	@Param			id		path		int						true	"Comment ID"
 //	@Param			request	body		dto.EditCommentRequest	true	"Comment update content"
-//	@Success		200		{object}	dto.MessageResponse
+//	@Success		200		{object}	dto.PublishingMessageResponse
 //	@Failure		400		{object}	dto.ProblemDetail
 //	@Failure		401		{object}	dto.ProblemDetail
 //	@Failure		404		{object}	dto.ProblemDetail
@@ -74,7 +74,7 @@ func (h *CommentHandler) EditComment(c echo.Context) error {
 	}
 
 	h.log.Info(c.Request().Context(), "EditComment succeeded", "username", user.Username, "comment_id", id)
-	return c.JSON(http.StatusOK, dto.MessageResponse{Message: "Comment updated succesfully"})
+	return c.JSON(http.StatusOK, dto.PublishingMessageResponse{Message: "Comment updated succesfully"})
 }
 
 // DeleteComment handles the DELETE /comments/:id endpoint.
@@ -83,7 +83,7 @@ func (h *CommentHandler) EditComment(c echo.Context) error {
 //	@Description	Delete an existing comment by the author.
 //	@Tags			comments
 //	@Param			id	path		int	true	"Comment ID"
-//	@Success		200	{object}	dto.MessageResponse
+//	@Success		200	{object}	dto.PublishingMessageResponse
 //	@Failure		400	{object}	dto.ProblemDetail
 //	@Failure		401	{object}	dto.ProblemDetail
 //	@Failure		404	{object}	dto.ProblemDetail
@@ -111,5 +111,5 @@ func (h *CommentHandler) DeleteComment(c echo.Context) error {
 	}
 
 	h.log.Info(c.Request().Context(), "DeleteComment succeeded", "username", user.Username, "comment_id", id)
-	return c.JSON(http.StatusOK, dto.MessageResponse{Message: "Comment deleted successfully"})
+	return c.JSON(http.StatusOK, dto.PublishingMessageResponse{Message: "Comment deleted successfully"})
 }

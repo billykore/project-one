@@ -309,7 +309,7 @@ func (h *UserHandler) SearchUsers(c echo.Context) error {
 //	@Accept			json
 //	@Produce		json
 //	@Param			request	body		dto.ChangePasswordRequest	true	"Change password request details"
-//	@Success		200		{object}	dto.MessageResponse
+//	@Success		200		{object}	dto.IdentityMessageResponse
 //	@Failure		400		{object}	dto.ProblemDetail
 //	@Failure		401		{object}	dto.ProblemDetail
 //	@Failure		500		{object}	dto.ProblemDetail
@@ -339,7 +339,7 @@ func (h *UserHandler) HandleChangePassword(c echo.Context) error {
 	}
 
 	h.log.Info(c.Request().Context(), "HandleChangePassword succeeded", "username", user.Username)
-	return c.JSON(http.StatusOK, dto.MessageResponse{Message: "Password updated successfully"})
+	return c.JSON(http.StatusOK, dto.IdentityMessageResponse{Message: "Password updated successfully"})
 }
 
 // HandleUpdateProfile handles the PUT /users/profile endpoint.

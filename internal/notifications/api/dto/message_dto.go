@@ -1,6 +1,6 @@
 package dto
 
-// MessageResponse is a notification command acknowledgement.
-type MessageResponse struct {
+// NotificationMessageResponse is a notification command acknowledgement.
+type NotificationMessageResponse struct {
 	Message string `json:"message"`
 }

@@ -498,7 +498,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.MessageResponse"
+                            "$ref": "#/definitions/dto.PublishingMessageResponse"
                         }
                     },
                     "400": {
@@ -551,7 +551,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.MessageResponse"
+                            "$ref": "#/definitions/dto.PublishingMessageResponse"
                         }
                     },
                     "400": {
@@ -756,7 +756,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.MessageResponse"
+                            "$ref": "#/definitions/dto.NotificationMessageResponse"
                         }
                     },
                     "401": {
@@ -836,7 +836,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.MessageResponse"
+                            "$ref": "#/definitions/dto.NotificationMessageResponse"
                         }
                     },
                     "400": {
@@ -1443,7 +1443,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.MessageResponse"
+                            "$ref": "#/definitions/dto.IdentityMessageResponse"
                         }
                     },
                     "400": {
@@ -2385,6 +2385,14 @@
                 }
             }
         },
+        "dto.IdentityMessageResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.LikeResponse": {
             "type": "object",
             "properties": {
@@ -2446,7 +2454,7 @@
                 }
             }
         },
-        "dto.MessageResponse": {
+        "dto.NotificationMessageResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -2627,6 +2635,14 @@
                     "type": "string"
                 },
                 "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.PublishingMessageResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
                     "type": "string"
                 }
             }
