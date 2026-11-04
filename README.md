@@ -145,7 +145,7 @@ See [deployments/README.md](deployments/README.md) for service configuration, li
 | :--- | :--- | :--- |
 | `/healthz` | None | Process liveness. Never contacts a dependency, so a starting instance is live before it is ready. |
 | `/status` | None | Readiness report for PostgreSQL and the notification subscriber. Returns `503` and identifies only the affected component when a required dependency is down, unknown, or cannot be assessed in time. |
-| `/metrics` | Monitoring credential | Prometheus text exposition of request counts, request duration, readiness, dependency state, and process start time. |
+| `/metrics` | Monitoring credential | Prometheus text exposition of request counts, request duration, readiness, dependency state, notification outbox backlog, and process start time. |
 
 `/healthz` and `/status` stay non-sensitive and unauthenticated so the deployment probe keeps working; `/metrics` requires the dedicated monitoring credential read from a deployment secret. Metrics carry only bounded labels: the HTTP method, the resolved route template, the status class, and the dependency name. No account identifier, token, session value, request body, query string, or raw dependency error is ever used as a label or returned in a health report.
 
@@ -257,7 +257,7 @@ Every context's HTTP DTOs live in a package named `dto`, and `swag` resolves ann
 The notification flow is:
 
 1. Follow, like, and comment use cases write a notification event to the `notification_outbox` table in the same transaction as the change that caused it.
-2. A background outbox dispatcher publishes pending events to RabbitMQ and retries failed deliveries.
+2. A background outbox dispatcher publishes pending events to RabbitMQ and retries failed deliveries. An event that still fails after 60 attempts is parked for an operator, and published events are deleted after 7 days (see [deployments/README.md](deployments/README.md#notification-outbox)).
 3. The notification consumer (`internal/notifications/adapters/consumer`) hands each event to the notification use case, which stores it once per event ID (a redelivered event is acknowledged without a second row) and pushes it to the recipient's SSE connections.
 4. Connected clients receive the new notification from `GET /notifications/stream` as SSE.
 5. Clients retrieve notification history from `GET /notifications` and can mark one or all notifications as read.
