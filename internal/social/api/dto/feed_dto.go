@@ -31,7 +31,7 @@ func ToFeedResponse(result *ports.FeedResult) FeedResponse {
 	for _, p := range result.Posts {
 		data = append(data, PostItem{
 			ID:        p.ID,
-			Author:    p.Username,
+			Author:    p.Author,
 			Title:     p.Title,
 			Content:   p.Content,
 			Tags:      p.Tags,

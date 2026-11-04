@@ -4,7 +4,6 @@ import (
 	"context"
 
 	vo "github.com/billykore/project-one/internal/pkg/pagination"
-	publishingdomain "github.com/billykore/project-one/internal/publishing/domain"
 	"github.com/billykore/project-one/internal/social/domain"
 )
 
@@ -16,5 +15,6 @@ type AccountLookup interface {
 
 // TimelineReader is social's read-only view of published posts.
 type TimelineReader interface {
-	GetFeed(ctx context.Context, userIDs []int, cursor *vo.Cursor, limit int) ([]*publishingdomain.Post, error)
+	// GetFeed returns posts authored by userIDs, newest first, after cursor.
+	GetFeed(ctx context.Context, userIDs []int, cursor *vo.Cursor, limit int) ([]*domain.TimelinePost, error)
 }
