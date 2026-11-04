@@ -7,8 +7,27 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [5.2.0] - 2026-11-04 (035db71)
+
+### Added
+
+- A transactional notification outbox (migration `000026`). Follow, like, and
+  comment events are written in the same database transaction as the change
+  that caused them and dispatched to the broker by a background worker. Apply
+  the migration to existing databases with `make migrate-up`.
+- Project development rules for contributors and AI agents in `AGENTS.md`.
+
 ### Changed
 
+- Moved HTTP route registration into each bounded context's `api/routes.go`;
+  `cmd/main.go` now only composes the application. Routes, middleware, and
+  feature-flag gates are unchanged.
+- Grouped adapter packages by role (for example `adapters/repository` and
+  `adapters/evaluator`).
+- Authenticated handlers read a transport-neutral principal from the request
+  context instead of the identity user.
+- The Compose backend service runs a prebuilt image instead of building from
+  the `Dockerfile`.
 - Renamed the restricted shared technical kernel from `internal/platform` to
   `internal/pkg`. Branches importing `internal/platform/...` must update their
   import paths; regenerate mocks with `make mocks`.
@@ -212,7 +231,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 - Full-stack authentication, including registration, login, logout, and session handling.
 
-[Unreleased]: https://github.com/billykore/project-one/compare/v5.1.0...HEAD
+[Unreleased]: https://github.com/billykore/project-one/compare/v5.2.0...HEAD
+[5.2.0]: https://github.com/billykore/project-one/compare/v5.1.0...v5.2.0
 [5.1.0]: https://github.com/billykore/project-one/compare/v5.0.0...v5.1.0
 [5.0.0]: https://github.com/billykore/project-one/compare/v4.1.0...v5.0.0
 [4.1.0]: https://github.com/billykore/project-one/compare/v4.0.0...v4.1.0
