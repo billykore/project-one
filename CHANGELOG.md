@@ -7,6 +7,19 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Fixed
+
+- `make docs` (and therefore `make check`) generates the Swagger artifacts
+  again. Three contexts each declared a `dto.MessageResponse`, which `swag`
+  could not resolve. They are now `IdentityMessageResponse`,
+  `NotificationMessageResponse`, and `PublishingMessageResponse`; response
+  bodies are unchanged, only the OpenAPI schema names differ.
+
+### Removed
+
+- The unused `PostResponse` and `PostsListResponse` DTOs from the identity
+  context, which duplicated publishing's type names.
+
 ## [5.2.0] - 2026-11-04 (035db71)
 
 ### Added

@@ -1,7 +1,5 @@
 package dto
 
-import "time"
-
 // LoginRequest is the request body for login.
 type LoginRequest struct {
 	Email    string `json:"email" validate:"required,email"`
@@ -77,24 +75,4 @@ type SearchUsersResponse struct {
 	Data       []SearchUsersItem `json:"data"`
 	NextCursor string            `json:"next_cursor"`
 	HasMore    bool              `json:"has_more"`
-}
-
-// PostsListResponse wraps a cursor-paginated post list.
-type PostsListResponse struct {
-	Data       []PostResponse `json:"data"`
-	NextCursor string         `json:"next_cursor"`
-	HasMore    bool           `json:"has_more"`
-}
-
-// PostResponse is the compact publishing projection embedded in an identity
-// profile response. It avoids coupling the identity HTTP contract to another
-// context's DTO package.
-type PostResponse struct {
-	ID        int       `json:"id"`
-	Title     string    `json:"title"`
-	Content   string    `json:"content"`
-	Tags      []string  `json:"tags"`
-	Author    string    `json:"author"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
 }

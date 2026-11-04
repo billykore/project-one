@@ -312,6 +312,11 @@ definitions:
         example: ready
         type: string
     type: object
+  dto.IdentityMessageResponse:
+    properties:
+      message:
+        type: string
+    type: object
   dto.LikeResponse:
     properties:
       like_count:
@@ -353,7 +358,7 @@ definitions:
       message:
         type: string
     type: object
-  dto.MessageResponse:
+  dto.NotificationMessageResponse:
     properties:
       message:
         type: string
@@ -472,6 +477,11 @@ definitions:
       title:
         type: string
       type:
+        type: string
+    type: object
+  dto.PublishingMessageResponse:
+    properties:
+      message:
         type: string
     type: object
   dto.RegisterRequest:
@@ -933,7 +943,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.MessageResponse'
+            $ref: '#/definitions/dto.PublishingMessageResponse'
         "400":
           description: Bad Request
           schema:
@@ -977,7 +987,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.MessageResponse'
+            $ref: '#/definitions/dto.PublishingMessageResponse'
         "400":
           description: Bad Request
           schema:
@@ -1115,7 +1125,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.MessageResponse'
+            $ref: '#/definitions/dto.NotificationMessageResponse'
         "400":
           description: Bad Request
           schema:
@@ -1148,7 +1158,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.MessageResponse'
+            $ref: '#/definitions/dto.NotificationMessageResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1766,7 +1776,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.MessageResponse'
+            $ref: '#/definitions/dto.IdentityMessageResponse'
         "400":
           description: Bad Request
           schema:

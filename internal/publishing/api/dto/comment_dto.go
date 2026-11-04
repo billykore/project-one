@@ -18,6 +18,6 @@ type EditCommentRequest struct {
 	Content string `json:"content" validate:"required,min=1"`
 }
 
-type MessageResponse struct {
+type PublishingMessageResponse struct {
 	Message string `json:"message"`
 }

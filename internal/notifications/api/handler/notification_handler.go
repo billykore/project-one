@@ -164,7 +164,7 @@ func (h *NotificationHandler) GetNotifications(c echo.Context) error {
 //	@Description	Mark a specific notification as read.
 //	@Tags			notifications
 //	@Param			id	path		int	true	"Notification ID"
-//	@Success		200	{object}	dto.MessageResponse
+//	@Success		200	{object}	dto.NotificationMessageResponse
 //	@Failure		400	{object}	dto.ProblemDetail
 //	@Failure		401	{object}	dto.ProblemDetail
 //	@Failure		403	{object}	dto.ProblemDetail
@@ -193,7 +193,7 @@ func (h *NotificationHandler) MarkAsRead(c echo.Context) error {
 	}
 
 	h.log.Info(c.Request().Context(), "MarkAsRead succeeded", "username", user.Username, "notification_id", id)
-	return c.JSON(http.StatusOK, dto.MessageResponse{Message: "Notification marked as read"})
+	return c.JSON(http.StatusOK, dto.NotificationMessageResponse{Message: "Notification marked as read"})
 }
 
 // MarkAllAsRead handles the PUT /notifications/read-all endpoint.
@@ -201,7 +201,7 @@ func (h *NotificationHandler) MarkAsRead(c echo.Context) error {
 //	@Summary		Mark all notifications as read
 //	@Description	Mark all notifications for the authenticated user as read.
 //	@Tags			notifications
-//	@Success		200	{object}	dto.MessageResponse
+//	@Success		200	{object}	dto.NotificationMessageResponse
 //	@Failure		401	{object}	dto.ProblemDetail
 //	@Failure		500	{object}	dto.ProblemDetail
 //	@Security		BearerAuth
@@ -220,7 +220,7 @@ func (h *NotificationHandler) MarkAllAsRead(c echo.Context) error {
 	}
 
 	h.log.Info(c.Request().Context(), "MarkAllAsRead succeeded", "username", user.Username)
-	return c.JSON(http.StatusOK, dto.MessageResponse{Message: "All notifications marked as read"})
+	return c.JSON(http.StatusOK, dto.NotificationMessageResponse{Message: "All notifications marked as read"})
 }
 
 func notificationResponseFromDetail(notification *notificationdomain.NotificationDetail) *dto.NotificationResponse {

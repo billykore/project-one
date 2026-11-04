@@ -1,6 +1,6 @@
 package dto
 
-// MessageResponse is a small identity command acknowledgement.
-type MessageResponse struct {
+// IdentityMessageResponse is a small identity command acknowledgement.
+type IdentityMessageResponse struct {
 	Message string `json:"message"`
 }
