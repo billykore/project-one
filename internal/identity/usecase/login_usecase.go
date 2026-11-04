@@ -6,8 +6,8 @@ import (
 
 	"github.com/billykore/project-one/internal/identity/domain"
 	"github.com/billykore/project-one/internal/identity/ports"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
-	"github.com/billykore/project-one/internal/platform/problem"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
+	"github.com/billykore/project-one/internal/pkg/problem"
 )
 
 type loginUseCase struct {
@@ -15,7 +15,7 @@ type loginUseCase struct {
 	tokens    ports.TokenService
 	tokenRepo ports.TokenRepository
 	hasher    ports.Hasher
-	log       platformports.Logger
+	log       pkgports.Logger
 }
 
 // NewLoginUseCase creates a new instance of ports.LoginUseCase.
@@ -24,7 +24,7 @@ func NewLoginUseCase(
 	tokens ports.TokenService,
 	tokenRepo ports.TokenRepository,
 	hasher ports.Hasher,
-	log platformports.Logger,
+	log pkgports.Logger,
 ) ports.LoginUseCase {
 	// ponytail: normalized nil checks to match other constructors
 	if repo == nil || tokens == nil || tokenRepo == nil || hasher == nil || log == nil {
@@ -44,13 +44,13 @@ func (s *loginUseCase) Login(ctx context.Context, email, password string) (*doma
 	user, err := s.repo.GetUserByEmail(ctx, email)
 	if err != nil {
 		s.log.Error(ctx, "user not found during login", "email", email, "error", err)
-		return nil, fmt.Errorf("get user by email: %w", problem.ErrInvalidCredentials)
+		return nil, fmt.Errorf("get user by email: %w", domain.ErrInvalidCredentials)
 	}
 
 	// 2. Compare passwords
 	if err := s.hasher.Compare(ctx, password, user.Password); err != nil {
 		s.log.Error(ctx, "password mismatch during login", "email", email, "error", err)
-		return nil, fmt.Errorf("compare passwords: %w", problem.ErrInvalidCredentials)
+		return nil, fmt.Errorf("compare passwords: %w", domain.ErrInvalidCredentials)
 	}
 
 	// 3. Generate tokens

@@ -6,11 +6,14 @@ import (
 	featureflagmiddleware "github.com/billykore/project-one/internal/featureflags/api/middleware"
 	identitymiddleware "github.com/billykore/project-one/internal/identity/api/middleware"
 	identityports "github.com/billykore/project-one/internal/identity/ports"
+	pkgmiddleware "github.com/billykore/project-one/internal/pkg/api/middleware"
 	"github.com/labstack/echo/v4"
 )
 
 // RegisterRoutes mounts feature-flag evaluation and operator administration endpoints.
 func RegisterRoutes(e *echo.Echo, authenticator identityports.Authenticator, featureFlagHandler *featureflaghandler.FeatureFlagHandler, operators []string) {
+	pkgmiddleware.RegisterErrorMappings(errorMappings)
+
 	featureFlags := e.Group(
 		"/admin/feature-flags",
 		identitymiddleware.Authorize(authenticator),

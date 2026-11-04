@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/billykore/project-one/internal/platform/problem"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/billykore/project-one/internal/publishing/domain"
 	"github.com/billykore/project-one/internal/publishing/ports"
 	"gorm.io/gorm"
@@ -45,7 +45,7 @@ func (r *postCommandRepository) Save(ctx context.Context, post *domain.Post) err
 		return fmt.Errorf("%w: %v", problem.ErrRepositoryFailure, result.Error)
 	}
 	if result.RowsAffected == 0 {
-		return problem.ErrPostNotFound
+		return domain.ErrPostNotFound
 	}
 	post.UpdatedAt = model.UpdatedAt
 	return nil
@@ -57,14 +57,14 @@ func (r *postCommandRepository) Delete(ctx context.Context, post *domain.Post) e
 		return fmt.Errorf("%w: %v", problem.ErrRepositoryFailure, result.Error)
 	}
 	if result.RowsAffected == 0 {
-		return problem.ErrPostNotFound
+		return domain.ErrPostNotFound
 	}
 	return nil
 }
 
 func mapPostReadError(err error) error {
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return problem.ErrPostNotFound
+		return domain.ErrPostNotFound
 	}
 	return fmt.Errorf("%w: %v", problem.ErrRepositoryFailure, err)
 }

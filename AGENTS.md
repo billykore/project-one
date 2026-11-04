@@ -14,7 +14,7 @@
   - `notifications`: notification persistence, broker events, and SSE delivery
   - `featureflags`: flag administration and evaluation
   - `operations`: readiness and HTTP metrics
-- Keep `internal/platform` small and technical only: bootstrap configuration, logging, validation, broker clients, shared pagination/problem vocabulary, common HTTP error handling, and authenticated-principal extraction. Do not place product business rules there.
+- Keep `internal/pkg` small and technical only: bootstrap configuration, logging, validation, broker clients, shared pagination/problem vocabulary, common HTTP error handling, and authenticated-principal extraction. Do not place product business rules there.
 - Keep cross-context dependencies explicit and narrow. Depend on ports or event contracts rather than another context's repository or adapter.
 - Generated GoMock implementations live in `internal/testkit/mocks`. Run `make mocks` whenever a port interface changes, and include resulting generated changes in the same commit.
 

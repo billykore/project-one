@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/billykore/project-one/internal/featureflags/domain"
-	vo "github.com/billykore/project-one/internal/platform/pagination"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
 )
 
 // FeatureFlagRepository is a driven port for feature-flag persistence.
@@ -25,7 +25,7 @@ type FeatureFlagRepository interface {
 	// ListSettings retrieves all environment settings for a flag.
 	ListSettings(ctx context.Context, flagID int) ([]domain.EnvironmentSetting, error)
 	// UpsertSetting creates or updates a setting using revision-based optimistic concurrency.
-	// On revision mismatch it returns problem.ErrRevisionConflict.
+	// On revision mismatch it returns domain.ErrRevisionConflict.
 	UpsertSetting(ctx context.Context, setting *domain.EnvironmentSetting) error
 
 	// ListOverrides retrieves the overrides for a flag and environment.

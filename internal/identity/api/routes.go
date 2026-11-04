@@ -5,11 +5,14 @@ import (
 	"github.com/billykore/project-one/internal/identity/api/handler"
 	"github.com/billykore/project-one/internal/identity/api/middleware"
 	"github.com/billykore/project-one/internal/identity/ports"
+	pkgmiddleware "github.com/billykore/project-one/internal/pkg/api/middleware"
 	"github.com/labstack/echo/v4"
 )
 
 // RegisterRoutes mounts identity and user-profile endpoints.
 func RegisterRoutes(e *echo.Echo, authenticator ports.Authenticator, userHandler *handler.UserHandler) {
+	pkgmiddleware.RegisterErrorMappings(errorMappings)
+
 	auth := e.Group("/auth")
 	auth.POST("/register", userHandler.HandleRegister)
 	auth.POST("/login", userHandler.HandleLogin)

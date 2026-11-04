@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	identitydomain "github.com/billykore/project-one/internal/identity/domain"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
+	"github.com/billykore/project-one/internal/pkg/auth"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 	publishingdomain "github.com/billykore/project-one/internal/publishing/domain"
 	"github.com/billykore/project-one/internal/testkit/mocks"
 	"github.com/labstack/echo/v4"
@@ -29,15 +29,15 @@ type validPostRequest struct{}
 
 func (validPostRequest) Validate(any) error { return nil }
 
-var _ platformports.Logger = discardPostLogger{}
-var _ platformports.Validator = validPostRequest{}
+var _ pkgports.Logger = discardPostLogger{}
+var _ pkgports.Validator = validPostRequest{}
 
-func postContext(method, path, body string, user *identitydomain.User) (echo.Context, *httptest.ResponseRecorder) {
+func postContext(method, path, body string, user *auth.Principal) (echo.Context, *httptest.ResponseRecorder) {
 	e := echo.New()
 	recorder := httptest.NewRecorder()
 	ctx := e.NewContext(httptest.NewRequest(method, path, bytes.NewBufferString(body)), recorder)
 	ctx.Request().Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	ctx.Set("user", user)
+	ctx.Set("principal", user)
 	return ctx, recorder
 }
 
@@ -46,7 +46,7 @@ func TestPostCommandHandlerRoutes(t *testing.T) {
 	commands := mocks.NewMockPostCommandUseCase(ctrl)
 	comments := mocks.NewMockCommentUseCase(ctrl)
 	handler := NewPostCommandHandler(commands, comments, validPostRequest{}, discardPostLogger{})
-	user := &identitydomain.User{ID: 1, Username: "author"}
+	user := &auth.Principal{ID: 1, Username: "author"}
 
 	t.Run("create", func(t *testing.T) {
 		ctx, recorder := postContext(http.MethodPost, "/posts", `{"title":"title","content":"body"}`, user)
@@ -98,7 +98,7 @@ func TestPostQueryHandlerRoutes(t *testing.T) {
 	queries := mocks.NewMockPostQueryUseCase(ctrl)
 	comments := mocks.NewMockCommentUseCase(ctrl)
 	handler := NewPostQueryHandler(queries, comments, discardPostLogger{})
-	user := &identitydomain.User{ID: 1, Username: "reader"}
+	user := &auth.Principal{ID: 1, Username: "reader"}
 	post := &publishingdomain.Post{ID: 1, Username: "author", Title: "title", CreatedAt: time.Now()}
 
 	t.Run("detail", func(t *testing.T) {

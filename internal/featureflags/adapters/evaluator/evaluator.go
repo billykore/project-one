@@ -9,13 +9,13 @@ import (
 
 	"github.com/billykore/project-one/internal/featureflags/domain"
 	"github.com/billykore/project-one/internal/featureflags/ports"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 )
 
 // Evaluator evaluates feature flags from an in-memory environment snapshot.
 type Evaluator struct {
 	repository      ports.FeatureFlagRepository
-	logger          platformports.Logger
+	logger          pkgports.Logger
 	environment     domain.Environment
 	refreshInterval time.Duration
 
@@ -26,7 +26,7 @@ type Evaluator struct {
 // NewEvaluator creates an evaluator and loads its first snapshot synchronously.
 func NewEvaluator(
 	repository ports.FeatureFlagRepository,
-	logger platformports.Logger,
+	logger pkgports.Logger,
 	environment domain.Environment,
 	refreshInterval time.Duration,
 ) (*Evaluator, error) {

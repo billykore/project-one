@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"strconv"
 
-	request "github.com/billykore/project-one/internal/platform/api/request"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
-	"github.com/billykore/project-one/internal/platform/problem"
+	request "github.com/billykore/project-one/internal/pkg/api/request"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/billykore/project-one/internal/publishing/api/dto"
+	"github.com/billykore/project-one/internal/publishing/domain"
 	publishingports "github.com/billykore/project-one/internal/publishing/ports"
 	"github.com/labstack/echo/v4"
 )
@@ -16,11 +16,11 @@ import (
 type PostCommandHandler struct {
 	postUseCase    publishingports.PostCommandUseCase
 	commentUseCase publishingports.CommentUseCase
-	validator      platformports.Validator
-	log            platformports.Logger
+	validator      pkgports.Validator
+	log            pkgports.Logger
 }
 
-func NewPostCommandHandler(postUseCase publishingports.PostCommandUseCase, commentUseCase publishingports.CommentUseCase, validator platformports.Validator, log platformports.Logger) *PostCommandHandler {
+func NewPostCommandHandler(postUseCase publishingports.PostCommandUseCase, commentUseCase publishingports.CommentUseCase, validator pkgports.Validator, log pkgports.Logger) *PostCommandHandler {
 	return &PostCommandHandler{postUseCase: postUseCase, commentUseCase: commentUseCase, validator: validator, log: log}
 }
 
@@ -79,7 +79,7 @@ func (h *PostCommandHandler) UpdatePost(c echo.Context) error {
 	}
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return problem.ErrPostIDMustBeANumber
+		return domain.ErrPostIDMustBeANumber
 	}
 	var req dto.UpdatePostRequest
 	if err := c.Bind(&req); err != nil {
@@ -109,7 +109,7 @@ func (h *PostCommandHandler) DeletePost(c echo.Context) error {
 	}
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return problem.ErrPostIDMustBeANumber
+		return domain.ErrPostIDMustBeANumber
 	}
 	if err := h.postUseCase.DeletePost(c.Request().Context(), user.ID, id); err != nil {
 		h.log.Error(c.Request().Context(), "DeletePost failed", "username", user.Username, "post_id", id, "error", err)
@@ -166,7 +166,7 @@ func (h *PostCommandHandler) LikePost(c echo.Context) error {
 	}
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return problem.ErrPostIDMustBeANumber
+		return domain.ErrPostIDMustBeANumber
 	}
 	count, err := h.postUseCase.LikePost(c.Request().Context(), id, user)
 	if err != nil {
@@ -192,7 +192,7 @@ func (h *PostCommandHandler) UnlikePost(c echo.Context) error {
 	}
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return problem.ErrPostIDMustBeANumber
+		return domain.ErrPostIDMustBeANumber
 	}
 	count, err := h.postUseCase.UnlikePost(c.Request().Context(), id, user)
 	if err != nil {

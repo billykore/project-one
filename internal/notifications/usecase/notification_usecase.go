@@ -7,29 +7,32 @@ import (
 
 	"github.com/billykore/project-one/internal/notifications/domain"
 	"github.com/billykore/project-one/internal/notifications/ports"
-	"github.com/billykore/project-one/internal/platform/auth"
-	vo "github.com/billykore/project-one/internal/platform/pagination"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
-	"github.com/billykore/project-one/internal/platform/problem"
+	"github.com/billykore/project-one/internal/pkg/auth"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
+	"github.com/billykore/project-one/internal/pkg/problem"
 )
 
 type notificationUseCase struct {
 	repo     ports.NotificationRepository
 	userRepo ports.ActorLookup
-	log      platformports.Logger
+	notifier ports.RealtimeNotifier
+	log      pkgports.Logger
 }
 
 func NewNotificationUseCase(
 	repo ports.NotificationRepository,
 	userRepo ports.ActorLookup,
-	log platformports.Logger,
+	notifier ports.RealtimeNotifier,
+	log pkgports.Logger,
 ) ports.NotificationUseCase {
-	if repo == nil || userRepo == nil || log == nil {
+	if repo == nil || userRepo == nil || notifier == nil || log == nil {
 		panic("NewNotificationUseCase: dependencies must not be nil")
 	}
 	return &notificationUseCase{
 		repo:     repo,
 		userRepo: userRepo,
+		notifier: notifier,
 		log:      log,
 	}
 }
@@ -97,10 +100,10 @@ func (uc *notificationUseCase) MarkAsRead(ctx context.Context, id int, userID in
 		return fmt.Errorf("get notification by id: %w", err)
 	}
 	if notification == nil {
-		return problem.ErrNotificationNotFound
+		return domain.ErrNotificationNotFound
 	}
 	if notification.UserID != userID {
-		return problem.ErrNotificationNotOwned
+		return domain.ErrNotificationNotOwned
 	}
 
 	err = uc.repo.MarkAsRead(ctx, id)
@@ -122,9 +125,28 @@ func (uc *notificationUseCase) MarkAllAsRead(ctx context.Context, userID int) er
 	return nil
 }
 
-func (uc *notificationUseCase) SaveNotification(ctx context.Context, notification *domain.Notification) error {
-	if err := uc.repo.Create(ctx, notification); err != nil {
+func (uc *notificationUseCase) RecordEvent(ctx context.Context, event domain.NotificationEvent) error {
+	if event.SchemaVersion != "" && event.SchemaVersion != domain.NotificationEventSchemaVersion {
+		return fmt.Errorf("%w: %s", domain.ErrUnsupportedEventSchema, event.SchemaVersion)
+	}
+
+	notification := event.Notification
+	notification.EventID = event.EventID
+	if err := uc.repo.Create(ctx, &notification); err != nil {
+		if errors.Is(err, domain.ErrDuplicateNotification) {
+			uc.log.Debug(ctx, "duplicate notification event skipped", "event_id", notification.EventID)
+			return nil
+		}
 		return fmt.Errorf("create notification: %w", err)
+	}
+	uc.log.Info(ctx, "notification saved", "userID", notification.UserID, "actorID", notification.ActorID, "type", notification.Type)
+
+	// The notification is already stored, so a failed push must not cause a redelivery.
+	delivered, err := uc.notifier.Notify(ctx, notification)
+	if err != nil {
+		uc.log.Warn(ctx, "failed to push notification to realtime clients", "userID", notification.UserID, "error", err)
+	} else if delivered {
+		uc.log.Info(ctx, "notification streamed to realtime clients", "userID", notification.UserID, "type", notification.Type)
 	}
 	return nil
 }

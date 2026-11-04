@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/billykore/project-one/internal/identity/domain"
-	"github.com/billykore/project-one/internal/platform/problem"
 	"github.com/billykore/project-one/internal/testkit/mocks"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
@@ -29,7 +28,7 @@ func TestAuthorize_RequiresAnActiveSessionForTheCurrentUser(t *testing.T) {
 	}, Authorize(authenticator))
 
 	t.Run("rejects a valid JWT that was revoked", func(t *testing.T) {
-		authenticator.EXPECT().Authenticate(gomock.Any(), "revoked-token").Return(nil, problem.ErrUntrustedToken)
+		authenticator.EXPECT().Authenticate(gomock.Any(), "revoked-token").Return(nil, domain.ErrUntrustedToken)
 
 		req := httptest.NewRequest(http.MethodGet, "/private", nil)
 		req.Header.Set(echo.HeaderAuthorization, "Bearer revoked-token")

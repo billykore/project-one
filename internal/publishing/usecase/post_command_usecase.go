@@ -9,9 +9,9 @@ import (
 
 	featureflagdomain "github.com/billykore/project-one/internal/featureflags/domain"
 	notificationdomain "github.com/billykore/project-one/internal/notifications/domain"
-	"github.com/billykore/project-one/internal/platform/auth"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
-	"github.com/billykore/project-one/internal/platform/problem"
+	"github.com/billykore/project-one/internal/pkg/auth"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/billykore/project-one/internal/publishing/domain"
 	"github.com/billykore/project-one/internal/publishing/ports"
 )
@@ -22,12 +22,12 @@ type postCommandUseCase struct {
 	postRepo  ports.PostCommandRepository
 	likeRepo  ports.LikeRepository
 	userRepo  ports.UserLookup
-	publisher platformports.Publisher
-	log       platformports.Logger
+	publisher pkgports.Publisher
+	log       pkgports.Logger
 	evaluator ports.FeatureEvaluator
 }
 
-func NewPostCommandUseCase(postRepo ports.PostCommandRepository, likeRepo ports.LikeRepository, userRepo ports.UserLookup, publisher platformports.Publisher, log platformports.Logger, evaluator ports.FeatureEvaluator) ports.PostCommandUseCase {
+func NewPostCommandUseCase(postRepo ports.PostCommandRepository, likeRepo ports.LikeRepository, userRepo ports.UserLookup, publisher pkgports.Publisher, log pkgports.Logger, evaluator ports.FeatureEvaluator) ports.PostCommandUseCase {
 	if postRepo == nil || likeRepo == nil || userRepo == nil || publisher == nil || log == nil || evaluator == nil {
 		panic("NewPostCommandUseCase: dependencies must not be nil")
 	}
@@ -50,14 +50,14 @@ func (uc *postCommandUseCase) CreatePost(ctx context.Context, user *auth.Princip
 
 func (uc *postCommandUseCase) UpdatePost(ctx context.Context, userID int, postID int, title, content string) (*domain.Post, error) {
 	if postID <= 0 {
-		return nil, problem.ErrInvalidPost
+		return nil, domain.ErrInvalidPost
 	}
 	post, err := uc.postRepo.Load(ctx, postID)
 	if err != nil {
 		return nil, fmt.Errorf("get post for update: %w", err)
 	}
 	if post.UserID != userID {
-		return nil, problem.ErrPostNotOwned
+		return nil, domain.ErrPostNotOwned
 	}
 	post.Update(title, content)
 	if err := uc.postRepo.Save(ctx, post); err != nil {
@@ -69,14 +69,14 @@ func (uc *postCommandUseCase) UpdatePost(ctx context.Context, userID int, postID
 
 func (uc *postCommandUseCase) DeletePost(ctx context.Context, userID int, postID int) error {
 	if postID <= 0 {
-		return problem.ErrInvalidPost
+		return domain.ErrInvalidPost
 	}
 	post, err := uc.postRepo.Load(ctx, postID)
 	if err != nil {
 		return fmt.Errorf("get post for delete: %w", err)
 	}
 	if post.UserID != userID {
-		return problem.ErrPostNotOwned
+		return domain.ErrPostNotOwned
 	}
 	if err := uc.postRepo.Delete(ctx, post); err != nil {
 		uc.log.Error(ctx, "failed to delete post", "postID", postID, "error", err)
@@ -88,14 +88,14 @@ func (uc *postCommandUseCase) DeletePost(ctx context.Context, userID int, postID
 
 func (uc *postCommandUseCase) LikePost(ctx context.Context, postID int, actor *auth.Principal) (int, error) {
 	if postID <= 0 {
-		return 0, problem.ErrInvalidPostID
+		return 0, domain.ErrInvalidPostID
 	}
 	if actor == nil || actor.ID <= 0 {
 		return 0, problem.ErrInvalidUsername
 	}
 	post, err := uc.postRepo.Load(ctx, postID)
 	if err != nil {
-		if errors.Is(err, problem.ErrPostNotFound) {
+		if errors.Is(err, domain.ErrPostNotFound) {
 			return 0, err
 		}
 		uc.log.Error(ctx, "failed to verify post existence for like", "postID", postID, "error", err)
@@ -103,7 +103,7 @@ func (uc *postCommandUseCase) LikePost(ctx context.Context, postID int, actor *a
 	}
 	var likeCount int
 	var changed bool
-	err = platformports.InTransaction(ctx, uc.publisher, func(txCtx context.Context) error {
+	err = pkgports.InTransaction(ctx, uc.publisher, func(txCtx context.Context) error {
 		var setErr error
 		likeCount, changed, setErr = uc.likeRepo.SetLiked(txCtx, postID, actor.ID, true)
 		if setErr != nil {
@@ -128,14 +128,14 @@ func (uc *postCommandUseCase) LikePost(ctx context.Context, postID int, actor *a
 
 func (uc *postCommandUseCase) UnlikePost(ctx context.Context, postID int, actor *auth.Principal) (int, error) {
 	if postID <= 0 {
-		return 0, problem.ErrInvalidPost
+		return 0, domain.ErrInvalidPost
 	}
 	if actor == nil || actor.ID <= 0 {
 		return 0, problem.ErrInvalidUsername
 	}
 	post, err := uc.postRepo.Load(ctx, postID)
 	if err != nil {
-		if errors.Is(err, problem.ErrPostNotFound) {
+		if errors.Is(err, domain.ErrPostNotFound) {
 			return 0, err
 		}
 		uc.log.Error(ctx, "failed to get post for unlike", "postID", postID, "error", err)
@@ -164,13 +164,13 @@ func (uc *postCommandUseCase) publishLikeNotification(ctx context.Context, post 
 		return nil
 	}
 	notification := notificationdomain.Notification{UserID: owner.ID, ActorID: actor.ID, Type: notificationdomain.NotificationTypeLike, PostID: post.ID, ActorUsername: actor.Username, CreatedAt: time.Now().UTC()}
-	event := notificationdomain.NotificationEvent{EventID: fmt.Sprintf("backend-%d", time.Now().UnixNano()), SchemaVersion: "1.0", Timestamp: time.Now().UTC().Format(time.RFC3339Nano), Notification: notification}
+	event := notificationdomain.NotificationEvent{EventID: fmt.Sprintf("backend-%d", time.Now().UnixNano()), SchemaVersion: notificationdomain.NotificationEventSchemaVersion, Timestamp: time.Now().UTC().Format(time.RFC3339Nano), Notification: notification}
 	payload, err := json.Marshal(event)
 	if err != nil {
 		uc.log.Error(ctx, "failed to marshal like notification", "error", err)
 		return fmt.Errorf("marshal like notification: %w", err)
 	}
-	if err := uc.publisher.Publish(ctx, platformports.Event{Topic: postNotificationTopic, Key: fmt.Sprintf("user:%d", owner.ID), Payload: payload, Metadata: map[string]string{"event_id": event.EventID, "schema_version": event.SchemaVersion, "timestamp": event.Timestamp}}); err != nil {
+	if err := uc.publisher.Publish(ctx, pkgports.Event{Topic: postNotificationTopic, Key: fmt.Sprintf("user:%d", owner.ID), Payload: payload, Metadata: map[string]string{"event_id": event.EventID, "schema_version": event.SchemaVersion, "timestamp": event.Timestamp}}); err != nil {
 		uc.log.Error(ctx, "failed to publish like notification", "error", err)
 		return fmt.Errorf("enqueue like notification: %w", err)
 	}

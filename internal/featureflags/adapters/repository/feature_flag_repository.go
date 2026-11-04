@@ -9,8 +9,8 @@ import (
 
 	"github.com/billykore/project-one/internal/featureflags/domain"
 	"github.com/billykore/project-one/internal/featureflags/ports"
-	vo "github.com/billykore/project-one/internal/platform/pagination"
-	"github.com/billykore/project-one/internal/platform/problem"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
 )
@@ -98,7 +98,7 @@ func (r *featureFlagRepository) Create(ctx context.Context, flag *domain.Feature
 	}
 	if err := r.db.WithContext(ctx).Create(&m).Error; err != nil {
 		if isUniqueViolation(err) {
-			return problem.ErrFlagKeyExists
+			return domain.ErrFlagKeyExists
 		}
 		return fmt.Errorf("%w: %v", problem.ErrRepositoryFailure, err)
 	}
@@ -116,7 +116,7 @@ func (r *featureFlagRepository) GetByKey(ctx context.Context, key string) (*doma
 		First(&m).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, problem.ErrFlagNotFound
+			return nil, domain.ErrFlagNotFound
 		}
 		return nil, fmt.Errorf("%w: %v", problem.ErrRepositoryFailure, err)
 	}
@@ -171,7 +171,7 @@ func (r *featureFlagRepository) GetSetting(ctx context.Context, flagID int, env 
 		First(&m).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, problem.ErrFlagSettingNotFound
+			return nil, domain.ErrFlagSettingNotFound
 		}
 		return nil, fmt.Errorf("%w: %v", problem.ErrRepositoryFailure, err)
 	}
@@ -204,7 +204,7 @@ func (r *featureFlagRepository) UpsertSetting(ctx context.Context, setting *doma
 		}
 		if err := r.db.WithContext(ctx).Create(&m).Error; err != nil {
 			if isUniqueViolation(err) {
-				return problem.ErrRevisionConflict
+				return domain.ErrRevisionConflict
 			}
 			return fmt.Errorf("%w: %v", problem.ErrRepositoryFailure, err)
 		}
@@ -227,7 +227,7 @@ func (r *featureFlagRepository) UpsertSetting(ctx context.Context, setting *doma
 		return fmt.Errorf("%w: %v", problem.ErrRepositoryFailure, res.Error)
 	}
 	if res.RowsAffected == 0 {
-		return problem.ErrRevisionConflict
+		return domain.ErrRevisionConflict
 	}
 	setting.Revision = setting.Revision + 1
 	return nil

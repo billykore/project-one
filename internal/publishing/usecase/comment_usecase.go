@@ -8,9 +8,9 @@ import (
 	"time"
 
 	notificationdomain "github.com/billykore/project-one/internal/notifications/domain"
-	"github.com/billykore/project-one/internal/platform/auth"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
-	"github.com/billykore/project-one/internal/platform/problem"
+	"github.com/billykore/project-one/internal/pkg/auth"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/billykore/project-one/internal/publishing/domain"
 	"github.com/billykore/project-one/internal/publishing/ports"
 )
@@ -19,7 +19,7 @@ type commentUseCase struct {
 	commentRepo ports.CommentRepository
 	postRepo    ports.PostCommandRepository
 	userRepo    ports.UserLookup
-	publisher   platformports.Publisher
+	publisher   pkgports.Publisher
 }
 
 // NewCommentUseCase creates a new instance of ports.CommentUseCase.
@@ -27,7 +27,7 @@ func NewCommentUseCase(
 	commentRepo ports.CommentRepository,
 	postRepo ports.PostCommandRepository,
 	userRepo ports.UserLookup,
-	publisher platformports.Publisher,
+	publisher pkgports.Publisher,
 ) ports.CommentUseCase {
 	if commentRepo == nil || postRepo == nil || userRepo == nil || publisher == nil {
 		panic("NewCommentUseCase: dependencies must not be nil")
@@ -62,7 +62,7 @@ func (uc *commentUseCase) AddComment(ctx context.Context, postID int, author *au
 		return fmt.Errorf("failed to fetch post for comment: %w", err)
 	}
 
-	return platformports.InTransaction(ctx, uc.publisher, func(txCtx context.Context) error {
+	return pkgports.InTransaction(ctx, uc.publisher, func(txCtx context.Context) error {
 		if err := uc.commentRepo.Create(txCtx, comment); err != nil {
 			return fmt.Errorf("failed to create comment: %w", err)
 		}
@@ -94,7 +94,7 @@ func (uc *commentUseCase) publishCommentNotification(ctx context.Context, post *
 
 	notificationEvent := notificationdomain.NotificationEvent{
 		EventID:       fmt.Sprintf("backend-%d", time.Now().UnixNano()),
-		SchemaVersion: "1.0",
+		SchemaVersion: notificationdomain.NotificationEventSchemaVersion,
 		Timestamp:     time.Now().UTC().Format(time.RFC3339Nano),
 		Notification:  *notification,
 	}
@@ -104,7 +104,7 @@ func (uc *commentUseCase) publishCommentNotification(ctx context.Context, post *
 		return fmt.Errorf("marshal comment notification: %w", err)
 	}
 
-	if err := uc.publisher.Publish(ctx, platformports.Event{
+	if err := uc.publisher.Publish(ctx, pkgports.Event{
 		Topic:   postNotificationTopic,
 		Key:     fmt.Sprintf("user:%d", postOwner.ID),
 		Payload: payload,
@@ -131,24 +131,24 @@ func (uc *commentUseCase) EditComment(ctx context.Context, id int, userID int, c
 	// 1. Fetch current comment
 	comment, err := uc.commentRepo.GetByID(ctx, id)
 	if err != nil {
-		if errors.Is(err, problem.ErrCommentNotFound) {
+		if errors.Is(err, domain.ErrCommentNotFound) {
 			return err
 		}
 		return fmt.Errorf("failed to fetch comment for edit: %w", err)
 	}
 	if comment == nil {
-		return problem.ErrCommentNotFound
+		return domain.ErrCommentNotFound
 	}
 
 	// 2. Authorize: only author can edit
 	if comment.UserID != userID {
-		return problem.ErrCommentNotOwned
+		return domain.ErrCommentNotOwned
 	}
 
 	// 3. Update fields & Validate
 	comment.Content = content
 	if err := comment.Validate(); err != nil {
-		return fmt.Errorf("%w: %v", problem.ErrInvalidComment, err)
+		return fmt.Errorf("%w: %v", domain.ErrInvalidComment, err)
 	}
 
 	// 4. Persist changes
@@ -163,18 +163,18 @@ func (uc *commentUseCase) DeleteComment(ctx context.Context, id int, userID int)
 	// 1. Fetch current comment
 	comment, err := uc.commentRepo.GetByID(ctx, id)
 	if err != nil {
-		if errors.Is(err, problem.ErrCommentNotFound) {
+		if errors.Is(err, domain.ErrCommentNotFound) {
 			return err
 		}
 		return fmt.Errorf("failed to fetch comment for delete: %w", problem.ErrRepositoryFailure)
 	}
 	if comment == nil {
-		return problem.ErrCommentNotFound
+		return domain.ErrCommentNotFound
 	}
 
 	// 2. Authorize: only author can delete
 	if comment.UserID != userID {
-		return problem.ErrCommentNotOwned
+		return domain.ErrCommentNotOwned
 	}
 
 	// 3. Persist deletion

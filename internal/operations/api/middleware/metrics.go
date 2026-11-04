@@ -6,7 +6,7 @@ import (
 	"time"
 
 	operationsports "github.com/billykore/project-one/internal/operations/ports"
-	platformmiddleware "github.com/billykore/project-one/internal/platform/api/middleware"
+	pkgmiddleware "github.com/billykore/project-one/internal/pkg/api/middleware"
 	"github.com/labstack/echo/v4"
 )
 
@@ -39,7 +39,7 @@ func Metrics(recorder operationsports.HTTPMetrics) echo.MiddlewareFunc {
 			if err != nil {
 				// Echo runs the HTTPErrorHandler after this middleware returns,
 				// so resolve the status the client will actually receive.
-				status = platformmiddleware.StatusForError(err)
+				status = pkgmiddleware.StatusForError(err)
 			}
 
 			method := c.Request().Method

@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	vo "github.com/billykore/project-one/internal/platform/pagination"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
-	"github.com/billykore/project-one/internal/platform/problem"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/billykore/project-one/internal/publishing/domain"
 	"github.com/billykore/project-one/internal/publishing/ports"
 )
@@ -15,10 +15,10 @@ import (
 type postQueryUseCase struct {
 	postRepo ports.PostQueryRepository
 	likeRepo ports.LikeRepository
-	log      platformports.Logger
+	log      pkgports.Logger
 }
 
-func NewPostQueryUseCase(postRepo ports.PostQueryRepository, likeRepo ports.LikeRepository, log platformports.Logger) ports.PostQueryUseCase {
+func NewPostQueryUseCase(postRepo ports.PostQueryRepository, likeRepo ports.LikeRepository, log pkgports.Logger) ports.PostQueryUseCase {
 	if postRepo == nil || likeRepo == nil || log == nil {
 		panic("NewPostQueryUseCase: dependencies must not be nil")
 	}
@@ -27,11 +27,11 @@ func NewPostQueryUseCase(postRepo ports.PostQueryRepository, likeRepo ports.Like
 
 func (uc *postQueryUseCase) GetPostByID(ctx context.Context, id int) (*domain.Post, error) {
 	if id <= 0 {
-		return nil, problem.ErrInvalidPost
+		return nil, domain.ErrInvalidPost
 	}
 	post, err := uc.postRepo.GetByID(ctx, id)
 	if err != nil {
-		if errors.Is(err, problem.ErrPostNotFound) {
+		if errors.Is(err, domain.ErrPostNotFound) {
 			return nil, err
 		}
 		uc.log.Error(ctx, "failed to get post by id", "postID", id, "error", err)
@@ -65,14 +65,14 @@ func (uc *postQueryUseCase) GetPosts(ctx context.Context, userID int, cursor *vo
 
 func (uc *postQueryUseCase) GetLikeStatus(ctx context.Context, postID int, userID int) (bool, int, error) {
 	if postID <= 0 {
-		return false, 0, problem.ErrInvalidPost
+		return false, 0, domain.ErrInvalidPost
 	}
 	if userID <= 0 {
 		return false, 0, problem.ErrInvalidUsername
 	}
 	post, err := uc.postRepo.GetByID(ctx, postID)
 	if err != nil {
-		if errors.Is(err, problem.ErrPostNotFound) {
+		if errors.Is(err, domain.ErrPostNotFound) {
 			return false, 0, err
 		}
 		uc.log.Error(ctx, "failed to verify post existence for like status", "postID", postID, "error", err)

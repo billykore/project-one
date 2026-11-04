@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
-	vo "github.com/billykore/project-one/internal/platform/pagination"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
-	"github.com/billykore/project-one/internal/platform/problem"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/billykore/project-one/internal/publishing/api/dto"
 	publishingports "github.com/billykore/project-one/internal/publishing/ports"
 	"github.com/labstack/echo/v4"
@@ -16,11 +16,11 @@ import (
 type UserPostsHandler struct {
 	postUseCase publishingports.PostQueryUseCase
 	userLookup  publishingports.UserLookup
-	log         platformports.Logger
+	log         pkgports.Logger
 }
 
 // NewUserPostsHandler creates a profile-posts API handler.
-func NewUserPostsHandler(postUseCase publishingports.PostQueryUseCase, userLookup publishingports.UserLookup, log platformports.Logger) *UserPostsHandler {
+func NewUserPostsHandler(postUseCase publishingports.PostQueryUseCase, userLookup publishingports.UserLookup, log pkgports.Logger) *UserPostsHandler {
 	return &UserPostsHandler{postUseCase: postUseCase, userLookup: userLookup, log: log}
 }
 

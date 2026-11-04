@@ -4,23 +4,23 @@ import (
 	"context"
 	"fmt"
 
-	vo "github.com/billykore/project-one/internal/platform/pagination"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
-	"github.com/billykore/project-one/internal/platform/problem"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/billykore/project-one/internal/social/ports"
 )
 
 type feedUseCase struct {
 	postRepo   ports.TimelineReader
 	followRepo ports.FollowRepository
-	log        platformports.Logger
+	log        pkgports.Logger
 }
 
 // NewFeedUseCase creates a new instance of FeedUseCase.
 func NewFeedUseCase(
 	postRepo ports.TimelineReader,
 	followRepo ports.FollowRepository,
-	log platformports.Logger,
+	log pkgports.Logger,
 ) ports.FeedUseCase {
 	if postRepo == nil || followRepo == nil || log == nil {
 		panic("NewFeedUseCase: dependencies must not be nil")

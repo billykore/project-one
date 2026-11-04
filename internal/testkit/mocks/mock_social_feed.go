@@ -13,7 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	valueobject "github.com/billykore/project-one/internal/platform/pagination"
+	valueobject "github.com/billykore/project-one/internal/pkg/pagination"
 	ports "github.com/billykore/project-one/internal/social/ports"
 	gomock "go.uber.org/mock/gomock"
 )

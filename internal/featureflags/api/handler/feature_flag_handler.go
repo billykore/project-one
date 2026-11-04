@@ -8,22 +8,22 @@ import (
 	"github.com/billykore/project-one/internal/featureflags/api/dto"
 	featureflagdomain "github.com/billykore/project-one/internal/featureflags/domain"
 	featureflagports "github.com/billykore/project-one/internal/featureflags/ports"
-	request "github.com/billykore/project-one/internal/platform/api/request"
-	vo "github.com/billykore/project-one/internal/platform/pagination"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
-	"github.com/billykore/project-one/internal/platform/problem"
+	request "github.com/billykore/project-one/internal/pkg/api/request"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/labstack/echo/v4"
 )
 
 // FeatureFlagHandler handles feature-flag evaluation and administration.
 type FeatureFlagHandler struct {
 	useCase     featureflagports.FeatureFlagUseCase
-	validator   platformports.Validator
+	validator   pkgports.Validator
 	environment string
 }
 
 // NewFeatureFlagHandler creates a feature-flag handler.
-func NewFeatureFlagHandler(useCase featureflagports.FeatureFlagUseCase, validator platformports.Validator, environment string) *FeatureFlagHandler {
+func NewFeatureFlagHandler(useCase featureflagports.FeatureFlagUseCase, validator pkgports.Validator, environment string) *FeatureFlagHandler {
 	return &FeatureFlagHandler{useCase: useCase, validator: validator, environment: environment}
 }
 

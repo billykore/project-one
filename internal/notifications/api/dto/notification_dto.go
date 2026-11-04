@@ -52,3 +52,20 @@ func NotificationBody(notificationType domain.NotificationType, actorUsername st
 		return ""
 	}
 }
+
+// NotificationResponseFromDomain maps a stored notification to its API and SSE shape.
+func NotificationResponseFromDomain(notification domain.Notification) *NotificationResponse {
+	return &NotificationResponse{
+		ID:            notification.ID,
+		UserID:        notification.UserID,
+		ActorID:       notification.ActorID,
+		ActorUsername: notification.ActorUsername,
+		Type:          string(notification.Type),
+		PostID:        notification.PostID,
+		CommentID:     notification.CommentID,
+		IsRead:        notification.IsRead,
+		CreatedAt:     notification.CreatedAt,
+		Title:         NotificationTitle(notification.Type),
+		Body:          NotificationBody(notification.Type, notification.ActorUsername),
+	}
+}

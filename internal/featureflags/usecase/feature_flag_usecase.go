@@ -8,22 +8,22 @@ import (
 
 	"github.com/billykore/project-one/internal/featureflags/domain"
 	"github.com/billykore/project-one/internal/featureflags/ports"
-	vo "github.com/billykore/project-one/internal/platform/pagination"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
-	"github.com/billykore/project-one/internal/platform/problem"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
+	"github.com/billykore/project-one/internal/pkg/problem"
 )
 
 type featureFlagUseCase struct {
 	repository ports.FeatureFlagRepository
 	evaluator  ports.FeatureFlagEvaluator
-	logger     platformports.Logger
+	logger     pkgports.Logger
 }
 
 // NewFeatureFlagUseCase creates the feature-flag application service.
 func NewFeatureFlagUseCase(
 	repository ports.FeatureFlagRepository,
 	evaluator ports.FeatureFlagEvaluator,
-	logger platformports.Logger,
+	logger pkgports.Logger,
 ) ports.FeatureFlagUseCase {
 	if repository == nil || evaluator == nil || logger == nil {
 		panic("NewFeatureFlagUseCase: dependencies must not be nil")
@@ -87,7 +87,7 @@ func (uc *featureFlagUseCase) UpdateFlag(ctx context.Context, actor, key, name, 
 		return nil, err
 	}
 	if flag.Lifecycle == domain.LifecycleArchived {
-		return nil, problem.ErrFlagArchived
+		return nil, domain.ErrFlagArchived
 	}
 	if err := validateFlagMetadata(flag.Key, name, purpose, owner); err != nil {
 		return nil, err
@@ -120,10 +120,10 @@ func (uc *featureFlagUseCase) SetEnvironment(ctx context.Context, actor, key str
 		return nil, err
 	}
 	if flag.Lifecycle == domain.LifecycleArchived {
-		return nil, problem.ErrFlagArchived
+		return nil, domain.ErrFlagArchived
 	}
 	previous, getErr := uc.repository.GetSetting(ctx, flag.ID, env)
-	if getErr != nil && !errors.Is(getErr, problem.ErrFlagSettingNotFound) {
+	if getErr != nil && !errors.Is(getErr, domain.ErrFlagSettingNotFound) {
 		return nil, getErr
 	}
 	setting := &domain.EnvironmentSetting{FlagID: flag.ID, Environment: env, Mode: mode, RolloutPercentage: percentage}
@@ -156,7 +156,7 @@ func (uc *featureFlagUseCase) SetOverrides(ctx context.Context, actor, key strin
 	}
 	for _, username := range excludes {
 		if _, exists := includeSet[strings.TrimSpace(username)]; exists {
-			return problem.ErrConflictingOverrides
+			return domain.ErrConflictingOverrides
 		}
 	}
 	flag, err := uc.repository.GetByKey(ctx, normalizeFlagKey(key))
@@ -164,7 +164,7 @@ func (uc *featureFlagUseCase) SetOverrides(ctx context.Context, actor, key strin
 		return err
 	}
 	if flag.Lifecycle == domain.LifecycleArchived {
-		return problem.ErrFlagArchived
+		return domain.ErrFlagArchived
 	}
 	if err := uc.repository.SetOverrides(ctx, flag.ID, env, normalizedUsernames(includes), normalizedUsernames(excludes)); err != nil {
 		return err
@@ -185,7 +185,7 @@ func (uc *featureFlagUseCase) Archive(ctx context.Context, actor, key, reason st
 		return err
 	}
 	if flag.Lifecycle == domain.LifecycleArchived {
-		return problem.ErrFlagArchived
+		return domain.ErrFlagArchived
 	}
 	if err := uc.repository.Archive(ctx, flag.Key); err != nil {
 		return err

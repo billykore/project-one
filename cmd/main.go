@@ -24,6 +24,7 @@ import (
 	identityapi "github.com/billykore/project-one/internal/identity/api"
 	identityhandler "github.com/billykore/project-one/internal/identity/api/handler"
 	identityusecase "github.com/billykore/project-one/internal/identity/usecase"
+	notificationconsumer "github.com/billykore/project-one/internal/notifications/adapters/consumer"
 	notificationrepository "github.com/billykore/project-one/internal/notifications/adapters/repository"
 	sseadapter "github.com/billykore/project-one/internal/notifications/adapters/sse"
 	notificationsapi "github.com/billykore/project-one/internal/notifications/api"
@@ -36,13 +37,13 @@ import (
 	operationsmiddleware "github.com/billykore/project-one/internal/operations/api/middleware"
 	operationsports "github.com/billykore/project-one/internal/operations/ports"
 	operationsusecase "github.com/billykore/project-one/internal/operations/usecase"
-	"github.com/billykore/project-one/internal/platform/adapters/logger"
-	"github.com/billykore/project-one/internal/platform/adapters/pubsub"
-	"github.com/billykore/project-one/internal/platform/adapters/validator"
-	platformmiddleware "github.com/billykore/project-one/internal/platform/api/middleware"
-	"github.com/billykore/project-one/internal/platform/config"
-	"github.com/billykore/project-one/internal/platform/outbox"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
+	"github.com/billykore/project-one/internal/pkg/adapters/logger"
+	"github.com/billykore/project-one/internal/pkg/adapters/pubsub"
+	"github.com/billykore/project-one/internal/pkg/adapters/validator"
+	pkgmiddleware "github.com/billykore/project-one/internal/pkg/api/middleware"
+	"github.com/billykore/project-one/internal/pkg/config"
+	"github.com/billykore/project-one/internal/pkg/outbox"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 	publishingrepository "github.com/billykore/project-one/internal/publishing/adapters"
 	publishingapi "github.com/billykore/project-one/internal/publishing/api"
 	publishinghandler "github.com/billykore/project-one/internal/publishing/api/handler"
@@ -68,12 +69,12 @@ import (
 // @in							header
 // @name						Authorization
 type application struct {
-	echo                *echo.Echo
-	db                  *gorm.DB
-	publisher           platformports.Publisher
-	subscriber          platformports.Subscriber
-	sseManager          *sseadapter.Manager
-	notificationHandler *notificationhandler.NotificationHandler
+	echo                 *echo.Echo
+	db                   *gorm.DB
+	publisher            pkgports.Publisher
+	subscriber           pkgports.Subscriber
+	sseManager           *sseadapter.Manager
+	notificationConsumer *notificationconsumer.Consumer
 }
 
 func main() {
@@ -85,7 +86,7 @@ func main() {
 
 	lgr := logger.New()
 
-	cfg, err := config.Load(*configPath)
+	cfg, err := loadConfig(*configPath)
 	if err != nil {
 		lgr.Fatal(ctx, "failed to load config", "error", err)
 	}
@@ -105,7 +106,7 @@ func main() {
 	lgr.Info(ctx, "starting server", "port", cfg.App.Port)
 
 	go func() {
-		if err := app.notificationHandler.Listen(ctx); err != nil {
+		if err := app.notificationConsumer.Run(ctx); err != nil {
 			lgr.Fatal(ctx, "failed to start notification consumer", "error", err)
 		}
 	}()
@@ -129,7 +130,7 @@ func main() {
 	}
 }
 
-func newApplication(ctx context.Context, cfg *config.Config, privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey, lgr *logger.Logger) (*application, error) {
+func newApplication(ctx context.Context, cfg *Config, privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey, lgr *logger.Logger) (*application, error) {
 	db, err := setupDB(cfg.Database)
 	if err != nil {
 		return nil, err
@@ -148,6 +149,9 @@ func newApplication(ctx context.Context, cfg *config.Config, privateKey *rsa.Pri
 	val := validator.New()
 
 	userRepo := identityrepository.NewUserRepository(db)
+	publishingUsers := publishingrepository.NewUserLookup(userRepo)
+	socialAccounts := socialrepository.NewAccountLookup(userRepo)
+	notificationActors := notificationrepository.NewActorLookup(userRepo)
 	userSearchRepo := identityrepository.NewUserSearchRepository(db)
 	userTokenRepo := identityrepository.NewUserTokenRepository(db)
 	postCommandRepo := publishingrepository.NewPostCommandRepository(db)
@@ -178,19 +182,20 @@ func newApplication(ctx context.Context, cfg *config.Config, privateKey *rsa.Pri
 	}
 	featureFlagEvaluator.StartRefreshLoop(ctx)
 	featureFlagUc := featureflagusecase.NewFeatureFlagUseCase(featureFlagRepo, featureFlagEvaluator, lgr)
-	postCommandUc := publishingusecase.NewPostCommandUseCase(postCommandRepo, likeRepo, userRepo, outboxPublisher, lgr, featureFlagEvaluator)
+	postCommandUc := publishingusecase.NewPostCommandUseCase(postCommandRepo, likeRepo, publishingUsers, outboxPublisher, lgr, featureFlagEvaluator)
 	postQueryUc := publishingusecase.NewPostQueryUseCase(postQueryRepo, likeRepo, lgr)
-	followUc := socialusecase.NewFollowUseCase(followRepo, userRepo, outboxPublisher, lgr)
-	commentUc := publishingusecase.NewCommentUseCase(commentRepo, postCommandRepo, userRepo, outboxPublisher)
-	notificationUc := notificationusecase.NewNotificationUseCase(notificationRepo, userRepo, lgr)
+	followUc := socialusecase.NewFollowUseCase(followRepo, socialAccounts, outboxPublisher, lgr)
+	commentUc := publishingusecase.NewCommentUseCase(commentRepo, postCommandRepo, publishingUsers, outboxPublisher)
+	notificationUc := notificationusecase.NewNotificationUseCase(notificationRepo, notificationActors, sseadapter.NewNotifier(sseManager), lgr)
 	feedUc := socialusecase.NewFeedUseCase(postQueryRepo, followRepo, lgr)
 
 	userHdl := identityhandler.NewUserHandler(userUc, loginUc, val, lgr, cfg.App.Env == "production")
 	postCommandHdl := publishinghandler.NewPostCommandHandler(postCommandUc, commentUc, val, lgr)
 	postQueryHdl := publishinghandler.NewPostQueryHandler(postQueryUc, commentUc, lgr)
-	userPostsHdl := publishinghandler.NewUserPostsHandler(postQueryUc, userRepo, lgr)
+	userPostsHdl := publishinghandler.NewUserPostsHandler(postQueryUc, publishingUsers, lgr)
 	commentHdl := publishinghandler.NewCommentHandler(commentUc, val, lgr)
-	notificationHdl := notificationhandler.NewNotificationHandler(lgr, subscriber, notificationUc, userUc, val, sseManager)
+	notificationHdl := notificationhandler.NewNotificationHandler(lgr, notificationUc, sseManager)
+	notificationConsumer := notificationconsumer.NewConsumer(subscriber, notificationUc, lgr)
 	feedHdl := socialhandler.NewFeedHandler(feedUc, lgr)
 	followHdl := socialhandler.NewFollowHandler(followUc, val, lgr)
 	featureFlagHdl := featureflaghandler.NewFeatureFlagHandler(featureFlagUc, val, cfg.FeatureFlags.Environment)
@@ -205,7 +210,7 @@ func newApplication(ctx context.Context, cfg *config.Config, privateKey *rsa.Pri
 	healthCheckers := []operationsports.DependencyChecker{
 		healthadapter.NewDatabaseChecker(sqlDB),
 	}
-	if reporter, ok := subscriber.(platformports.HealthReporter); ok {
+	if reporter, ok := subscriber.(pkgports.HealthReporter); ok {
 		healthCheckers = append(healthCheckers, healthadapter.NewNotificationChecker(cfg.MessageBroker.Type, reporter))
 	} else {
 		lgr.Warn(context.Background(), "message broker does not report connection health", "type", cfg.MessageBroker.Type)
@@ -232,8 +237,8 @@ func newApplication(ctx context.Context, cfg *config.Config, privateKey *rsa.Pri
 	e.Use(operationsmiddleware.Metrics(metricsRecorder))
 	e.Use(echomiddleware.Recover())
 	e.Use(echomiddleware.RequestID())
-	e.Use(platformmiddleware.RequestLogging(lgr))
-	e.HTTPErrorHandler = platformmiddleware.ErrorHandler(lgr, cfg.App.ErrorTypeBaseURL, cfg.App.Env == "debug")
+	e.Use(pkgmiddleware.RequestLogging(lgr))
+	e.HTTPErrorHandler = pkgmiddleware.ErrorHandler(lgr, cfg.App.ErrorTypeBaseURL, cfg.App.Env == "debug")
 
 	if cfg.App.Env != "production" {
 		e.GET("/swagger/*", echoSwagger.WrapHandler)
@@ -247,12 +252,12 @@ func newApplication(ctx context.Context, cfg *config.Config, privateKey *rsa.Pri
 	operationsapi.RegisterRoutes(e, healthHdl, metricsRecorder.Handler(monitoringCredential))
 
 	return &application{
-		echo:                e,
-		db:                  db,
-		publisher:           publisher,
-		subscriber:          subscriber,
-		sseManager:          sseManager,
-		notificationHandler: notificationHdl,
+		echo:                 e,
+		db:                   db,
+		publisher:            publisher,
+		subscriber:           subscriber,
+		sseManager:           sseManager,
+		notificationConsumer: notificationConsumer,
 	}, nil
 }
 

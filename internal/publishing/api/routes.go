@@ -6,6 +6,7 @@ import (
 	featureflagports "github.com/billykore/project-one/internal/featureflags/ports"
 	identitymiddleware "github.com/billykore/project-one/internal/identity/api/middleware"
 	identityports "github.com/billykore/project-one/internal/identity/ports"
+	pkgmiddleware "github.com/billykore/project-one/internal/pkg/api/middleware"
 	publishinghandler "github.com/billykore/project-one/internal/publishing/api/handler"
 	"github.com/labstack/echo/v4"
 )
@@ -20,6 +21,8 @@ func RegisterRoutes(
 	commentHandler *publishinghandler.CommentHandler,
 	featureFlagEvaluator featureflagports.FeatureFlagEvaluator,
 ) {
+	pkgmiddleware.RegisterErrorMappings(errorMappings)
+
 	e.GET("/posts/:id", postQueryHandler.GetPostByID)
 	e.GET("/users/:username/posts", userPostsHandler.GetUserPosts)
 

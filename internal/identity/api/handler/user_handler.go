@@ -9,18 +9,18 @@ import (
 	"github.com/billykore/project-one/internal/identity/api/dto"
 	identitydomain "github.com/billykore/project-one/internal/identity/domain"
 	identityports "github.com/billykore/project-one/internal/identity/ports"
-	request "github.com/billykore/project-one/internal/platform/api/request"
-	vo "github.com/billykore/project-one/internal/platform/pagination"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
-	"github.com/billykore/project-one/internal/platform/problem"
+	request "github.com/billykore/project-one/internal/pkg/api/request"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/labstack/echo/v4"
 )
 
 type UserHandler struct {
 	userUseCase   identityports.UserUseCase
 	loginUseCase  identityports.LoginUseCase
-	validator     platformports.Validator
-	log           platformports.Logger
+	validator     pkgports.Validator
+	log           pkgports.Logger
 	secureCookies bool
 }
 
@@ -28,8 +28,8 @@ type UserHandler struct {
 func NewUserHandler(
 	userUseCase identityports.UserUseCase,
 	loginUseCase identityports.LoginUseCase,
-	validator platformports.Validator,
-	log platformports.Logger,
+	validator pkgports.Validator,
+	log pkgports.Logger,
 	secureCookies bool,
 ) *UserHandler {
 	// ponytail: nil checks removed — Go panics at method call site on nil pointer

@@ -7,7 +7,6 @@ import (
 
 	"github.com/billykore/project-one/internal/identity/domain"
 	"github.com/billykore/project-one/internal/identity/ports"
-	"github.com/billykore/project-one/internal/platform/problem"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -49,23 +48,23 @@ func (s *jwtTokenService) GenerateTokens(_ context.Context, user *domain.User) (
 func (s *jwtTokenService) ValidateToken(_ context.Context, tokenString string) (*domain.User, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, problem.ErrUntrustedToken
+			return nil, domain.ErrUntrustedToken
 		}
 		return s.publicKey, nil
 	})
 
 	if err != nil || !token.Valid {
-		return nil, problem.ErrUntrustedToken
+		return nil, domain.ErrUntrustedToken
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		return nil, problem.ErrUntrustedToken
+		return nil, domain.ErrUntrustedToken
 	}
 
 	userID, ok := claimInt(claims["userID"])
 	if !ok {
-		return nil, problem.ErrUntrustedToken
+		return nil, domain.ErrUntrustedToken
 	}
 
 	return &domain.User{

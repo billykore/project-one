@@ -5,6 +5,38 @@ All notable changes to Project One are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Renamed the restricted shared technical kernel from `internal/platform` to
+  `internal/pkg`. Branches importing `internal/platform/...` must update their
+  import paths; regenerate mocks with `make mocks`.
+- Enforced the shared-kernel boundary with a `depguard` lint rule: `internal/pkg`
+  can no longer import a bounded context.
+- Moved context-owned sentinel errors from `internal/pkg/problem` into each
+  context's `domain` package; each context registers its problem-details
+  mappings from its `RegisterRoutes`. HTTP status codes and messages are unchanged.
+- Replaced the `auth.Principal` alias of the identity user with a struct that
+  carries only `ID` and `Username`.
+- Moved aggregate configuration loading into `cmd`; each context validates its
+  own settings.
+- Moved the notification broker consumer out of the HTTP handler into
+  `notifications/adapters/consumer`; the use case now owns event recording and
+  realtime delivery through a `RealtimeNotifier` port.
+- Publishing, social, and notifications no longer use identity's `User`
+  aggregate. Each defines its own `ID`/`Username` projection (`Author`,
+  `Account`, `Actor`) filled by a lookup adapter, and a `depguard` rule keeps
+  `identity/domain` out of their domain, ports, use cases, and API packages.
+- Removed the unused identity use case and validator dependencies from the
+  notification HTTP handler.
+
+### Fixed
+
+- Redelivered notification events are acknowledged as duplicates again. With
+  GORM's `TranslateError` enabled, the consumer's error-message check never
+  matched, so each duplicate was retried and then dead-lettered.
+
 ## [5.1.0] - 2026-09-26 (fb60339)
 
 ### Changed
@@ -180,6 +212,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 - Full-stack authentication, including registration, login, logout, and session handling.
 
+[Unreleased]: https://github.com/billykore/project-one/compare/v5.1.0...HEAD
 [5.1.0]: https://github.com/billykore/project-one/compare/v5.0.0...v5.1.0
 [5.0.0]: https://github.com/billykore/project-one/compare/v4.1.0...v5.0.0
 [4.1.0]: https://github.com/billykore/project-one/compare/v4.0.0...v4.1.0

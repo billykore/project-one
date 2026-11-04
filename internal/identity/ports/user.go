@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/billykore/project-one/internal/identity/domain"
-	vo "github.com/billykore/project-one/internal/platform/pagination"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
 )
 
 // UserRepository is a driven port for user persistence.

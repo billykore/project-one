@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/billykore/project-one/internal/identity/domain"
-	vo "github.com/billykore/project-one/internal/platform/pagination"
-	"github.com/billykore/project-one/internal/platform/problem"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/billykore/project-one/internal/testkit/mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -92,7 +92,7 @@ func TestUserUseCase_Register(t *testing.T) {
 
 		err := svc.Register(ctx, user)
 
-		assert.ErrorIs(t, err, problem.ErrEmailAlreadyRegistered)
+		assert.ErrorIs(t, err, domain.ErrEmailAlreadyRegistered)
 	})
 
 	t.Run("username already taken", func(t *testing.T) {
@@ -106,7 +106,7 @@ func TestUserUseCase_Register(t *testing.T) {
 
 		err := svc.Register(ctx, user)
 
-		assert.ErrorIs(t, err, problem.ErrUsernameAlreadyTaken)
+		assert.ErrorIs(t, err, domain.ErrUsernameAlreadyTaken)
 	})
 
 	t.Run("validation failure", func(t *testing.T) {
@@ -172,10 +172,10 @@ func TestUserUseCase_ChangePassword(t *testing.T) {
 			Password: "hashed_old_password",
 		}
 		mockRepo.EXPECT().GetUserByID(ctx, userID).Return(existingUser, nil)
-		mockHasher.EXPECT().Compare(ctx, "wrong_old_password", "hashed_old_password").Return(problem.ErrInvalidCredentials)
+		mockHasher.EXPECT().Compare(ctx, "wrong_old_password", "hashed_old_password").Return(domain.ErrInvalidCredentials)
 
 		err := svc.ChangePassword(ctx, userID, "wrong_old_password", "new_password_123")
-		assert.ErrorIs(t, err, problem.ErrInvalidCredentials)
+		assert.ErrorIs(t, err, domain.ErrInvalidCredentials)
 	})
 
 	t.Run("validation failed - too short", func(t *testing.T) {
@@ -188,7 +188,7 @@ func TestUserUseCase_ChangePassword(t *testing.T) {
 		mockHasher.EXPECT().Compare(ctx, "old_password", "hashed_old_password").Return(nil)
 
 		err := svc.ChangePassword(ctx, userID, "old_password", "short")
-		assert.ErrorIs(t, err, problem.ErrPasswordTooShort)
+		assert.ErrorIs(t, err, domain.ErrPasswordTooShort)
 	})
 
 	t.Run("invalid user id", func(t *testing.T) {
@@ -282,7 +282,7 @@ func TestUserUseCase_UpdateProfile(t *testing.T) {
 		mockRepo.EXPECT().GetUserByUsername(ctx, newUsername).Return(&domain.User{ID: 2, Username: newUsername}, nil)
 
 		err := svc.UpdateProfile(ctx, userID, updatedUser)
-		assert.ErrorIs(t, err, problem.ErrUsernameAlreadyTaken)
+		assert.ErrorIs(t, err, domain.ErrUsernameAlreadyTaken)
 	})
 
 	t.Run("validation failure - empty first name", func(t *testing.T) {
@@ -368,13 +368,13 @@ func TestUserUseCase_SearchUsers(t *testing.T) {
 
 	t.Run("query too short - 2 chars", func(t *testing.T) {
 		results, _, _, err := svc.SearchUsers(ctx, "ab", nil, 10)
-		assert.ErrorIs(t, err, problem.ErrSearchQueryTooShort)
+		assert.ErrorIs(t, err, domain.ErrSearchQueryTooShort)
 		assert.Nil(t, results)
 	})
 
 	t.Run("query too short - empty", func(t *testing.T) {
 		results, _, _, err := svc.SearchUsers(ctx, "", nil, 10)
-		assert.ErrorIs(t, err, problem.ErrSearchQueryTooShort)
+		assert.ErrorIs(t, err, domain.ErrSearchQueryTooShort)
 		assert.Nil(t, results)
 	})
 

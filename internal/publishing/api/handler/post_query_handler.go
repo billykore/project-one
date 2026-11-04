@@ -4,11 +4,12 @@ import (
 	"net/http"
 	"strconv"
 
-	request "github.com/billykore/project-one/internal/platform/api/request"
-	vo "github.com/billykore/project-one/internal/platform/pagination"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
-	"github.com/billykore/project-one/internal/platform/problem"
+	request "github.com/billykore/project-one/internal/pkg/api/request"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/billykore/project-one/internal/publishing/api/dto"
+	"github.com/billykore/project-one/internal/publishing/domain"
 	publishingports "github.com/billykore/project-one/internal/publishing/ports"
 	"github.com/labstack/echo/v4"
 )
@@ -17,10 +18,10 @@ import (
 type PostQueryHandler struct {
 	postUseCase    publishingports.PostQueryUseCase
 	commentUseCase publishingports.CommentUseCase
-	log            platformports.Logger
+	log            pkgports.Logger
 }
 
-func NewPostQueryHandler(postUseCase publishingports.PostQueryUseCase, commentUseCase publishingports.CommentUseCase, log platformports.Logger) *PostQueryHandler {
+func NewPostQueryHandler(postUseCase publishingports.PostQueryUseCase, commentUseCase publishingports.CommentUseCase, log pkgports.Logger) *PostQueryHandler {
 	return &PostQueryHandler{postUseCase: postUseCase, commentUseCase: commentUseCase, log: log}
 }
 
@@ -36,7 +37,7 @@ func NewPostQueryHandler(postUseCase publishingports.PostQueryUseCase, commentUs
 func (h *PostQueryHandler) GetPostByID(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return problem.ErrPostIDMustBeANumber
+		return domain.ErrPostIDMustBeANumber
 	}
 	post, err := h.postUseCase.GetPostByID(c.Request().Context(), id)
 	if err != nil {
@@ -117,7 +118,7 @@ func (h *PostQueryHandler) GetLikeStatus(c echo.Context) error {
 	}
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return problem.ErrPostIDMustBeANumber
+		return domain.ErrPostIDMustBeANumber
 	}
 	liked, count, err := h.postUseCase.GetLikeStatus(c.Request().Context(), id, user.ID)
 	if err != nil {

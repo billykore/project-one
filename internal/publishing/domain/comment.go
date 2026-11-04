@@ -3,8 +3,6 @@ package domain
 import (
 	"strings"
 	"time"
-
-	"github.com/billykore/project-one/internal/platform/problem"
 )
 
 // Comment is the core domain entity representing a comment on a post.
@@ -22,7 +20,7 @@ type Comment struct {
 // Validate performs domain-level validation on the Comment entity.
 func (c *Comment) Validate() error {
 	if len(strings.TrimSpace(c.Content)) < 1 {
-		return problem.ErrCommentTooShort
+		return ErrCommentTooShort
 	}
 	return nil
 }

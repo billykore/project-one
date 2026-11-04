@@ -42,6 +42,9 @@ linters:
     - protogetter             # prefer protobuf getters over direct field access
     - sloglint                # consistent log/slog usage
 
+    # --- Architecture boundaries ---
+    - depguard                # internal/pkg must not import bounded contexts
+
     # --- Readability and maintenance ---
     - dupword                 # duplicated words in comments and strings
     - godox                   # leftover TODO/FIXME/BUG markers
@@ -53,6 +56,49 @@ linters:
     - whitespace              # leading/trailing whitespace in blocks
 
   settings:
+    depguard:
+      rules:
+        shared-kernel:
+          files:
+            - "**/internal/pkg/**"
+          deny:
+            - pkg: github.com/billykore/project-one/internal/identity
+              desc: internal/pkg is the technical shared kernel and must not depend on bounded contexts
+            - pkg: github.com/billykore/project-one/internal/publishing
+              desc: internal/pkg is the technical shared kernel and must not depend on bounded contexts
+            - pkg: github.com/billykore/project-one/internal/social
+              desc: internal/pkg is the technical shared kernel and must not depend on bounded contexts
+            - pkg: github.com/billykore/project-one/internal/notifications
+              desc: internal/pkg is the technical shared kernel and must not depend on bounded contexts
+            - pkg: github.com/billykore/project-one/internal/featureflags
+              desc: internal/pkg is the technical shared kernel and must not depend on bounded contexts
+            - pkg: github.com/billykore/project-one/internal/operations
+              desc: internal/pkg is the technical shared kernel and must not depend on bounded contexts
+        identity-aggregate:
+          files:
+            - "**/internal/publishing/domain/**"
+            - "**/internal/publishing/ports/**"
+            - "**/internal/publishing/usecase/**"
+            - "**/internal/publishing/api/**"
+            - "**/internal/social/domain/**"
+            - "**/internal/social/ports/**"
+            - "**/internal/social/usecase/**"
+            - "**/internal/social/api/**"
+            - "**/internal/notifications/domain/**"
+            - "**/internal/notifications/ports/**"
+            - "**/internal/notifications/usecase/**"
+            - "**/internal/notifications/api/**"
+            - "**/internal/featureflags/domain/**"
+            - "**/internal/featureflags/ports/**"
+            - "**/internal/featureflags/usecase/**"
+            - "**/internal/featureflags/api/**"
+            - "**/internal/operations/domain/**"
+            - "**/internal/operations/ports/**"
+            - "**/internal/operations/usecase/**"
+            - "**/internal/operations/api/**"
+          deny:
+            - pkg: github.com/billykore/project-one/internal/identity/domain
+              desc: other contexts use their own user projection; only lookup adapters may translate identity users
     govet:
       # every vet analyzer, minus the two that are known to be opinionated
       enable-all: true

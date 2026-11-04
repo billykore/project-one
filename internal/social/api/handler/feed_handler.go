@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
-	request "github.com/billykore/project-one/internal/platform/api/request"
-	vo "github.com/billykore/project-one/internal/platform/pagination"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
+	request "github.com/billykore/project-one/internal/pkg/api/request"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 	"github.com/billykore/project-one/internal/social/api/dto"
 	socialports "github.com/billykore/project-one/internal/social/ports"
 	"github.com/labstack/echo/v4"
@@ -14,11 +14,11 @@ import (
 
 type FeedHandler struct {
 	feedUseCase socialports.FeedUseCase
-	log         platformports.Logger
+	log         pkgports.Logger
 }
 
 // NewFeedHandler creates a new instance of FeedHandler.
-func NewFeedHandler(feedUseCase socialports.FeedUseCase, log platformports.Logger) *FeedHandler {
+func NewFeedHandler(feedUseCase socialports.FeedUseCase, log pkgports.Logger) *FeedHandler {
 	// ponytail: nil checks removed — Go panics at method call site on nil pointer
 	return &FeedHandler{
 		feedUseCase: feedUseCase,

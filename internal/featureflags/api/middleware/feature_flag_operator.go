@@ -3,7 +3,7 @@ package middleware
 import (
 	"strings"
 
-	"github.com/billykore/project-one/internal/platform/problem"
+	"github.com/billykore/project-one/internal/featureflags/domain"
 	"github.com/labstack/echo/v4"
 )
 
@@ -22,7 +22,7 @@ func OperatorOnly(usernames []string) echo.MiddlewareFunc {
 				return echo.ErrForbidden
 			}
 			if _, ok := allowed[username]; !ok {
-				return problem.ErrOperatorOnly
+				return domain.ErrOperatorOnly
 			}
 			return next(c)
 		}

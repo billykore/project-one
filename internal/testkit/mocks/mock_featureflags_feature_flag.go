@@ -14,7 +14,7 @@ import (
 	reflect "reflect"
 
 	domain "github.com/billykore/project-one/internal/featureflags/domain"
-	valueobject "github.com/billykore/project-one/internal/platform/pagination"
+	valueobject "github.com/billykore/project-one/internal/pkg/pagination"
 	gomock "go.uber.org/mock/gomock"
 )
 

@@ -4,13 +4,13 @@ import (
 	"context"
 
 	featureflagdomain "github.com/billykore/project-one/internal/featureflags/domain"
-	identitydomain "github.com/billykore/project-one/internal/identity/domain"
+	"github.com/billykore/project-one/internal/publishing/domain"
 )
 
 // UserLookup is publishing's narrow view of the identity context.
 type UserLookup interface {
-	GetUserByID(ctx context.Context, id int) (*identitydomain.User, error)
-	GetUserByUsername(ctx context.Context, username string) (*identitydomain.User, error)
+	GetUserByID(ctx context.Context, id int) (*domain.Author, error)
+	GetUserByUsername(ctx context.Context, username string) (*domain.Author, error)
 }
 
 // FeatureEvaluator is publishing's release-control dependency. It exposes only

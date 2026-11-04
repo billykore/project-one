@@ -79,7 +79,7 @@ mocks:
 	@echo "Mock Generation"
 	@mkdir -p internal/testkit/mocks
 	@rm -f internal/testkit/mocks/mock_*.go
-	@for file in internal/featureflags/ports/*.go internal/identity/ports/*.go internal/notifications/ports/*.go internal/operations/ports/*.go internal/publishing/ports/*.go internal/social/ports/*.go internal/platform/ports/*.go; do \
+	@for file in internal/featureflags/ports/*.go internal/identity/ports/*.go internal/notifications/ports/*.go internal/operations/ports/*.go internal/publishing/ports/*.go internal/social/ports/*.go internal/pkg/ports/*.go; do \
 		filename=$$(basename $$file); \
 		context=$$(basename $$(dirname $$(dirname $$file))); \
 		mockname="mock_$${context}_$$filename"; \

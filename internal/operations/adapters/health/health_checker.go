@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/billykore/project-one/internal/operations/ports"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
 )
 
 // componentDatabase is the stable component name of the application store.
@@ -43,14 +43,14 @@ func (c *databaseChecker) Check(ctx context.Context) error {
 
 type notificationChecker struct {
 	name     string
-	reporter platformports.HealthReporter
+	reporter pkgports.HealthReporter
 }
 
 // NewNotificationChecker creates a dependency checker for notification delivery.
 // It reads the broker client's connection state instead of publishing a
 // synthetic event, so readiness never mutates delivery state. The subscriber is
 // used rather than the publisher because the publisher connects lazily.
-func NewNotificationChecker(name string, reporter platformports.HealthReporter) ports.DependencyChecker {
+func NewNotificationChecker(name string, reporter pkgports.HealthReporter) ports.DependencyChecker {
 	if name == "" {
 		name = "broker"
 	}

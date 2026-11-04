@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/billykore/project-one/internal/identity/domain"
-	"github.com/billykore/project-one/internal/platform/problem"
 	"github.com/billykore/project-one/internal/testkit/mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -40,7 +39,7 @@ func TestAuthenticationUseCase_Authenticate(t *testing.T) {
 		user, err := uc.Authenticate(ctx, "revoked")
 
 		assert.Nil(t, user)
-		assert.ErrorIs(t, err, problem.ErrUntrustedToken)
+		assert.ErrorIs(t, err, domain.ErrUntrustedToken)
 	})
 
 	t.Run("does not expose verifier or repository failures", func(t *testing.T) {
@@ -49,6 +48,6 @@ func TestAuthenticationUseCase_Authenticate(t *testing.T) {
 		user, err := uc.Authenticate(ctx, "broken")
 
 		assert.Nil(t, user)
-		assert.ErrorIs(t, err, problem.ErrUntrustedToken)
+		assert.ErrorIs(t, err, domain.ErrUntrustedToken)
 	})
 }

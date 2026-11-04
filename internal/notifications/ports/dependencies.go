@@ -3,10 +3,10 @@ package ports
 import (
 	"context"
 
-	identitydomain "github.com/billykore/project-one/internal/identity/domain"
+	"github.com/billykore/project-one/internal/notifications/domain"
 )
 
 // ActorLookup is notifications' narrow identity projection dependency.
 type ActorLookup interface {
-	GetUserByID(ctx context.Context, id int) (*identitydomain.User, error)
+	GetUserByID(ctx context.Context, id int) (*domain.Actor, error)
 }

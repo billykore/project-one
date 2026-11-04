@@ -7,10 +7,10 @@ import (
 	"time"
 
 	notificationdomain "github.com/billykore/project-one/internal/notifications/domain"
-	"github.com/billykore/project-one/internal/platform/auth"
-	vo "github.com/billykore/project-one/internal/platform/pagination"
-	platformports "github.com/billykore/project-one/internal/platform/ports"
-	"github.com/billykore/project-one/internal/platform/problem"
+	"github.com/billykore/project-one/internal/pkg/auth"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
+	pkgports "github.com/billykore/project-one/internal/pkg/ports"
+	"github.com/billykore/project-one/internal/pkg/problem"
 	"github.com/billykore/project-one/internal/social/domain"
 	"github.com/billykore/project-one/internal/social/ports"
 )
@@ -20,16 +20,16 @@ const followNotificationTopic = "notifications"
 type followUseCase struct {
 	followRepo ports.FollowRepository
 	userRepo   ports.AccountLookup
-	publisher  platformports.Publisher
-	log        platformports.Logger
+	publisher  pkgports.Publisher
+	log        pkgports.Logger
 }
 
 // NewFollowUseCase creates a new instance of FollowUseCase.
 func NewFollowUseCase(
 	followRepo ports.FollowRepository,
 	userRepo ports.AccountLookup,
-	publisher platformports.Publisher,
-	log platformports.Logger,
+	publisher pkgports.Publisher,
+	log pkgports.Logger,
 ) ports.FollowUseCase {
 	if followRepo == nil || userRepo == nil || publisher == nil || log == nil {
 		panic("NewFollowUseCase: dependencies must not be nil")
@@ -56,7 +56,7 @@ func (u *followUseCase) Follow(ctx context.Context, actor *auth.Principal, follo
 		return nil, fmt.Errorf("get user: %w", problem.ErrUserNotFound)
 	}
 	if actor.ID == followed.ID {
-		return nil, problem.ErrCannotFollowSelf
+		return nil, domain.ErrCannotFollowSelf
 	}
 
 	follow := &domain.Follow{
@@ -66,17 +66,17 @@ func (u *followUseCase) Follow(ctx context.Context, actor *auth.Principal, follo
 		FollowedUsername: followed.Username,
 	}
 
-	if err := platformports.InTransaction(ctx, u.publisher, func(txCtx context.Context) error {
+	if err := pkgports.InTransaction(ctx, u.publisher, func(txCtx context.Context) error {
 		if err := u.followRepo.Create(txCtx, follow); err != nil {
 			return fmt.Errorf("create follow: %w", err)
 		}
 		notification := notificationdomain.Notification{UserID: followed.ID, ActorID: actor.ID, ActorUsername: actor.Username, Type: notificationdomain.NotificationTypeFollow, CreatedAt: follow.CreatedAt}
-		notificationEvent := notificationdomain.NotificationEvent{EventID: fmt.Sprintf("backend-%d", time.Now().UnixNano()), SchemaVersion: "1.0", Timestamp: time.Now().UTC().Format(time.RFC3339Nano), Notification: notification}
+		notificationEvent := notificationdomain.NotificationEvent{EventID: fmt.Sprintf("backend-%d", time.Now().UnixNano()), SchemaVersion: notificationdomain.NotificationEventSchemaVersion, Timestamp: time.Now().UTC().Format(time.RFC3339Nano), Notification: notification}
 		payload, err := json.Marshal(notificationEvent)
 		if err != nil {
 			return fmt.Errorf("marshal follow notification: %w", err)
 		}
-		return u.publisher.Publish(txCtx, platformports.Event{Topic: followNotificationTopic, Key: fmt.Sprintf("user:%d", followed.ID), Payload: payload, Metadata: map[string]string{"event_id": notificationEvent.EventID, "schema_version": notificationEvent.SchemaVersion, "timestamp": notificationEvent.Timestamp}})
+		return u.publisher.Publish(txCtx, pkgports.Event{Topic: followNotificationTopic, Key: fmt.Sprintf("user:%d", followed.ID), Payload: payload, Metadata: map[string]string{"event_id": notificationEvent.EventID, "schema_version": notificationEvent.SchemaVersion, "timestamp": notificationEvent.Timestamp}})
 	}); err != nil {
 		return nil, err
 	}
@@ -96,7 +96,7 @@ func (u *followUseCase) Unfollow(ctx context.Context, actor *auth.Principal, fol
 		return problem.ErrUserNotFound
 	}
 	if actor.ID == followed.ID {
-		return problem.ErrCannotUnfollowSelf
+		return domain.ErrCannotUnfollowSelf
 	}
 	if err := u.followRepo.Delete(ctx, actor.ID, followed.ID); err != nil {
 		return fmt.Errorf("delete follow: %w", err)

@@ -14,7 +14,7 @@ import (
 	reflect "reflect"
 
 	domain "github.com/billykore/project-one/internal/featureflags/domain"
-	domain0 "github.com/billykore/project-one/internal/identity/domain"
+	domain0 "github.com/billykore/project-one/internal/publishing/domain"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -43,10 +43,10 @@ func (m *MockUserLookup) EXPECT() *MockUserLookupMockRecorder {
 }
 
 // GetUserByID mocks base method.
-func (m *MockUserLookup) GetUserByID(ctx context.Context, id int) (*domain0.User, error) {
+func (m *MockUserLookup) GetUserByID(ctx context.Context, id int) (*domain0.Author, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserByID", ctx, id)
-	ret0, _ := ret[0].(*domain0.User)
+	ret0, _ := ret[0].(*domain0.Author)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -58,10 +58,10 @@ func (mr *MockUserLookupMockRecorder) GetUserByID(ctx, id any) *gomock.Call {
 }
 
 // GetUserByUsername mocks base method.
-func (m *MockUserLookup) GetUserByUsername(ctx context.Context, username string) (*domain0.User, error) {
+func (m *MockUserLookup) GetUserByUsername(ctx context.Context, username string) (*domain0.Author, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserByUsername", ctx, username)
-	ret0, _ := ret[0].(*domain0.User)
+	ret0, _ := ret[0].(*domain0.Author)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

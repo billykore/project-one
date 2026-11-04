@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	metricsadapter "github.com/billykore/project-one/internal/operations/adapters/metrics"
-	platformmiddleware "github.com/billykore/project-one/internal/platform/api/middleware"
+	pkgmiddleware "github.com/billykore/project-one/internal/pkg/api/middleware"
 	"github.com/billykore/project-one/internal/testkit/mocks"
 	"github.com/labstack/echo/v4"
 	echomiddleware "github.com/labstack/echo/v4/middleware"
@@ -117,7 +117,7 @@ func TestStatusForErrorMatchesTheErrorHandlerMapping(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			if got := platformmiddleware.StatusForError(test.err); got != test.want {
+			if got := pkgmiddleware.StatusForError(test.err); got != test.want {
 				t.Fatalf("StatusForError = %d, want %d", got, test.want)
 			}
 		})

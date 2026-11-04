@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/billykore/project-one/internal/notifications/domain"
-	"github.com/billykore/project-one/internal/platform/auth"
-	vo "github.com/billykore/project-one/internal/platform/pagination"
+	"github.com/billykore/project-one/internal/pkg/auth"
+	vo "github.com/billykore/project-one/internal/pkg/pagination"
 )
 
 // NotificationRepository is a driven port for notification database persistence.
@@ -37,6 +37,15 @@ type NotificationUseCase interface {
 	MarkAsRead(ctx context.Context, id int, userID int) error
 	// MarkAllAsRead marks all notifications as read for the authenticated user.
 	MarkAllAsRead(ctx context.Context, userID int) error
-	// SaveNotification saves a notification to the database.
-	SaveNotification(ctx context.Context, notification *domain.Notification) error
+	// RecordEvent stores a notification event exactly once and pushes it to the
+	// recipient's realtime connections. A redelivered event is a no-op.
+	RecordEvent(ctx context.Context, event domain.NotificationEvent) error
+}
+
+// RealtimeNotifier is a driven port that pushes a stored notification to the
+// recipient's live connections.
+type RealtimeNotifier interface {
+	// Notify reports whether any live connection received the notification.
+	// A recipient without a live connection is not an error.
+	Notify(ctx context.Context, notification domain.Notification) (delivered bool, err error)
 }
