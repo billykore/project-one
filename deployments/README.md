@@ -78,7 +78,32 @@ curl -u projectone-metrics:'<monitoring-password>' http://localhost:8080/metrics
 curl -o /dev/null -s -w '%{http_code}\n' http://localhost:8080/metrics   # 401 without credentials
 ```
 
-Prometheus is at <http://localhost:9090>, where `/targets` shows the `project-one-api` job. Grafana is at <http://localhost:3001>; sign in as `admin` with `GRAFANA_ADMIN_PASSWORD` and open the provisioned **Project One Health** dashboard, which shows readiness, dependency state, request rate, 4xx and 5xx rates, request duration p95, and instance start time. Datasources and dashboards are provisioned from `grafana/provisioning` and `grafana/dashboards`, so no manual setup is required.
+Prometheus is at <http://localhost:9090>, where `/targets` shows the `project-one-api` job. Grafana is at <http://localhost:3001>; sign in as `admin` with `GRAFANA_ADMIN_PASSWORD` and open the provisioned **Project One Health** dashboard, which shows readiness, dependency state, request rate, 4xx and 5xx rates, request duration p95, instance start time, and the notification outbox backlog. Datasources and dashboards are provisioned from `grafana/provisioning` and `grafana/dashboards`, so no manual setup is required.
+
+### Notification outbox
+
+Follow, like, and comment events are written to the `notification_outbox` table and published to RabbitMQ by a background dispatcher, which retries a failed publication with exponential backoff capped at 64 seconds. Three bounded, label-free gauges expose the backlog; they are read from PostgreSQL on every scrape with a 2-second limit, and are omitted from that scrape when the read fails:
+
+| Metric | Meaning |
+| :--- | :--- |
+| `projectone_outbox_pending_messages` | Events still waiting for delivery or retry |
+| `projectone_outbox_oldest_pending_age_seconds` | Age of the oldest pending event, or `0` when none is pending |
+| `projectone_outbox_failed_messages` | Events parked after exhausting their delivery attempts |
+
+After 60 failed attempts, roughly an hour of continuous broker failure, an event is parked: `failed_at` is set, the dispatcher stops retrying it, and the backend logs `outbox message exhausted delivery attempts; parked as failed` with its `event_id`. Parked events are kept until an operator acts. Once the broker is healthy again, inspect and requeue them:
+
+```sql
+SELECT id, event_id, topic, attempts, created_at, failed_at
+FROM notification_outbox
+WHERE failed_at IS NOT NULL
+ORDER BY id;
+
+UPDATE notification_outbox
+SET failed_at = NULL, attempts = 0, available_at = now()
+WHERE failed_at IS NOT NULL;
+```
+
+Consumers deduplicate by event ID, so requeueing an event that was in fact delivered does not create a second notification. Published events are deleted after 7 days by an hourly cleanup in the dispatcher; pending and parked events are never deleted automatically.
 
 ### Aggregated application logs
 

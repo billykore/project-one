@@ -30,6 +30,7 @@ import (
 	notificationsapi "github.com/billykore/project-one/internal/notifications/api"
 	notificationhandler "github.com/billykore/project-one/internal/notifications/api/handler"
 	notificationusecase "github.com/billykore/project-one/internal/notifications/usecase"
+	deliveryadapter "github.com/billykore/project-one/internal/operations/adapters/delivery"
 	healthadapter "github.com/billykore/project-one/internal/operations/adapters/health"
 	metricsadapter "github.com/billykore/project-one/internal/operations/adapters/metrics"
 	operationsapi "github.com/billykore/project-one/internal/operations/api"
@@ -219,6 +220,7 @@ func newApplication(ctx context.Context, cfg *Config, privateKey *rsa.PrivateKey
 	// The metrics recorder is the health observer, so every readiness
 	// assessment keeps the readiness and dependency gauges current.
 	metricsRecorder := metricsadapter.NewPrometheus()
+	metricsRecorder.RegisterDeliveryBacklog(deliveryadapter.NewOutboxBacklog(outbox.NewStatsReader(db)), metricsadapter.DefaultBacklogTimeout)
 
 	monitoringCredential, err := metricsadapter.LoadCredential(cfg.Monitoring.Username, cfg.Monitoring.PasswordFile)
 	if err != nil {

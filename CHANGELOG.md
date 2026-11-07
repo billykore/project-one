@@ -7,6 +7,19 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Added
+
+- The notification outbox parks an event as failed after 60 delivery attempts
+  (about an hour of broker failure) instead of retrying it forever, and an
+  hourly cleanup deletes published events after 7 days. Migration `000027`
+  adds the `failed_at` column; apply it to existing databases with
+  `make migrate-up`. `deployments/README.md` explains how to requeue parked
+  events.
+- `projectone_outbox_pending_messages`,
+  `projectone_outbox_oldest_pending_age_seconds`, and
+  `projectone_outbox_failed_messages` gauges on `/metrics`, with matching
+  panels on the Project One Health dashboard.
+
 ### Changed
 
 - The social feed no longer uses publishing's `Post` aggregate. Social reads

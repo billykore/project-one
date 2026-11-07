@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/billykore/project-one/internal/operations/domain"
 	"github.com/billykore/project-one/internal/operations/ports"
@@ -101,6 +102,70 @@ func (p *Prometheus) ObserveAssessment(_ context.Context, assessment domain.Heal
 		}
 		p.dependencyUp.WithLabelValues(component.Name).Set(up)
 	}
+}
+
+// DefaultBacklogTimeout bounds the backlog query run on every scrape.
+const DefaultBacklogTimeout = 2 * time.Second
+
+// RegisterDeliveryBacklog exports the event delivery backlog, read from reader
+// on every scrape. A failed or slow read omits the backlog series for that
+// scrape instead of failing it, so the other metrics stay available and the
+// gap is detectable with absent(). A timeout of zero or less uses
+// DefaultBacklogTimeout.
+func (p *Prometheus) RegisterDeliveryBacklog(reader ports.DeliveryBacklogReader, timeout time.Duration) {
+	if timeout <= 0 {
+		timeout = DefaultBacklogTimeout
+	}
+	p.registry.MustRegister(newBacklogCollector(reader, timeout))
+}
+
+type backlogCollector struct {
+	reader    ports.DeliveryBacklogReader
+	timeout   time.Duration
+	pending   *prometheus.Desc
+	oldestAge *prometheus.Desc
+	failed    *prometheus.Desc
+}
+
+func newBacklogCollector(reader ports.DeliveryBacklogReader, timeout time.Duration) *backlogCollector {
+	return &backlogCollector{
+		reader:  reader,
+		timeout: timeout,
+		pending: prometheus.NewDesc(
+			prometheus.BuildFQName(namespace, "outbox", "pending_messages"),
+			"Events waiting in the transactional outbox for delivery or retry.",
+			nil, nil,
+		),
+		oldestAge: prometheus.NewDesc(
+			prometheus.BuildFQName(namespace, "outbox", "oldest_pending_age_seconds"),
+			"Age in seconds of the oldest event waiting in the outbox, or 0 when none is pending.",
+			nil, nil,
+		),
+		failed: prometheus.NewDesc(
+			prometheus.BuildFQName(namespace, "outbox", "failed_messages"),
+			"Events parked in the outbox after exhausting their delivery attempts.",
+			nil, nil,
+		),
+	}
+}
+
+func (c *backlogCollector) Describe(ch chan<- *prometheus.Desc) {
+	ch <- c.pending
+	ch <- c.oldestAge
+	ch <- c.failed
+}
+
+func (c *backlogCollector) Collect(ch chan<- prometheus.Metric) {
+	ctx, cancel := context.WithTimeout(context.Background(), c.timeout)
+	defer cancel()
+
+	backlog, err := c.reader.DeliveryBacklog(ctx)
+	if err != nil {
+		return
+	}
+	ch <- prometheus.MustNewConstMetric(c.pending, prometheus.GaugeValue, float64(backlog.Pending))
+	ch <- prometheus.MustNewConstMetric(c.oldestAge, prometheus.GaugeValue, backlog.OldestPendingAge.Seconds())
+	ch <- prometheus.MustNewConstMetric(c.failed, prometheus.GaugeValue, float64(backlog.Failed))
 }
 
 // Gatherer exposes the registry for tests.
