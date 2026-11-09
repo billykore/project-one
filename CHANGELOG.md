@@ -34,11 +34,19 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   could not resolve. They are now `IdentityMessageResponse`,
   `NotificationMessageResponse`, and `PublishingMessageResponse`; response
   bodies are unchanged, only the OpenAPI schema names differ.
+- `message_broker.type: kafka` was accepted although the application always
+  connects to RabbitMQ, so such a configuration silently used the RabbitMQ
+  settings and reported its broker health as `kafka`. Startup now fails
+  unless the type is `rabbitmq`.
 
 ### Removed
 
 - The unused `PostResponse` and `PostsListResponse` DTOs from the identity
   context, which duplicated publishing's type names.
+- The Kafka and in-memory pub/sub adapters, the broker factory, the
+  `message_broker.kafka.*` settings, and the `segmentio/kafka-go` dependency.
+  None of them could be selected at runtime: the application always wires
+  RabbitMQ.
 
 ## [5.2.0] - 2026-11-04 (035db71)
 

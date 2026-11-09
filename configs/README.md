@@ -29,7 +29,7 @@ cp configs/config.yaml.example configs/config.yaml
 | `jwt.private_key_path` | `JWT_PRIVATE_KEY_PATH` | RSA private key PEM path |
 | `jwt.public_key_path` | `JWT_PUBLIC_KEY_PATH` | RSA public key PEM path |
 | `jwt.expiration_time` | `JWT_EXPIRATION_TIME` | Access-token lifetime as a Go duration |
-| `message_broker.type` | `MESSAGE_BROKER_TYPE` | Broker identifier; use `rabbitmq` for the current application entry point |
+| `message_broker.type` | `MESSAGE_BROKER_TYPE` | Broker identifier; must be `rabbitmq`, the only supported broker |
 | `message_broker.rabbitmq.url` | `MESSAGE_BROKER_RABBITMQ_URL` | AMQP connection URL |
 | `message_broker.rabbitmq.exchange` | `MESSAGE_BROKER_RABBITMQ_EXCHANGE` | Notification exchange name |
 | `message_broker.rabbitmq.queue` | `MESSAGE_BROKER_RABBITMQ_QUEUE` | Notification queue name |
@@ -41,7 +41,7 @@ cp configs/config.yaml.example configs/config.yaml
 
 Environment variable names are derived by replacing YAML dots with underscores and converting the result to uppercase. Environment values override values from the YAML file.
 
-The config schema also contains Kafka fields for the Kafka pub/sub adapter. The current `cmd` application wiring constructs RabbitMQ publisher and subscriber implementations, so a running RabbitMQ instance and its connection settings are required.
+RabbitMQ is the only supported message broker, so a running RabbitMQ instance and its connection settings are required. Startup fails if `message_broker.type` is anything other than `rabbitmq`.
 
 The monitoring settings are optional as a pair. Leave both unset to make
 `/metrics` reject every scrape. When enabled, set both and store the password

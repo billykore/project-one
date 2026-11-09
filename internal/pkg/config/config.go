@@ -30,18 +30,10 @@ type DatabaseConfig struct {
 }
 
 // MessageBrokerConfig holds the message broker selection and configuration.
+// RabbitMQ is the only supported broker.
 type MessageBrokerConfig struct {
 	Type     string               `mapstructure:"type"`
-	Kafka    KafkaBrokerConfig    `mapstructure:"kafka"`
 	RabbitMQ RabbitMQBrokerConfig `mapstructure:"rabbitmq"`
-}
-
-// KafkaBrokerConfig holds Kafka-specific connection settings.
-type KafkaBrokerConfig struct {
-	Brokers       []string `mapstructure:"brokers"`
-	TopicPrefix   string   `mapstructure:"topic_prefix"`
-	ConsumerGroup string   `mapstructure:"consumer_group"`
-	TLSEnabled    bool     `mapstructure:"tls_enabled"`
 }
 
 // RabbitMQBrokerConfig holds RabbitMQ-specific connection settings.
@@ -59,10 +51,12 @@ func (c DatabaseConfig) Validate() error {
 	return nil
 }
 
-// Validate reports an unsupported broker selection.
+// Validate reports an unsupported broker selection. The application always
+// connects to RabbitMQ, so any other type is rejected instead of being
+// silently ignored.
 func (c MessageBrokerConfig) Validate() error {
-	if c.Type != "kafka" && c.Type != "rabbitmq" {
-		return fmt.Errorf("unsupported message broker type: %s", c.Type)
+	if c.Type != "rabbitmq" {
+		return fmt.Errorf("unsupported message broker type %q: only \"rabbitmq\" is supported", c.Type)
 	}
 	return nil
 }

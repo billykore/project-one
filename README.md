@@ -22,7 +22,7 @@ Project One is a full-stack social publishing application. It combines a Go/Echo
 
 - Go 1.26.2
 - Echo 4.15, GORM, and PostgreSQL
-- RabbitMQ for notification events (the composition root always wires RabbitMQ; Kafka and in-memory adapters exist but are not selectable at runtime)
+- RabbitMQ for notification events
 - Viper configuration, `log/slog` structured logging, Validator v10, bcrypt, and JWT v5
 - Official Prometheus Go client with a dedicated registry, bounded labels, and standard Go/process collectors
 - Testify, GoMock, Swaggo, and golangci-lint with `depguard` architecture rules

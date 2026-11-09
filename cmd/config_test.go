@@ -48,12 +48,6 @@ app:
   port: 8080
 message_broker:
   type: "rabbitmq"
-  kafka:
-    brokers:
-      - "localhost:9092"
-    topic_prefix: "project1"
-    consumer_group: "notification-consumer"
-    tls_enabled: false
   rabbitmq:
     url: "amqp://guest:guest@localhost:5672/"
     exchange: "project1.notifications"
@@ -370,6 +364,21 @@ func writeConfig(t *testing.T, content string) (string, func()) {
 	err := os.WriteFile(filepath.Join(tempDir, "config.yaml"), []byte(content), 0o600)
 	assert.NoError(t, err)
 	return tempDir, cleanup
+}
+
+func TestLoad_RejectsUnsupportedMessageBrokerType(t *testing.T) {
+	for _, brokerType := range []string{"kafka", "inmemory", ""} {
+		t.Run(brokerType, func(t *testing.T) {
+			content := strings.Replace(baseConfigWithoutMonitoring, `type: "rabbitmq"`, `type: "`+brokerType+`"`, 1)
+			tempDir, cleanup := writeConfig(t, content)
+			defer cleanup()
+
+			cfg, err := loadConfig(tempDir)
+			assert.Error(t, err)
+			assert.Nil(t, cfg)
+			assert.Contains(t, err.Error(), "unsupported message broker type")
+		})
+	}
 }
 
 func TestLoad_MonitoringCredentialsFromFile(t *testing.T) {
