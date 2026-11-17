@@ -200,4 +200,4 @@ The stack uses seven named volumes:
 
 ## Container images
 
-The backend image uses a Go 1.26.2 Alpine build stage and an Alpine runtime with BusyBox `wget` for its health probe; it executes as UID/GID 65532. The frontend image uses Node.js 24 Alpine, Next.js standalone output, and the unprivileged `node` user.
+The backend image uses a Go 1.27.4 Alpine build stage and an Alpine runtime with BusyBox `wget` for its health probe; it executes as UID/GID 65532. The frontend image uses Node.js 24 Alpine, Next.js standalone output, and the unprivileged `node` user.

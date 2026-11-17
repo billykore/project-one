@@ -20,7 +20,7 @@ Project One is a full-stack social publishing application. It combines a Go/Echo
 
 ### Backend
 
-- Go 1.26.2
+- Go 1.27.4
 - Echo 4.15, GORM, and PostgreSQL
 - RabbitMQ for notification events (the composition root always wires RabbitMQ; Kafka and in-memory adapters exist but are not selectable at runtime)
 - Viper configuration, `log/slog` structured logging, Validator v10, bcrypt, and JWT v5
@@ -163,7 +163,7 @@ Use `request_id` from the parsed JSON to correlate requests. Loki is intentional
 
 ### Prerequisites
 
-- Go 1.26.2
+- Go 1.27.4
 - Node.js 24 and npm (Node.js 20 is also used by the lint CI job)
 - PostgreSQL and RabbitMQ
 - OpenSSL

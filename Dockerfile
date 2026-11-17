@@ -1,4 +1,4 @@
-FROM golang:1.26.2-alpine AS builder
+FROM golang:1.27.4-alpine AS builder
 WORKDIR /src
 
 # Build-time metadata, di-inject dari CI dan berkorelasi dengan git tag/sha
