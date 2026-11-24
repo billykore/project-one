@@ -45,7 +45,7 @@ services:
     restart: "no"
 
   backend:
-    image: localhost/project-one:sha-d401b6674bc3
+    image: localhost/project-one:sha-3e2afe5aef62
     ports:
       - "8080:8080"
     environment:

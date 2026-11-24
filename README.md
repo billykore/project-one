@@ -118,7 +118,7 @@ This starts PostgreSQL 17, RabbitMQ 4, the Go API, the Next.js frontend, Prometh
    make compose-up
    ```
 
-   `--build` rebuilds the frontend image only. The `backend` service runs the prebuilt image named in `deployments/compose.yml` (currently `localhost/project-one:sha-d401b6674bc3`), which must already exist in local Podman storage. `make podman-build` tags images as `localhost/project-one:<tag-or-dev>` and `localhost/project-one:sha-<12-character HEAD>`, so it produces a different tag unless the `image:` line is updated to match.
+   `--build` rebuilds the frontend image only. The `backend` service runs the prebuilt image named in `deployments/compose.yml` (currently `localhost/project-one:sha-3e2afe5aef62`), which must already exist in local Podman storage. `make podman-build` tags images as `localhost/project-one:<tag-or-dev>` and `localhost/project-one:sha-<12-character HEAD>`, so it produces a different tag unless the `image:` line is updated to match.
 
 4. Open the services:
 

@@ -6,7 +6,7 @@ COMPOSE ?= $(CONTAINER_ENGINE) compose
 
 # Podman API socket path as seen by the engine host (the Podman machine VM on
 # macOS/Windows). Alloy mounts it to discover the backend container's logs.
-CONTAINER_SOCKET ?= $(shell $(CONTAINER_ENGINE) info --format '{{.Host.RemoteSocket.Path}}' 2>/dev/null)
+CONTAINER_SOCKET ?= $(patsubst unix://%,%,$(shell $(CONTAINER_ENGINE) info --format '{{.Host.RemoteSocket.Path}}' 2>/dev/null))
 export CONTAINER_SOCKET
 
 # Python user seeding script

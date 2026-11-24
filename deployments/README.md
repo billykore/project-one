@@ -146,10 +146,10 @@ If events are missing, first check `podman compose -f deployments/compose.yml ps
 ## Podman notes
 
 - Images are fully qualified (`docker.io/...`) because Podman does not assume a default registry for short names. The backend image is resolved from local storage as `localhost/project-one:...`, which is how `make podman-build` stores it.
-- Alloy reads backend logs through Podman's Docker-compatible API. `make` resolves the socket path inside the Podman host from `podman info --format '{{.Host.RemoteSocket.Path}}'` and exports it as `CONTAINER_SOCKET` (rootless: `/run/user/<uid>/podman/podman.sock`; rootful: `/run/podman/podman.sock`, also the fallback). When invoking `podman compose` directly instead of through `make`, export it first:
+- Alloy reads backend logs through Podman's Docker-compatible API. `make` resolves the socket path inside the Podman host from `podman info --format '{{.Host.RemoteSocket.Path}}'`, strips its `unix://` prefix, and exports it as `CONTAINER_SOCKET` (rootless: `/run/user/<uid>/podman/podman.sock`; rootful: `/run/podman/podman.sock`, also the fallback). When invoking `podman compose` directly instead of through `make`, export it first:
 
   ```bash
-  export CONTAINER_SOCKET="$(podman info --format '{{.Host.RemoteSocket.Path}}')"
+  export CONTAINER_SOCKET="$(podman info --format '{{.Host.RemoteSocket.Path}}' | sed 's|^unix://||')"
   ```
 
   The Podman API service must be active on that host. The Podman machine enables it by default; on Linux run `systemctl --user enable --now podman.socket` (rootless) or `sudo systemctl enable --now podman.socket` (rootful).
