@@ -40,6 +40,11 @@ export async function proxyToBackend(req: Request, backendPath: string): Promise
   if (setCookie) {
     responseHeaders["Set-Cookie"] = setCookie;
   }
+  // Rate-limited responses (429) tell the client when it may retry.
+  const retryAfter = backend.headers.get("retry-after");
+  if (retryAfter) {
+    responseHeaders["Retry-After"] = retryAfter;
+  }
 
   return Response.json(data, { status: backend.status, headers: responseHeaders });
 }

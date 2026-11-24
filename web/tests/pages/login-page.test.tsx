@@ -107,4 +107,29 @@ describe("LoginPage", () => {
 
     expect(mockPush).toHaveBeenCalledWith("/");
   });
+  it("shows a rate-limit message inline on 429 instead of the error modal", async () => {
+    const mockFetch = vi.mocked(global.fetch);
+    mockFetch.mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          type: "http://localhost:8080/errors/rate-limited",
+          title: "Too Many Requests",
+          status: 429,
+          detail: "Too many login attempts. Please try again later.",
+          code: "RATE_LIMITED",
+        }),
+        { status: 429, headers: { "Retry-After": "42" } },
+      ),
+    );
+
+    await fillAndSubmit("test@example.com", "password123");
+
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0));
+    });
+
+    expect(container.textContent).toContain("Too many login attempts. Please try again later.");
+    expect(mockShowError).not.toHaveBeenCalled();
+    expect(mockPush).not.toHaveBeenCalled();
+  });
 });

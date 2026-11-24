@@ -475,3 +475,66 @@ monitoring:
 	assert.Nil(t, peerCfg)
 	assert.Contains(t, peerErr.Error(), "monitoring username and password_file")
 }
+
+// setMinimalEnv supplies the settings loadConfig requires, without a file.
+func setMinimalEnv(t *testing.T) {
+	t.Helper()
+	t.Setenv("DATABASE_HOST", "env_db_host")
+	t.Setenv("DATABASE_PORT", "5432")
+	t.Setenv("DATABASE_USER", "envuser")
+	t.Setenv("DATABASE_PASSWORD", "envpassword")
+	t.Setenv("DATABASE_DBNAME", "env_dbname")
+	t.Setenv("DATABASE_SSLMODE", "disable")
+	t.Setenv("JWT_PRIVATE_KEY_PATH", "/env/private.pem")
+	t.Setenv("JWT_PUBLIC_KEY_PATH", "/env/public.pem")
+	t.Setenv("JWT_EXPIRATION_TIME", "1h")
+	t.Setenv("MESSAGE_BROKER_TYPE", "rabbitmq")
+	t.Setenv("MESSAGE_BROKER_RABBITMQ_URL", "amqp://guest:guest@localhost:5672/")
+	t.Setenv("MESSAGE_BROKER_RABBITMQ_EXCHANGE", "project1.notifications")
+	t.Setenv("MESSAGE_BROKER_RABBITMQ_QUEUE", "notifications")
+}
+
+func TestLoad_LoginRateLimitDefaults(t *testing.T) {
+	tempDir, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+	setMinimalEnv(t)
+
+	cfg, err := loadConfig(tempDir)
+	assert.NoError(t, err)
+
+	assert.Equal(t, 5, cfg.LoginRateLimit.MaxAttempts)
+	assert.Equal(t, time.Minute, cfg.LoginRateLimit.Window)
+}
+
+func TestLoad_LoginRateLimitFromEnv(t *testing.T) {
+	tempDir, cleanup := setupTestEnvironment(t)
+	defer cleanup()
+	setMinimalEnv(t)
+	t.Setenv("LOGIN_RATE_LIMIT_MAX_ATTEMPTS", "0")
+	t.Setenv("LOGIN_RATE_LIMIT_WINDOW", "30s")
+
+	cfg, err := loadConfig(tempDir)
+	assert.NoError(t, err)
+
+	assert.Equal(t, 0, cfg.LoginRateLimit.MaxAttempts)
+	assert.Equal(t, 30*time.Second, cfg.LoginRateLimit.Window)
+}
+
+func TestLoad_LoginRateLimitRejectsNegativeValues(t *testing.T) {
+	for _, tc := range []struct {
+		name, key, value, wantErr string
+	}{
+		{name: "max attempts", key: "LOGIN_RATE_LIMIT_MAX_ATTEMPTS", value: "-1", wantErr: "max attempts cannot be negative"},
+		{name: "window", key: "LOGIN_RATE_LIMIT_WINDOW", value: "-1m", wantErr: "window cannot be negative"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			tempDir, cleanup := setupTestEnvironment(t)
+			defer cleanup()
+			setMinimalEnv(t)
+			t.Setenv(tc.key, tc.value)
+
+			_, err := loadConfig(tempDir)
+			assert.ErrorContains(t, err, tc.wantErr)
+		})
+	}
+}

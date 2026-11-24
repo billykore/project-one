@@ -20,9 +20,10 @@ func TestLoginUseCase_Login_WithMocks(t *testing.T) {
 	mockTokens := mocks.NewMockTokenService(ctrl)
 	mockUserTokens := mocks.NewMockTokenRepository(ctrl)
 	mockHasher := mocks.NewMockHasher(ctrl)
+	mockLimiter := mocks.NewMockLoginAttemptLimiter(ctrl)
 	mockLogger := mocks.NewMockLogger(ctrl)
 
-	svc := NewLoginUseCase(mockRepo, mockTokens, mockUserTokens, mockHasher, mockLogger)
+	svc := NewLoginUseCase(mockRepo, mockTokens, mockUserTokens, mockHasher, mockLimiter, mockLogger)
 
 	tests := []struct {
 		name         string
@@ -95,6 +96,7 @@ func TestLoginUseCase_Login_WithMocks(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mockLimiter.EXPECT().Allow(gomock.Any(), tt.email).Return(true, time.Duration(0))
 			tt.setup()
 			access, err := svc.Login(context.Background(), tt.email, tt.password)
 
@@ -128,9 +130,10 @@ func TestLoginUseCase_Logout(t *testing.T) {
 	mockTokens := mocks.NewMockTokenService(ctrl)
 	mockUserTokens := mocks.NewMockTokenRepository(ctrl)
 	mockHasher := mocks.NewMockHasher(ctrl)
+	mockLimiter := mocks.NewMockLoginAttemptLimiter(ctrl)
 	mockLogger := mocks.NewMockLogger(ctrl)
 
-	svc := NewLoginUseCase(mockRepo, mockTokens, mockUserTokens, mockHasher, mockLogger)
+	svc := NewLoginUseCase(mockRepo, mockTokens, mockUserTokens, mockHasher, mockLimiter, mockLogger)
 
 	t.Run("successful logout", func(t *testing.T) {
 		userID := 1
@@ -160,4 +163,38 @@ func TestLoginUseCase_Logout(t *testing.T) {
 			t.Errorf("Logout() error = %v, want %v", err, problem.ErrInvalidUser)
 		}
 	})
+}
+
+func TestLoginUseCase_Login_RateLimited(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	mockRepo := mocks.NewMockUserRepository(ctrl)
+	mockTokens := mocks.NewMockTokenService(ctrl)
+	mockUserTokens := mocks.NewMockTokenRepository(ctrl)
+	mockHasher := mocks.NewMockHasher(ctrl)
+	mockLimiter := mocks.NewMockLoginAttemptLimiter(ctrl)
+	mockLogger := mocks.NewMockLogger(ctrl)
+
+	svc := NewLoginUseCase(mockRepo, mockTokens, mockUserTokens, mockHasher, mockLimiter, mockLogger)
+
+	// The key is normalized, and a throttled attempt never reaches the
+	// repository, hasher, or token service (gomock fails on unexpected calls).
+	mockLimiter.EXPECT().Allow(gomock.Any(), "user@example.com").Return(false, 42*time.Second)
+	mockLogger.EXPECT().Warn(gomock.Any(), "login attempt rejected by rate limit", "retry_after_seconds", 42)
+
+	access, err := svc.Login(context.Background(), "  User@Example.COM ", "password123")
+
+	if access != nil {
+		t.Errorf("Login() access = %v, want nil", access)
+	}
+	if !errors.Is(err, domain.ErrTooManyLoginAttempts) {
+		t.Fatalf("Login() error = %v, want %v", err, domain.ErrTooManyLoginAttempts)
+	}
+	throttled, ok := errors.AsType[*domain.LoginThrottledError](err)
+	if !ok {
+		t.Fatalf("Login() error = %T, want *domain.LoginThrottledError", err)
+	}
+	if throttled.RetryAfter != 42*time.Second {
+		t.Errorf("RetryAfter = %v, want %v", throttled.RetryAfter, 42*time.Second)
+	}
 }

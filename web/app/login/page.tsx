@@ -94,7 +94,7 @@ export default function LoginPage({
 
       router.push(redirectUrl || "/");
     } catch (err) {
-      if (err instanceof ApiError && (err.status === 401 || err.status === 400)) {
+      if (err instanceof ApiError && (err.status === 401 || err.status === 400 || err.status === 429)) {
         setErrors({ general: err.message });
         return;
       }

@@ -14,4 +14,5 @@ var errorMappings = map[error]pkgmiddleware.ErrorMapping{
 	domain.ErrEmailAlreadyRegistered: {Status: http.StatusConflict, Code: problem.CodeAlreadyExists, TypeSlug: "already-exists", Title: "Conflict", Detail: "Email is already registered"},
 	domain.ErrUsernameAlreadyTaken:   {Status: http.StatusConflict, Code: problem.CodeAlreadyExists, TypeSlug: "already-exists", Title: "Conflict", Detail: "Username is already taken"},
 	domain.ErrSearchQueryTooShort:    {Status: http.StatusBadRequest, Code: problem.CodeInvalidArgument, TypeSlug: "invalid-argument", Title: "Bad Request", Detail: "Search query must be at least 3 characters"},
+	domain.ErrTooManyLoginAttempts:   {Status: http.StatusTooManyRequests, Code: problem.CodeRateLimited, TypeSlug: "rate-limited", Title: "Too Many Requests", Detail: "Too many login attempts. Please try again later."},
 }

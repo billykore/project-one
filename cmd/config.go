@@ -13,12 +13,13 @@ import (
 
 // Config holds all application configuration.
 type Config struct {
-	App           pkgconfig.AppConfig                   `mapstructure:"app"`
-	Database      pkgconfig.DatabaseConfig              `mapstructure:"database"`
-	JWT           identityconfig.JWTConfig              `mapstructure:"jwt"`
-	MessageBroker pkgconfig.MessageBrokerConfig         `mapstructure:"message_broker"`
-	FeatureFlags  featureflagsconfig.FeatureFlagsConfig `mapstructure:"feature_flags"`
-	Monitoring    operationsconfig.MonitoringConfig     `mapstructure:"monitoring"`
+	App            pkgconfig.AppConfig                   `mapstructure:"app"`
+	Database       pkgconfig.DatabaseConfig              `mapstructure:"database"`
+	JWT            identityconfig.JWTConfig              `mapstructure:"jwt"`
+	LoginRateLimit identityconfig.LoginRateLimitConfig   `mapstructure:"login_rate_limit"`
+	MessageBroker  pkgconfig.MessageBrokerConfig         `mapstructure:"message_broker"`
+	FeatureFlags   featureflagsconfig.FeatureFlagsConfig `mapstructure:"feature_flags"`
+	Monitoring     operationsconfig.MonitoringConfig     `mapstructure:"monitoring"`
 }
 
 // ponytail: uses viper (already-installed dep). BindEnv needed so AutomaticEnv
@@ -36,6 +37,8 @@ func loadConfig(path string) (*Config, error) {
 	v.SetDefault("feature_flags.environment", "local")
 	v.SetDefault("feature_flags.refresh_interval", "30s")
 	v.SetDefault("feature_flags.operators", []string{})
+	v.SetDefault("login_rate_limit.max_attempts", 5)
+	v.SetDefault("login_rate_limit.window", "1m")
 	for _, key := range []string{
 		"app.port",
 		"app.env",
@@ -49,6 +52,8 @@ func loadConfig(path string) (*Config, error) {
 		"jwt.private_key_path",
 		"jwt.public_key_path",
 		"jwt.expiration_time",
+		"login_rate_limit.max_attempts",
+		"login_rate_limit.window",
 		"message_broker.type",
 		"message_broker.kafka.brokers",
 		"message_broker.kafka.topic_prefix",
@@ -79,6 +84,9 @@ func loadConfig(path string) (*Config, error) {
 	}
 
 	if err := cfg.JWT.Validate(); err != nil {
+		return nil, err
+	}
+	if err := cfg.LoginRateLimit.Validate(); err != nil {
 		return nil, err
 	}
 	if err := cfg.Database.Validate(); err != nil {

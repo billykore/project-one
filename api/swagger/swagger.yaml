@@ -868,6 +868,14 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/dto.ProblemDetail'
+        "429":
+          description: Too Many Requests
+          headers:
+            Retry-After:
+              description: Seconds until the account accepts another login attempt
+              type: integer
+          schema:
+            $ref: '#/definitions/dto.ProblemDetail'
         "500":
           description: Internal Server Error
           schema:

@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"errors"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -83,6 +85,8 @@ func (h *UserHandler) GetUser(c echo.Context) error {
 //	@Success		200				{object}	dto.LoginResponse
 //	@Failure		400				{object}	dto.ProblemDetail
 //	@Failure		401				{object}	dto.ProblemDetail
+//	@Failure		429				{object}	dto.ProblemDetail
+//	@Header			429				{integer}	Retry-After	"Seconds until the account accepts another login attempt"
 //	@Failure		500				{object}	dto.ProblemDetail
 //	@Router			/auth/login [post]
 func (h *UserHandler) HandleLogin(c echo.Context) error {
@@ -100,6 +104,9 @@ func (h *UserHandler) HandleLogin(c echo.Context) error {
 	accessToken, err := h.loginUseCase.Login(c.Request().Context(), req.Email, req.Password)
 	if err != nil {
 		h.log.Error(c.Request().Context(), "HandleLogin failed", "email", req.Email, "error", err)
+		if throttled, ok := errors.AsType[*identitydomain.LoginThrottledError](err); ok {
+			c.Response().Header().Set("Retry-After", retryAfterSeconds(throttled.RetryAfter))
+		}
 		return err
 	}
 
@@ -390,4 +397,10 @@ func (h *UserHandler) HandleUpdateProfile(c echo.Context) error {
 		Message:  "Profile updated successfully",
 		Username: updatedUser.Username,
 	})
+}
+
+// retryAfterSeconds formats a wait as a Retry-After delay, rounding up so a
+// client never retries before the limit window has ended.
+func retryAfterSeconds(d time.Duration) string {
+	return strconv.Itoa(max(1, int(math.Ceil(d.Seconds()))))
 }

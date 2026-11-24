@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/billykore/project-one/internal/identity/domain"
 	"github.com/billykore/project-one/internal/identity/ports"
@@ -15,6 +16,7 @@ type loginUseCase struct {
 	tokens    ports.TokenService
 	tokenRepo ports.TokenRepository
 	hasher    ports.Hasher
+	limiter   ports.LoginAttemptLimiter
 	log       pkgports.Logger
 }
 
@@ -24,10 +26,11 @@ func NewLoginUseCase(
 	tokens ports.TokenService,
 	tokenRepo ports.TokenRepository,
 	hasher ports.Hasher,
+	limiter ports.LoginAttemptLimiter,
 	log pkgports.Logger,
 ) ports.LoginUseCase {
 	// ponytail: normalized nil checks to match other constructors
-	if repo == nil || tokens == nil || tokenRepo == nil || hasher == nil || log == nil {
+	if repo == nil || tokens == nil || tokenRepo == nil || hasher == nil || limiter == nil || log == nil {
 		panic("NewLoginUseCase: dependencies must not be nil")
 	}
 	return &loginUseCase{
@@ -35,11 +38,19 @@ func NewLoginUseCase(
 		tokens:    tokens,
 		tokenRepo: tokenRepo,
 		hasher:    hasher,
+		limiter:   limiter,
 		log:       log,
 	}
 }
 
 func (s *loginUseCase) Login(ctx context.Context, email, password string) (*domain.UserToken, error) {
+	// 0. Bound attempts per account before any lookup or password hashing, so
+	// a throttled account costs neither a database query nor a bcrypt compare.
+	if allowed, retryAfter := s.limiter.Allow(ctx, loginAttemptKey(email)); !allowed {
+		s.log.Warn(ctx, "login attempt rejected by rate limit", "retry_after_seconds", int(retryAfter.Seconds()))
+		return nil, &domain.LoginThrottledError{RetryAfter: retryAfter}
+	}
+
 	// 1. Get user by email
 	user, err := s.repo.GetUserByEmail(ctx, email)
 	if err != nil {
@@ -86,4 +97,10 @@ func (s *loginUseCase) Logout(ctx context.Context, userID int) error {
 
 	s.log.Info(ctx, "user logged out successfully", "userID", userID)
 	return nil
+}
+
+// loginAttemptKey normalizes an email so case or surrounding whitespace
+// variants of one account share a single attempt budget.
+func loginAttemptKey(email string) string {
+	return strings.ToLower(strings.TrimSpace(email))
 }

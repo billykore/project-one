@@ -12,6 +12,7 @@ package mocks
 import (
 	context "context"
 	reflect "reflect"
+	time "time"
 
 	domain "github.com/billykore/project-one/internal/identity/domain"
 	gomock "go.uber.org/mock/gomock"
@@ -122,4 +123,43 @@ func (m *MockLoginUseCase) Logout(ctx context.Context, userID int) error {
 func (mr *MockLoginUseCaseMockRecorder) Logout(ctx, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logout", reflect.TypeOf((*MockLoginUseCase)(nil).Logout), ctx, userID)
+}
+
+// MockLoginAttemptLimiter is a mock of LoginAttemptLimiter interface.
+type MockLoginAttemptLimiter struct {
+	ctrl     *gomock.Controller
+	recorder *MockLoginAttemptLimiterMockRecorder
+	isgomock struct{}
+}
+
+// MockLoginAttemptLimiterMockRecorder is the mock recorder for MockLoginAttemptLimiter.
+type MockLoginAttemptLimiterMockRecorder struct {
+	mock *MockLoginAttemptLimiter
+}
+
+// NewMockLoginAttemptLimiter creates a new mock instance.
+func NewMockLoginAttemptLimiter(ctrl *gomock.Controller) *MockLoginAttemptLimiter {
+	mock := &MockLoginAttemptLimiter{ctrl: ctrl}
+	mock.recorder = &MockLoginAttemptLimiterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockLoginAttemptLimiter) EXPECT() *MockLoginAttemptLimiterMockRecorder {
+	return m.recorder
+}
+
+// Allow mocks base method.
+func (m *MockLoginAttemptLimiter) Allow(ctx context.Context, key string) (bool, time.Duration) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Allow", ctx, key)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(time.Duration)
+	return ret0, ret1
+}
+
+// Allow indicates an expected call of Allow.
+func (mr *MockLoginAttemptLimiterMockRecorder) Allow(ctx, key any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Allow", reflect.TypeOf((*MockLoginAttemptLimiter)(nil).Allow), ctx, key)
 }
