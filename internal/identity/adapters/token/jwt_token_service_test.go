@@ -11,6 +11,7 @@ import (
 
 	"github.com/billykore/project-one/internal/identity/domain"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -77,4 +78,32 @@ func TestJWTTokenService_RejectsHS256Token(t *testing.T) {
 	user, err := svc.ValidateToken(context.Background(), tokenString)
 	assert.Error(t, err)
 	assert.Nil(t, user)
+}
+
+func TestJWTTokenService_IssuesUniqueTokensWithJTIAndIAT(t *testing.T) {
+	privateKey, publicKey := newRSAKeyPair(t)
+	svc := NewJWTTokenService(privateKey, publicKey, time.Hour)
+	user := &domain.User{ID: 1, Username: "alice"}
+
+	// Same user, same second: before jti these signatures were identical and
+	// collided on the user_tokens.token uniqueness constraint.
+	first, err := svc.GenerateTokens(context.Background(), user)
+	require.NoError(t, err)
+	second, err := svc.GenerateTokens(context.Background(), user)
+	require.NoError(t, err)
+	assert.NotEqual(t, first.Token, second.Token)
+
+	claims := jwt.MapClaims{}
+	_, err = jwt.ParseWithClaims(first.Token, claims, func(*jwt.Token) (any, error) { return publicKey, nil })
+	require.NoError(t, err)
+
+	jti, ok := claims["jti"].(string)
+	require.True(t, ok, "jti claim must be a string")
+	_, err = uuid.Parse(jti)
+	assert.NoError(t, err, "jti must be a UUID")
+
+	iat, err := claims.GetIssuedAt()
+	require.NoError(t, err)
+	require.NotNil(t, iat)
+	assert.WithinDuration(t, time.Now(), iat.Time, time.Minute)
 }

@@ -3,11 +3,13 @@ package token
 import (
 	"context"
 	"crypto/rsa"
+	"fmt"
 	"time"
 
 	"github.com/billykore/project-one/internal/identity/domain"
 	"github.com/billykore/project-one/internal/identity/ports"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 type jwtTokenService struct {
@@ -26,10 +28,20 @@ func NewJWTTokenService(privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey, ac
 }
 
 func (s *jwtTokenService) GenerateTokens(_ context.Context, user *domain.User) (*domain.UserToken, error) {
-	// Access token
-	accessExp := time.Now().Add(s.accessExpiration)
+	// Access token. RS256 signatures are deterministic, so without a unique
+	// claim two logins by the same user within one second would produce the
+	// same token and collide on the user_tokens.token uniqueness constraint.
+	// jti makes every issued token distinct; iat records when it was issued.
+	jti, err := uuid.NewRandom()
+	if err != nil {
+		return nil, fmt.Errorf("generate token id: %w", err)
+	}
+	issuedAt := time.Now()
+	accessExp := issuedAt.Add(s.accessExpiration)
 	accessClaims := jwt.MapClaims{
 		"userID": user.ID,
+		"jti":    jti.String(),
+		"iat":    issuedAt.Unix(),
 		"exp":    accessExp.Unix(),
 	}
 	accessToken, err := jwt.NewWithClaims(jwt.SigningMethodRS256, accessClaims).SignedString(s.privateKey)
