@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:17-alpine
+    image: docker.io/library/postgres:17-alpine
     ports:
       - "5432:5432"
     environment:
@@ -19,7 +19,7 @@ services:
     restart: unless-stopped
 
   rabbitmq:
-    image: rabbitmq:4-alpine
+    image: docker.io/library/rabbitmq:4-alpine
     ports:
       - "5672:5672"
     environment:
@@ -35,7 +35,7 @@ services:
     restart: unless-stopped
 
   keys:
-    image: alpine:3.22
+    image: docker.io/library/alpine:3.22
     command: >-
       sh -c "cp /source/jwt-private.pem /source/jwt-public.pem /keys/ &&
       chown 65532:65532 /keys/*.pem && chmod 600 /keys/*.pem"
@@ -45,7 +45,7 @@ services:
     restart: "no"
 
   backend:
-    image: project-one:sha-d401b6674bc3
+    image: localhost/project-one:sha-d401b6674bc3
     ports:
       - "8080:8080"
     environment:
@@ -85,7 +85,7 @@ services:
     restart: unless-stopped
 
   prometheus:
-    image: prom/prometheus:v3.7.3
+    image: docker.io/prom/prometheus:v3.7.3
     ports:
       - "9090:9090"
     volumes:
@@ -98,7 +98,7 @@ services:
     restart: unless-stopped
 
   loki:
-    image: grafana/loki:3.7.0
+    image: docker.io/grafana/loki:3.7.0
     command: -config.file=/etc/loki/loki.yml
     volumes:
       - ./loki.yml:/etc/loki/loki.yml:ro
@@ -106,7 +106,7 @@ services:
     restart: unless-stopped
 
   alloy:
-    image: grafana/alloy:v1.19.2
+    image: docker.io/grafana/alloy:v1.19.2
     command:
       - run
       - --stability.level=public-preview
@@ -120,18 +120,24 @@ services:
       LOKI_BEARER_TOKEN_FILE: ${LOKI_BEARER_TOKEN_FILE:+/run/secrets/loki-bearer-token}
     volumes:
       - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Podman's Docker-compatible API socket, resolved by `make` from
+      # `podman info` (rootless: /run/user/<uid>/podman/podman.sock).
+      - ${CONTAINER_SOCKET:-/run/podman/podman.sock}:/var/run/docker.sock:ro
       - alloy-data:/var/lib/alloy/data
       - type: bind
         source: ${LOKI_BEARER_TOKEN_FILE:-/dev/null}
         target: /run/secrets/loki-bearer-token
         read_only: true
+    # Allow access to the bind-mounted Podman socket on SELinux hosts
+    # (including the Fedora CoreOS Podman machine VM).
+    security_opt:
+      - label=disable
     depends_on:
       - loki
     restart: unless-stopped
 
   grafana:
-    image: grafana/grafana:12.2.0
+    image: docker.io/grafana/grafana:12.2.0
     ports:
       - "3001:3000"
     environment:

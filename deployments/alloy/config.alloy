@@ -3,6 +3,9 @@ logging {
 	format = "json"
 }
 
+// Podman exposes a Docker-compatible API. Compose mounts the Podman socket at
+// the conventional Docker path, so the docker discovery and source components
+// work unchanged; Compose providers keep the com.docker.compose.* labels.
 discovery.docker "backend" {
 	host             = "unix:///var/run/docker.sock"
 	refresh_interval = "5s"

@@ -1,4 +1,4 @@
-FROM golang:1.27.4-alpine AS builder
+FROM docker.io/library/golang:1.27.4-alpine AS builder
 WORKDIR /src
 
 # Build-time metadata, di-inject dari CI dan berkorelasi dengan git tag/sha
@@ -20,14 +20,14 @@ RUN CGO_ENABLED=0 go build -trimpath \
     -X main.BuildDate=${BUILD_DATE}" \
     -o /server ./cmd
 
-FROM alpine:3.22
+FROM docker.io/library/alpine:3.22
 
 # Re-declare ARG di stage baru karena scope ARG tidak lintas stage
 ARG GIT_TAG=dev
 ARG GIT_SHA=unknown
 ARG BUILD_DATE=unknown
 
-# Label ini nempel permanen di image, bisa dicek lewat `docker inspect`
+# Label ini nempel permanen di image, bisa dicek lewat `podman inspect`
 LABEL org.opencontainers.image.version="${GIT_TAG}" \
       org.opencontainers.image.revision="${GIT_SHA}" \
       org.opencontainers.image.created="${BUILD_DATE}"
