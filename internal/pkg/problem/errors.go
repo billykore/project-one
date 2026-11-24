@@ -16,6 +16,7 @@ const (
 	CodePermissionDenied = "PERMISSION_DENIED"
 	CodeAlreadyExists    = "ALREADY_EXISTS"
 	CodeConflict         = "CONFLICT"
+	CodeRateLimited      = "RATE_LIMITED"
 	CodeInternal         = "INTERNAL"
 )
 

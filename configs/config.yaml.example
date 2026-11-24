@@ -12,6 +12,10 @@ jwt:
   private_key_path: "./configs/keys/jwt-private.pem"
   public_key_path: "./configs/keys/jwt-public.pem"
   expiration_time: 24h
+# Login attempts allowed per account email in each window; 0 disables the limit.
+login_rate_limit:
+  max_attempts: 5
+  window: 1m
 message_broker:
   type: "rabbitmq"
   kafka:

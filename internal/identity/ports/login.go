@@ -2,6 +2,7 @@ package ports
 
 import (
 	"context"
+	"time"
 
 	"github.com/billykore/project-one/internal/identity/domain"
 )
@@ -20,4 +21,12 @@ type LoginUseCase interface {
 	Login(ctx context.Context, email, password string) (*domain.UserToken, error)
 	// Logout revokes all sessions for the authenticated user.
 	Logout(ctx context.Context, userID int) error
+}
+
+// LoginAttemptLimiter is a driven port that bounds login attempts per account.
+type LoginAttemptLimiter interface {
+	// Allow records an attempt for key and reports whether it may proceed.
+	// When it may not, retryAfter is the time until the key accepts another
+	// attempt.
+	Allow(ctx context.Context, key string) (allowed bool, retryAfter time.Duration)
 }

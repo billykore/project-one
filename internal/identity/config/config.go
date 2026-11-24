@@ -24,3 +24,21 @@ func (c JWTConfig) Validate() error {
 	}
 	return nil
 }
+
+// LoginRateLimitConfig bounds login attempts per account email. Setting
+// MaxAttempts or Window to zero disables the limit.
+type LoginRateLimitConfig struct {
+	MaxAttempts int           `mapstructure:"max_attempts"`
+	Window      time.Duration `mapstructure:"window"`
+}
+
+// Validate rejects negative limits, which are most likely configuration typos.
+func (c LoginRateLimitConfig) Validate() error {
+	if c.MaxAttempts < 0 {
+		return errors.New("login rate limit max attempts cannot be negative")
+	}
+	if c.Window < 0 {
+		return errors.New("login rate limit window cannot be negative")
+	}
+	return nil
+}

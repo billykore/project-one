@@ -5,6 +5,7 @@ Project One is a full-stack social publishing application. It combines a Go/Echo
 ## Features
 
 - Registration, login, logout, and RSA-signed JWT sessions stored in HTTP-only cookies
+- Per-account login attempt limiting that answers `429 Too Many Requests` with `Retry-After`
 - User profiles, profile editing, password changes, user search, and follow relationships
 - Post creation, browsing, editing, deletion, comments, and idempotent likes
 - A cursor-paginated personal feed with infinite scrolling
@@ -193,6 +194,8 @@ Use `request_id` from the parsed JSON to correlate requests. Loki is intentional
    ```
 
 The configuration file path can be changed with `make run config=/path/to/config-dir`. Bound settings can also be overridden by uppercase, underscore-separated environment variables—for example, `DATABASE_HOST`, `JWT_PRIVATE_KEY_PATH`, or `MESSAGE_BROKER_RABBITMQ_URL`.
+
+Login attempts are limited per account email: by default 5 attempts per 1-minute window, after which `POST /auth/login` returns `429` with a `Retry-After` header in seconds. Tune it with `login_rate_limit.max_attempts` and `login_rate_limit.window` (or `LOGIN_RATE_LIMIT_MAX_ATTEMPTS` and `LOGIN_RATE_LIMIT_WINDOW`); set either to `0` to disable it, for example during a load test that repeatedly logs in as one account. Counters live in each API process's memory, so every instance enforces its own limit and a restart resets them.
 
 Scraping is optional locally: leave `monitoring.username` and `monitoring.password_file` unset and `/metrics` rejects every request. To enable it, set both (or `MONITORING_USERNAME` and `MONITORING_PASSWORD_FILE`) and point the password file at an existing, non-empty secret file. `configs/config.yaml.example` documents the keys.
 

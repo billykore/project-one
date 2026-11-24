@@ -19,6 +19,7 @@ import (
 	featureflagdomain "github.com/billykore/project-one/internal/featureflags/domain"
 	featureflagusecase "github.com/billykore/project-one/internal/featureflags/usecase"
 	identityhasher "github.com/billykore/project-one/internal/identity/adapters/hasher"
+	identityratelimit "github.com/billykore/project-one/internal/identity/adapters/ratelimit"
 	identityrepository "github.com/billykore/project-one/internal/identity/adapters/repository"
 	"github.com/billykore/project-one/internal/identity/adapters/token"
 	identityapi "github.com/billykore/project-one/internal/identity/api"
@@ -170,7 +171,8 @@ func newApplication(ctx context.Context, cfg *Config, privateKey *rsa.PrivateKey
 	hasherSvc := identityhasher.NewBcryptHasher()
 	authenticator := identityusecase.NewAuthenticationUseCase(tokenSvc, userTokenRepo, userRepo)
 
-	loginUc := identityusecase.NewLoginUseCase(userRepo, tokenSvc, userTokenRepo, hasherSvc, lgr)
+	loginLimiter := identityratelimit.NewFixedWindowLimiter(cfg.LoginRateLimit.MaxAttempts, cfg.LoginRateLimit.Window)
+	loginUc := identityusecase.NewLoginUseCase(userRepo, tokenSvc, userTokenRepo, hasherSvc, loginLimiter, lgr)
 	userUc := identityusecase.NewUserUseCase(userRepo, hasherSvc, userSearchRepo)
 	featureFlagEvaluator, err := featureflagaevaluator.NewEvaluator(
 		featureFlagRepo,
