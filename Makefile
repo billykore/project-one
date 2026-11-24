@@ -1,5 +1,14 @@
 COMPOSE_FILE := deployments/compose.yml
 
+# Container engine and Compose front end (Podman by default)
+CONTAINER_ENGINE ?= podman
+COMPOSE ?= $(CONTAINER_ENGINE) compose
+
+# Podman API socket path as seen by the engine host (the Podman machine VM on
+# macOS/Windows). Alloy mounts it to discover the backend container's logs.
+CONTAINER_SOCKET ?= $(patsubst unix://%,%,$(shell $(CONTAINER_ENGINE) info --format '{{.Host.RemoteSocket.Path}}' 2>/dev/null))
+export CONTAINER_SOCKET
+
 # Python user seeding script
 SEED_SCRIPT := db/seeds/users_seed.py
 SEED_REQ := db/seeds/requirements.txt
@@ -12,13 +21,13 @@ githooks:
 
 BUILD_DIR := ./build/bin
 
-# Docker image name (override with IMAGE_NAME=<name>)
+# Container image name (override with IMAGE_NAME=<name>)
 IMAGE_NAME ?= project-one
 COMMIT_SHA := $(shell git rev-parse --short=12 HEAD)
 GIT_TAG := $(shell git describe --tags --exact-match 2>/dev/null || echo "dev")
 BUILD_DATE := $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
-DOCKER_IMAGE := $(IMAGE_NAME):$(GIT_TAG)
-DOCKER_IMAGE_SHA := $(IMAGE_NAME):sha-$(COMMIT_SHA)
+CONTAINER_IMAGE := $(IMAGE_NAME):$(GIT_TAG)
+CONTAINER_IMAGE_SHA := $(IMAGE_NAME):sha-$(COMMIT_SHA)
 
 # Default config path
 config ?= ./configs
@@ -35,19 +44,19 @@ build:
 run: build
 	$(BUILD_DIR)/main $(CONFIG_ARG) $(args)
 
-## docker-build: Build the Docker image tagged with the latest commit hash (git rev-parse --short=7 HEAD)
-.PHONY: docker-build
-docker-build:
+## podman-build: Build the container image with Podman, tagged with the git tag and the 12-character commit hash
+.PHONY: podman-build
+podman-build:
 	@if [ -z "$(COMMIT_SHA)" ]; then echo "Error: unable to determine git commit hash. Ensure this is a git repository." >&2; exit 1; fi
-	docker build \
+	$(CONTAINER_ENGINE) build \
 		--build-arg GIT_TAG=$(GIT_TAG) \
 		--build-arg GIT_SHA=$(COMMIT_SHA) \
 		--build-arg BUILD_DATE=$(BUILD_DATE) \
-		-t $(DOCKER_IMAGE) \
-		-t $(DOCKER_IMAGE_SHA) \
+		-t $(CONTAINER_IMAGE) \
+		-t $(CONTAINER_IMAGE_SHA) \
 		-f Dockerfile .
-	@echo "Built image: $(DOCKER_IMAGE)"
-	@echo "Built image: $(DOCKER_IMAGE_SHA)"
+	@echo "Built image: $(CONTAINER_IMAGE)"
+	@echo "Built image: $(CONTAINER_IMAGE_SHA)"
 
 # Coverage output directory
 COVERAGE_DIR := ./test/coverage
@@ -158,30 +167,30 @@ seed-posts: seed-deps
 		python3 db/seeds/posts_seed.py; \
 	fi
 
-## compose-up: Start containers (docker compose up -d)
+## compose-up: Start containers (podman compose up -d)
 .PHONY: compose-up
 compose-up:
-	docker compose -f $(COMPOSE_FILE) up -d --build
+	$(COMPOSE) -f $(COMPOSE_FILE) up -d --build
 
-## compose-down: Stop and remove containers (docker compose down)
+## compose-down: Stop and remove containers (podman compose down)
 .PHONY: compose-down
 compose-down:
-	docker compose -f $(COMPOSE_FILE) down
+	$(COMPOSE) -f $(COMPOSE_FILE) down
 
-## compose-start: Start stopped containers (docker compose start)
+## compose-start: Start stopped containers (podman compose start)
 .PHONY: compose-start
 compose-start:
-	docker compose -f $(COMPOSE_FILE) start
+	$(COMPOSE) -f $(COMPOSE_FILE) start
 
-## compose-stop: Stop running containers (docker compose stop)
+## compose-stop: Stop running containers (podman compose stop)
 .PHONY: compose-stop
 compose-stop:
-	docker compose -f $(COMPOSE_FILE) stop
+	$(COMPOSE) -f $(COMPOSE_FILE) stop
 
 # compose-logs: View logs for a specific service (e.g., make compose-logs service=backend)
 .PHONY: compose-logs
 compose-logs:
-	docker compose -f $(COMPOSE_FILE) logs $(service) -f
+	$(COMPOSE) -f $(COMPOSE_FILE) logs $(service) -f
 
 ## help: Display available targets
 .PHONY: help

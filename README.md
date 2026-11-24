@@ -92,9 +92,9 @@ flowchart LR
     sse -->|text/event-stream| bff
 ```
 
-## Quick start with Docker Compose
+## Quick start with Podman Compose
 
-This starts PostgreSQL 17, RabbitMQ 4, the Go API, the Next.js frontend, Prometheus, Grafana, Loki, and Grafana Alloy, plus a one-shot `keys` service that copies the JWT keys into a protected volume. You need Docker with Compose and OpenSSL installed.
+This starts PostgreSQL 17, RabbitMQ 4, the Go API, the Next.js frontend, Prometheus, Grafana, Loki, and Grafana Alloy, plus a one-shot `keys` service that copies the JWT keys into a protected volume. You need Podman with a Compose provider (`podman compose` delegates to `docker-compose` or `podman-compose`) and OpenSSL installed. On macOS, start the Podman machine first with `podman machine start`.
 
 1. Generate the local RSA key pair used to sign JWTs:
 
@@ -118,7 +118,7 @@ This starts PostgreSQL 17, RabbitMQ 4, the Go API, the Next.js frontend, Prometh
    make compose-up
    ```
 
-   `--build` rebuilds the frontend image only. The `backend` service runs the prebuilt image named in `deployments/compose.yml` (currently `project-one:sha-d401b6674bc3`), which must already exist locally. `make docker-build` tags images as `project-one:<tag-or-dev>` and `project-one:sha-<12-character HEAD>`, so it produces a different tag unless the `image:` line is updated to match.
+   `--build` rebuilds the frontend image only. The `backend` service runs the prebuilt image named in `deployments/compose.yml` (currently `localhost/project-one:sha-3e2afe5aef62`), which must already exist in local Podman storage. `make podman-build` tags images as `localhost/project-one:<tag-or-dev>` and `localhost/project-one:sha-<12-character HEAD>`, so it produces a different tag unless the `image:` line is updated to match.
 
 4. Open the services:
 
@@ -178,7 +178,7 @@ Use `request_id` from the parsed JSON to correlate requests. Loki is intentional
    cp configs/config.yaml.example configs/config.yaml
    ```
 
-2. Generate `configs/keys/jwt-private.pem` and `configs/keys/jwt-public.pem` using the commands in the Docker quick start, then update database and RabbitMQ values in `configs/config.yaml`.
+2. Generate `configs/keys/jwt-private.pem` and `configs/keys/jwt-public.pem` using the commands in the Podman Compose quick start, then update database and RabbitMQ values in `configs/config.yaml`.
 
 3. Apply the migrations:
 
@@ -216,7 +216,7 @@ See [web/README.md](web/README.md) for frontend routes, rendering boundaries, AP
 | :--- | :--- |
 | `make help` | List documented Make targets |
 | `make build` | Build the backend binary at `build/bin/main` |
-| `make docker-build` | Build the backend image tagged `project-one:<git tag or dev>` and `project-one:sha-<12-character commit>` |
+| `make podman-build` | Build the backend image with Podman, tagged `localhost/project-one:<git tag or dev>` and `localhost/project-one:sha-<12-character commit>` |
 | `make run` | Build and run the backend |
 | `make test` | Run backend tests with the race detector |
 | `make test-cover` | Run backend tests and write the HTML coverage report |
@@ -231,7 +231,7 @@ See [web/README.md](web/README.md) for frontend routes, rendering boundaries, AP
 | `make seed-deps` | Install the Python seed dependencies |
 | `make seed-users dsn=...` | Install seed dependencies and insert 20 generated users |
 | `make seed-posts dsn=...` | Install seed dependencies and insert 100,000 generated posts |
-| `make compose-up` | Build and start the Compose stack |
+| `make compose-up` | Build and start the Compose stack with `podman compose` |
 | `make compose-down` | Stop the stack and remove its containers and network |
 | `make compose-start` | Start existing stopped Compose containers |
 | `make compose-stop` | Stop Compose containers without removing them |
@@ -273,7 +273,7 @@ The SSE endpoint accepts the same `access_token` cookie or `Authorization: Beare
 ├── configs/              # YAML configuration and local JWT keys
 ├── db/migrations/        # Versioned PostgreSQL migrations
 ├── db/seeds/             # Development user and post seeders
-├── deployments/          # Docker Compose stack and DB initialization
+├── deployments/          # Podman Compose stack and DB initialization
 ├── docs/                 # Feature requirements, designs, and plans
 ├── githooks/             # Repository Git hooks
 ├── internal/             # Backend domain, ports, use cases, adapters, and API

@@ -1,26 +1,27 @@
-# Docker Compose deployment
+# Podman Compose deployment
 
-`compose.yml` defines the complete local Project One stack. It is intended for development and integration testing rather than as a hardened production deployment.
+`compose.yml` defines the complete local Project One stack and runs on Podman through `podman compose`. It is intended for development and integration testing rather than as a hardened production deployment.
 
 ## Services
 
 | Service | Image/build | Published port | Purpose |
 | :--- | :--- | :--- | :--- |
-| `postgres` | `postgres:17-alpine` | `5432` | Application data |
-| `rabbitmq` | `rabbitmq:4-alpine` | `5672` | Notification event transport |
-| `keys` | `alpine:3.22` | None | Copies JWT keys into a protected shared volume |
-| `backend` | Root `Dockerfile` | `8080` | Go API and notification consumer; health-checked through `/status` |
+| `postgres` | `docker.io/library/postgres:17-alpine` | `5432` | Application data |
+| `rabbitmq` | `docker.io/library/rabbitmq:4-alpine` | `5672` | Notification event transport |
+| `keys` | `docker.io/library/alpine:3.22` | None | Copies JWT keys into a protected shared volume |
+| `backend` | Root `Dockerfile` (prebuilt as `localhost/project-one:sha-…`) | `8080` | Go API and notification consumer; health-checked through `/status` |
 | `frontend` | `web/Dockerfile` | `3000` | Next.js standalone server |
-| `prometheus` | `prom/prometheus:v3.7.3` | `9090` | Scrapes the API `/metrics` endpoint and stores measurements |
-| `loki` | `grafana/loki:3.7.0` | None | Private, seven-day local log store |
-| `alloy` | `grafana/alloy:v1.19.2` | None | Filters and forwards backend container logs |
-| `grafana` | `grafana/grafana:12.2.0` | `3001` | Serves metrics dashboards and Loki Explore |
+| `prometheus` | `docker.io/prom/prometheus:v3.7.3` | `9090` | Scrapes the API `/metrics` endpoint and stores measurements |
+| `loki` | `docker.io/grafana/loki:3.7.0` | None | Private, seven-day local log store |
+| `alloy` | `docker.io/grafana/alloy:v1.19.2` | None | Filters and forwards backend container logs |
+| `grafana` | `docker.io/grafana/grafana:12.2.0` | `3001` | Serves metrics dashboards and Loki Explore |
 
 PostgreSQL, RabbitMQ, and the backend have health checks. The backend starts only after the database and broker are healthy and JWT key preparation has completed; Prometheus starts after the backend container is created and Grafana after Prometheus. The frontend starts after the backend container is created. The backend probe uses Alpine's built-in `wget` to request `/status`.
 
 ## Prerequisites
 
-- Docker with Compose support
+- Podman 5 or later. On macOS and Windows, a running Podman machine (`podman machine init` once, then `podman machine start`)
+- A Compose provider for `podman compose`: either `docker-compose` (standalone binary, no Docker engine required) or `podman-compose`, for example `brew install docker-compose` or `brew install podman-compose`
 - An RSA private/public key pair at `configs/keys/jwt-private.pem` and `configs/keys/jwt-public.pem`
 - A local monitoring password secret and a Grafana administrator password (see [Observability](#observability))
 
@@ -122,9 +123,9 @@ The stream has exactly the bounded labels `app`, `environment`, and `source`. Co
 Alloy running is the aggregation enablement switch. Stop it to disable forwarding while preserving backend stderr:
 
 ```bash
-docker compose -f deployments/compose.yml stop alloy
-docker compose -f deployments/compose.yml logs backend
-docker compose -f deployments/compose.yml start alloy
+podman compose -f deployments/compose.yml stop alloy
+podman compose -f deployments/compose.yml logs backend
+podman compose -f deployments/compose.yml start alloy
 ```
 
 For a protected external Loki-compatible destination, set its full push URL and optional tenant. Store the bearer token in an ignored local file and pass only its path:
@@ -133,14 +134,28 @@ For a protected external Loki-compatible destination, set its full push URL and 
 export LOKI_URL='https://logs.example.invalid/loki/api/v1/push'
 export LOKI_TENANT_ID='<tenant>'
 export LOKI_BEARER_TOKEN_FILE='/absolute/path/to/ignored/loki-token'
-docker compose -f deployments/compose.yml up -d --force-recreate alloy
+podman compose -f deployments/compose.yml up -d --force-recreate alloy
 ```
 
 Compose mounts the credential read-only at `/run/secrets/loki-bearer-token`; its contents are never placed in Compose environment values or application artifacts. The tenant is sent as the standard `X-Scope-OrgID` header rather than Alloy's `tenant_id` argument, because Alloy echoes `tenant_id` in its own delivery-failure diagnostics; with this wiring the tenant never appears in `logs alloy`. Unset all three overrides and recreate Alloy to restore private local Loki.
 
-If events are missing, first check `docker compose -f deployments/compose.yml ps loki alloy`, then inspect `docker compose -f deployments/compose.yml logs alloy`. A delivery or authorization error indicates a destination, tenant, network, or credential problem; it does not affect backend availability. Confirm backend stderr independently with `docker compose -f deployments/compose.yml logs backend`. Do not paste credentials or user data into diagnostic searches.
+If events are missing, first check `podman compose -f deployments/compose.yml ps loki alloy`, then inspect `podman compose -f deployments/compose.yml logs alloy`. A delivery or authorization error indicates a destination, tenant, network, or credential problem; it does not affect backend availability. Confirm backend stderr independently with `podman compose -f deployments/compose.yml logs backend`. Do not paste credentials or user data into diagnostic searches.
 
 `deployments/prometheus.yml` holds the scrape job, `deployments/grafana/provisioning/datasources/` the datasources, `deployments/grafana/provisioning/dashboards/project-one-health.yml` the dashboard provider, and `deployments/grafana/dashboards/` the versioned health and logs dashboards. Keep the Prometheus datasource file's current name: editors apply the Prometheus scrape-configuration schema to any file named exactly `prometheus.yml`, which would flag `apiVersion` and `datasources` as invalid even though Grafana accepts them.
+
+## Podman notes
+
+- Images are fully qualified (`docker.io/...`) because Podman does not assume a default registry for short names. The backend image is resolved from local storage as `localhost/project-one:...`, which is how `make podman-build` stores it.
+- Alloy reads backend logs through Podman's Docker-compatible API. `make` resolves the socket path inside the Podman host from `podman info --format '{{.Host.RemoteSocket.Path}}'`, strips its `unix://` prefix, and exports it as `CONTAINER_SOCKET` (rootless: `/run/user/<uid>/podman/podman.sock`; rootful: `/run/podman/podman.sock`, also the fallback). When invoking `podman compose` directly instead of through `make`, export it first:
+
+  ```bash
+  export CONTAINER_SOCKET="$(podman info --format '{{.Host.RemoteSocket.Path}}' | sed 's|^unix://||')"
+  ```
+
+  The Podman API service must be active on that host. The Podman machine enables it by default; on Linux run `systemctl --user enable --now podman.socket` (rootless) or `sudo systemctl enable --now podman.socket` (rootful).
+- The Alloy service sets `security_opt: label=disable` so SELinux, enforced in the Podman machine VM and on Fedora/RHEL hosts, allows it to use the mounted socket.
+- Rootless Podman can publish only unprivileged ports; every published port in this stack is above 1024.
+- Set `CONTAINER_ENGINE` or `COMPOSE` to override the commands used by `make`, for example `make compose-up COMPOSE=podman-compose`.
 
 ## Lifecycle
 
@@ -156,15 +171,15 @@ make compose-down     # remove containers and network, retaining volumes
 To inspect the stack directly:
 
 ```bash
-docker compose -f deployments/compose.yml ps
-docker compose -f deployments/compose.yml logs -f backend frontend prometheus grafana
+podman compose -f deployments/compose.yml ps
+podman compose -f deployments/compose.yml logs -f backend frontend prometheus grafana
 ```
 
 The frontend is served at <http://localhost:3000>, the API at <http://localhost:8080>, Prometheus at <http://localhost:9090>, and Grafana at <http://localhost:3001>. In non-production mode, Swagger UI is at <http://localhost:8080/swagger/index.html>.
 
 ## Configuration
 
-The Compose file supplies backend configuration through environment variables. Override database and RabbitMQ credentials in the invoking shell or in a root `.env` file read by Docker Compose:
+The Compose file supplies backend configuration through environment variables. Override database and RabbitMQ credentials in the invoking shell or in a root `.env` file read by the Compose provider:
 
 ```dotenv
 POSTGRES_DB=project1
@@ -196,7 +211,7 @@ The stack uses seven named volumes:
 - `loki-data` for the local log store
 - `alloy-data` for collector component state (not a durable replay guarantee)
 
-`make compose-down` preserves these volumes. Running `docker compose -f deployments/compose.yml down -v` deletes all seven volumes and permanently removes their local data.
+`make compose-down` preserves these volumes. Running `podman compose -f deployments/compose.yml down -v` deletes all seven volumes and permanently removes their local data.
 
 ## Container images
 

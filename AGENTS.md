@@ -34,7 +34,7 @@
 - `/metrics` must remain protected by the dedicated monitoring credential. Never add unbounded/sensitive metric labels (account IDs, tokens, session values, raw paths, query strings, request bodies, or raw dependency errors).
 - Never commit JWT keys, monitoring passwords, Loki bearer tokens, or other secrets. Use file-backed secrets; do not put token contents in environment variables.
 - Before changing deployment configuration, read `deployments/README.md`. Preserve the Compose health probe at `/status`, Prometheus scrape authentication for `/metrics`, and the frontend's in-network `API_URL=http://backend:8080` unless the request explicitly changes them.
-- Validate Compose changes without starting services using `GRAFANA_ADMIN_PASSWORD='<temporary-value>' docker compose -f deployments/compose.yml config -q`. Starting, stopping, recreating, or deleting deployment services/volumes requires explicit user authorization.
+- Validate Compose changes without starting services using `GRAFANA_ADMIN_PASSWORD='<temporary-value>' podman compose -f deployments/compose.yml config -q`. Starting, stopping, recreating, or deleting deployment services/volumes requires explicit user authorization.
 
 ## Verification & Delivery
 
