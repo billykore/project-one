@@ -19,9 +19,22 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   `projectone_outbox_oldest_pending_age_seconds`, and
   `projectone_outbox_failed_messages` gauges on `/metrics`, with matching
   panels on the Project One Health dashboard.
+- Per-account login attempt limiting. After 5 attempts per minute for the
+  same email, `POST /auth/login` returns a `429` Problem Details response
+  (code `RATE_LIMITED`) with a `Retry-After` header in seconds. Tune it with
+  `login_rate_limit.max_attempts` and `login_rate_limit.window`
+  (`LOGIN_RATE_LIMIT_MAX_ATTEMPTS`, `LOGIN_RATE_LIMIT_WINDOW`); `0` disables
+  it. Counters are kept in each API process's memory. The BFF forwards
+  `Retry-After`, and the login page shows the message inline.
 
 ### Changed
 
+- Switched container tooling from Docker to Podman. Compose runs through
+  `podman compose`, `make podman-build` replaces `make docker-build`, image
+  references are fully qualified, and the backend image is referenced as
+  `localhost/project-one`. Alloy mounts the Podman API socket, resolved from
+  `podman info` with its `unix://` prefix stripped.
+- Upgraded Go to 1.27.4.
 - The social feed no longer uses publishing's `Post` aggregate. Social reads
   its own `TimelinePost` projection through a `TimelineReader` adapter, and a
   `depguard` rule keeps `publishing/domain` out of other contexts' domain,
@@ -34,6 +47,10 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   could not resolve. They are now `IdentityMessageResponse`,
   `NotificationMessageResponse`, and `PublishingMessageResponse`; response
   bodies are unchanged, only the OpenAPI schema names differ.
+- Concurrent logins by the same user within one second no longer fail with
+  `500`. Access tokens now carry a random `jti` and an `iat` claim, so every
+  issued JWT is unique and no longer violates the `user_tokens.token`
+  uniqueness constraint.
 
 ### Removed
 
